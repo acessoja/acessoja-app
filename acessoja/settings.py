@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-q15e*@s9^_n*)&%9@gql6ayobp*^*mo5*z*+_a#z6p5dd18yf@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2', '*']
 
 
 # Application definition
@@ -63,7 +63,7 @@ ROOT_URLCONF = 'acessoja.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -87,7 +87,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'banco_acessoja',  # Substitua pelo nome do seu banco
         'USER': 'postgres',  # Substitua pelo nome de usuário do banco
-        'PASSWORD': '1129',  # Substitua pela senha do banco
+        'PASSWORD': '123123',  # Substitua pela senha do banco
         'HOST': 'localhost',  # Se estiver rodando localmente
         'PORT': '5432',  # Porta padrão do PostgreSQL
     }
@@ -144,7 +144,7 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
-    'USER_ID_FIELD': 'username',
+    'USER_ID_FIELD': 'id_usuario',
 }
 
 AUTH_USER_MODEL = 'usuarios.Usuario'

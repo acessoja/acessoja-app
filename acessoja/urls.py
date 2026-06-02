@@ -11,6 +11,7 @@ urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
     path('api/', include('locais.urls')),
     path('api/login/', LoginAPIView.as_view(), name='api-login'),
+    path('api/usuarios/', include('usuarios.urls')),
     # URL para a tela de Modal de Avaliações
     path('api/avaliacoes/', include('modal_avaliacao.urls')),
 ]

@@ -14,10 +14,18 @@ class LocalSerializer(serializers.ModelSerializer):
 
 
 class ModalAvaliacaoSerializer(serializers.ModelSerializer):
+    nome_usuario = serializers.SerializerMethodField()
+
     class Meta:
         model = ModalAvaliacao
         fields = [
-            'id', 'local', 'user', 'pergunta_1', 'pergunta_2',
-            'pergunta_3', 'pergunta_4', 'estrelas', 'data_resposta'
+            'id', 'local', 'user', 'nome_usuario', 'pergunta_1', 'pergunta_2',
+            'pergunta_3', 'pergunta_4', 'estrelas', 'comentario', 'data_resposta'
         ]
         read_only_fields = ['id', 'user', 'data_resposta']
+
+    def get_nome_usuario(self, obj):
+        if obj.user.nome_completo and obj.user.nome_completo.strip():
+            return obj.user.nome_completo
+        return obj.user.nome
+

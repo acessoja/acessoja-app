@@ -25,7 +25,10 @@ class MyApp extends StatelessWidget {
           final Map<String, dynamic>? place = settings.arguments as Map<String, dynamic>?;
           if (place != null) {
             return MaterialPageRoute(
-              builder: (context) => PlaceDetailScreen(place: place),
+              builder: (context) => PlaceDetailScreen(
+                place: place,
+                userName: 'Usuário AcessoJá',
+              ),
             );
           } else {
             // Retorna uma tela de erro se os argumentos estiverem ausentes

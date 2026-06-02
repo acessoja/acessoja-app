@@ -27,7 +27,10 @@ class LoginAPIView(APIView):
                 'user': {
                     'id_usuario': user.id_usuario,
                     'nome': user.nome,
-                    'email': user.email
+                    'email': user.email,
+                    'nome_completo': user.nome_completo,
+                    'telefone': user.telefone,
+                    'foto_perfil': user.foto_perfil,
                 }
             })
         else:

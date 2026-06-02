@@ -17,6 +17,7 @@ class ModalAvaliacao(models.Model):
     pergunta_4 = models.CharField(max_length=10, choices=[(
         'Sim', 'Sim'), ('Não', 'Não'), ('Não sei', 'Não sei')])
     estrelas = models.PositiveIntegerField(default=0)  # De 1 a 5 estrelas
+    comentario = models.TextField(blank=True, null=True)
     data_resposta = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
