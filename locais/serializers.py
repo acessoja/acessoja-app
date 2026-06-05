@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Local, VisitaRecente
 
+
 class LocalSerializer(serializers.ModelSerializer):
     media_estrelas = serializers.ReadOnlyField()
 

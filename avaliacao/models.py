@@ -16,7 +16,7 @@ class Local(models.Model):
             return round(avaliacoes.aggregate(models.Avg('estrelas'))['estrelas__avg'], 1)
         return 0
 
-def __str__(self):
+    def __str__(self):
         return self.nome
 
 
@@ -24,7 +24,7 @@ class AvaliacaoLocal(models.Model):
     local = models.ForeignKey(
         Local, on_delete=models.CASCADE, related_name='avaliacoes')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    comentario = models.TextField(blank=True, null=True)
+    comentario = models.TextField(blank=True)
     estrelas = models.PositiveIntegerField(default=0)
     data_criacao = models.DateTimeField(auto_now_add=True)
 

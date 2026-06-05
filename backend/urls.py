@@ -1,5 +1,4 @@
 from django.urls import path, include
-from django.shortcuts import render
 from django.contrib import admin
 from . import views
 from .views import LoginAPIView

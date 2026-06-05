@@ -1,0 +1,13 @@
+[flake8]
+max-line-length = 120
+exclude =
+    migrations,
+    __pycache__,
+    .venv,
+    venv,
+    .git,
+    manage.py
+per-file-ignores =
+    */settings.py: E501
+statistics = True
+count = True

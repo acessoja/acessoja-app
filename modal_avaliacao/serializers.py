@@ -28,4 +28,3 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
         if obj.user.nome_completo and obj.user.nome_completo.strip():
             return obj.user.nome_completo
         return obj.user.nome
-
