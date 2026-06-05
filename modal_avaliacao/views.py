@@ -1,6 +1,5 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 from .models import ModalAvaliacao
 from .serializers import LocalSerializer, ModalAvaliacaoSerializer
 from locais.models import Local
@@ -42,7 +41,7 @@ class ModalAvaliacaoViewSet(viewsets.ModelViewSet):
             user = User.objects.first()
 
         evaluation = serializer.save(user=user)
-        
+
         # Update local accessibility flags based on the survey responses
         local = evaluation.local
         if evaluation.pergunta_1 == 'Sim':
@@ -54,5 +53,5 @@ class ModalAvaliacaoViewSet(viewsets.ModelViewSet):
             local.mesa_acessivel = True
         if evaluation.pergunta_4 == 'Sim':
             local.cao_guia = True
-            
+
         local.save()

@@ -11,14 +11,14 @@ class LocalViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
-        
+
         # Filtros de acessibilidade
         cao_guia = self.request.query_params.get('cao_guia')
         mesa_acessivel = self.request.query_params.get('mesa_acessivel')
         banheiro_acessivel = self.request.query_params.get('banheiro_acessivel')
         rampa_acesso = self.request.query_params.get('rampa_acesso')
         cardapio_braille = self.request.query_params.get('cardapio_braille')
-        
+
         if cao_guia == 'true':
             queryset = queryset.filter(cao_guia=True)
         if mesa_acessivel == 'true':
@@ -29,7 +29,7 @@ class LocalViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(rampa_acesso=True)
         if cardapio_braille == 'true':
             queryset = queryset.filter(cardapio_braille=True)
-            
+
         return queryset
 
     def perform_create(self, serializer):

@@ -1,7 +1,5 @@
 from django.db import models
-from django.conf import settings  # Importa a configuração AUTH_USER_MODEL
-from django.contrib.auth.models import User
-
+from django.conf import settings
 
 
 class Local(models.Model):
@@ -12,7 +10,7 @@ class Local(models.Model):
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     aberto = models.BooleanField(default=True)
-    imagem = models.CharField(max_length=255, null=True, blank=True)
+    imagem = models.CharField(max_length=255, blank=True)
     cao_guia = models.BooleanField(default=False)
     mesa_acessivel = models.BooleanField(default=False)
     banheiro_acessivel = models.BooleanField(default=False)
@@ -20,8 +18,11 @@ class Local(models.Model):
     cardapio_braille = models.BooleanField(default=False)
     data_criacao = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.nome
+
     class Meta:
-        db_table = 'local'  # Nome da tabela no banco de dados
+        db_table = 'local'
         managed = True
 
     @property
@@ -43,4 +44,4 @@ class VisitaRecente(models.Model):
         managed = True
 
     def __str__(self):
-        return f"Visita a {self.local.nome} por {self.user.nome} em {self.data_visita}"
+        return f"Visita a {self.local.nome} por {self.user} em {self.data_visita}"

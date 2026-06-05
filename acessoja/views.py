@@ -1,10 +1,9 @@
-from django.contrib import messages
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate
+from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+
 
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]  # Permite acesso público

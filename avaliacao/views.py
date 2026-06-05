@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import AvaliacaoLocal
 from .serializers import AvaliacaoLocalSerializer
 
+
 class AvaliacaoLocalViewSet(viewsets.ModelViewSet):
     queryset = AvaliacaoLocal.objects.all()
     serializer_class = AvaliacaoLocalSerializer
