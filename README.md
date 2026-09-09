@@ -70,6 +70,32 @@ O projeto segue uma arquitetura desacoplada onde:
 
 ---
 
+## 📖 Documentação da API
+
+A documentação é **gerada a partir do código** com
+[drf-spectacular](https://drf-spectacular.readthedocs.io/): ela não fica
+defasada em relação aos endpoints reais. Não mantenha listas de rotas neste
+README — documente na própria view, com `@extend_schema`.
+
+Com o servidor rodando (`python manage.py runserver`):
+
+| Recurso | URL | Para que serve |
+|---------|-----|----------------|
+| **Swagger UI** | <http://localhost:8000/api/docs/> | Explorar e **testar** os endpoints no navegador |
+| **ReDoc** | <http://localhost:8000/api/redoc/> | Leitura corrida, boa para revisar o contrato |
+| **Schema OpenAPI 3** | <http://localhost:8000/api/schema/> | YAML para gerar cliente Dart/Flutter |
+
+Exportar o schema para um arquivo:
+
+```bash
+python manage.py spectacular --file schema.yaml
+```
+
+O Quality Gate roda `spectacular --fail-on-warn` a cada PR: endpoint sem
+contrato válido quebra o build.
+
+---
+
 ## 👥 Contribuindo
 
 O time trabalha com `main` (estável) + `develop` (integração) e **Pull Request

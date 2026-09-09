@@ -46,6 +46,10 @@ INSTALLED_APPS = [
     'corsheaders',
     'modal_avaliacao',
     'avaliacao',
+
+    # Documentacao viva da API (OpenAPI 3 + Swagger UI)
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
 ]
 
 MIDDLEWARE = [
@@ -151,6 +155,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [],
+    # Gera o schema OpenAPI a partir do proprio codigo.
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 DJOSER = {
@@ -168,3 +174,54 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# ---------------------------------------------------------------------------
+# Documentacao da API (drf-spectacular)
+# Swagger UI: /api/docs/  |  ReDoc: /api/redoc/  |  OpenAPI 3: /api/schema/
+# ---------------------------------------------------------------------------
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'AcessoJá API',
+    'DESCRIPTION': (
+        'API REST do **AcessoJá** — plataforma para encontrar e avaliar a '
+        'acessibilidade de estabelecimentos e locais públicos.\n\n'
+        '## Como usar\n\n'
+        'O app Flutter identifica o usuário pelo campo `nome` (não pelo e-mail). '
+        'Faça `POST /api/login/` para validar as credenciais e, nas rotas que '
+        'pedem autoria, envie `nome` ou `nome_usuario` no corpo da requisição.\n\n'
+        '> **Atenção:** hoje as rotas de escrita usam `AllowAny` e a autoria vem '
+        'do corpo da requisição, não de um token. Isso está documentado como é, '
+        'não como deveria ser — fechar isso é o cartão de segurança da sprint.\n\n'
+        '## Convenções\n\n'
+        '- Respostas em JSON UTF-8.\n'
+        '- Datas em ISO-8601.\n'
+        '- Erros de validação retornam `400` com o mapa de campos inválidos.\n'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SORT_OPERATIONS': False,
+    'ENUM_NAME_OVERRIDES': {
+        'RespostaAcessibilidadeEnum': 'modal_avaliacao.models.RESPOSTAS',
+    },
+    # Assets servidos localmente: a doc abre sem depender de CDN.
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'filter': True,
+    },
+    'TAGS': [
+        {'name': 'Autenticação', 'description': 'Login e rotas de conta do Djoser.'},
+        {'name': 'Locais', 'description': 'Locais e filtros de acessibilidade.'},
+        {'name': 'Visitas', 'description': 'Histórico de locais visitados pelo usuário.'},
+        {'name': 'Avaliações', 'description': 'Avaliações de acessibilidade dos locais.'},
+        {'name': 'Usuários', 'description': 'Perfil, senha e foto do usuário.'},
+    ],
+    'CONTACT': {
+        'name': 'Equipe AcessoJá',
+        'url': 'https://github.com/acessoja/acessoja-app',
+    },
+    'LICENSE': {'name': 'Projeto educacional'},
+}
