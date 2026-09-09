@@ -22,4 +22,4 @@ class ModalAvaliacao(models.Model):
     data_resposta = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Avaliação de {self.local.nome} por {self.user.username}"
+        return f"Avaliação de {self.local.nome} por {self.user.nome}"

@@ -32,4 +32,4 @@ class AvaliacaoLocal(models.Model):
         unique_together = ('local', 'user')
 
     def __str__(self):
-        return f"Avaliação de {self.local.nome} por {self.user.username}"
+        return f"Avaliação de {self.local.nome} por {self.user.nome}"

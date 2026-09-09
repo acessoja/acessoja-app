@@ -13,7 +13,7 @@ User = get_user_model()
 def usuario(db):
     """Cria um usuário de teste padrão."""
     return User.objects.create_user(
-        username="testuser",
+        nome="testuser",
         email="test@acessoja.com",
         password="senha@123"
     )
