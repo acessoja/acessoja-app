@@ -1,12 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../config.dart';
+import '../services/api_service.dart';
 import 'main_screen.dart';
 import 'register_screen.dart';
-
-final String backendUrl = '${Config.baseUrl}/api/login/';
 
 void main() {
   runApp(MyApp());
@@ -83,6 +79,19 @@ const List<_FloatingParticle> _particles = [
 //  LOGIN SCREEN – Animated Background
 // =============================================
 class LoginScreen extends StatefulWidget {
+  /// Serviço usado para autenticar o usuário.
+  /// Em produção usa [HttpApiService]; nos testes pode receber um mock.
+  final ApiService? apiService;
+
+  /// Permite controlar, em testes, o que acontece após um login
+  /// bem-sucedido, evitando navegar para a [MainScreen] real (que
+  /// dispara geolocalização e outras chamadas de API).
+  final void Function(BuildContext context, Map<String, dynamic> user)?
+      onLoginSuccess;
+
+  LoginScreen({Key? key, this.apiService, this.onLoginSuccess})
+      : super(key: key);
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -91,6 +100,7 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  late final ApiService _apiService = widget.apiService ?? HttpApiService();
   late AnimationController _animController;
 
   @override
@@ -122,59 +132,47 @@ class _LoginScreenState extends State<LoginScreen>
       return;
     }
 
-    print('Enviando credenciais: nome=$nome, password=$password');
-
     try {
-      final response = await http.post(
-        Uri.parse(backendUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'nome': nome,
-          'password': password,
-        }),
-      );
+      final result = await _apiService.login(nome: nome, password: password);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['status'] == 'success') {
-          final user = data['user'];
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => MainScreen(
-                userName: user['nome'],
-              ),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                const begin = Offset(0.0, 0.08);
-                const end = Offset.zero;
-                const curve = Curves.easeInOutCubic;
-                
-                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                var fadeTween = Tween<double>(begin: 0.0, end: 1.0);
-                
-                return FadeTransition(
-                  opacity: animation.drive(fadeTween),
-                  child: SlideTransition(
-                    position: animation.drive(tween),
-                    child: child,
-                  ),
-                );
-              },
-              transitionDuration: const Duration(milliseconds: 600),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                data['message'] ?? 'Usuário ou senha inválidos.',
-              ),
-            ),
-          );
+      if (result.success) {
+        final user = result.user ?? <String, dynamic>{};
+
+        if (widget.onLoginSuccess != null) {
+          widget.onLoginSuccess!(context, user);
+          return;
         }
-      } else if (response.statusCode == 401) {
+
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => MainScreen(
+              userName: user['nome'],
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              const begin = Offset(0.0, 0.08);
+              const end = Offset.zero;
+              const curve = Curves.easeInOutCubic;
+
+              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var fadeTween = Tween<double>(begin: 0.0, end: 1.0);
+
+              return FadeTransition(
+                opacity: animation.drive(fadeTween),
+                child: SlideTransition(
+                  position: animation.drive(tween),
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 600),
+          ),
+        );
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Usuário ou senha inválidos.')),
+          SnackBar(
+            content: Text(result.message ?? 'Usuário ou senha inválidos.'),
+          ),
         );
       }
     } catch (e) {

@@ -60,7 +60,7 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
   @override
   Widget build(BuildContext context) {
     const Color accentBlue = Color(0xFF4CABFF);
-    const Color deepBlue = Color(0xFF4A69FF);
+   
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F8FF),

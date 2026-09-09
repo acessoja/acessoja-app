@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'place_detail_screen.dart'; // Certifique-se de que o caminho está correto
+// Certifique-se de que o caminho está correto
 
 class PlaceListScreen extends StatelessWidget {
   final List<Map<String, dynamic>> places = [

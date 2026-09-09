@@ -26,7 +26,7 @@ class _MainScreenState extends State<MainScreen> {
   String _unidadeDistancia = 'KM';
   String _nomeCompleto = '';
   String _fotoPerfil = '';
-  bool _permitirSugestoes = true;
+  
 
   Future<void> _loadUserProfile() async {
     try {
@@ -41,7 +41,6 @@ class _MainScreenState extends State<MainScreen> {
               ? data['nome_completo']
               : widget.userName;
           _fotoPerfil = (data['foto_perfil'] ?? '').toString();
-          _permitirSugestoes = data['permitir_sugestoes'] ?? true;
         });
       }
     } catch (e) {

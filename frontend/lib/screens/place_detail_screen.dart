@@ -2,18 +2,27 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../config.dart';
+import '../services/api_service.dart';
+import '../widgets/evaluation_survey_dialog.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> place;
   final String userName;
+  final ApiService? apiService;
 
-  const PlaceDetailScreen({required this.place, required this.userName, Key? key}) : super(key: key);
+  const PlaceDetailScreen({
+    required this.place,
+    required this.userName,
+    this.apiService,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<PlaceDetailScreen> createState() => _PlaceDetailScreenState();
 }
 
 class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
+  late final ApiService _apiService = widget.apiService ?? HttpApiService();
   List<dynamic> comments = [];
   final TextEditingController _commentController = TextEditingController();
   int _selectedStars = 0;
@@ -37,15 +46,12 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
 
   Future<void> _fetchEvaluations() async {
     try {
-      final response = await http.get(Uri.parse(
-        '${Config.baseUrl}/api/avaliacoes/modal-avaliacoes/?local_id=${widget.place['id_local']}'
-      ));
-      if (response.statusCode == 200) {
-        final List data = json.decode(utf8.decode(response.bodyBytes));
-        setState(() {
-          comments = data;
-        });
-      }
+      final data = await _apiService.fetchEvaluations(
+        localId: widget.place['id_local'],
+      );
+      setState(() {
+        comments = data;
+      });
     } catch (e) {
       debugPrint("Error fetching evaluations: $e");
     }
@@ -100,174 +106,12 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   }
 
   void _showAccessibilitySurveyDialog() {
-    // State variables for the dialog choices
-    String q1 = ''; // 'Sim', 'Não', 'Não sei'
-    String q2 = '';
-    String q3 = '';
-    String q4 = '';
-
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, dialogSetState) {
-            Widget buildQuestionCard(String questionText, String currentValue, Function(String) onSelected) {
-              Widget buildButton(String value) {
-                final isSelected = currentValue == value;
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isSelected ? const Color(0xFF4CABFF) : Colors.white,
-                        foregroundColor: isSelected ? Colors.white : const Color(0xFF4CABFF),
-                        side: const BorderSide(color: Color(0xFF4CABFF), width: 1.2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 0,
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(0, 36),
-                      ),
-                      onPressed: () => onSelected(value),
-                      child: Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                );
-              }
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF1E3A8A).withOpacity(0.15), width: 1),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      questionText,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E3A8A),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        buildButton('Não'),
-                        buildButton('Não sei'),
-                        buildButton('Sim'),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            return Dialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                width: double.infinity,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Responda uma breve pesquisa e ajude outros usuários',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E3A8A),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    Flexible(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            buildQuestionCard(
-                              '1. Existem rampas de acesso na entrada do local?',
-                              q1,
-                              (val) => dialogSetState(() => q1 = val),
-                            ),
-                            buildQuestionCard(
-                              '2. Esse lugar tem banheiro acessível?',
-                              q2,
-                              (val) => dialogSetState(() => q2 = val),
-                            ),
-                            buildQuestionCard(
-                              '3. Há vagas de estacionamento reservadas para pessoas com deficiência?',
-                              q3,
-                              (val) => dialogSetState(() => q3 = val),
-                            ),
-                            buildQuestionCard(
-                              '4. O ambiente é livre de barreiras e obstáculos que dificultem a locomoção?',
-                              q4,
-                              (val) => dialogSetState(() => q4 = val),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey[200],
-                              foregroundColor: Colors.black87,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              minimumSize: const Size(0, 44),
-                              elevation: 0,
-                            ),
-                            onPressed: () {
-                              Navigator.pop(context); // Close survey dialog
-                            },
-                            child: const Text('Não, obrigado', style: TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4CABFF),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              minimumSize: const Size(0, 44),
-                              elevation: 0,
-                            ),
-                            onPressed: () {
-                              if (q1.isEmpty || q2.isEmpty || q3.isEmpty || q4.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Por favor, responda todas as perguntas!'),
-                                    backgroundColor: Colors.redAccent,
-                                  ),
-                                );
-                                return;
-                              }
-                              Navigator.pop(context); // Close survey dialog
-                              _submitEvaluation(q1, q2, q3, q4);
-                            },
-                            child: const Text('Enviar Avaliação', style: TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+      builder: (context) => EvaluationSurveyDialog(
+        onSubmit: (q1, q2, q3, q4) => _submitEvaluation(q1, q2, q3, q4),
+      ),
     );
   }
 
@@ -277,22 +121,18 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     });
 
     try {
-      final response = await http.post(
-        Uri.parse('${Config.baseUrl}/api/avaliacoes/modal-avaliacoes/'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'local': widget.place['id_local'],
-          'nome_usuario': widget.userName,
-          'pergunta_1': q1,
-          'pergunta_2': q2,
-          'pergunta_3': q3,
-          'pergunta_4': q4,
-          'estrelas': _selectedStars,
-          'comentario': _commentController.text.trim(),
-        }),
+      final result = await _apiService.submitEvaluation(
+        localId: widget.place['id_local'],
+        userName: widget.userName,
+        pergunta1: q1,
+        pergunta2: q2,
+        pergunta3: q3,
+        pergunta4: q4,
+        estrelas: _selectedStars,
+        comentario: _commentController.text.trim(),
       );
 
-      if (response.statusCode == 201) {
+      if (result.success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Avaliação enviada com sucesso! Obrigado por ajudar.'),
@@ -306,10 +146,10 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
         // Reload evaluations list
         _fetchEvaluations();
       } else {
-        debugPrint("Error sending evaluation: ${response.statusCode}");
+        debugPrint("Error sending evaluation: ${result.message}");
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao enviar avaliação.'),
+          SnackBar(
+            content: Text(result.message ?? 'Erro ao enviar avaliação.'),
             backgroundColor: Colors.redAccent,
           ),
         );
