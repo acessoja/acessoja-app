@@ -1,0 +1,31 @@
+# Quem é chamado automaticamente para revisar cada parte do projeto.
+# Troque os @LOGIN-* pelos logins reais do GitHub de cada um.
+#
+#   leo      -> @arkanleo
+#   rafael   -> @LOGIN-RAFAEL
+#   gabriel  -> @LOGIN-GABRIEL
+#   matheus  -> @LOGIN-MATHEUS
+
+# Padrão: qualquer arquivo sem dono específico
+*                          @arkanleo
+
+# Backend Django
+/acessoja/                 @arkanleo @LOGIN-MATHEUS
+/locais/                   @arkanleo
+/modal_avaliacao/          @arkanleo
+/usuarios/                 @LOGIN-MATHEUS
+
+# App Flutter
+/frontend/                 @LOGIN-RAFAEL @LOGIN-GABRIEL
+
+# Infra, CI e qualidade — mexeu aqui, dois pares de olhos
+/.github/                  @arkanleo @LOGIN-MATHEUS
+/.flake8                   @LOGIN-MATHEUS
+/.coveragerc               @LOGIN-MATHEUS
+/pytest.ini                @LOGIN-MATHEUS
+/acessoja/settings.py      @arkanleo @LOGIN-MATHEUS
+
+# Documentação
+/README.md                 @arkanleo
+/CONTRIBUTING.md           @arkanleo
+/QUALITY.md                @LOGIN-MATHEUS
