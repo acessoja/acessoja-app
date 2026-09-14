@@ -1,0 +1,28 @@
+# Cobertura de codigo do backend.
+# Omitimos apenas o que nao faz sentido testar: boilerplate gerado pelo Django,
+# migrations, os proprios arquivos de teste e o app Flutter.
+# Codigo morto (backend/, main/, avaliacao/) NAO entra aqui de proposito:
+# esconder isso do relatorio e o que transforma o quality gate em enfeite.
+[run]
+branch = True
+source = .
+omit =
+    */migrations/*
+    */tests.py
+    */*_tests.py
+    */test_*.py
+    manage.py
+    */manage.py
+    */wsgi.py
+    */asgi.py
+    venv/*
+    .venv/*
+    frontend/*
+
+[report]
+show_missing = True
+skip_covered = False
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+    raise NotImplementedError

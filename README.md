@@ -70,6 +70,32 @@ O projeto segue uma arquitetura desacoplada onde:
 
 ---
 
+## 👥 Contribuindo
+
+O time trabalha com `main` (estável) + `develop` (integração) e **Pull Request
+obrigatório com 1 aprovação**, com o Quality Gate como required status check.
+
+O combinado completo — nomes de branch, mensagens de commit, revisão,
+conflitos, migrations, proteção de branch e o checklist antes do PR — está em
+**[CONTRIBUTING.md](CONTRIBUTING.md)**. Leia antes do primeiro Pull Request.
+
+```bash
+git checkout develop && git pull origin develop
+git checkout -b feature/minha-tarefa
+# ... código ...
+git commit -m "feat(escopo): descricao curta"
+git push -u origin feature/minha-tarefa
+```
+
+Para rodar os testes sem PostgreSQL local:
+
+```bash
+export DATABASE_URL=sqlite:///./db_ci.sqlite3
+pytest --cov=. --cov-report=term-missing
+```
+
+---
+
 ## 📝 Licença
 
 Este projeto foi desenvolvido para fins educacionais e de impacto social. Sinta-se à vontade para contribuir!

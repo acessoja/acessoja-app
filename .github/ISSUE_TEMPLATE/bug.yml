@@ -1,0 +1,61 @@
+name: Bug
+description: Algo que deveria funcionar e não funciona
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Onde acontece
+      options:
+        - Backend (API Django)
+        - Frontend (app Flutter)
+        - Os dois
+        - Não sei
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que deveria acontecer
+    validations:
+      required: true
+
+  - type: textarea
+    id: aconteceu
+    attributes:
+      label: O que acontece de verdade
+      description: Cole a mensagem de erro ou o traceback completo, se houver.
+    validations:
+      required: true
+
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: input
+    id: ambiente
+    attributes:
+      label: Ambiente
+      placeholder: "Windows 11, Python 3.12, Flutter 3.24, emulador Android"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: gravidade
+    attributes:
+      label: Gravidade
+      options:
+        - Bloqueia a demo da sprint
+        - Atrapalha, mas dá para contornar
+        - Incômodo pequeno
+    validations:
+      required: true

@@ -34,3 +34,22 @@ frontend/ios/Flutter/Generated.xcconfig
 # OS files
 .DS_Store
 Thumbs.db
+
+# Cobertura e cache de testes
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+db_ci.sqlite3
+
+# Schema OpenAPI gerado (a fonte da verdade e o codigo)
+schema.yaml
+schema.json
+
+# Django
+/media/
+/staticfiles/
+
+# Flutter extras
+frontend/*.iml
+frontend/android/.gradle/

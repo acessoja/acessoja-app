@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -85,13 +86,22 @@ WSGI_APPLICATION = 'acessoja.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'banco_acessoja',  # Substitua pelo nome do seu banco
-        'USER': 'postgres',  # Substitua pelo nome de usuário do banco
-        'PASSWORD': '123123',  # Substitua pela senha do banco
-        'HOST': 'localhost',  # Se estiver rodando localmente
-        'PORT': '5432',  # Porta padrão do PostgreSQL
+        'NAME': os.environ.get('POSTGRES_DB', 'banco_acessoja'),
+        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', '123123'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
+
+# A CI (e quem quiser rodar sem PostgreSQL local) define DATABASE_URL=sqlite:///...
+# Sem isto o quality gate falha em todos os testes que tocam o banco.
+if os.environ.get('DATABASE_URL', '').startswith('sqlite'):
+    _nome = os.environ['DATABASE_URL'].split('///')[-1] or 'db_ci.sqlite3'
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / Path(_nome).name,
+    }
 
 
 # Password validation

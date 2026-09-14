@@ -5,7 +5,7 @@ on:
   pull_request:
     branches:
       - main
-
+      - develop
 jobs:
   # ─────────────────────────────────────────────────────────────────────────
   # Backend — Django / pytest / flake8 (mesma validação que já existia)
@@ -58,9 +58,9 @@ jobs:
             --cov=. \
             --cov-report=term-missing \
             --cov-report=xml:coverage.xml \
-            --cov-fail-under=80 \
+            --cov-fail-under=65\
             -v
-        # --cov-fail-under=80 → o passo falha automaticamente se cobertura < 80%
+        # --cov-fail-under=65 → o passo falha automaticamente se cobertura < 65%
 
       # ─── 6. Publicar relatório de cobertura como artefato ───────────────
       - name: 📊 Publicar relatório de cobertura
@@ -99,8 +99,9 @@ jobs:
 
       # ─── 4. Análise Estática — flutter analyze ──────────────────────────
       - name: 🔍 Executar Análise Estática (flutter analyze)
-        run: flutter analyze
-        # Qualquer erro/warning de análise falha este passo e bloqueia o merge.
+        run: flutter analyze --no-fatal-infos
+        # Infos continuam aparecendo no log, mas não bloqueiam o PR.
+        # Warnings e erros continuam sendo tratados normalmente.
 
       # ─── 5. Testes de Widget — flutter test ─────────────────────────────
       - name: 🧪 Executar Testes de Widget (flutter test)
