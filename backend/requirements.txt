@@ -6,3 +6,5 @@ tzdata==2024.2
 djangorestframework
 djoser
 django-cors-headers
+drf-spectacular==0.30.0
+drf-spectacular-sidecar==2026.9.1

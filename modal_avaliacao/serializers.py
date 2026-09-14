@@ -23,8 +23,18 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
             'pergunta_3', 'pergunta_4', 'estrelas', 'comentario', 'data_resposta'
         ]
         read_only_fields = ['id', 'user', 'data_resposta']
+        extra_kwargs = {
+            'local': {'help_text': 'ID do local avaliado (`id_local`).'},
+            'pergunta_1': {'help_text': 'Tem rampa de acesso? Sim | Nao | Nao sei'},
+            'pergunta_2': {'help_text': 'Tem banheiro adaptado? Sim | Nao | Nao sei'},
+            'pergunta_3': {'help_text': 'Tem mesa acessivel? Sim | Nao | Nao sei'},
+            'pergunta_4': {'help_text': 'Aceita cao-guia? Sim | Nao | Nao sei'},
+            'estrelas': {'help_text': 'Nota geral de acessibilidade, de 0 a 5.'},
+            'comentario': {'help_text': 'Observacao livre sobre o local. Opcional.'},
+            'data_resposta': {'help_text': 'Momento do envio da avaliacao (ISO-8601).'},
+        }
 
-    def get_nome_usuario(self, obj):
+    def get_nome_usuario(self, obj) -> str:
         if obj.user.nome_completo and obj.user.nome_completo.strip():
             return obj.user.nome_completo
         return obj.user.nome
