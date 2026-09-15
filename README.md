@@ -41,11 +41,36 @@ O **AcessoJá** é uma plataforma integrada desenvolvida para facilitar a identi
 *   PostgreSQL rodando localmente
 
 ### **1. Configurando o Backend**
+
+O `manage.py` fica na **raiz do projeto** — o ambiente virtual e os comandos
+abaixo também devem ser executados a partir da raiz, não de dentro de `backend/`.
+
 ```bash
-cd backend
+# 1. Crie e ative o ambiente virtual a partir da raiz do projeto
 python -m venv venv
-.\venv\Scripts\activate
-pip install -r requirements.txt
+.\venv\Scripts\Activate.ps1
+
+# 2. Instale as dependências (o requirements.txt fica em backend/)
+pip install -r backend/requirements.txt
+
+# 3. Copie o arquivo de exemplo e preencha com seus valores locais
+cp .env.example .env   # no Windows (PowerShell): copy .env.example .env
+```
+
+Edite o `.env` recém-criado e preencha:
+*   `SECRET_KEY` — gere uma chave própria, nunca reutilize a do `.env.example`:
+    ```bash
+    python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+    ```
+*   `DATABASE_URL` — credenciais do seu PostgreSQL local (usuário, senha, host,
+    porta e nome do banco).
+
+> ⚠️ **O arquivo `.env` nunca deve ser commitado.** Ele já está listado no
+> `.gitignore`; apenas o `.env.example` (com placeholders, sem segredos reais)
+> deve ir para o repositório.
+
+```bash
+# 4. Aplique as migrations e suba o servidor
 python manage.py migrate
 python manage.py runserver
 ```
