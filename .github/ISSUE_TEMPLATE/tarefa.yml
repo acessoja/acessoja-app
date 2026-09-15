@@ -1,0 +1,33 @@
+name: Tarefa técnica
+description: Débito técnico, refatoração ou melhoria sem cartão no Trello
+title: "chore: "
+labels: ["tarefa"]
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: Qual é o problema hoje e por que ele precisa ser resolvido.
+    validations:
+      required: true
+
+  - type: textarea
+    id: aceite
+    attributes:
+      label: Critérios de aceite
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: input
+    id: arquivos
+    attributes:
+      label: Onde mexer
+      placeholder: "acessoja/settings.py, locais/views.py"
+
+  - type: input
+    id: trello
+    attributes:
+      label: Cartão no Trello (se existir)

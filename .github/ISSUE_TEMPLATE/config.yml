@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Quadro da sprint (Trello)
+    url: https://trello.com
+    about: Tarefas planejadas vivem no Trello. Use as issues para bugs e débito técnico.

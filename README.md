@@ -70,6 +70,58 @@ O projeto segue uma arquitetura desacoplada onde:
 
 ---
 
+## 📖 Documentação da API
+
+A documentação é **gerada a partir do código** com
+[drf-spectacular](https://drf-spectacular.readthedocs.io/): ela não fica
+defasada em relação aos endpoints reais. Não mantenha listas de rotas neste
+README — documente na própria view, com `@extend_schema`.
+
+Com o servidor rodando (`python manage.py runserver`):
+
+| Recurso | URL | Para que serve |
+|---------|-----|----------------|
+| **Swagger UI** | <http://localhost:8000/api/docs/> | Explorar e **testar** os endpoints no navegador |
+| **ReDoc** | <http://localhost:8000/api/redoc/> | Leitura corrida, boa para revisar o contrato |
+| **Schema OpenAPI 3** | <http://localhost:8000/api/schema/> | YAML para gerar cliente Dart/Flutter |
+
+Exportar o schema para um arquivo:
+
+```bash
+python manage.py spectacular --file schema.yaml
+```
+
+O Quality Gate roda `spectacular --fail-on-warn` a cada PR: endpoint sem
+contrato válido quebra o build.
+
+---
+
+## 👥 Contribuindo
+
+O time trabalha com `main` (estável) + `develop` (integração) e **Pull Request
+obrigatório com 1 aprovação**, com o Quality Gate como required status check.
+
+O combinado completo — nomes de branch, mensagens de commit, revisão,
+conflitos, migrations, proteção de branch e o checklist antes do PR — está em
+**[CONTRIBUTING.md](CONTRIBUTING.md)**. Leia antes do primeiro Pull Request.
+
+```bash
+git checkout develop && git pull origin develop
+git checkout -b feature/minha-tarefa
+# ... código ...
+git commit -m "feat(escopo): descricao curta"
+git push -u origin feature/minha-tarefa
+```
+
+Para rodar os testes sem PostgreSQL local:
+
+```bash
+export DATABASE_URL=sqlite:///./db_ci.sqlite3
+pytest --cov=. --cov-report=term-missing
+```
+
+---
+
 ## 📝 Licença
 
 Este projeto foi desenvolvido para fins educacionais e de impacto social. Sinta-se à vontade para contribuir!
