@@ -105,9 +105,8 @@ class LocalCard extends StatelessWidget {
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: isOpen
-                              ? colors.successSoft
-                              : colors.dangerSoft,
+                          color:
+                              isOpen ? colors.successSoft : colors.dangerSoft,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -238,7 +237,7 @@ class LocalCard extends StatelessWidget {
       height: 86,
       color: colors.primarySoft,
       child: Icon(
-        Icons.business_outlined,
+        Icons.business,
         color: colors.primaryDark,
         size: 34,
       ),
