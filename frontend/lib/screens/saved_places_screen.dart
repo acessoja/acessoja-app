@@ -1,6 +1,9 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+import '../app_theme.dart';
 import '../config.dart';
 import 'place_detail_screen.dart';
 
@@ -19,7 +22,7 @@ class SavedPlacesScreen extends StatefulWidget {
 }
 
 class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
-  String searchQuery = "";
+  String searchQuery = '';
   List<dynamic> _localesList = [];
   bool _isLoading = true;
 
@@ -28,23 +31,28 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
     if (distanceValue is num) {
       km = distanceValue.toDouble();
     } else if (distanceValue is String) {
-      String cleanStr = distanceValue.replaceAll(RegExp(r'[^\d.,]'), '').replaceAll(',', '.');
+      final cleanStr = distanceValue
+          .replaceAll(RegExp(r'[^\d.,]'), '')
+          .replaceAll(',', '.');
       km = double.tryParse(cleanStr) ?? 0.0;
     }
+
     if (widget.unidadeDistancia == 'Milha') {
-      double miles = km * 0.621371;
+      final miles = km * 0.621371;
       return '${miles.toStringAsFixed(1).replaceAll('.', ',')} mi';
-    } else {
-      return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
     }
+
+    return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
   }
 
   double get overallAverage {
     if (_localesList.isEmpty) return 0.0;
+
     final total = _localesList.fold<double>(0.0, (sum, place) {
       final media = place['media_estrelas'] ?? 0.0;
       return sum + (media is num ? media.toDouble() : 0.0);
     });
+
     return total / _localesList.length;
   }
 
@@ -57,6 +65,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
   Future<void> _fetchLocales() async {
     try {
       final response = await http.get(Uri.parse('${Config.baseUrl}/api/locais/'));
+
       if (response.statusCode == 200) {
         final List data = json.decode(utf8.decode(response.bodyBytes));
         setState(() {
@@ -65,7 +74,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
         });
       }
     } catch (e) {
-      debugPrint("Error fetching saved places: $e");
+      debugPrint('Error fetching saved places: $e');
       setState(() {
         _isLoading = false;
       });
@@ -79,9 +88,12 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
       return 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400';
     } else if (name.contains('Correios') || name.contains('CORREIOS')) {
       return 'https://images.unsplash.com/photo-1596524430615-b46475ddff6e?w=400';
-    } else if (name.contains('PetMed') || name.contains('PetZoo') || name.contains('Clínica')) {
+    } else if (name.contains('PetMed') ||
+        name.contains('PetZoo') ||
+        name.contains('Clínica')) {
       return 'https://images.unsplash.com/photo-1581888227599-779811939961?w=400';
     }
+
     return 'https://images.unsplash.com/photo-1577495508048-b635879837f1?w=400';
   }
 
@@ -93,426 +105,649 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
     } else if (name == 'Correios - Anápolis') {
       return 'CORREIOS - Anápolis';
     }
+
     return name;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final filteredPlaces = _localesList.where((place) {
-      final name = (place['nome'] ?? '').toString().toLowerCase();
-      final displayName = getLocalDisplayName(place['nome'] ?? '').toLowerCase();
-      final address = (place['endereco'] ?? '').toString().toLowerCase();
-      final query = searchQuery.toLowerCase();
-      return name.contains(query) || displayName.contains(query) || address.contains(query);
-    }).toList();
+  Future<void> _openPlace(dynamic place) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlaceDetailScreen(
+          place: place,
+          userName: widget.userName,
+        ),
+      ),
+    );
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Locais Salvos',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
+    _fetchLocales();
+  }
+
+  Widget _buildBackButton() {
+    final colors = AppColors.of(context);
+
+    return Semantics(
+      button: true,
+      label: 'Voltar',
+      child: GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: colors.primarySoft,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            Icons.arrow_back_rounded,
+            color: colors.primaryDark,
+            size: 21,
           ),
         ),
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
-          child: GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFF4A69FF),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.arrow_back_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
+      ),
+    );
+  }
+
+  Widget _buildSearchField() {
+    final colors = AppColors.of(context);
+
+    return Semantics(
+      textField: true,
+      label: 'Pesquisar locais salvos',
+      child: TextField(
+        onChanged: (value) {
+          setState(() {
+            searchQuery = value;
+          });
+        },
+        textInputAction: TextInputAction.search,
+        decoration: InputDecoration(
+          hintText: 'Pesquisar local ou endereço',
+          hintStyle: TextStyle(
+            color: colors.muted,
+            fontSize: 13,
+          ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: colors.primaryDark,
+            size: 21,
+          ),
+          filled: true,
+          fillColor: colors.fieldBackground,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide(color: colors.border),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide(color: colors.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide(
+              color: colors.primary,
+              width: 1.5,
             ),
           ),
         ),
       ),
-      body: Column(
+    );
+  }
+
+  Widget _buildOverviewStat({
+    required IconData icon,
+    required String value,
+    required String label,
+    Color? iconColor,
+  }) {
+    final colors = AppColors.of(context);
+    final resolvedIconColor = iconColor ?? colors.primaryDark;
+
+    return Expanded(
+      child: Row(
         children: [
-          const SizedBox(height: 8),
-          // Barra de Pesquisa (Pílula com lupa à direita)
-          Center(
-            child: Container(
-              width: 320,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFF4CABFF), width: 1.5),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
+          Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: colors.primarySoft,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: resolvedIconColor, size: 19),
+          ),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: colors.text,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: colors.muted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOverviewCard() {
+    final colors = AppColors.of(context);
+
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.border),
+        boxShadow: [
+          BoxShadow(
+            color: colors.shadow,
+            blurRadius: 16,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Resumo dos locais',
+                style: TextStyle(
+                  color: colors.text,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                decoration: BoxDecoration(
+                  color: colors.primarySoft,
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Text(
+                  'Anápolis - GO',
+                  style: TextStyle(
+                    color: colors.primaryDark,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              _buildOverviewStat(
+                icon: Icons.bookmark_rounded,
+                value: '${_localesList.length}',
+                label: 'Locais salvos',
+              ),
+              Container(
+                height: 38,
+                width: 1,
+                margin: const EdgeInsets.symmetric(horizontal: 14),
+                color: colors.border,
+              ),
+              _buildOverviewStat(
+                icon: Icons.star_rounded,
+                iconColor: Colors.amber.shade700,
+                value: overallAverage.toStringAsFixed(1).replaceAll('.', ','),
+                label: 'Média geral',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImagePlaceholder({double size = 96}) {
+    final colors = AppColors.of(context);
+
+    return Container(
+      width: size,
+      height: size,
+      color: colors.primarySoft,
+      child: Icon(
+        Icons.business_outlined,
+        color: colors.primaryDark,
+        size: 36,
+      ),
+    );
+  }
+
+  Widget _buildPlaceImage(dynamic imagePath) {
+    final path = (imagePath ?? '').toString();
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(15),
+      child: path.isNotEmpty
+          ? Image.asset(
+              path,
+              width: 96,
+              height: 96,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return _buildImagePlaceholder();
+              },
+            )
+          : _buildImagePlaceholder(),
+    );
+  }
+
+  Widget _buildRating(dynamic mediaEstrelas) {
+    final colors = AppColors.of(context);
+
+    return Row(
+      children: [
+        Row(
+          children: List.generate(5, (starIndex) {
+            return Icon(
+              starIndex < mediaEstrelas.round()
+                  ? Icons.star_rounded
+                  : Icons.star_border_rounded,
+              size: 16,
+              color: starIndex < mediaEstrelas.round()
+                  ? Colors.amber.shade700
+                  : colors.border,
+            );
+          }),
+        ),
+        const SizedBox(width: 7),
+        Text(
+          mediaEstrelas.toStringAsFixed(1).replaceAll('.', ','),
+          style: TextStyle(
+            color: colors.muted,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlaceActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    bool primary = true,
+  }) {
+    final colors = AppColors.of(context);
+
+    return Expanded(
+      child: SizedBox(
+        height: 40,
+        child: ElevatedButton.icon(
+          onPressed: onPressed,
+          icon: Icon(icon, size: 17),
+          label: Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primary ? colors.primary : colors.primarySoft,
+            foregroundColor: primary ? colors.onPrimary : colors.primaryDark,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: primary
+                  ? BorderSide.none
+                  : BorderSide(color: colors.border),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceCard(dynamic place) {
+    final colors = AppColors.of(context);
+    final name = (place['nome'] ?? '').toString();
+    final displayName = getLocalDisplayName(name);
+    final address = (place['endereco'] ?? '').toString();
+    final mediaValue = place['media_estrelas'] ?? 0.0;
+    final mediaEstrelas = mediaValue is num
+        ? mediaValue
+        : double.tryParse(mediaValue.toString()) ?? 0.0;
+    final isOpen = (place['aberto'] ?? true) as bool;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _openPlace(place),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: colors.border),
+            boxShadow: [
+              BoxShadow(
+                color: colors.shadow,
+                blurRadius: 14,
+                offset: Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Semantics(
+                    image: true,
+                    label: 'Imagem de $displayName',
+                    child: _buildPlaceImage(place['imagem']),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          displayName,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: colors.text,
+                            fontSize: 14,
+                            height: 1.2,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        if (address.isNotEmpty) ...[
+                          const SizedBox(height: 5),
+                          Text(
+                            address,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: colors.muted,
+                              fontSize: 11,
+                              height: 1.25,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 7),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 5,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isOpen
+                                    ? colors.successSoft
+                                    : colors.dangerSoft,
+                                borderRadius: BorderRadius.circular(7),
+                              ),
+                              child: Text(
+                                isOpen ? 'Aberto' : 'Fechado',
+                                style: TextStyle(
+                                  color: isOpen
+                                      ? colors.success
+                                      : colors.danger,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              _formatDistance(place['distancia']),
+                              style: TextStyle(
+                                color: colors.muted,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        _buildRating(mediaEstrelas),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextField(
-                onChanged: (value) {
-                  setState(() {
-                    searchQuery = value;
-                  });
-                },
-                decoration: const InputDecoration(
-                  hintText: 'Pesquisa por Local..',
-                  hintStyle: TextStyle(color: Colors.grey, fontSize: 15),
-                  border: InputBorder.none,
-                  suffixIcon: Icon(Icons.search, color: Color(0xFF4CABFF)),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (!_isLoading && _localesList.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1E3A8A), Color(0xFF4CABFF)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _buildPlaceActionButton(
+                    icon: Icons.directions_rounded,
+                    label: 'Iniciar rota',
+                    onPressed: () {
+                      Navigator.pop(context, place);
+                    },
                   ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF1E3A8A).withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Panorama de Acessibilidade',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                  const SizedBox(width: 8),
+                  _buildPlaceActionButton(
+                    icon: Icons.ios_share_rounded,
+                    label: 'Compartilhar',
+                    primary: false,
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Compartilhando "${place['nome']}"'),
+                          backgroundColor: colors.primaryDark,
+                          behavior: SnackBarBehavior.floating,
+                          margin: const EdgeInsets.all(16),
+                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'Anápolis - GO',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.store_rounded,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${_localesList.length}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Locais salvos',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          height: 36,
-                          width: 1,
-                          color: Colors.white.withOpacity(0.3),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.star_rounded,
-                                  color: Colors.amber,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    overallAverage.toStringAsFixed(1).replaceAll('.', ','),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Média geral',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      );
+                    },
+                  ),
+                ],
               ),
-            ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : filteredPlaces.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Nenhum local encontrado.',
-                          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: filteredPlaces.length,
-                        itemBuilder: (context, index) {
-                          final place = filteredPlaces[index];
-                          final mediaEstrelas = (place['media_estrelas'] ?? 0.0) as num;
-                          final isOpen = (place['aberto'] ?? true) as bool;
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-                          return GestureDetector(
-                            onTap: () async {
-                              // Navegar para detalhes e recarregar quando voltar
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PlaceDetailScreen(
-                                    place: place,
-                                    userName: widget.userName,
-                                  ),
-                                ),
-                              );
-                              _fetchLocales();
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 6,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Imagem arredondada na esquerda
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: place['imagem'] != null
-                                          ? Image.asset(
-                                              place['imagem'],
-                                              width: 100,
-                                              height: 100,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) {
-                                                return Container(
-                                                  width: 100,
-                                                  height: 100,
-                                                  color: Colors.grey[200],
-                                                  child: const Icon(Icons.business, color: Colors.grey, size: 40),
-                                                );
-                                              },
-                                            )
-                                          : Container(
-                                              width: 100,
-                                              height: 100,
-                                              color: Colors.grey[200],
-                                              child: const Icon(Icons.business, color: Colors.grey, size: 40),
-                                            ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    // Informações do local na direita
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            getLocalDisplayName(place['nome']),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 13,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            '${_formatDistance(place['distancia'])} - ${isOpen ? 'Aberto' : 'Fechado'}',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                              color: isOpen ? Colors.green : Colors.red,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Row(
-                                            children: [
-                                              Row(
-                                                children: List.generate(5, (starIndex) {
-                                                  return Icon(
-                                                    Icons.star,
-                                                    size: 13,
-                                                    color: starIndex < mediaEstrelas.round()
-                                                        ? Colors.amber
-                                                        : Colors.grey[300],
-                                                  );
-                                                }),
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                '(${mediaEstrelas.toStringAsFixed(1)})',
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  color: Colors.grey[600],
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    // Botões Verticais à Direita
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        ElevatedButton.icon(
-                                          onPressed: () {
-                                            // Retorna o local selecionado para iniciar a rota na tela principal
-                                            Navigator.pop(context, place);
-                                          },
-                                          icon: const Icon(Icons.directions, size: 14),
-                                          label: const Text(
-                                            'Iniciar rota',
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                                          ),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF4CABFF),
-                                            foregroundColor: Colors.white,
-                                            minimumSize: const Size(110, 32),
-                                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(16),
-                                            ),
-                                            elevation: 0,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        ElevatedButton.icon(
-                                          onPressed: () {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text('Compartilhando "${place['nome']}"'),
-                                                backgroundColor: const Color(0xFF4CABFF),
-                                              ),
-                                            );
-                                          },
-                                          icon: const Icon(Icons.send_rounded, size: 14),
-                                          label: const Text(
-                                            'Compartilhar',
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                                          ),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF4CABFF),
-                                            foregroundColor: Colors.white,
-                                            minimumSize: const Size(110, 32),
-                                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(16),
-                                            ),
-                                            elevation: 0,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+  Widget _buildLoadingState() {
+    final colors = AppColors.of(context);
+
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
+          ),
+          SizedBox(height: 14),
+          Text(
+            'Carregando locais salvos...',
+            style: TextStyle(
+              color: colors.muted,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    final colors = AppColors.of(context);
+    final hasSearch = searchQuery.trim().isNotEmpty;
+
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: colors.border),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: colors.primarySoft,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.bookmark_border_rounded,
+                color: colors.primaryDark,
+                size: 32,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              hasSearch ? 'Nenhum local encontrado.' : 'Nenhum local salvo.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: colors.text,
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              hasSearch
+                  ? 'Tente pesquisar por outro nome ou endereço.'
+                  : 'Os locais disponíveis aparecerão aqui para você consultar depois.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: colors.muted,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final filteredPlaces = _localesList.where((place) {
+      final name = (place['nome'] ?? '').toString().toLowerCase();
+      final displayName =
+          getLocalDisplayName((place['nome'] ?? '').toString()).toLowerCase();
+      final address = (place['endereco'] ?? '').toString().toLowerCase();
+      final query = searchQuery.toLowerCase();
+
+      return name.contains(query) ||
+          displayName.contains(query) ||
+          address.contains(query);
+    }).toList();
+
+    return Scaffold(
+      backgroundColor: colors.pageBackground,
+      appBar: AppBar(
+        backgroundColor: colors.pageBackground,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        toolbarHeight: 70,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16, top: 14, bottom: 14),
+          child: _buildBackButton(),
+        ),
+        titleSpacing: 12,
+        title: Text(
+          'Locais Salvos',
+          style: TextStyle(
+            color: colors.text,
+            fontSize: 19,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final horizontalPadding = constraints.maxWidth < 360 ? 16.0 : 24.0;
+
+            return Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    4,
+                    horizontalPadding,
+                    0,
+                  ),
+                  child: _buildSearchField(),
+                ),
+                if (!_isLoading && _localesList.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    child: _buildOverviewCard(),
+                  ),
+                const SizedBox(height: 14),
+                Expanded(
+                  child: _isLoading
+                      ? _buildLoadingState()
+                      : filteredPlaces.isEmpty
+                          ? _buildEmptyState()
+                          : ListView.builder(
+                              keyboardDismissBehavior:
+                                  ScrollViewKeyboardDismissBehavior.onDrag,
+                              padding: EdgeInsets.fromLTRB(
+                                horizontalPadding,
+                                0,
+                                horizontalPadding,
+                                20,
+                              ),
+                              itemCount: filteredPlaces.length,
+                              itemBuilder: (context, index) {
+                                return _buildPlaceCard(filteredPlaces[index]);
+                              },
+                            ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

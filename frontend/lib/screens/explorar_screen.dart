@@ -1,10 +1,13 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../config.dart';
 import 'package:latlong2/latlong.dart';
-import 'place_detail_screen.dart';
+
+import '../app_theme.dart';
+import '../config.dart';
 import '../widgets/local_card.dart';
+import 'place_detail_screen.dart';
 
 class ExplorarScreen extends StatefulWidget {
   final String userName;
@@ -32,7 +35,9 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
     if (distanceValue is num) {
       km = distanceValue.toDouble();
     } else if (distanceValue is String) {
-      String cleanStr = distanceValue.replaceAll(RegExp(r'[^\d.,]'), '').replaceAll(',', '.');
+      String cleanStr = distanceValue
+          .replaceAll(RegExp(r'[^\d.,]'), '')
+          .replaceAll(',', '.');
       km = double.tryParse(cleanStr) ?? 0.0;
     }
     if (widget.unidadeDistancia == 'Milha') {
@@ -84,147 +89,314 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
     return name;
   }
 
+  Widget _buildLoadingState() {
+    final colors = AppColors.of(context);
+
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: colors.primarySoft,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(
+              Icons.location_searching_rounded,
+              color: colors.primaryDark,
+              size: 30,
+            ),
+          ),
+          const SizedBox(height: 16),
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Buscando locais acessíveis...',
+            style: TextStyle(
+              color: colors.muted,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    final colors = AppColors.of(context);
+    final hasSearch = searchQuery.trim().isNotEmpty;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: colors.primarySoft,
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Icon(
+                Icons.location_off_outlined,
+                color: colors.primaryDark,
+                size: 36,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              hasSearch
+                  ? 'Nenhum local encontrado'
+                  : 'Nenhum local próximo encontrado.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: colors.text,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              hasSearch
+                  ? 'Tente pesquisar por outro nome ou endereço.'
+                  : 'Ainda não há estabelecimentos disponíveis para exibir.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: colors.muted,
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final filteredPlaces = _localesList.where((place) {
       final name = (place['nome'] ?? '').toString().toLowerCase();
       final displayName = getLocalDisplayName(place['nome'] ?? '').toLowerCase();
       final address = (place['endereco'] ?? '').toString().toLowerCase();
       final query = searchQuery.toLowerCase();
-      return name.contains(query) || displayName.contains(query) || address.contains(query);
+      return name.contains(query) ||
+          displayName.contains(query) ||
+          address.contains(query);
     }).toList();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colors.pageBackground,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colors.pageBackground,
         elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Explorar Locais',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        automaticallyImplyLeading: false,
+        toolbarHeight: 76,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
-          child: GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFF4A69FF),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.arrow_back_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
-        ),
-      ),
-      body: Column(
-        children: [
-          const SizedBox(height: 8),
-          // Barra de Pesquisa (Pílula com lupa à direita)
-          Center(
-            child: Container(
-              width: 320,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFF4CABFF), width: 1.5),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextField(
-                onChanged: (value) {
-                  setState(() {
-                    searchQuery = value;
-                  });
-                },
-                decoration: const InputDecoration(
-                  hintText: 'Pesquise por estabelecimentos..',
-                  hintStyle: TextStyle(color: Colors.grey, fontSize: 15),
-                  border: InputBorder.none,
-                  suffixIcon: Icon(Icons.search, color: Color(0xFF4CABFF)),
+          padding: const EdgeInsets.only(left: 16, top: 14, bottom: 14),
+          child: Semantics(
+            button: true,
+            label: 'Voltar',
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colors.primarySoft,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  Icons.arrow_back_rounded,
+                  color: colors.primaryDark,
+                  size: 21,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          if (!_isLoading && filteredPlaces.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-              child: Row(
-                children: [
-                  const Icon(Icons.near_me_rounded, color: Color(0xFF4A69FF), size: 16),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Estabelecimentos mais próximos a você:',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ],
+        ),
+        titleSpacing: 12,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Explorar',
+              style: TextStyle(
+                color: colors.text,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.3,
               ),
             ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : filteredPlaces.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Nenhum local próximo encontrado.',
-                          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: filteredPlaces.length,
-                        itemBuilder: (context, index) {
-                          final place = filteredPlaces[index];
+            SizedBox(height: 2),
+            Text(
+              'Encontre locais acessíveis perto de você',
+              style: TextStyle(
+                color: colors.muted,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: SafeArea(
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final horizontalPadding = constraints.maxWidth < 360 ? 16.0 : 24.0;
 
-                          return LocalCard(
-                            place: place,
-                            distanceLabel: _formatDistance(place['distancia']),
-                            displayNameBuilder: getLocalDisplayName,
-                            onRoutePressed: () {
-                              Navigator.pop(context, place);
-                            },
-                            onDetailsPressed: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PlaceDetailScreen(
-                                    place: place,
-                                    userName: widget.userName,
-                                  ),
-                                ),
-                              );
-                              if (result != null) {
-                                Navigator.pop(context, result);
-                              } else {
-                                _fetchLocales();
-                              }
-                            },
-                          );
-                        },
+            return Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    8,
+                    horizontalPadding,
+                    14,
+                  ),
+                  child: Semantics(
+                    textField: true,
+                    label: 'Pesquisar estabelecimentos',
+                    child: Container(
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: colors.border),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.shadow,
+                            blurRadius: 14,
+                            offset: Offset(0, 5),
+                          ),
+                        ],
                       ),
-          ),
-        ],
+                      child: TextField(
+                        onChanged: (value) {
+                          setState(() {
+                            searchQuery = value;
+                          });
+                        },
+                        style: TextStyle(
+                          color: colors.text,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Pesquise por estabelecimentos',
+                          hintStyle: TextStyle(
+                            color: colors.muted,
+                            fontSize: 14,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search_rounded,
+                            color: colors.primary,
+                            size: 22,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 15),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                if (!_isLoading && filteredPlaces.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      0,
+                      horizontalPadding,
+                      12,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.near_me_rounded,
+                          color: colors.primaryDark,
+                          size: 17,
+                        ),
+                        const SizedBox(width: 7),
+                        Expanded(
+                          child: Text(
+                            'Estabelecimentos mais próximos a você',
+                            style: TextStyle(
+                              color: colors.text,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colors.primarySoft,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${filteredPlaces.length} locais',
+                            style: TextStyle(
+                              color: colors.primaryDark,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                Expanded(
+                  child: _isLoading
+                      ? _buildLoadingState()
+                      : filteredPlaces.isEmpty
+                          ? _buildEmptyState()
+                          : ListView.builder(
+                              padding: const EdgeInsets.only(top: 2, bottom: 24),
+                              itemCount: filteredPlaces.length,
+                              itemBuilder: (context, index) {
+                                final place = filteredPlaces[index];
+
+                                return LocalCard(
+                                  place: place,
+                                  distanceLabel: _formatDistance(place['distancia']),
+                                  displayNameBuilder: getLocalDisplayName,
+                                  onRoutePressed: () {
+                                    Navigator.pop(context, place);
+                                  },
+                                  onDetailsPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => PlaceDetailScreen(
+                                          place: place,
+                                          userName: widget.userName,
+                                        ),
+                                      ),
+                                    );
+                                    if (result != null) {
+                                      Navigator.pop(context, result);
+                                    } else {
+                                      _fetchLocales();
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
