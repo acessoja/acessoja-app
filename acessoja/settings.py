@@ -10,23 +10,37 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-import os
+import environ
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ---------------------------------------------------------------------------
+# Variáveis de ambiente (django-environ)
+# Lê o arquivo .env na raiz do projeto (se existir) e cai para variáveis de
+# ambiente reais do sistema/CI quando não existir. Nunca versionar o .env.
+# ---------------------------------------------------------------------------
+env = environ.Env(
+    DEBUG=(bool, False),
+)
+environ.Env.read_env(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-q15e*@s9^_n*)&%9@gql6ayobp*^*mo5*z*+_a#z6p5dd18yf@'
+# Obrigatório vir do ambiente (.env local ou variável de ambiente no CI/deploy).
+# Sem valor padrão de propósito: se não for definido, a aplicação deve falhar
+# ao subir, em vez de rodar com uma chave insegura.
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2', '*']
+# Sem '*' como padrão: em produção, ALLOWED_HOSTS deve ser definido
+# explicitamente via variável de ambiente.
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
 
 # Application definition
@@ -87,25 +101,12 @@ WSGI_APPLICATION = 'acessoja.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASE_URL define o banco por completo (usuário, senha, host, porta, nome).
+# Aceita tanto PostgreSQL (postgresql://...) quanto SQLite (sqlite:///./arquivo.sqlite3),
+# o que já cobre o caso do CI, que roda com DATABASE_URL=sqlite:///./db_ci.sqlite3.
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB', 'banco_acessoja'),
-        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', '123123'),
-        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
-        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
-    }
+    'default': env.db('DATABASE_URL'),
 }
-
-# A CI (e quem quiser rodar sem PostgreSQL local) define DATABASE_URL=sqlite:///...
-# Sem isto o quality gate falha em todos os testes que tocam o banco.
-if os.environ.get('DATABASE_URL', '').startswith('sqlite'):
-    _nome = os.environ['DATABASE_URL'].split('///')[-1] or 'db_ci.sqlite3'
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / Path(_nome).name,
-    }
 
 
 # Password validation
