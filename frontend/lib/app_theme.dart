@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const _brandColor = Color(0xFF168F8A);
+const _brandColor = Color(0xFF4CABFF);
 
 class AppThemeController extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.light;
@@ -79,46 +79,46 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.onPrimary,
   });
 
-  static const light = AppColors(
-    pageBackground: Color(0xFFF5F8FA),
+  static final light = AppColors(
+    pageBackground: Color(0xFFF5F8FF),
     surface: Colors.white,
-    surfaceElevated: Color(0xFFFBFDFD),
-    primary: Color(0xFF168F8A),
-    primaryDark: Color(0xFF0B6F6B),
-    primarySoft: Color(0xFFE6F5F3),
-    text: Color(0xFF172A35),
-    muted: Color(0xFF71808A),
-    border: Color(0xFFE1EAEC),
-    fieldBackground: Color(0xFFF8FBFC),
-    danger: Color(0xFFB44B4B),
-    dangerSoft: Color(0xFFFCEDED),
-    success: Color(0xFF198754),
-    successSoft: Color(0xFFEAF7F2),
+    surfaceElevated: Colors.white,
+    primary: Color(0xFF4CABFF),
+    primaryDark: Color(0xFF4A69FF),
+    primarySoft: Color(0xFFE8EFFF),
+    text: Color(0xFF1E293B),
+    muted: Color(0xFF64748B),
+    border: Color(0xFFE2E8F0),
+    fieldBackground: Colors.white,
+    danger: Colors.redAccent,
+    dangerSoft: Colors.redAccent.withOpacity(0.10),
+    success: Colors.green,
+    successSoft: Colors.green.withOpacity(0.10),
     warning: Color(0xFF7A5C00),
     warningSoft: Color(0xFFFFF9E6),
-    shadow: Color(0x080E3B43),
+    shadow: Colors.black.withOpacity(0.04),
     onPrimary: Colors.white,
   );
 
-  static const dark = AppColors(
-    pageBackground: Color(0xFF101819),
-    surface: Color(0xFF182426),
-    surfaceElevated: Color(0xFF203033),
-    primary: Color(0xFF4FD1C5),
-    primaryDark: Color(0xFF9AE7E0),
-    primarySoft: Color(0xFF1C403E),
-    text: Color(0xFFE7F4F3),
-    muted: Color(0xFFB3C5C5),
-    border: Color(0xFF34494B),
-    fieldBackground: Color(0xFF1D2B2D),
-    danger: Color(0xFFFF9B9B),
-    dangerSoft: Color(0xFF442527),
-    success: Color(0xFF71D8A6),
-    successSoft: Color(0xFF1E4235),
-    warning: Color(0xFFFFD17A),
-    warningSoft: Color(0xFF443820),
-    shadow: Color(0x66000000),
-    onPrimary: Color(0xFF073330),
+  static final dark = AppColors(
+    pageBackground: Color(0xFF1E293B),
+    surface: Color(0xFF334155),
+    surfaceElevated: Color(0xFF475569),
+    primary: Color(0xFF4CABFF),
+    primaryDark: Color(0xFFE8EFFF),
+    primarySoft: Color(0xFF1E3A8A),
+    text: Color(0xFFF5F8FF),
+    muted: Color(0xFF94A3B8),
+    border: Color(0xFF475569),
+    fieldBackground: Color(0xFF334155),
+    danger: Colors.redAccent,
+    dangerSoft: Colors.redAccent.withOpacity(0.18),
+    success: Colors.green,
+    successSoft: Colors.green.withOpacity(0.18),
+    warning: Colors.amber,
+    warningSoft: Color(0xFF334155),
+    shadow: Colors.black26,
+    onPrimary: Color(0xFF1E293B),
   );
 
   static AppColors of(BuildContext context) {
