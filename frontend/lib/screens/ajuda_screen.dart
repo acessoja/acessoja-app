@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AjudaScreen extends StatelessWidget {
-  const AjudaScreen({Key? key}) : super(key: key);
+  const AjudaScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,27 +11,33 @@ class AjudaScreen extends StatelessWidget {
     final List<Map<String, String>> faqItems = [
       {
         'q': 'Como encontrar estabelecimentos acessíveis?',
-        'a': 'Use a barra de pesquisa na tela principal ou acesse a aba "Explorar" para ver todos os estabelecimentos próximos. Você pode usar os filtros de acessibilidade para encontrar locais com rampa, banheiro acessível, entre outros.',
+        'a':
+            'Use a barra de pesquisa na tela principal ou acesse a aba "Explorar" para ver todos os estabelecimentos próximos. Você pode usar os filtros de acessibilidade para encontrar locais com rampa, banheiro acessível, entre outros.',
       },
       {
         'q': 'Como avaliar um estabelecimento?',
-        'a': 'Abra o estabelecimento desejado em "Locais Salvos" ou "Explorar", role até a seção de avaliações e toque em "Avaliar". Você poderá dar uma nota de 1 a 5 estrelas e deixar um comentário.',
+        'a':
+            'Abra o estabelecimento desejado em "Locais Salvos" ou "Explorar", role até a seção de avaliações e toque em "Avaliar". Você poderá dar uma nota de 1 a 5 estrelas e deixar um comentário.',
       },
       {
         'q': 'Como traçar uma rota até um local?',
-        'a': 'Na tela principal, toque na barra de pesquisa, selecione o destino e o app traçará automaticamente a melhor rota. Você também pode iniciar rotas pela tela de detalhes do estabelecimento.',
+        'a':
+            'Na tela principal, toque na barra de pesquisa, selecione o destino e o app traçará automaticamente a melhor rota. Você também pode iniciar rotas pela tela de detalhes do estabelecimento.',
       },
       {
         'q': 'Posso alterar minha foto de perfil?',
-        'a': 'Sim! Acesse Menu → Informações Pessoais e toque no ícone de câmera sobre sua foto para selecionar uma nova imagem do seu dispositivo.',
+        'a':
+            'Sim! Acesse Menu → Informações Pessoais e toque no ícone de câmera sobre sua foto para selecionar uma nova imagem do seu dispositivo.',
       },
       {
         'q': 'Meus dados estão seguros?',
-        'a': 'Sim, levamos a privacidade a sério. Você pode controlar quais informações ficam visíveis em Menu → Privacidade. Seus dados não são compartilhados com terceiros.',
+        'a':
+            'Sim, levamos a privacidade a sério. Você pode controlar quais informações ficam visíveis em Menu → Privacidade. Seus dados não são compartilhados com terceiros.',
       },
       {
         'q': 'Como funciona o sistema de sugestões?',
-        'a': 'O app analisa os locais que você visitou e suas preferências de acessibilidade para recomendar novos estabelecimentos que atendam critérios semelhantes.',
+        'a':
+            'O app analisa os locais que você visitou e suas preferências de acessibilidade para recomendar novos estabelecimentos que atendam critérios semelhantes.',
       },
     ];
 
@@ -42,8 +48,7 @@ class AjudaScreen extends StatelessWidget {
           children: [
             // ── Header ──
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
                   GestureDetector(
@@ -56,7 +61,7 @@ class AjudaScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: accentBlue.withOpacity(0.3),
+                            color: accentBlue.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
@@ -100,7 +105,7 @@ class AjudaScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: accentBlue.withOpacity(0.3),
+                            color: accentBlue.withValues(alpha: 0.3),
                             blurRadius: 14,
                             offset: const Offset(0, 6),
                           ),
@@ -112,7 +117,7 @@ class AjudaScreen extends StatelessWidget {
                             width: 56,
                             height: 56,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(Icons.support_agent_rounded,
@@ -171,11 +176,10 @@ class AjudaScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border:
-                            Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -184,12 +188,12 @@ class AjudaScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
+                          const Row(
                             children: [
                               Icon(Icons.email_outlined,
                                   color: deepBlue, size: 22),
-                              const SizedBox(width: 10),
-                              const Text(
+                              SizedBox(width: 10),
+                              Text(
                                 'Fale Conosco',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -249,10 +253,10 @@ class _FaqTile extends StatefulWidget {
   const _FaqTile({required this.question, required this.answer});
 
   @override
-  __FaqTileState createState() => __FaqTileState();
+  State<_FaqTile> createState() => _FaqTileState();
 }
 
-class __FaqTileState extends State<_FaqTile> {
+class _FaqTileState extends State<_FaqTile> {
   bool _expanded = false;
 
   @override
@@ -264,12 +268,12 @@ class __FaqTileState extends State<_FaqTile> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: _expanded
-              ? const Color(0xFF4CABFF).withOpacity(0.4)
+              ? const Color(0xFF4CABFF).withValues(alpha: 0.4)
               : const Color(0xFFE2E8F0),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -278,8 +282,7 @@ class __FaqTileState extends State<_FaqTile> {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
           childrenPadding:
               const EdgeInsets.only(left: 16, right: 16, bottom: 14),
           title: Text(
@@ -293,8 +296,8 @@ class __FaqTileState extends State<_FaqTile> {
           trailing: AnimatedRotation(
             turns: _expanded ? 0.5 : 0,
             duration: const Duration(milliseconds: 200),
-            child: const Icon(Icons.expand_more_rounded,
-                color: Color(0xFF4CABFF)),
+            child:
+                const Icon(Icons.expand_more_rounded, color: Color(0xFF4CABFF)),
           ),
           onExpansionChanged: (v) => setState(() => _expanded = v),
           children: [

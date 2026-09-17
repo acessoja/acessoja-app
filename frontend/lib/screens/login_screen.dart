@@ -5,17 +5,19 @@ import 'main_screen.dart';
 import 'register_screen.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'AcessoJá',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: LoginScreen(),
+      home: const LoginScreen(),
     );
   }
 }
@@ -23,10 +25,10 @@ class MyApp extends StatelessWidget {
 // ---------- floating particle model ----------
 class _FloatingParticle {
   final IconData icon;
-  final double left;   // 0‥1  relative x
-  final double top;    // 0‥1  relative y (centre)
+  final double left; // 0‥1  relative x
+  final double top; // 0‥1  relative y (centre)
   final double size;
-  final double phase;  // radians – offsets the sin wave
+  final double phase; // radians – offsets the sin wave
   final double amplitude; // px travel up/down
   final double opacity;
 
@@ -44,35 +46,210 @@ class _FloatingParticle {
 // ---------- pre‐built particle list ----------
 const List<_FloatingParticle> _particles = [
   // large accessibility icons – more visible
-  _FloatingParticle(icon: Icons.accessible_rounded,       left: 0.06, top: 0.12, size: 42, phase: 0.0,  amplitude: 20, opacity: 0.28),
-  _FloatingParticle(icon: Icons.hearing_rounded,          left: 0.84, top: 0.20, size: 38, phase: 1.2,  amplitude: 24, opacity: 0.25),
-  _FloatingParticle(icon: Icons.visibility,               left: 0.12, top: 0.70, size: 36, phase: 2.5,  amplitude: 18, opacity: 0.22),
-  _FloatingParticle(icon: Icons.location_on_outlined,     left: 0.90, top: 0.62, size: 40, phase: 0.8,  amplitude: 22, opacity: 0.26),
-  _FloatingParticle(icon: Icons.accessible_rounded,       left: 0.48, top: 0.06, size: 34, phase: 3.8,  amplitude: 16, opacity: 0.20),
-  _FloatingParticle(icon: Icons.hearing_rounded,          left: 0.32, top: 0.88, size: 30, phase: 5.0,  amplitude: 17, opacity: 0.22),
+  _FloatingParticle(
+      icon: Icons.accessible_rounded,
+      left: 0.06,
+      top: 0.12,
+      size: 42,
+      phase: 0.0,
+      amplitude: 20,
+      opacity: 0.28),
+  _FloatingParticle(
+      icon: Icons.hearing_rounded,
+      left: 0.84,
+      top: 0.20,
+      size: 38,
+      phase: 1.2,
+      amplitude: 24,
+      opacity: 0.25),
+  _FloatingParticle(
+      icon: Icons.visibility,
+      left: 0.12,
+      top: 0.70,
+      size: 36,
+      phase: 2.5,
+      amplitude: 18,
+      opacity: 0.22),
+  _FloatingParticle(
+      icon: Icons.location_on_outlined,
+      left: 0.90,
+      top: 0.62,
+      size: 40,
+      phase: 0.8,
+      amplitude: 22,
+      opacity: 0.26),
+  _FloatingParticle(
+      icon: Icons.accessible_rounded,
+      left: 0.48,
+      top: 0.06,
+      size: 34,
+      phase: 3.8,
+      amplitude: 16,
+      opacity: 0.20),
+  _FloatingParticle(
+      icon: Icons.hearing_rounded,
+      left: 0.32,
+      top: 0.88,
+      size: 30,
+      phase: 5.0,
+      amplitude: 17,
+      opacity: 0.22),
 
   // medium icons
-  _FloatingParticle(icon: Icons.accessibility_new_rounded, left: 0.74, top: 0.40, size: 34, phase: 1.8, amplitude: 21, opacity: 0.20),
-  _FloatingParticle(icon: Icons.sign_language_rounded,     left: 0.20, top: 0.46, size: 32, phase: 4.2, amplitude: 19, opacity: 0.18),
-  _FloatingParticle(icon: Icons.accessible_rounded,        left: 0.60, top: 0.78, size: 28, phase: 2.2, amplitude: 15, opacity: 0.18),
-  _FloatingParticle(icon: Icons.visibility,                left: 0.88, top: 0.85, size: 30, phase: 3.0, amplitude: 18, opacity: 0.20),
-  _FloatingParticle(icon: Icons.hearing_rounded,           left: 0.04, top: 0.52, size: 26, phase: 0.4, amplitude: 14, opacity: 0.18),
-  _FloatingParticle(icon: Icons.location_on_outlined,      left: 0.42, top: 0.35, size: 24, phase: 5.5, amplitude: 13, opacity: 0.16),
-  _FloatingParticle(icon: Icons.sign_language_rounded,     left: 0.76, top: 0.08, size: 26, phase: 1.5, amplitude: 16, opacity: 0.18),
-  _FloatingParticle(icon: Icons.accessibility_new_rounded, left: 0.28, top: 0.22, size: 22, phase: 4.8, amplitude: 12, opacity: 0.15),
+  _FloatingParticle(
+      icon: Icons.accessibility_new_rounded,
+      left: 0.74,
+      top: 0.40,
+      size: 34,
+      phase: 1.8,
+      amplitude: 21,
+      opacity: 0.20),
+  _FloatingParticle(
+      icon: Icons.sign_language_rounded,
+      left: 0.20,
+      top: 0.46,
+      size: 32,
+      phase: 4.2,
+      amplitude: 19,
+      opacity: 0.18),
+  _FloatingParticle(
+      icon: Icons.accessible_rounded,
+      left: 0.60,
+      top: 0.78,
+      size: 28,
+      phase: 2.2,
+      amplitude: 15,
+      opacity: 0.18),
+  _FloatingParticle(
+      icon: Icons.visibility,
+      left: 0.88,
+      top: 0.85,
+      size: 30,
+      phase: 3.0,
+      amplitude: 18,
+      opacity: 0.20),
+  _FloatingParticle(
+      icon: Icons.hearing_rounded,
+      left: 0.04,
+      top: 0.52,
+      size: 26,
+      phase: 0.4,
+      amplitude: 14,
+      opacity: 0.18),
+  _FloatingParticle(
+      icon: Icons.location_on_outlined,
+      left: 0.42,
+      top: 0.35,
+      size: 24,
+      phase: 5.5,
+      amplitude: 13,
+      opacity: 0.16),
+  _FloatingParticle(
+      icon: Icons.sign_language_rounded,
+      left: 0.76,
+      top: 0.08,
+      size: 26,
+      phase: 1.5,
+      amplitude: 16,
+      opacity: 0.18),
+  _FloatingParticle(
+      icon: Icons.accessibility_new_rounded,
+      left: 0.28,
+      top: 0.22,
+      size: 22,
+      phase: 4.8,
+      amplitude: 12,
+      opacity: 0.15),
 
   // decorative circles – more visible
-  _FloatingParticle(icon: Icons.circle, left: 0.03, top: 0.38, size: 14, phase: 0.5,  amplitude: 14, opacity: 0.30),
-  _FloatingParticle(icon: Icons.circle, left: 0.94, top: 0.48, size: 12, phase: 2.0,  amplitude: 12, opacity: 0.28),
-  _FloatingParticle(icon: Icons.circle, left: 0.28, top: 0.10, size: 16, phase: 3.5,  amplitude: 16, opacity: 0.32),
-  _FloatingParticle(icon: Icons.circle, left: 0.68, top: 0.82, size: 13, phase: 4.8,  amplitude: 13, opacity: 0.26),
-  _FloatingParticle(icon: Icons.circle, left: 0.46, top: 0.55, size: 10, phase: 1.0,  amplitude: 11, opacity: 0.22),
-  _FloatingParticle(icon: Icons.circle, left: 0.80, top: 0.12, size: 15, phase: 5.5,  amplitude: 15, opacity: 0.30),
-  _FloatingParticle(icon: Icons.circle, left: 0.16, top: 0.92, size: 11, phase: 2.8,  amplitude: 10, opacity: 0.24),
-  _FloatingParticle(icon: Icons.circle, left: 0.55, top: 0.18, size: 9,  phase: 0.3,  amplitude: 9,  opacity: 0.20),
-  _FloatingParticle(icon: Icons.circle, left: 0.38, top: 0.65, size: 8,  phase: 3.2,  amplitude: 8,  opacity: 0.18),
-  _FloatingParticle(icon: Icons.circle, left: 0.92, top: 0.30, size: 10, phase: 4.0,  amplitude: 11, opacity: 0.25),
-  _FloatingParticle(icon: Icons.circle, left: 0.10, top: 0.28, size: 7,  phase: 1.7,  amplitude: 7,  opacity: 0.20),
+  _FloatingParticle(
+      icon: Icons.circle,
+      left: 0.03,
+      top: 0.38,
+      size: 14,
+      phase: 0.5,
+      amplitude: 14,
+      opacity: 0.30),
+  _FloatingParticle(
+      icon: Icons.circle,
+      left: 0.94,
+      top: 0.48,
+      size: 12,
+      phase: 2.0,
+      amplitude: 12,
+      opacity: 0.28),
+  _FloatingParticle(
+      icon: Icons.circle,
+      left: 0.28,
+      top: 0.10,
+      size: 16,
+      phase: 3.5,
+      amplitude: 16,
+      opacity: 0.32),
+  _FloatingParticle(
+      icon: Icons.circle,
+      left: 0.68,
+      top: 0.82,
+      size: 13,
+      phase: 4.8,
+      amplitude: 13,
+      opacity: 0.26),
+  _FloatingParticle(
+      icon: Icons.circle,
+      left: 0.46,
+      top: 0.55,
+      size: 10,
+      phase: 1.0,
+      amplitude: 11,
+      opacity: 0.22),
+  _FloatingParticle(
+      icon: Icons.circle,
+      left: 0.80,
+      top: 0.12,
+      size: 15,
+      phase: 5.5,
+      amplitude: 15,
+      opacity: 0.30),
+  _FloatingParticle(
+      icon: Icons.circle,
+      left: 0.16,
+      top: 0.92,
+      size: 11,
+      phase: 2.8,
+      amplitude: 10,
+      opacity: 0.24),
+  _FloatingParticle(
+      icon: Icons.circle,
+      left: 0.55,
+      top: 0.18,
+      size: 9,
+      phase: 0.3,
+      amplitude: 9,
+      opacity: 0.20),
+  _FloatingParticle(
+      icon: Icons.circle,
+      left: 0.38,
+      top: 0.65,
+      size: 8,
+      phase: 3.2,
+      amplitude: 8,
+      opacity: 0.18),
+  _FloatingParticle(
+      icon: Icons.circle,
+      left: 0.92,
+      top: 0.30,
+      size: 10,
+      phase: 4.0,
+      amplitude: 11,
+      opacity: 0.25),
+  _FloatingParticle(
+      icon: Icons.circle,
+      left: 0.10,
+      top: 0.28,
+      size: 7,
+      phase: 1.7,
+      amplitude: 7,
+      opacity: 0.20),
 ];
 
 // =============================================
@@ -89,11 +266,10 @@ class LoginScreen extends StatefulWidget {
   final void Function(BuildContext context, Map<String, dynamic> user)?
       onLoginSuccess;
 
-  LoginScreen({Key? key, this.apiService, this.onLoginSuccess})
-      : super(key: key);
+  const LoginScreen({super.key, this.apiService, this.onLoginSuccess});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen>
@@ -127,13 +303,16 @@ class _LoginScreenState extends State<LoginScreen>
 
     if (nome.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, preencha todos os campos!')),
+        const SnackBar(content: Text('Por favor, preencha todos os campos!')),
       );
       return;
     }
 
     try {
       final result = await _apiService.login(nome: nome, password: password);
+      if (!context.mounted) {
+        return;
+      }
 
       if (result.success) {
         final user = result.user ?? <String, dynamic>{};
@@ -149,12 +328,14 @@ class _LoginScreenState extends State<LoginScreen>
             pageBuilder: (context, animation, secondaryAnimation) => MainScreen(
               userName: user['nome'],
             ),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
               const begin = Offset(0.0, 0.08);
               const end = Offset.zero;
               const curve = Curves.easeInOutCubic;
 
-              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
               var fadeTween = Tween<double>(begin: 0.0, end: 1.0);
 
               return FadeTransition(
@@ -176,6 +357,9 @@ class _LoginScreenState extends State<LoginScreen>
         );
       }
     } catch (e) {
+      if (!context.mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro de conexão: $e')),
       );
@@ -222,7 +406,7 @@ class _LoginScreenState extends State<LoginScreen>
                     child: Icon(
                       p.icon,
                       size: p.size,
-                      color: accentBlue.withOpacity(p.opacity),
+                      color: accentBlue.withValues(alpha: p.opacity),
                     ),
                   );
                 }).toList(),
@@ -273,7 +457,7 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: accentBlue.withOpacity(0.35),
+                            color: accentBlue.withValues(alpha: 0.35),
                             blurRadius: 14,
                             offset: const Offset(0, 6),
                           ),
@@ -306,7 +490,7 @@ class _LoginScreenState extends State<LoginScreen>
                   // forgot password
                   TextButton(
                     onPressed: () {},
-                    child: Text(
+                    child: const Text(
                       'Esqueceu sua senha?',
                       style: TextStyle(
                         color: accentBlue,
@@ -334,7 +518,7 @@ class _LoginScreenState extends State<LoginScreen>
                           color: Colors.grey[600],
                           fontSize: 14,
                         ),
-                        children: [
+                        children: const [
                           TextSpan(
                             text: 'Cadastre-se',
                             style: TextStyle(
@@ -370,10 +554,11 @@ class _LoginScreenState extends State<LoginScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: accentBlue.withOpacity(0.45), width: 1.5),
+        border:
+            Border.all(color: accentBlue.withValues(alpha: 0.45), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: accentBlue.withOpacity(0.08),
+            color: accentBlue.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

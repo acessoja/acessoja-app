@@ -15,14 +15,13 @@ class EvaluationSurveyDialog extends StatefulWidget {
   final VoidCallback? onDismiss;
 
   const EvaluationSurveyDialog({
-    Key? key,
+    super.key,
     required this.onSubmit,
     this.onDismiss,
-  }) : super(key: key);
+  });
 
   @override
-  State<EvaluationSurveyDialog> createState() =>
-      _EvaluationSurveyDialogState();
+  State<EvaluationSurveyDialog> createState() => _EvaluationSurveyDialogState();
 }
 
 class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
@@ -48,14 +47,16 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
               foregroundColor:
                   isSelected ? Colors.white : const Color(0xFF4CABFF),
               side: const BorderSide(color: Color(0xFF4CABFF), width: 1.2),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               elevation: 0,
               padding: EdgeInsets.zero,
               minimumSize: const Size(0, 36),
             ),
             onPressed: () => onSelected(value),
             child: Text(value,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                style:
+                    const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
           ),
         ),
       );
@@ -66,7 +67,8 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF1E3A8A).withOpacity(0.15), width: 1),
+        border: Border.all(
+            color: const Color(0xFF1E3A8A).withValues(alpha: 0.15), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -165,7 +167,8 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey[200],
                       foregroundColor: Colors.black87,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       minimumSize: const Size(0, 44),
                       elevation: 0,
                     ),
@@ -183,7 +186,8 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4CABFF),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       minimumSize: const Size(0, 44),
                       elevation: 0,
                     ),

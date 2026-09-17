@@ -5,10 +5,10 @@ import '../config.dart';
 
 class PrivacidadeScreen extends StatefulWidget {
   final String userName;
-  const PrivacidadeScreen({Key? key, required this.userName}) : super(key: key);
+  const PrivacidadeScreen({super.key, required this.userName});
 
   @override
-  _PrivacidadeScreenState createState() => _PrivacidadeScreenState();
+  State<PrivacidadeScreen> createState() => _PrivacidadeScreenState();
 }
 
 class _PrivacidadeScreenState extends State<PrivacidadeScreen> {
@@ -102,12 +102,12 @@ class _PrivacidadeScreenState extends State<PrivacidadeScreen> {
                               color: const Color(0xFFE8EFFF),
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: Row(
+                            child: const Row(
                               children: [
                                 Icon(Icons.shield_outlined,
                                     color: accentBlue, size: 28),
-                                const SizedBox(width: 12),
-                                const Expanded(
+                                SizedBox(width: 12),
+                                Expanded(
                                   child: Text(
                                     'Controle quem pode ver suas informações e como seus dados são usados.',
                                     style: TextStyle(
@@ -188,7 +188,7 @@ class _PrivacidadeScreenState extends State<PrivacidadeScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF4CABFF).withOpacity(0.3),
+              color: const Color(0xFF4CABFF).withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -216,7 +216,7 @@ class _PrivacidadeScreenState extends State<PrivacidadeScreen> {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -256,7 +256,7 @@ class _PrivacidadeScreenState extends State<PrivacidadeScreen> {
           ),
           Switch(
             value: value,
-            activeColor: const Color(0xFF4CABFF),
+            activeThumbColor: const Color(0xFF4CABFF),
             onChanged: onChanged,
           ),
         ],

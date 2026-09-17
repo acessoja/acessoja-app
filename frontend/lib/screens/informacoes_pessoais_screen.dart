@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../config.dart';
@@ -8,11 +7,10 @@ import 'package:flutter/foundation.dart'; // for kIsWeb
 
 class InformacoesPessoaisScreen extends StatefulWidget {
   final String userName;
-  const InformacoesPessoaisScreen({Key? key, required this.userName})
-      : super(key: key);
+  const InformacoesPessoaisScreen({super.key, required this.userName});
 
   @override
-  _InformacoesPessoaisScreenState createState() =>
+  State<InformacoesPessoaisScreen> createState() =>
       _InformacoesPessoaisScreenState();
 }
 
@@ -38,10 +36,9 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
       if (resp.statusCode == 200) {
         final d = json.decode(utf8.decode(resp.bodyBytes));
         setState(() {
-          _nomeCompleto =
-              (d['nome_completo'] ?? '').toString().isNotEmpty
-                  ? d['nome_completo']
-                  : widget.userName;
+          _nomeCompleto = (d['nome_completo'] ?? '').toString().isNotEmpty
+              ? d['nome_completo']
+              : widget.userName;
           _email = d['email'] ?? '';
           _telefone = d['telefone'] ?? '';
           _nomeUsuario = d['nome'] ?? widget.userName;
@@ -60,6 +57,9 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({field: value}),
       );
+      if (!mounted) {
+        return;
+      }
       if (resp.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -77,8 +77,12 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
         );
       }
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro de conexão: $e'), backgroundColor: Colors.red),
+        SnackBar(
+            content: Text('Erro de conexão: $e'), backgroundColor: Colors.red),
       );
     }
   }
@@ -143,6 +147,9 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
             'nova_senha': novaSenhaCtrl.text,
           }),
         );
+        if (!mounted) {
+          return;
+        }
         if (resp.statusCode == 200) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -158,6 +165,9 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
           );
         }
       } catch (e) {
+        if (!mounted) {
+          return;
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
         );
@@ -169,7 +179,8 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
     if (!kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Seleção de foto de perfil disponível apenas na versão Web!'),
+          content: Text(
+              'Seleção de foto de perfil disponível apenas na versão Web!'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -180,7 +191,9 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
 
     uploadInput.onChange.listen((event) {
       final file = uploadInput.files?.first;
-      if (file == null) return;
+      if (file == null) {
+        return;
+      }
 
       final reader = html.FileReader();
       reader.readAsArrayBuffer(file);
@@ -197,6 +210,9 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
               'foto_perfil': b64,
             }),
           );
+          if (!mounted) {
+            return;
+          }
           if (resp.statusCode == 200) {
             setState(() => _fotoPerfil = b64);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -270,11 +286,11 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                      color: accentBlue.withOpacity(0.5),
+                                      color: accentBlue.withValues(alpha: 0.5),
                                       width: 3),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: accentBlue.withOpacity(0.18),
+                                      color: accentBlue.withValues(alpha: 0.18),
                                       blurRadius: 16,
                                       offset: const Offset(0, 6),
                                     ),
@@ -330,14 +346,13 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
                           _infoTile(
                             label: 'Nome completo',
                             value: _nomeCompleto,
-                            onEdit: () => _editField(
-                                'nome_completo', 'Nome completo', _nomeCompleto),
+                            onEdit: () => _editField('nome_completo',
+                                'Nome completo', _nomeCompleto),
                           ),
                           _infoTile(
                             label: 'E-mail',
                             value: _email,
-                            onEdit: () =>
-                                _editField('email', 'E-mail', _email),
+                            onEdit: () => _editField('email', 'E-mail', _email),
                           ),
                           _infoTile(
                             label: 'Número de Telefone',
@@ -380,7 +395,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF4CABFF).withOpacity(0.3),
+              color: const Color(0xFF4CABFF).withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -406,7 +421,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -440,12 +455,12 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
           if (onEdit != null)
             GestureDetector(
               onTap: onEdit,
-              child: Text(
+              child: const Text(
                 'Editar',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF4CABFF),
+                  color: Color(0xFF4CABFF),
                 ),
               ),
             ),
