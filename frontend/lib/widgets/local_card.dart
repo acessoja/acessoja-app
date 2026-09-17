@@ -13,13 +13,13 @@ class LocalCard extends StatelessWidget {
   final VoidCallback? onDetailsPressed;
 
   const LocalCard({
-    Key? key,
+    super.key,
     required this.place,
     required this.distanceLabel,
     required this.displayNameBuilder,
     this.onRoutePressed,
     this.onDetailsPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +149,8 @@ class LocalCard extends StatelessWidget {
                       SizedBox(width: 4),
                       Text(
                         'Rota',
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -161,7 +162,8 @@ class LocalCard extends StatelessWidget {
                     backgroundColor: Colors.grey[100],
                     foregroundColor: const Color(0xFF4A69FF),
                     minimumSize: const Size(100, 32),
-                    side: const BorderSide(color: Color(0xFF4A69FF), width: 1.2),
+                    side:
+                        const BorderSide(color: Color(0xFF4A69FF), width: 1.2),
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -175,7 +177,8 @@ class LocalCard extends StatelessWidget {
                       SizedBox(width: 4),
                       Text(
                         'Avaliações',
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),

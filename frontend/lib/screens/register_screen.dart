@@ -4,10 +4,13 @@ import 'dart:convert';
 import '../config.dart';
 
 class RegisterScreen extends StatelessWidget {
+  RegisterScreen({super.key});
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   Future<void> _register(BuildContext context) async {
     final nome = _nameController.text.trim();
@@ -15,9 +18,12 @@ class RegisterScreen extends StatelessWidget {
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
 
-    if (nome.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (nome.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Por favor, preencha todos os campos!'),
           backgroundColor: Colors.red,
         ),
@@ -27,7 +33,7 @@ class RegisterScreen extends StatelessWidget {
 
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('As senhas não correspondem!'),
           backgroundColor: Colors.red,
         ),
@@ -46,9 +52,13 @@ class RegisterScreen extends StatelessWidget {
         }),
       );
 
+      if (!context.mounted) {
+        return;
+      }
+
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Conta criada com sucesso!'),
             backgroundColor: Colors.green,
           ),
@@ -68,6 +78,9 @@ class RegisterScreen extends StatelessWidget {
         );
       }
     } catch (e) {
+      if (!context.mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Erro de conexão: $e'),
@@ -81,7 +94,7 @@ class RegisterScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Criar Conta'),
+        title: const Text('Criar Conta'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -90,7 +103,7 @@ class RegisterScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
+              const Text(
                 'Crie sua conta',
                 style: TextStyle(
                   fontSize: 24,
@@ -98,7 +111,7 @@ class RegisterScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               TextField(
                 controller: _nameController,
                 decoration: InputDecoration(
@@ -108,10 +121,10 @@ class RegisterScreen extends StatelessWidget {
                   ),
                   filled: true,
                   fillColor: Colors.grey[200],
-                  prefixIcon: Icon(Icons.person),
+                  prefixIcon: const Icon(Icons.person),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -121,11 +134,11 @@ class RegisterScreen extends StatelessWidget {
                   ),
                   filled: true,
                   fillColor: Colors.grey[200],
-                  prefixIcon: Icon(Icons.email),
+                  prefixIcon: const Icon(Icons.email),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextField(
                 controller: _passwordController,
                 obscureText: true,
@@ -136,10 +149,10 @@ class RegisterScreen extends StatelessWidget {
                   ),
                   filled: true,
                   fillColor: Colors.grey[200],
-                  prefixIcon: Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextField(
                 controller: _confirmPasswordController,
                 obscureText: true,
@@ -150,10 +163,10 @@ class RegisterScreen extends StatelessWidget {
                   ),
                   filled: true,
                   fillColor: Colors.grey[200],
-                  prefixIcon: Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock),
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () => _register(context),
                 style: ElevatedButton.styleFrom(
@@ -162,14 +175,14 @@ class RegisterScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
-                  minimumSize: Size(double.infinity, 50),
+                  minimumSize: const Size(double.infinity, 50),
                 ),
-                child: Text(
+                child: const Text(
                   'Cadastrar',
                   style: TextStyle(fontSize: 18),
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
             ],
           ),
         ),

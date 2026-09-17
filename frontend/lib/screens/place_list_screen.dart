@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 // Certifique-se de que o caminho está correto
 
 class PlaceListScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> places = [
+  const PlaceListScreen({super.key});
+
+  final List<Map<String, dynamic>> places = const [
     {
       'name': 'UniEVANGÉLICA',
       'distance': '1,2 km',
@@ -27,14 +29,14 @@ class PlaceListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Estabelecimentos Salvos'),
+        title: const Text('Estabelecimentos Salvos'),
       ),
       body: ListView.builder(
         itemCount: places.length,
         itemBuilder: (context, index) {
           final place = places[index];
           return ListTile(
-            leading: Icon(Icons.place),
+            leading: const Icon(Icons.place),
             title: Text(place['name']),
             subtitle: Text('${place['distance']} - ${place['status']}'),
             onTap: () {

@@ -12,14 +12,14 @@ class ExplorarScreen extends StatefulWidget {
   final String unidadeDistancia;
 
   const ExplorarScreen({
+    super.key,
     required this.userName,
     required this.currentLocation,
     this.unidadeDistancia = 'KM',
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
-  _ExplorarScreenState createState() => _ExplorarScreenState();
+  State<ExplorarScreen> createState() => _ExplorarScreenState();
 }
 
 class _ExplorarScreenState extends State<ExplorarScreen> {
@@ -32,7 +32,8 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
     if (distanceValue is num) {
       km = distanceValue.toDouble();
     } else if (distanceValue is String) {
-      String cleanStr = distanceValue.replaceAll(RegExp(r'[^\d.,]'), '').replaceAll(',', '.');
+      String cleanStr =
+          distanceValue.replaceAll(RegExp(r'[^\d.,]'), '').replaceAll(',', '.');
       km = double.tryParse(cleanStr) ?? 0.0;
     }
     if (widget.unidadeDistancia == 'Milha') {
@@ -51,7 +52,8 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
 
   Future<void> _fetchLocales() async {
     try {
-      final response = await http.get(Uri.parse('${Config.baseUrl}/api/locais/'));
+      final response =
+          await http.get(Uri.parse('${Config.baseUrl}/api/locais/'));
       if (response.statusCode == 200) {
         final List data = json.decode(utf8.decode(response.bodyBytes));
         // Sort locales by distance
@@ -88,10 +90,13 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
   Widget build(BuildContext context) {
     final filteredPlaces = _localesList.where((place) {
       final name = (place['nome'] ?? '').toString().toLowerCase();
-      final displayName = getLocalDisplayName(place['nome'] ?? '').toLowerCase();
+      final displayName =
+          getLocalDisplayName(place['nome'] ?? '').toLowerCase();
       final address = (place['endereco'] ?? '').toString().toLowerCase();
       final query = searchQuery.toLowerCase();
-      return name.contains(query) || displayName.contains(query) || address.contains(query);
+      return name.contains(query) ||
+          displayName.contains(query) ||
+          address.contains(query);
     }).toList();
 
     return Scaffold(
@@ -165,10 +170,12 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
           const SizedBox(height: 16),
           if (!_isLoading && filteredPlaces.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
               child: Row(
                 children: [
-                  const Icon(Icons.near_me_rounded, color: Color(0xFF4A69FF), size: 16),
+                  const Icon(Icons.near_me_rounded,
+                      color: Color(0xFF4A69FF), size: 16),
                   const SizedBox(width: 6),
                   Text(
                     'Estabelecimentos mais próximos a você:',
@@ -189,7 +196,8 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                     ? Center(
                         child: Text(
                           'Nenhum local próximo encontrado.',
-                          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[600]),
                         ),
                       )
                     : ListView.builder(
@@ -214,6 +222,9 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                                   ),
                                 ),
                               );
+                              if (!context.mounted) {
+                                return;
+                              }
                               if (result != null) {
                                 Navigator.pop(context, result);
                               } else {

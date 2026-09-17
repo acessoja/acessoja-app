@@ -9,13 +9,13 @@ class SugestoesScreen extends StatefulWidget {
   final String unidadeDistancia;
 
   const SugestoesScreen({
+    super.key,
     required this.userName,
     this.unidadeDistancia = 'KM',
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
-  _SugestoesScreenState createState() => _SugestoesScreenState();
+  State<SugestoesScreen> createState() => _SugestoesScreenState();
 }
 
 class _SugestoesScreenState extends State<SugestoesScreen> {
@@ -28,7 +28,8 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
     if (distanceValue is num) {
       km = distanceValue.toDouble();
     } else if (distanceValue is String) {
-      String cleanStr = distanceValue.replaceAll(RegExp(r'[^\d.,]'), '').replaceAll(',', '.');
+      String cleanStr =
+          distanceValue.replaceAll(RegExp(r'[^\d.,]'), '').replaceAll(',', '.');
       km = double.tryParse(cleanStr) ?? 0.0;
     }
     if (widget.unidadeDistancia == 'Milha') {
@@ -47,16 +48,17 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
 
   Future<void> _loadData() async {
     try {
-      final visitsResponse = await http.get(
-        Uri.parse('${Config.baseUrl}/api/visitas/?nome_usuario=${widget.userName}')
-      );
-      final localesResponse = await http.get(
-        Uri.parse('${Config.baseUrl}/api/locais/')
-      );
+      final visitsResponse = await http.get(Uri.parse(
+          '${Config.baseUrl}/api/visitas/?nome_usuario=${widget.userName}'));
+      final localesResponse =
+          await http.get(Uri.parse('${Config.baseUrl}/api/locais/'));
 
-      if (visitsResponse.statusCode == 200 && localesResponse.statusCode == 200) {
-        final List visitsData = json.decode(utf8.decode(visitsResponse.bodyBytes));
-        final List localesData = json.decode(utf8.decode(localesResponse.bodyBytes));
+      if (visitsResponse.statusCode == 200 &&
+          localesResponse.statusCode == 200) {
+        final List visitsData =
+            json.decode(utf8.decode(visitsResponse.bodyBytes));
+        final List localesData =
+            json.decode(utf8.decode(localesResponse.bodyBytes));
 
         setState(() {
           _recentVisits = visitsData;
@@ -95,10 +97,13 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
   // Suggest other places having those features, ordered by average rating.
   // If no visits, suggest top rated.
   List<dynamic> get recommendedPlaces {
-    if (_allLocales.isEmpty) return [];
+    if (_allLocales.isEmpty) {
+      return [];
+    }
 
     final visited = visitedPlaces;
-    final Set<int> visitedIds = visited.map<int>((e) => e['id_local'] as int).toSet();
+    final Set<int> visitedIds =
+        visited.map<int>((e) => e['id_local'] as int).toSet();
 
     if (visited.isEmpty) {
       // General recommendations: sort all by rating average (highest first)
@@ -119,11 +124,21 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
     int brailleCount = 0;
 
     for (var p in visited) {
-      if (p['rampa_acesso'] == true) rampaCount++;
-      if (p['banheiro_acessivel'] == true) banheiroCount++;
-      if (p['mesa_acessivel'] == true) mesaCount++;
-      if (p['cao_guia'] == true) caoCount++;
-      if (p['cardapio_braille'] == true) brailleCount++;
+      if (p['rampa_acesso'] == true) {
+        rampaCount++;
+      }
+      if (p['banheiro_acessivel'] == true) {
+        banheiroCount++;
+      }
+      if (p['mesa_acessivel'] == true) {
+        mesaCount++;
+      }
+      if (p['cao_guia'] == true) {
+        caoCount++;
+      }
+      if (p['cardapio_braille'] == true) {
+        brailleCount++;
+      }
     }
 
     // Determine the most common feature
@@ -220,13 +235,15 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Seção: Visitados Recentemente
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  const Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                     child: Row(
                       children: [
-                        const Icon(Icons.history_rounded, color: Color(0xFF4A69FF), size: 22),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.history_rounded,
+                            color: Color(0xFF4A69FF), size: 22),
+                        SizedBox(width: 8),
+                        Text(
                           'Visitados Recentemente',
                           style: TextStyle(
                             fontSize: 16,
@@ -239,7 +256,8 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                   ),
                   if (visited.isEmpty)
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8.0),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
@@ -281,6 +299,9 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                                   ),
                                 ),
                               );
+                              if (!context.mounted) {
+                                return;
+                              }
                               if (result != null) {
                                 Navigator.pop(context, result);
                               } else {
@@ -289,7 +310,8 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                             },
                             child: Container(
                               width: 160,
-                              margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 8),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
@@ -319,13 +341,15 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                                         : Container(
                                             height: 70,
                                             color: Colors.grey[200],
-                                            child: const Icon(Icons.business, color: Colors.grey),
+                                            child: const Icon(Icons.business,
+                                                color: Colors.grey),
                                           ),
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           place['nome'],
@@ -340,7 +364,8 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                                         const SizedBox(height: 4),
                                         Row(
                                           children: [
-                                            const Icon(Icons.star, size: 12, color: Colors.amber),
+                                            const Icon(Icons.star,
+                                                size: 12, color: Colors.amber),
                                             const SizedBox(width: 4),
                                             Text(
                                               media.toStringAsFixed(1),
@@ -365,13 +390,15 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
 
                   const SizedBox(height: 16),
                   // Seção: Recomendados
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  const Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Row(
                       children: [
-                        const Icon(Icons.tips_and_updates_rounded, color: Colors.amber, size: 22),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.tips_and_updates_rounded,
+                            color: Colors.amber, size: 22),
+                        SizedBox(width: 8),
+                        Text(
                           'Recomendados para Você',
                           style: TextStyle(
                             fontSize: 16,
@@ -399,11 +426,13 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                       itemCount: recommended.length,
                       itemBuilder: (context, index) {
                         final place = recommended[index];
-                        final mediaEstrelas = (place['media_estrelas'] ?? 0.0) as num;
+                        final mediaEstrelas =
+                            (place['media_estrelas'] ?? 0.0) as num;
                         final isOpen = (place['aberto'] ?? true) as bool;
 
                         return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 16),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
@@ -433,13 +462,15 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                                           width: 85,
                                           height: 85,
                                           color: Colors.grey[200],
-                                          child: const Icon(Icons.business, color: Colors.grey),
+                                          child: const Icon(Icons.business,
+                                              color: Colors.grey),
                                         ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         getLocalDisplayName(place['nome']),
@@ -452,23 +483,27 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                                         ),
                                       ),
                                       const SizedBox(height: 6),
-                                       Text(
-                                         '${_formatDistance(place['distancia'])} - ${isOpen ? 'Aberto' : 'Fechado'}',
-                                         style: TextStyle(
-                                           fontSize: 11,
-                                           fontWeight: FontWeight.bold,
-                                           color: isOpen ? Colors.green : Colors.red,
-                                         ),
-                                       ),
+                                      Text(
+                                        '${_formatDistance(place['distancia'])} - ${isOpen ? 'Aberto' : 'Fechado'}',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: isOpen
+                                              ? Colors.green
+                                              : Colors.red,
+                                        ),
+                                      ),
                                       const SizedBox(height: 6),
                                       Row(
                                         children: [
                                           Row(
-                                            children: List.generate(5, (starIndex) {
+                                            children:
+                                                List.generate(5, (starIndex) {
                                               return Icon(
                                                 Icons.star,
                                                 size: 13,
-                                                color: starIndex < mediaEstrelas.round()
+                                                color: starIndex <
+                                                        mediaEstrelas.round()
                                                     ? Colors.amber
                                                     : Colors.grey[300],
                                               );
@@ -497,23 +532,29 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                                         Navigator.pop(context, place);
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF4CABFF),
+                                        backgroundColor:
+                                            const Color(0xFF4CABFF),
                                         foregroundColor: Colors.white,
                                         minimumSize: const Size(90, 32),
-                                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius:
+                                              BorderRadius.circular(16),
                                         ),
                                         elevation: 0,
                                       ),
                                       child: const Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Icon(Icons.directions_rounded, size: 14),
+                                          Icon(Icons.directions_rounded,
+                                              size: 14),
                                           SizedBox(width: 4),
                                           Text(
                                             'Rota',
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                         ],
                                       ),
@@ -524,12 +565,16 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                                         final result = await Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => PlaceDetailScreen(
+                                            builder: (context) =>
+                                                PlaceDetailScreen(
                                               place: place,
                                               userName: widget.userName,
                                             ),
                                           ),
                                         );
+                                        if (!context.mounted) {
+                                          return;
+                                        }
                                         if (result != null) {
                                           Navigator.pop(context, result);
                                         } else {
@@ -538,23 +583,32 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                                       },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.grey[100],
-                                        foregroundColor: const Color(0xFF4A69FF),
+                                        foregroundColor:
+                                            const Color(0xFF4A69FF),
                                         minimumSize: const Size(90, 32),
-                                        side: const BorderSide(color: Color(0xFF4A69FF), width: 1.2),
-                                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                                        side: const BorderSide(
+                                            color: Color(0xFF4A69FF),
+                                            width: 1.2),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius:
+                                              BorderRadius.circular(16),
                                         ),
                                         elevation: 0,
                                       ),
                                       child: const Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Icon(Icons.chat_bubble_outline_rounded, size: 12),
+                                          Icon(
+                                              Icons.chat_bubble_outline_rounded,
+                                              size: 12),
                                           SizedBox(width: 4),
                                           Text(
                                             'Detalhes',
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                         ],
                                       ),
