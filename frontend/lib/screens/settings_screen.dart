@@ -10,10 +10,10 @@ import 'saved_places_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String userName;
-  const SettingsScreen({Key? key, required this.userName}) : super(key: key);
+  const SettingsScreen({super.key, required this.userName});
 
   @override
-  _SettingsScreenState createState() => _SettingsScreenState();
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
@@ -35,10 +35,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (resp.statusCode == 200) {
         final data = json.decode(utf8.decode(resp.bodyBytes));
         setState(() {
-          _nomeCompleto =
-              (data['nome_completo'] ?? '').toString().isNotEmpty
-                  ? data['nome_completo']
-                  : widget.userName;
+          _nomeCompleto = (data['nome_completo'] ?? '').toString().isNotEmpty
+              ? data['nome_completo']
+              : widget.userName;
           _fotoPerfil = (data['foto_perfil'] ?? '').toString();
         });
       }
@@ -70,8 +69,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   // ── Header with back button ──
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     child: Row(
                       children: [
                         _circleButton(
@@ -104,7 +103,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           // ── Avatar + name ──
                           GestureDetector(
                             onTap: () => _navigateTo(
-                              InformacoesPessoaisScreen(userName: widget.userName),
+                              InformacoesPessoaisScreen(
+                                  userName: widget.userName),
                             ),
                             child: Column(
                               children: [
@@ -112,11 +112,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                        color: accentBlue.withOpacity(0.5),
+                                        color:
+                                            accentBlue.withValues(alpha: 0.5),
                                         width: 3),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: accentBlue.withOpacity(0.18),
+                                        color:
+                                            accentBlue.withValues(alpha: 0.18),
                                         blurRadius: 16,
                                         offset: const Offset(0, 6),
                                       ),
@@ -181,7 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             icon: Icons.help_outline_rounded,
                             label: 'Ajuda',
                             onTap: () => _navigateTo(
-                              AjudaScreen(),
+                              const AjudaScreen(),
                             ),
                           ),
 
@@ -202,7 +204,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: accentBlue.withOpacity(0.35),
+                                    color: accentBlue.withValues(alpha: 0.35),
                                     blurRadius: 12,
                                     offset: const Offset(0, 5),
                                   ),
@@ -265,7 +267,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF4CABFF).withOpacity(0.3),
+              color: const Color(0xFF4CABFF).withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -294,7 +296,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             border: Border.all(color: const Color(0xFFE2E8F0)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),

@@ -14,10 +14,10 @@ import 'settings_screen.dart';
 class MainScreen extends StatefulWidget {
   final String userName;
 
-  const MainScreen({Key? key, required this.userName}) : super(key: key);
+  const MainScreen({super.key, required this.userName});
 
   @override
-  _MainScreenState createState() => _MainScreenState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
@@ -26,7 +26,6 @@ class _MainScreenState extends State<MainScreen> {
   String _unidadeDistancia = 'KM';
   String _nomeCompleto = '';
   String _fotoPerfil = '';
-  
 
   Future<void> _loadUserProfile() async {
     try {
@@ -63,7 +62,8 @@ class _MainScreenState extends State<MainScreen> {
     if (distanceValue is num) {
       km = distanceValue.toDouble();
     } else if (distanceValue is String) {
-      String cleanStr = distanceValue.replaceAll(RegExp(r'[^\d.,]'), '').replaceAll(',', '.');
+      String cleanStr =
+          distanceValue.replaceAll(RegExp(r'[^\d.,]'), '').replaceAll(',', '.');
       km = double.tryParse(cleanStr) ?? 0.0;
     }
     if (_unidadeDistancia == 'Milha') {
@@ -73,8 +73,9 @@ class _MainScreenState extends State<MainScreen> {
       return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
     }
   }
-  
-  LatLng _currentLocation = const LatLng(-16.3267, -48.9528); // Default: Anápolis, GO
+
+  LatLng _currentLocation =
+      const LatLng(-16.3267, -48.9528); // Default: Anápolis, GO
   LatLng? _destinationLocation;
   String _currentAddress = 'Anápolis, Goiás, Brasil';
   String _destinationAddress = '';
@@ -104,7 +105,8 @@ class _MainScreenState extends State<MainScreen> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 28),
+            const Icon(Icons.check_circle_outline_rounded,
+                color: Colors.white, size: 28),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -113,7 +115,10 @@ class _MainScreenState extends State<MainScreen> {
                 children: [
                   const Text(
                     'Login realizado com sucesso!',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: Colors.white),
                   ),
                   Text(
                     'Bem-vindo ao AcessoJá, ${widget.userName}!',
@@ -157,13 +162,24 @@ class _MainScreenState extends State<MainScreen> {
 
     try {
       final queryParams = <String, String>{};
-      if (_filterCaoGuia) queryParams['cao_guia'] = 'true';
-      if (_filterMesaAcessivel) queryParams['mesa_acessivel'] = 'true';
-      if (_filterBanheiroAcessivel) queryParams['banheiro_acessivel'] = 'true';
-      if (_filterRampaAcesso) queryParams['rampa_acesso'] = 'true';
-      if (_filterCardapioBraille) queryParams['cardapio_braille'] = 'true';
+      if (_filterCaoGuia) {
+        queryParams['cao_guia'] = 'true';
+      }
+      if (_filterMesaAcessivel) {
+        queryParams['mesa_acessivel'] = 'true';
+      }
+      if (_filterBanheiroAcessivel) {
+        queryParams['banheiro_acessivel'] = 'true';
+      }
+      if (_filterRampaAcesso) {
+        queryParams['rampa_acesso'] = 'true';
+      }
+      if (_filterCardapioBraille) {
+        queryParams['cardapio_braille'] = 'true';
+      }
 
-      final uri = Uri.parse('${Config.baseUrl}/api/locais/').replace(queryParameters: queryParams);
+      final uri = Uri.parse('${Config.baseUrl}/api/locais/')
+          .replace(queryParameters: queryParams);
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -202,7 +218,7 @@ class _MainScreenState extends State<MainScreen> {
           return;
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         debugPrint("Location permissions are permanently denied.");
         return;
@@ -210,8 +226,10 @@ class _MainScreenState extends State<MainScreen> {
 
       // Get initial position with a timeout to prevent hanging on emulators
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 5),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 5),
+        ),
       );
       _updateLocation(position);
 
@@ -235,21 +253,25 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _updateLocation(Position position) {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     final newLatLng = LatLng(position.latitude, position.longitude);
     setState(() {
       _currentLocation = newLatLng;
     });
-    
+
     // Move map to center
     _mapController.move(newLatLng, 14.5);
 
     // Get readable address if significant movement (100 meters)
-    if (_lastGeocodedLocation == null || 
+    if (_lastGeocodedLocation == null ||
         Geolocator.distanceBetween(
-          _lastGeocodedLocation!.latitude, _lastGeocodedLocation!.longitude,
-          newLatLng.latitude, newLatLng.longitude
-        ) > 100) {
+                _lastGeocodedLocation!.latitude,
+                _lastGeocodedLocation!.longitude,
+                newLatLng.latitude,
+                newLatLng.longitude) >
+            100) {
       _lastGeocodedLocation = newLatLng;
       _getAddressFromLatLng(newLatLng);
     }
@@ -258,8 +280,7 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _getAddressFromLatLng(LatLng position) async {
     try {
       final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16'
-      );
+          'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16');
       final response = await http.get(url, headers: {
         'User-Agent': 'AcessoJaApp/1.0',
       });
@@ -278,7 +299,9 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _searchAndRoute(String destinationText) async {
-    if (destinationText.trim().isEmpty) return;
+    if (destinationText.trim().isEmpty) {
+      return;
+    }
 
     setState(() {
       _isLoadingRoute = true;
@@ -286,12 +309,11 @@ class _MainScreenState extends State<MainScreen> {
 
     try {
       // 1. Search destination coordinates using Nominatim Search API
-      final searchUrl = Uri.parse(
-        'https://nominatim.openstreetmap.org/search?q='
-        '${Uri.encodeComponent(destinationText)}'
-        '&format=json&limit=1&addressdetails=1'
-      );
-      
+      final searchUrl =
+          Uri.parse('https://nominatim.openstreetmap.org/search?q='
+              '${Uri.encodeComponent(destinationText)}'
+              '&format=json&limit=1&addressdetails=1');
+
       final searchResponse = await http.get(searchUrl, headers: {
         'User-Agent': 'AcessoJaApp/1.0',
       });
@@ -331,15 +353,16 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _calculateRoute(LatLng start, LatLng end) async {
     try {
       final routeUrl = Uri.parse(
-        'https://router.project-osrm.org/route/v1/driving/'
-        '${start.longitude},${start.latitude};${end.longitude},${end.latitude}'
-        '?overview=full&geometries=geojson'
-      );
+          'https://router.project-osrm.org/route/v1/driving/'
+          '${start.longitude},${start.latitude};${end.longitude},${end.latitude}'
+          '?overview=full&geometries=geojson');
 
       final response = await http.get(routeUrl);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['code'] == 'Ok' && data['routes'] != null && data['routes'].isNotEmpty) {
+        if (data['code'] == 'Ok' &&
+            data['routes'] != null &&
+            data['routes'].isNotEmpty) {
           final route = data['routes'][0];
           final geometry = route['geometry'];
           final coordinates = geometry['coordinates'] as List;
@@ -364,7 +387,8 @@ class _MainScreenState extends State<MainScreen> {
           // Zoom and move map to fit route
           _fitRouteBounds(start, end);
         } else {
-          _showErrorSnackBar('Não foi possível traçar uma rota para este local.');
+          _showErrorSnackBar(
+              'Não foi possível traçar uma rota para este local.');
         }
       } else {
         _showErrorSnackBar('Erro do servidor de rotas.');
@@ -386,7 +410,9 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _showErrorSnackBar(String message) {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -396,7 +422,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _openSearchBottomSheet(BuildContext context) {
-    final TextEditingController destinationController = TextEditingController(text: _destinationAddress);
+    final TextEditingController destinationController =
+        TextEditingController(text: _destinationAddress);
     String sheetView = 'route'; // 'route' ou 'filters'
     String filterSearchQuery = '';
 
@@ -450,15 +477,19 @@ class _MainScreenState extends State<MainScreen> {
                       readOnly: true,
                       decoration: InputDecoration(
                         hintText: 'Localização atual',
-                        suffixIcon: const Icon(Icons.search, color: Color(0xFF4CABFF)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        suffixIcon:
+                            const Icon(Icons.search, color: Color(0xFF4CABFF)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(28),
-                          borderSide: const BorderSide(color: Color(0xFF4CABFF), width: 1.5),
+                          borderSide: const BorderSide(
+                              color: Color(0xFF4CABFF), width: 1.5),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(28),
-                          borderSide: const BorderSide(color: Color(0xFF4CABFF), width: 2.0),
+                          borderSide: const BorderSide(
+                              color: Color(0xFF4CABFF), width: 2.0),
                         ),
                         filled: true,
                         fillColor: Colors.white,
@@ -470,15 +501,19 @@ class _MainScreenState extends State<MainScreen> {
                       controller: destinationController,
                       decoration: InputDecoration(
                         hintText: 'Qual seu destino?',
-                        suffixIcon: const Icon(Icons.search, color: Color(0xFF4CABFF)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        suffixIcon:
+                            const Icon(Icons.search, color: Color(0xFF4CABFF)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(28),
-                          borderSide: const BorderSide(color: Color(0xFF4CABFF), width: 1.5),
+                          borderSide: const BorderSide(
+                              color: Color(0xFF4CABFF), width: 1.5),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(28),
-                          borderSide: const BorderSide(color: Color(0xFF4CABFF), width: 2.0),
+                          borderSide: const BorderSide(
+                              color: Color(0xFF4CABFF), width: 2.0),
                         ),
                         filled: true,
                         fillColor: Colors.white,
@@ -502,9 +537,11 @@ class _MainScreenState extends State<MainScreen> {
                       )
                     else ...[
                       (() {
-                        final text = destinationController.text.trim().toLowerCase();
+                        final text =
+                            destinationController.text.trim().toLowerCase();
                         final list = _matchingLocals.where((local) {
-                          final nome = (local['nome'] ?? '').toString().toLowerCase();
+                          final nome =
+                              (local['nome'] ?? '').toString().toLowerCase();
                           return nome.contains(text);
                         }).toList();
 
@@ -538,10 +575,12 @@ class _MainScreenState extends State<MainScreen> {
                               final local = list[index];
                               return ListTile(
                                 dense: true,
-                                leading: const Icon(Icons.location_on, color: Color(0xFF4CABFF)),
+                                leading: const Icon(Icons.location_on,
+                                    color: Color(0xFF4CABFF)),
                                 title: Text(
                                   local['nome'],
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 subtitle: Text(
                                   local['endereco'],
@@ -550,11 +589,13 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                                 trailing: Text(
                                   _formatDistance(local['distancia']),
-                                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  style: const TextStyle(
+                                      fontSize: 12, color: Colors.grey),
                                 ),
                                 onTap: () {
                                   setState(() {
-                                    _destinationLocation = LatLng(local['latitude'], local['longitude']);
+                                    _destinationLocation = LatLng(
+                                        local['latitude'], local['longitude']);
                                     _destinationAddress = local['nome'];
                                     destinationController.text = local['nome'];
                                   });
@@ -582,11 +623,12 @@ class _MainScreenState extends State<MainScreen> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(22),
-                              border: Border.all(color: const Color(0xFF4CABFF), width: 1.5),
+                              border: Border.all(
+                                  color: const Color(0xFF4CABFF), width: 1.5),
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
+                              children: [
                                 Text(
                                   'Filtros',
                                   style: TextStyle(
@@ -595,7 +637,8 @@ class _MainScreenState extends State<MainScreen> {
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                Icon(Icons.search, color: Color(0xFF4CABFF), size: 20),
+                                Icon(Icons.search,
+                                    color: Color(0xFF4CABFF), size: 20),
                               ],
                             ),
                           ),
@@ -603,7 +646,8 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Divider(height: 1, thickness: 1, color: Colors.black12),
+                    const Divider(
+                        height: 1, thickness: 1, color: Colors.black12),
                     const SizedBox(height: 16),
                     // Botão Confirmar (estilo azul e centralizado)
                     Center(
@@ -622,16 +666,20 @@ class _MainScreenState extends State<MainScreen> {
                           onPressed: () {
                             final destText = destinationController.text.trim();
                             if (destText.isEmpty) {
-                              _showErrorSnackBar('Selecione ou digite um destino.');
+                              _showErrorSnackBar(
+                                  'Selecione ou digite um destino.');
                               return;
                             }
                             Navigator.pop(context);
-                            
-                            if (_destinationLocation != null && _destinationAddress == destText) {
+
+                            if (_destinationLocation != null &&
+                                _destinationAddress == destText) {
                               setState(() {
                                 _isLoadingRoute = true;
                               });
-                              _calculateRoute(_currentLocation, _destinationLocation!).then((_) {
+                              _calculateRoute(
+                                      _currentLocation, _destinationLocation!)
+                                  .then((_) {
                                 setState(() {
                                   _isLoadingRoute = false;
                                 });
@@ -642,7 +690,8 @@ class _MainScreenState extends State<MainScreen> {
                           },
                           child: const Text(
                             'Confirmar',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -716,7 +765,8 @@ class _MainScreenState extends State<MainScreen> {
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF4CABFF), size: 22),
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                              color: Color(0xFF4CABFF), size: 22),
                           onPressed: () {
                             sheetSetState(() {
                               sheetView = 'route';
@@ -729,7 +779,8 @@ class _MainScreenState extends State<MainScreen> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: const Color(0xFF4CABFF), width: 1.5),
+                              border: Border.all(
+                                  color: const Color(0xFF4CABFF), width: 1.5),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: TextField(
@@ -742,7 +793,8 @@ class _MainScreenState extends State<MainScreen> {
                                 hintText: 'Pesquisar por filtros...',
                                 hintStyle: TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
-                                suffixIcon: Icon(Icons.search, color: Color(0xFF4CABFF)),
+                                suffixIcon: Icon(Icons.search,
+                                    color: Color(0xFF4CABFF)),
                               ),
                             ),
                           ),
@@ -757,10 +809,12 @@ class _MainScreenState extends State<MainScreen> {
                         return Column(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
                               child: Row(
                                 children: [
-                                  Icon(item['icon'], color: const Color(0xFF4A69FF), size: 28),
+                                  Icon(item['icon'],
+                                      color: const Color(0xFF4A69FF), size: 28),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Container(
@@ -769,11 +823,16 @@ class _MainScreenState extends State<MainScreen> {
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(21),
-                                        border: Border.all(color: const Color(0xFF4CABFF), width: 1.2),
+                                        border: Border.all(
+                                            color: const Color(0xFF4CABFF),
+                                            width: 1.2),
                                       ),
                                       child: Text(
                                         item['name'],
-                                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+                                        style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87),
                                         textAlign: TextAlign.center,
                                       ),
                                     ),
@@ -785,23 +844,38 @@ class _MainScreenState extends State<MainScreen> {
                                       value: item['checked'],
                                       onChanged: (val) {
                                         sheetSetState(() {
-                                          if (item['id'] == 'cao_guia') tempCaoGuia = val ?? false;
-                                          if (item['id'] == 'mesa_acessivel') tempMesaAcessivel = val ?? false;
-                                          if (item['id'] == 'banheiro_acessivel') tempBanheiroAcessivel = val ?? false;
-                                          if (item['id'] == 'rampa_acesso') tempRampaAcesso = val ?? false;
-                                          if (item['id'] == 'cardapio_braille') tempCardapioBraille = val ?? false;
+                                          if (item['id'] == 'cao_guia') {
+                                            tempCaoGuia = val ?? false;
+                                          }
+                                          if (item['id'] == 'mesa_acessivel') {
+                                            tempMesaAcessivel = val ?? false;
+                                          }
+                                          if (item['id'] ==
+                                              'banheiro_acessivel') {
+                                            tempBanheiroAcessivel =
+                                                val ?? false;
+                                          }
+                                          if (item['id'] == 'rampa_acesso') {
+                                            tempRampaAcesso = val ?? false;
+                                          }
+                                          if (item['id'] ==
+                                              'cardapio_braille') {
+                                            tempCardapioBraille = val ?? false;
+                                          }
                                         });
                                       },
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(6),
                                       ),
-                                      side: const BorderSide(color: Color(0xFF4CABFF), width: 1.5),
+                                      side: const BorderSide(
+                                          color: Color(0xFF4CABFF), width: 1.5),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const Divider(height: 1, thickness: 1, color: Colors.black12),
+                            const Divider(
+                                height: 1, thickness: 1, color: Colors.black12),
                           ],
                         );
                       }),
@@ -838,7 +912,8 @@ class _MainScreenState extends State<MainScreen> {
                           },
                           child: const Text(
                             'Filtrar',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -881,7 +956,8 @@ class _MainScreenState extends State<MainScreen> {
     if (selectedLocal != null && selectedLocal is Map<String, dynamic>) {
       _registraVisita(selectedLocal['id_local']);
       setState(() {
-        _destinationLocation = LatLng(selectedLocal['latitude'], selectedLocal['longitude']);
+        _destinationLocation =
+            LatLng(selectedLocal['latitude'], selectedLocal['longitude']);
         _destinationAddress = selectedLocal['nome'];
         _isLoadingRoute = true;
       });
@@ -910,7 +986,8 @@ class _MainScreenState extends State<MainScreen> {
                     backgroundColor: Colors.white24,
                     backgroundImage: _avatarImage(),
                     child: _avatarImage() == null
-                        ? const Icon(Icons.person, size: 40, color: Colors.white)
+                        ? const Icon(Icons.person,
+                            size: 40, color: Colors.white)
                         : null,
                   ),
                   const SizedBox(height: 8),
@@ -961,7 +1038,8 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.example.acessoja',
                     ),
                     if (_isRouting && _routePoints.isNotEmpty)
@@ -990,7 +1068,8 @@ class _MainScreenState extends State<MainScreen> {
                                 width: 24,
                                 height: 24,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF4A69FF).withOpacity(0.3),
+                                  color: const Color(0xFF4A69FF)
+                                      .withValues(alpha: 0.3),
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -1000,7 +1079,8 @@ class _MainScreenState extends State<MainScreen> {
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF4A69FF),
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2),
+                                  border:
+                                      Border.all(color: Colors.white, width: 2),
                                 ),
                               ),
                             ],
@@ -1009,7 +1089,9 @@ class _MainScreenState extends State<MainScreen> {
                         // Marcadores de estabelecimentos filtrados (visível apenas fora da navegação)
                         if (!_isRouting)
                           ..._matchingLocals
-                              .where((local) => local['latitude'] != null && local['longitude'] != null)
+                              .where((local) =>
+                                  local['latitude'] != null &&
+                                  local['longitude'] != null)
                               .map((local) {
                             final lat = local['latitude'] as double;
                             final lon = local['longitude'] as double;
@@ -1029,14 +1111,20 @@ class _MainScreenState extends State<MainScreen> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 3),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(8),
                                         boxShadow: const [
-                                          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+                                          BoxShadow(
+                                              color: Colors.black26,
+                                              blurRadius: 4,
+                                              offset: Offset(0, 2)),
                                         ],
-                                        border: Border.all(color: const Color(0xFF4A69FF), width: 1.2),
+                                        border: Border.all(
+                                            color: const Color(0xFF4A69FF),
+                                            width: 1.2),
                                       ),
                                       child: Text(
                                         local['nome'],
@@ -1058,7 +1146,7 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                               ),
                             );
-                          }).toList(),
+                          }),
                         // Marcador de destino da rota calculada
                         if (_isRouting && _destinationLocation != null)
                           Marker(
@@ -1072,7 +1160,7 @@ class _MainScreenState extends State<MainScreen> {
                                   width: 32,
                                   height: 32,
                                   decoration: BoxDecoration(
-                                    color: Colors.red.withOpacity(0.2),
+                                    color: Colors.red.withValues(alpha: 0.2),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -1097,7 +1185,8 @@ class _MainScreenState extends State<MainScreen> {
                       await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => SettingsScreen(userName: widget.userName),
+                          builder: (_) =>
+                              SettingsScreen(userName: widget.userName),
                         ),
                       );
                       _loadUserProfile(); // Re-fetch the user settings!
@@ -1208,7 +1297,8 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.close_rounded, color: Colors.grey, size: 28),
+                                icon: const Icon(Icons.close_rounded,
+                                    color: Colors.grey, size: 28),
                                 onPressed: () {
                                   setState(() {
                                     _isRouting = false;
@@ -1227,14 +1317,16 @@ class _MainScreenState extends State<MainScreen> {
                           const SizedBox(height: 12),
                           Row(
                             children: [
-                              const Icon(Icons.my_location, color: Color(0xFF4A69FF), size: 18),
+                              const Icon(Icons.my_location,
+                                  color: Color(0xFF4A69FF), size: 18),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   _currentAddress,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                                  style: TextStyle(
+                                      color: Colors.grey[700], fontSize: 13),
                                 ),
                               ),
                             ],
@@ -1242,14 +1334,16 @@ class _MainScreenState extends State<MainScreen> {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              const Icon(Icons.location_on, color: Colors.red, size: 18),
+                              const Icon(Icons.location_on,
+                                  color: Colors.red, size: 18),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   _destinationAddress,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                                  style: TextStyle(
+                                      color: Colors.grey[700], fontSize: 13),
                                 ),
                               ),
                             ],
@@ -1280,14 +1374,15 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                           ],
                         ),
-                        child: IgnorePointer(
+                        child: const IgnorePointer(
                           child: Row(
-                            children: const [
+                            children: [
                               Expanded(
                                 child: TextField(
                                   decoration: InputDecoration(
                                     hintText: 'Qual seu destino?',
-                                    hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+                                    hintStyle: TextStyle(
+                                        color: Colors.grey, fontSize: 16),
                                     border: InputBorder.none,
                                   ),
                                 ),
@@ -1309,7 +1404,8 @@ class _MainScreenState extends State<MainScreen> {
                     color: Colors.black26,
                     child: Center(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 16),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
@@ -1317,11 +1413,12 @@ class _MainScreenState extends State<MainScreen> {
                             BoxShadow(color: Colors.black26, blurRadius: 10),
                           ],
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4A69FF)),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xFF4A69FF)),
                             ),
                             SizedBox(width: 16),
                             Text(
@@ -1376,14 +1473,18 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                           ),
                         );
-                        if (selectedLocal != null && selectedLocal is Map<String, dynamic>) {
+                        if (selectedLocal != null &&
+                            selectedLocal is Map<String, dynamic>) {
                           _registraVisita(selectedLocal['id_local']);
                           setState(() {
-                            _destinationLocation = LatLng(selectedLocal['latitude'], selectedLocal['longitude']);
+                            _destinationLocation = LatLng(
+                                selectedLocal['latitude'],
+                                selectedLocal['longitude']);
                             _destinationAddress = selectedLocal['nome'];
                             _isLoadingRoute = true;
                           });
-                          await _calculateRoute(_currentLocation, _destinationLocation!);
+                          await _calculateRoute(
+                              _currentLocation, _destinationLocation!);
                           setState(() {
                             _isLoadingRoute = false;
                           });
@@ -1414,7 +1515,8 @@ class _MainScreenState extends State<MainScreen> {
                   Container(
                     width: 1.5,
                     height: 40,
-                    color: const Color(0x334A69FF), // Divisor azul semi-transparente
+                    color: const Color(
+                        0x334A69FF), // Divisor azul semi-transparente
                   ),
                   // Botão Locais Salvos
                   Expanded(
@@ -1422,12 +1524,12 @@ class _MainScreenState extends State<MainScreen> {
                       onTap: () {
                         _navigateToSavedPlaces();
                       },
-                      child: Column(
+                      child: const Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Stack(
                             alignment: Alignment.center,
-                            children: const [
+                            children: [
                               Padding(
                                 padding: EdgeInsets.only(bottom: 2, right: 2),
                                 child: Icon(
@@ -1447,8 +1549,8 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 6),
-                          const Text(
+                          SizedBox(height: 6),
+                          Text(
                             'Locais Salvos',
                             style: TextStyle(
                               color: Color(0xFF4A69FF),
@@ -1479,25 +1581,29 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                           ),
                         );
-                        if (selectedLocal != null && selectedLocal is Map<String, dynamic>) {
+                        if (selectedLocal != null &&
+                            selectedLocal is Map<String, dynamic>) {
                           _registraVisita(selectedLocal['id_local']);
                           setState(() {
-                            _destinationLocation = LatLng(selectedLocal['latitude'], selectedLocal['longitude']);
+                            _destinationLocation = LatLng(
+                                selectedLocal['latitude'],
+                                selectedLocal['longitude']);
                             _destinationAddress = selectedLocal['nome'];
                             _isLoadingRoute = true;
                           });
-                          await _calculateRoute(_currentLocation, _destinationLocation!);
+                          await _calculateRoute(
+                              _currentLocation, _destinationLocation!);
                           setState(() {
                             _isLoadingRoute = false;
                           });
                         }
                       },
-                      child: Column(
+                      child: const Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Stack(
                             alignment: Alignment.center,
-                            children: const [
+                            children: [
                               Icon(
                                 Icons.public_rounded,
                                 size: 36,
@@ -1513,8 +1619,8 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 6),
-                          const Text(
+                          SizedBox(height: 6),
+                          Text(
                             'Sugestões',
                             style: TextStyle(
                               color: Color(0xFF4A69FF),

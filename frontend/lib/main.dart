@@ -4,10 +4,12 @@ import 'screens/place_list_screen.dart';
 import 'screens/place_detail_screen.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -16,13 +18,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(primarySwatch: Colors.blue),
       initialRoute: '/',
       routes: {
-        '/': (context) => LoginScreen(), // Tela inicial de login
-        '/places': (context) => PlaceListScreen(), // Tela de lista de locais
+        '/': (context) => const LoginScreen(), // Tela inicial de login
+        '/places': (context) =>
+            const PlaceListScreen(), // Tela de lista de locais
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/placeDetails') {
           // Verifica se os argumentos foram passados corretamente
-          final Map<String, dynamic>? place = settings.arguments as Map<String, dynamic>?;
+          final Map<String, dynamic>? place =
+              settings.arguments as Map<String, dynamic>?;
           if (place != null) {
             return MaterialPageRoute(
               builder: (context) => PlaceDetailScreen(
@@ -34,8 +38,9 @@ class MyApp extends StatelessWidget {
             // Retorna uma tela de erro se os argumentos estiverem ausentes
             return MaterialPageRoute(
               builder: (context) => Scaffold(
-                appBar: AppBar(title: Text('Erro')),
-                body: Center(child: Text('Detalhes do local não encontrados!')),
+                appBar: AppBar(title: const Text('Erro')),
+                body: const Center(
+                    child: Text('Detalhes do local não encontrados!')),
               ),
             );
           }

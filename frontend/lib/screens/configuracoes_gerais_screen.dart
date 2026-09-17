@@ -4,14 +4,12 @@ import 'package:http/http.dart' as http;
 import '../config.dart';
 import 'sugestoes_screen.dart';
 
-
 class ConfiguracoesGeraisScreen extends StatefulWidget {
   final String userName;
-  const ConfiguracoesGeraisScreen({Key? key, required this.userName})
-      : super(key: key);
+  const ConfiguracoesGeraisScreen({super.key, required this.userName});
 
   @override
-  _ConfiguracoesGeraisScreenState createState() =>
+  State<ConfiguracoesGeraisScreen> createState() =>
       _ConfiguracoesGeraisScreenState();
 }
 
@@ -60,7 +58,6 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
   @override
   Widget build(BuildContext context) {
     const Color accentBlue = Color(0xFF4CABFF);
-   
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F8FF),
@@ -163,7 +160,7 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
                             title: 'Permitir sugestões do app',
                             trailing: Switch(
                               value: _permitirSugestoes,
-                              activeColor: accentBlue,
+                              activeThumbColor: accentBlue,
                               onChanged: (v) {
                                 setState(() => _permitirSugestoes = v);
                                 _saveField('permitir_sugestoes', v);
@@ -177,7 +174,7 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
                             title: 'Impedir autobloqueio',
                             trailing: Switch(
                               value: _impedirAutobloqueio,
-                              activeColor: accentBlue,
+                              activeThumbColor: accentBlue,
                               onChanged: (v) {
                                 setState(() => _impedirAutobloqueio = v);
                                 _saveField('impedir_autobloqueio', v);
@@ -208,7 +205,7 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF4CABFF).withOpacity(0.3),
+              color: const Color(0xFF4CABFF).withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -239,7 +236,7 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
             border: Border.all(color: const Color(0xFFE2E8F0)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -349,8 +346,8 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
           ),
           const SizedBox(width: 12),
           Text(label,
-              style: const TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w500)),
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
         ],
       ),
     );

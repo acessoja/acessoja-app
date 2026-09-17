@@ -9,13 +9,13 @@ class SavedPlacesScreen extends StatefulWidget {
   final String unidadeDistancia;
 
   const SavedPlacesScreen({
+    super.key,
     required this.userName,
     this.unidadeDistancia = 'KM',
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
-  _SavedPlacesScreenState createState() => _SavedPlacesScreenState();
+  State<SavedPlacesScreen> createState() => _SavedPlacesScreenState();
 }
 
 class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
@@ -28,7 +28,8 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
     if (distanceValue is num) {
       km = distanceValue.toDouble();
     } else if (distanceValue is String) {
-      String cleanStr = distanceValue.replaceAll(RegExp(r'[^\d.,]'), '').replaceAll(',', '.');
+      String cleanStr =
+          distanceValue.replaceAll(RegExp(r'[^\d.,]'), '').replaceAll(',', '.');
       km = double.tryParse(cleanStr) ?? 0.0;
     }
     if (widget.unidadeDistancia == 'Milha') {
@@ -40,7 +41,9 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
   }
 
   double get overallAverage {
-    if (_localesList.isEmpty) return 0.0;
+    if (_localesList.isEmpty) {
+      return 0.0;
+    }
     final total = _localesList.fold<double>(0.0, (sum, place) {
       final media = place['media_estrelas'] ?? 0.0;
       return sum + (media is num ? media.toDouble() : 0.0);
@@ -56,7 +59,8 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
 
   Future<void> _fetchLocales() async {
     try {
-      final response = await http.get(Uri.parse('${Config.baseUrl}/api/locais/'));
+      final response =
+          await http.get(Uri.parse('${Config.baseUrl}/api/locais/'));
       if (response.statusCode == 200) {
         final List data = json.decode(utf8.decode(response.bodyBytes));
         setState(() {
@@ -79,7 +83,9 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
       return 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400';
     } else if (name.contains('Correios') || name.contains('CORREIOS')) {
       return 'https://images.unsplash.com/photo-1596524430615-b46475ddff6e?w=400';
-    } else if (name.contains('PetMed') || name.contains('PetZoo') || name.contains('Clínica')) {
+    } else if (name.contains('PetMed') ||
+        name.contains('PetZoo') ||
+        name.contains('Clínica')) {
       return 'https://images.unsplash.com/photo-1581888227599-779811939961?w=400';
     }
     return 'https://images.unsplash.com/photo-1577495508048-b635879837f1?w=400';
@@ -100,10 +106,13 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
   Widget build(BuildContext context) {
     final filteredPlaces = _localesList.where((place) {
       final name = (place['nome'] ?? '').toString().toLowerCase();
-      final displayName = getLocalDisplayName(place['nome'] ?? '').toLowerCase();
+      final displayName =
+          getLocalDisplayName(place['nome'] ?? '').toLowerCase();
       final address = (place['endereco'] ?? '').toString().toLowerCase();
       final query = searchQuery.toLowerCase();
-      return name.contains(query) || displayName.contains(query) || address.contains(query);
+      return name.contains(query) ||
+          displayName.contains(query) ||
+          address.contains(query);
     }).toList();
 
     return Scaffold(
@@ -177,7 +186,8 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
           const SizedBox(height: 16),
           if (!_isLoading && _localesList.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -189,7 +199,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF1E3A8A).withOpacity(0.3),
+                      color: const Color(0xFF1E3A8A).withValues(alpha: 0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -212,9 +222,10 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Text(
@@ -237,7 +248,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
+                                  color: Colors.white.withValues(alpha: 0.15),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -261,7 +272,8 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                   Text(
                                     'Locais salvos',
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.8),
                                       fontSize: 10,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -274,7 +286,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                         Container(
                           height: 36,
                           width: 1,
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withValues(alpha: 0.3),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -283,7 +295,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
+                                  color: Colors.white.withValues(alpha: 0.15),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -297,7 +309,9 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    overallAverage.toStringAsFixed(1).replaceAll('.', ','),
+                                    overallAverage
+                                        .toStringAsFixed(1)
+                                        .replaceAll('.', ','),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,
@@ -307,7 +321,8 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                   Text(
                                     'Média geral',
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.8),
                                       fontSize: 10,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -331,14 +346,16 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                     ? Center(
                         child: Text(
                           'Nenhum local encontrado.',
-                          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[600]),
                         ),
                       )
                     : ListView.builder(
                         itemCount: filteredPlaces.length,
                         itemBuilder: (context, index) {
                           final place = filteredPlaces[index];
-                          final mediaEstrelas = (place['media_estrelas'] ?? 0.0) as num;
+                          final mediaEstrelas =
+                              (place['media_estrelas'] ?? 0.0) as num;
                           final isOpen = (place['aberto'] ?? true) as bool;
 
                           return GestureDetector(
@@ -356,7 +373,8 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                               _fetchLocales();
                             },
                             child: Container(
-                              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                              margin: const EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 16),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
@@ -382,12 +400,16 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                               width: 100,
                                               height: 100,
                                               fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) {
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
                                                 return Container(
                                                   width: 100,
                                                   height: 100,
                                                   color: Colors.grey[200],
-                                                  child: const Icon(Icons.business, color: Colors.grey, size: 40),
+                                                  child: const Icon(
+                                                      Icons.business,
+                                                      color: Colors.grey,
+                                                      size: 40),
                                                 );
                                               },
                                             )
@@ -395,14 +417,16 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                               width: 100,
                                               height: 100,
                                               color: Colors.grey[200],
-                                              child: const Icon(Icons.business, color: Colors.grey, size: 40),
+                                              child: const Icon(Icons.business,
+                                                  color: Colors.grey, size: 40),
                                             ),
                                     ),
                                     const SizedBox(width: 12),
                                     // Informações do local na direita
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             getLocalDisplayName(place['nome']),
@@ -420,18 +444,23 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                             style: TextStyle(
                                               fontSize: 11,
                                               fontWeight: FontWeight.bold,
-                                              color: isOpen ? Colors.green : Colors.red,
+                                              color: isOpen
+                                                  ? Colors.green
+                                                  : Colors.red,
                                             ),
                                           ),
                                           const SizedBox(height: 6),
                                           Row(
                                             children: [
                                               Row(
-                                                children: List.generate(5, (starIndex) {
+                                                children: List.generate(5,
+                                                    (starIndex) {
                                                   return Icon(
                                                     Icons.star,
                                                     size: 13,
-                                                    color: starIndex < mediaEstrelas.round()
+                                                    color: starIndex <
+                                                            mediaEstrelas
+                                                                .round()
                                                         ? Colors.amber
                                                         : Colors.grey[300],
                                                   );
@@ -453,25 +482,32 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                     ),
                                     // Botões Verticais à Direita
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
                                       children: [
                                         ElevatedButton.icon(
                                           onPressed: () {
                                             // Retorna o local selecionado para iniciar a rota na tela principal
                                             Navigator.pop(context, place);
                                           },
-                                          icon: const Icon(Icons.directions, size: 14),
+                                          icon: const Icon(Icons.directions,
+                                              size: 14),
                                           label: const Text(
                                             'Iniciar rota',
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF4CABFF),
+                                            backgroundColor:
+                                                const Color(0xFF4CABFF),
                                             foregroundColor: Colors.white,
                                             minimumSize: const Size(110, 32),
-                                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8),
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(16),
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
                                             ),
                                             elevation: 0,
                                           ),
@@ -479,25 +515,34 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                         const SizedBox(height: 6),
                                         ElevatedButton.icon(
                                           onPressed: () {
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
                                               SnackBar(
-                                                content: Text('Compartilhando "${place['nome']}"'),
-                                                backgroundColor: const Color(0xFF4CABFF),
+                                                content: Text(
+                                                    'Compartilhando "${place['nome']}"'),
+                                                backgroundColor:
+                                                    const Color(0xFF4CABFF),
                                               ),
                                             );
                                           },
-                                          icon: const Icon(Icons.send_rounded, size: 14),
+                                          icon: const Icon(Icons.send_rounded,
+                                              size: 14),
                                           label: const Text(
                                             'Compartilhar',
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF4CABFF),
+                                            backgroundColor:
+                                                const Color(0xFF4CABFF),
                                             foregroundColor: Colors.white,
                                             minimumSize: const Size(110, 32),
-                                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8),
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(16),
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
                                             ),
                                             elevation: 0,
                                           ),

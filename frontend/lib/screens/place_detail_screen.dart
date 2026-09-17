@@ -11,11 +11,11 @@ class PlaceDetailScreen extends StatefulWidget {
   final ApiService? apiService;
 
   const PlaceDetailScreen({
+    super.key,
     required this.place,
     required this.userName,
     this.apiService,
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
   State<PlaceDetailScreen> createState() => _PlaceDetailScreenState();
@@ -60,8 +60,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   Future<void> _checkIfVisited() async {
     try {
       final response = await http.get(Uri.parse(
-        '${Config.baseUrl}/api/visitas/?nome_usuario=${widget.userName}'
-      ));
+          '${Config.baseUrl}/api/visitas/?nome_usuario=${widget.userName}'));
       if (response.statusCode == 200) {
         final List data = json.decode(utf8.decode(response.bodyBytes));
         final idLocal = widget.place['id_local'];
@@ -79,8 +78,11 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   }
 
   double get averageRating {
-    if (comments.isEmpty) return 0.0;
-    final totalStars = comments.fold<num>(0, (sum, comment) => sum + (comment['estrelas'] as num));
+    if (comments.isEmpty) {
+      return 0.0;
+    }
+    final totalStars = comments.fold<num>(
+        0, (sum, comment) => sum + (comment['estrelas'] as num));
     return totalStars / comments.length;
   }
 
@@ -115,7 +117,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     );
   }
 
-  Future<void> _submitEvaluation(String q1, String q2, String q3, String q4) async {
+  Future<void> _submitEvaluation(
+      String q1, String q2, String q3, String q4) async {
     setState(() {
       _isLoading = true;
     });
@@ -131,11 +134,15 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
         estrelas: _selectedStars,
         comentario: _commentController.text.trim(),
       );
+      if (!mounted) {
+        return;
+      }
 
       if (result.success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Avaliação enviada com sucesso! Obrigado por ajudar.'),
+            content:
+                Text('Avaliação enviada com sucesso! Obrigado por ajudar.'),
             backgroundColor: Color(0xFF4CABFF),
           ),
         );
@@ -159,6 +166,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       }
     } catch (e) {
       debugPrint("Error sending evaluation: $e");
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Erro de conexão com o servidor.'),
@@ -241,7 +251,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(5, (index) {
                     return Icon(
-                      index < averageRating.round() ? Icons.star : Icons.star_border,
+                      index < averageRating.round()
+                          ? Icons.star
+                          : Icons.star_border,
                       size: 32,
                       color: const Color(0xFF4CABFF),
                     );
@@ -279,7 +291,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       icon: const Icon(Icons.directions_rounded, size: 18),
                       label: const Text(
                         'Começar Rota',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -302,19 +315,20 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   Center(
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 32),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF1E3A8A).withOpacity(0.04),
-                            const Color(0xFF4CABFF).withOpacity(0.08),
+                            const Color(0xFF1E3A8A).withValues(alpha: 0.04),
+                            const Color(0xFF4CABFF).withValues(alpha: 0.08),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: const Color(0xFF4CABFF).withOpacity(0.3),
+                          color: const Color(0xFF4CABFF).withValues(alpha: 0.3),
                           width: 1.5,
                         ),
                       ),
@@ -328,7 +342,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF4CABFF).withOpacity(0.15),
+                                  color: const Color(0xFF4CABFF)
+                                      .withValues(alpha: 0.15),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -364,9 +379,11 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           if (_hasVisited) ...[
                             const SizedBox(height: 20),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF4CABFF).withOpacity(0.1),
+                                color: const Color(0xFF4CABFF)
+                                    .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Row(
@@ -398,7 +415,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   ...comments.map((comment) {
                     final stars = (comment['estrelas'] ?? 0) as int;
                     final text = (comment['comentario'] ?? '').toString();
-                    final nomeUsuario = (comment['nome_usuario'] ?? 'Usuário AcessoJá').toString();
+                    final nomeUsuario =
+                        (comment['nome_usuario'] ?? 'Usuário AcessoJá')
+                            .toString();
 
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -451,7 +470,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
 
                 const Divider(height: 32, thickness: 1),
 
@@ -481,7 +500,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),
                           child: Icon(
-                            index < _selectedStars ? Icons.star : Icons.star_border_rounded,
+                            index < _selectedStars
+                                ? Icons.star
+                                : Icons.star_border_rounded,
                             size: 36,
                             color: const Color(0xFF4CABFF),
                           ),
@@ -496,7 +517,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(26),
-                      border: Border.all(color: const Color(0xFF4CABFF), width: 1.5),
+                      border: Border.all(
+                          color: const Color(0xFF4CABFF), width: 1.5),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: TextField(
@@ -527,7 +549,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           if (_selectedStars == 0) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Por favor, escolha uma quantidade de estrelas!'),
+                                content: Text(
+                                    'Por favor, escolha uma quantidade de estrelas!'),
                                 backgroundColor: Colors.redAccent,
                               ),
                             );
@@ -537,7 +560,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         },
                         child: const Text(
                           'Confirmar',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -549,13 +573,16 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF9E6),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.amber.withOpacity(0.3), width: 1.5),
+                      border: Border.all(
+                          color: Colors.amber.withValues(alpha: 0.3),
+                          width: 1.5),
                     ),
-                    child: Row(
+                    child: const Row(
                       children: [
-                        const Icon(Icons.info_outline_rounded, color: Colors.amber, size: 28),
-                        const SizedBox(width: 12),
-                        const Expanded(
+                        Icon(Icons.info_outline_rounded,
+                            color: Colors.amber, size: 28),
+                        SizedBox(width: 12),
+                        Expanded(
                           child: Text(
                             'Você ainda não visitou este local recentemente. Para avaliá-lo, inicie uma rota clicando em "Começar Rota" acima.',
                             style: TextStyle(
