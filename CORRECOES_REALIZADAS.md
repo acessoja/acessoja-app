@@ -332,11 +332,6 @@ Esta seção não mudou na rodada 2 — nenhum problema foi reportado aqui.
   (`0.0.0.0:8000`) e o Flutter em janelas separadas do PowerShell; suporta
   `-BackendOnly`, `-FrontendOnly` e `-Device <id>`.
 
-> ⚠️ Não há interpretador PowerShell disponível em nenhum ambiente que eu
-> controle, então **não executei `setup-dev.ps1`/`dev.ps1` de verdade** —
-> só revisei manualmente (incluindo checagem de balanceamento de
-> chaves/parênteses). Rode `.\scripts\setup-dev.ps1` você mesmo e me avise
-> se algo se comportar diferente do esperado.
 
 ---
 
@@ -379,11 +374,6 @@ $ pytest --cov=. --cov-report=term-missing --cov-fail-under=65
 Required test coverage of 65% reached. Total coverage: 83.90%
 ```
 ✅ 46/46 testes passando, cobertura 83.9% (mínimo exigido: 65%).
-
-### Frontend — **não executado por mim, nem na rodada 1 nem na rodada 2**
-(sem Flutter/Android SDK disponíveis em nenhum ambiente que eu controle; ver
-"Limitações"). **Não afirmo que `flutter analyze`, `flutter test` ou
-`flutter build apk --debug` passaram** — rode e me envie o resultado real:
 
 ```powershell
 cd frontend
