@@ -4,10 +4,12 @@ import 'main_screen.dart';
 import 'register_screen.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -38,11 +40,9 @@ class LoginScreen extends StatefulWidget {
   final void Function(BuildContext context, Map<String, dynamic> user)?
       onLoginSuccess;
 
-  const LoginScreen({Key? key, this.apiService, this.onLoginSuccess})
-      : super(key: key);
-
+  const LoginScreen({super.key, this.apiService, this.onLoginSuccess});
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -71,6 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final result = await _apiService.login(nome: nome, password: password);
+      if (!mounted || !context.mounted) return;
 
       if (result.success) {
         final user = result.user ?? <String, dynamic>{};
@@ -115,6 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
+      if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro de conexão: $e')),
       );

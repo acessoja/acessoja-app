@@ -125,8 +125,8 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
     final headerBackground = isDark ? colors.primarySoft : colors.primaryDark;
     final headerText = isDark ? colors.primaryDark : colors.onPrimary;
     final headerMuted = isDark
-        ? colors.primaryDark.withOpacity(0.76)
-        : colors.onPrimary.withOpacity(0.72);
+        ? colors.primaryDark.withValues(alpha: 0.76)
+        : colors.onPrimary.withValues(alpha: 0.72);
 
     return Semantics(
       button: true,
@@ -154,7 +154,7 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
               Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: colors.surface.withOpacity(0.9),
+                  color: colors.surface.withValues(alpha: 0.9),
                   shape: BoxShape.circle,
                 ),
                 child: CircleAvatar(
@@ -330,7 +330,7 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
           ),
           style: OutlinedButton.styleFrom(
             foregroundColor: colors.danger,
-            side: BorderSide(color: colors.danger.withOpacity(0.45)),
+            side: BorderSide(color: colors.danger.withValues(alpha: 0.45)),
             backgroundColor: colors.dangerSoft,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),

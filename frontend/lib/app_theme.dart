@@ -29,13 +29,11 @@ class AppThemeScope extends InheritedNotifier<AppThemeController> {
   final AppThemeController controller;
 
   const AppThemeScope({
-    Key? key,
+    super.key,
     required this.controller,
-    required Widget child,
+    required super.child,
   }) : super(
-          key: key,
           notifier: controller,
-          child: child,
         );
 
   static AppThemeController of(BuildContext context) {
@@ -98,12 +96,12 @@ class AppColors extends ThemeExtension<AppColors> {
     border: const Color(0xFFE2E8F0),
     fieldBackground: Colors.white,
     danger: const Color(0xFFB42318),
-    dangerSoft: Colors.redAccent.withOpacity(0.10),
+    dangerSoft: Colors.redAccent.withValues(alpha: 0.10),
     success: const Color(0xFF18713D),
-    successSoft: Colors.green.withOpacity(0.10),
+    successSoft: Colors.green.withValues(alpha: 0.10),
     warning: const Color(0xFF7A5C00),
     warningSoft: const Color(0xFFFFF9E6),
-    shadow: Colors.black.withOpacity(0.04),
+    shadow: Colors.black.withValues(alpha: 0.04),
     onPrimary: Colors.white,
   );
 
@@ -119,9 +117,9 @@ class AppColors extends ThemeExtension<AppColors> {
     border: const Color(0xFF525252),
     fieldBackground: const Color(0xFF303030),
     danger: const Color(0xFFFFA49D),
-    dangerSoft: Colors.redAccent.withOpacity(0.18),
+    dangerSoft: Colors.redAccent.withValues(alpha: 0.18),
     success: const Color(0xFF8BDBAB),
-    successSoft: Colors.green.withOpacity(0.18),
+    successSoft: Colors.green.withValues(alpha: 0.18),
     warning: Colors.amber,
     warningSoft: const Color(0xFF40391F),
     shadow: Colors.black26,
@@ -222,8 +220,6 @@ class AppThemes {
       onSecondary: colors.onPrimary,
       surface: colors.surface,
       onSurface: colors.text,
-      background: colors.pageBackground,
-      onBackground: colors.text,
       error: colors.danger,
       onError: colors.onPrimary,
       outline: colors.border,
@@ -237,7 +233,6 @@ class AppThemes {
       scaffoldBackgroundColor: colors.pageBackground,
       canvasColor: colors.pageBackground,
       cardColor: colors.surface,
-      dialogBackgroundColor: colors.surface,
       dividerColor: colors.border,
       colorScheme: colorScheme,
       appBarTheme: AppBarTheme(
@@ -286,13 +281,13 @@ class AppThemes {
         contentTextStyle: TextStyle(color: colors.muted),
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith(
-          (states) => states.contains(MaterialState.selected)
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
               ? colors.onPrimary
               : colors.muted,
         ),
-        trackColor: MaterialStateProperty.resolveWith(
-          (states) => states.contains(MaterialState.selected)
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
               ? colors.primary
               : colors.border,
         ),

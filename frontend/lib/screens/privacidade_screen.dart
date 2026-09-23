@@ -43,9 +43,10 @@ class _PrivacidadeScreenState extends State<PrivacidadeScreen> {
       await _service.save(widget.userName, field, value);
       if (mounted) setState(() => _profile[field] = value);
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(context.l10n.saveError)));
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }

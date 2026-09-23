@@ -10,7 +10,9 @@ Map<String, dynamic>? routePlace(Object? result) {
       !lat.isFinite ||
       !lon.isFinite ||
       lat.abs() > 90 ||
-      lon.abs() > 180) return null;
+      lon.abs() > 180) {
+    return null;
+  }
   return result;
 }
 

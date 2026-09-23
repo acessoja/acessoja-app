@@ -60,7 +60,7 @@ class _ExplorarScreenState extends SafeState<ExplorarScreen> {
     try {
       final response =
           await AppHttp.get(Uri.parse('${Config.baseUrl}/api/locais/'));
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       if (response.statusCode == 200) {
         final List data = json.decode(utf8.decode(response.bodyBytes));
         // Sort locales by distance
@@ -400,7 +400,9 @@ class _ExplorarScreenState extends SafeState<ExplorarScreen> {
                                             ),
                                           ),
                                         );
-                                        if (!mounted) return;
+                                        if (!mounted || !context.mounted) {
+                                          return;
+                                        }
                                         if (result != null) {
                                           Navigator.pop(context, result);
                                         } else {

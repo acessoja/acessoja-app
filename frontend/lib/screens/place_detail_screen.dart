@@ -648,7 +648,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
         decoration: BoxDecoration(
           color: colors.warningSoft,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colors.warning.withOpacity(0.55)),
+          border: Border.all(color: colors.warning.withValues(alpha: 0.55)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -142,8 +142,8 @@ class _LoginScreenState extends SafeState<LoginScreen> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(actions: const [
         Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: const LanguageSelector())
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: LanguageSelector())
       ]),
       body: SafeArea(
         child: LayoutBuilder(

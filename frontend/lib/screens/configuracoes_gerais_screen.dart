@@ -61,11 +61,12 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(context.l10n.saveError)));
     } finally {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _saving = false;
           _revision++;
         });
+      }
     }
   }
 
@@ -99,8 +100,9 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
                 onChanged: _saving
                     ? null
                     : (value) {
-                        if (value != null)
+                        if (value != null) {
                           _save('idioma', value == 'en' ? 'en_US' : 'pt_BR');
+                        }
                       },
               )),
           Padding(
@@ -152,8 +154,9 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
                               allowSuggestions:
                                   _profile['permitir_sugestoes'] != false,
                             )));
-                if (context.mounted && result is Map<String, dynamic>)
+                if (context.mounted && result is Map<String, dynamic>) {
                   Navigator.pop(context, result);
+                }
               }),
         ]),
         // Keep the existing server preference visible without claiming an

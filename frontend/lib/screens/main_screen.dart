@@ -23,11 +23,10 @@ class MainScreen extends StatefulWidget {
   final TileProvider? tileProvider;
 
   const MainScreen(
-      {Key? key,
+      {super.key,
       required this.userName,
       this.trackLocation = true,
-      this.tileProvider})
-      : super(key: key);
+      this.tileProvider});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -140,7 +139,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                     context.l10n.welcome(widget.userName),
                     style: TextStyle(
                         fontSize: 12,
-                        color: colors.onPrimary.withOpacity(0.72)),
+                        color: colors.onPrimary.withValues(alpha: 0.72)),
                   ),
                 ],
               ),
@@ -468,9 +467,9 @@ class _MainScreenState extends SafeState<MainScreen> {
           maxWidth: 680, maxHeight: MediaQuery.sizeOf(context).height * .94),
       backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: const BorderRadius.only(
-          topLeft: const Radius.circular(24),
-          topRight: const Radius.circular(24),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
         ),
       ),
       builder: (context) {
@@ -561,10 +560,10 @@ class _MainScreenState extends SafeState<MainScreen> {
                     // Dropdown/Lista de sugestões de estabelecimentos por perto
                     if (_isLoadingLocals)
                       const Center(
-                        child: const Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0),
                           child:
-                              const CircularProgressIndicator(strokeWidth: 2),
+                              CircularProgressIndicator(strokeWidth: 2),
                         ),
                       )
                     else ...[
@@ -1046,7 +1045,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                 decoration: BoxDecoration(
                   color: colors.primaryDark,
                   borderRadius: const BorderRadius.only(
-                    bottomRight: const Radius.circular(28),
+                    bottomRight: Radius.circular(28),
                   ),
                 ),
                 child: Column(
@@ -1054,7 +1053,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                   children: [
                     CircleAvatar(
                       radius: 32,
-                      backgroundColor: colors.onPrimary.withOpacity(0.24),
+                      backgroundColor: colors.onPrimary.withValues(alpha: 0.24),
                       backgroundImage: _avatarImage(),
                       child: _avatarImage() == null
                           ? Icon(
@@ -1068,7 +1067,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                     Text(
                       context.l10n.yourAccount,
                       style: TextStyle(
-                        color: colors.onPrimary.withOpacity(0.72),
+                        color: colors.onPrimary.withValues(alpha: 0.72),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1186,7 +1185,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                                 width: 24,
                                 height: 24,
                                 decoration: BoxDecoration(
-                                  color: colors.primary.withOpacity(0.3),
+                                  color: colors.primary.withValues(alpha: 0.3),
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -1276,7 +1275,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                                   width: 32,
                                   height: 32,
                                   decoration: BoxDecoration(
-                                    color: colors.danger.withOpacity(0.2),
+                                    color: colors.danger.withValues(alpha: 0.2),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -1307,8 +1306,9 @@ class _MainScreenState extends SafeState<MainScreen> {
                       );
                       if (!mounted) return;
                       await _loadUserProfile();
-                      if (mounted && result is Map<String, dynamic>)
+                      if (mounted && result is Map<String, dynamic>) {
                         await _startRoute(result);
+                      }
                     },
                     child: Semantics(
                       button: true,
@@ -1584,8 +1584,8 @@ class _MainScreenState extends SafeState<MainScreen> {
             decoration: BoxDecoration(
               color: colors.surface,
               borderRadius: const BorderRadius.only(
-                topLeft: const Radius.circular(24),
-                topRight: const Radius.circular(24),
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
               ),
               border: Border(
                 top: BorderSide(color: colors.border),
@@ -1655,7 +1655,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                     Container(
                       width: 1.5,
                       height: 40,
-                      color: colors.primary.withOpacity(0.2),
+                      color: colors.primary.withValues(alpha: 0.2),
                     ),
                     // Botão Locais Salvos
                     Expanded(
@@ -1712,7 +1712,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                     Container(
                       width: 1.5,
                       height: 40,
-                      color: colors.primary.withOpacity(0.2),
+                      color: colors.primary.withValues(alpha: 0.2),
                     ),
                     // Botão Sugestões
                     Expanded(

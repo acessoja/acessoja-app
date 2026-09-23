@@ -62,14 +62,16 @@ final profile = <String, dynamic>{
 };
 
 http.Response fixtureResponse(http.Request request) {
-  if (request.url.path.contains('perfil'))
+  if (request.url.path.contains('perfil')) {
     return http.Response.bytes(utf8.encode(jsonEncode(profile)), 200);
-  if (request.url.path.contains('visitas'))
+  }
+  if (request.url.path.contains('visitas')) {
     return http.Response.bytes(
         utf8.encode(jsonEncode([
           {'local_detalhes': place}
         ])),
         200);
+  }
   if (request.url.path.contains('modal-avaliacoes')) {
     return http.Response(request.method == 'POST' ? '{}' : '[]',
         request.method == 'POST' ? 201 : 200);
@@ -202,8 +204,8 @@ void main() {
 
   testWidgets('HTTP errors end loading and retry recovers', (tester) async {
     AppHttp.client = MockClient((_) async => http.Response('{}', 500));
-    await tester.pumpWidget(harness(ExplorarScreen(
-        userName: 'teste', currentLocation: const LatLng(0, 0))));
+    await tester.pumpWidget(harness(const ExplorarScreen(
+        userName: 'teste', currentLocation: LatLng(0, 0))));
     await tester.pumpAndSettle();
     expect(find.text('Não foi possível carregar os dados.'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -260,7 +262,7 @@ void main() {
                     onPressed: () => Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => SettingsScreen(userName: 'teste'))),
+                            builder: (_) => const SettingsScreen(userName: 'teste'))),
                     child: const Text('login-entry')))
           },
         )));
@@ -274,7 +276,7 @@ void main() {
       (tester) async {
     final response = Completer<http.Response>();
     AppHttp.client = MockClient((_) => response.future);
-    await tester.pumpWidget(harness(SavedPlacesScreen(userName: 'teste')));
+    await tester.pumpWidget(harness(const SavedPlacesScreen(userName: 'teste')));
     await tester.pump();
     await tester.pumpWidget(const SizedBox.shrink());
     response.complete(http.Response('[]', 200));
@@ -314,7 +316,7 @@ void main() {
                 selected = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (_) => SavedPlacesScreen(userName: 'teste')));
+                        builder: (_) => const SavedPlacesScreen(userName: 'teste')));
               },
             )))));
     await tapVisible(tester, find.text('open-saved'));
@@ -379,17 +381,17 @@ void main() {
   });
 
   final screens = <String, Widget Function()>{
-    'login': () => LoginScreen(),
-    'register': () => RegisterScreen(),
+    'login': () => const LoginScreen(),
+    'register': () => const RegisterScreen(),
     'explore': () =>
-        ExplorarScreen(userName: 'teste', currentLocation: const LatLng(0, 0)),
-    'saved': () => SavedPlacesScreen(userName: 'teste'),
-    'suggestions': () => SugestoesScreen(userName: 'teste'),
-    'settings': () => SettingsScreen(userName: 'teste'),
+        const ExplorarScreen(userName: 'teste', currentLocation: LatLng(0, 0)),
+    'saved': () => const SavedPlacesScreen(userName: 'teste'),
+    'suggestions': () => const SugestoesScreen(userName: 'teste'),
+    'settings': () => const SettingsScreen(userName: 'teste'),
     'preferences': () => const ConfiguracoesGeraisScreen(userName: 'teste'),
     'privacy': () => const PrivacidadeScreen(userName: 'teste'),
-    'profile': () => InformacoesPessoaisScreen(userName: 'teste'),
-    'help': () => AjudaScreen(),
+    'profile': () => const InformacoesPessoaisScreen(userName: 'teste'),
+    'help': () => const AjudaScreen(),
     'details': () => PlaceDetailScreen(place: place, userName: 'teste'),
   };
   for (final entry in screens.entries) {
