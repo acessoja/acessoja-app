@@ -671,7 +671,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                               border:
                                   Border.all(color: colors.primary, width: 1.5),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Flexible(
