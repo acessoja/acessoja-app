@@ -275,7 +275,7 @@ class _FaqTile extends StatefulWidget {
   State<_FaqTile> createState() => _FaqTileState();
 }
 
-class __FaqTileState extends SafeState<_FaqTile> {
+class _FaqTileState extends SafeState<_FaqTile> {
   bool _expanded = false;
 
   @override
