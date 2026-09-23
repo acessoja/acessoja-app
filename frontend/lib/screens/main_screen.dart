@@ -1554,7 +1554,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                             BoxShadow(color: colors.shadow, blurRadius: 10),
                           ],
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             CircularProgressIndicator(
