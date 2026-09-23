@@ -1,7 +1,10 @@
+import '../widgets/load_error.dart';
+import '../widgets/safe_state.dart';
+import '../l10n/strings.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/app_http.dart';
 
 import '../app_theme.dart';
 import '../config.dart';
@@ -21,28 +24,22 @@ class SavedPlacesScreen extends StatefulWidget {
   _SavedPlacesScreenState createState() => _SavedPlacesScreenState();
 }
 
-class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
+class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
   String searchQuery = '';
   List<dynamic> _localesList = [];
   bool _isLoading = true;
+  bool _loadFailed = false;
 
-  String _formatDistance(dynamic distanceValue) {
-    double km = 0.0;
-    if (distanceValue is num) {
-      km = distanceValue.toDouble();
-    } else if (distanceValue is String) {
-      final cleanStr = distanceValue
-          .replaceAll(RegExp(r'[^\d.,]'), '')
-          .replaceAll(',', '.');
-      km = double.tryParse(cleanStr) ?? 0.0;
-    }
-
-    if (widget.unidadeDistancia == 'Milha') {
-      final miles = km * 0.621371;
-      return '${miles.toStringAsFixed(1).replaceAll('.', ',')} mi';
-    }
-
-    return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
+  String _formatDistance(dynamic value) {
+    final km = value is num
+        ? value.toDouble()
+        : double.tryParse(value
+                .toString()
+                .replaceAll(RegExp(r'[^0-9.,]'), '')
+                .replaceAll(',', '.')) ??
+            0;
+    final miles = widget.unidadeDistancia == 'Milha';
+    return '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}';
   }
 
   double get overallAverage {
@@ -63,8 +60,14 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
   }
 
   Future<void> _fetchLocales() async {
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+    });
     try {
-      final response = await http.get(Uri.parse('${Config.baseUrl}/api/locais/'));
+      final response =
+          await AppHttp.get(Uri.parse('${Config.baseUrl}/api/locais/'));
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
         final List data = json.decode(utf8.decode(response.bodyBytes));
@@ -72,12 +75,18 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
           _localesList = data;
           _isLoading = false;
         });
+      } else {
+        _loadFailed = true;
       }
     } catch (e) {
+      if (!mounted) return;
+      _loadFailed = true;
       debugPrint('Error fetching saved places: $e');
       setState(() {
         _isLoading = false;
       });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -110,7 +119,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
   }
 
   Future<void> _openPlace(dynamic place) async {
-    await Navigator.push(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PlaceDetailScreen(
@@ -120,6 +129,11 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
       ),
     );
 
+    if (!mounted) return;
+    if (result is Map<String, dynamic>) {
+      Navigator.pop(context, result);
+      return;
+    }
     _fetchLocales();
   }
 
@@ -128,12 +142,12 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
 
     return Semantics(
       button: true,
-      label: 'Voltar',
-      child: GestureDetector(
+      label: context.l10n.back,
+      child: InkWell(
         onTap: () => Navigator.pop(context),
         child: Container(
-          width: 42,
-          height: 42,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             color: colors.primarySoft,
             borderRadius: BorderRadius.circular(14),
@@ -153,7 +167,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
 
     return Semantics(
       textField: true,
-      label: 'Pesquisar locais salvos',
+      label: context.l10n.searchSavedPlaces,
       child: TextField(
         onChanged: (value) {
           setState(() {
@@ -162,7 +176,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
         },
         textInputAction: TextInputAction.search,
         decoration: InputDecoration(
-          hintText: 'Pesquisar local ou endereço',
+          hintText: context.l10n.searchAddress,
           hintStyle: TextStyle(
             color: colors.muted,
             fontSize: 13,
@@ -266,18 +280,19 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
           BoxShadow(
             color: colors.shadow,
             blurRadius: 16,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
             children: [
               Text(
-                'Resumo dos locais',
+                context.l10n.placesSummary,
                 style: TextStyle(
                   color: colors.text,
                   fontSize: 14,
@@ -307,7 +322,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
               _buildOverviewStat(
                 icon: Icons.bookmark_rounded,
                 value: '${_localesList.length}',
-                label: 'Locais salvos',
+                label: context.l10n.savedPlaces,
               ),
               Container(
                 height: 38,
@@ -318,8 +333,8 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
               _buildOverviewStat(
                 icon: Icons.star_rounded,
                 iconColor: Colors.amber.shade700,
-                value: overallAverage.toStringAsFixed(1).replaceAll('.', ','),
-                label: 'Média geral',
+                value: context.number(overallAverage),
+                label: context.l10n.averageRating,
               ),
             ],
           ),
@@ -354,6 +369,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
               width: 96,
               height: 96,
               fit: BoxFit.cover,
+              cacheWidth: 640,
               errorBuilder: (context, error, stackTrace) {
                 return _buildImagePlaceholder();
               },
@@ -382,7 +398,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
         ),
         const SizedBox(width: 7),
         Text(
-          mediaEstrelas.toStringAsFixed(1).replaceAll('.', ','),
+          context.number(mediaEstrelas),
           style: TextStyle(
             color: colors.muted,
             fontSize: 11,
@@ -422,9 +438,8 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: primary
-                  ? BorderSide.none
-                  : BorderSide(color: colors.border),
+              side:
+                  primary ? BorderSide.none : BorderSide(color: colors.border),
             ),
           ),
         ),
@@ -445,8 +460,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: InkWell(
         onTap: () => _openPlace(place),
         child: Container(
           padding: const EdgeInsets.all(12),
@@ -458,7 +472,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
               BoxShadow(
                 color: colors.shadow,
                 blurRadius: 14,
-                offset: Offset(0, 5),
+                offset: const Offset(0, 5),
               ),
             ],
           ),
@@ -470,7 +484,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                 children: [
                   Semantics(
                     image: true,
-                    label: 'Imagem de $displayName',
+                    label: context.l10n.placeImage(displayName),
                     child: _buildPlaceImage(place['imagem']),
                   ),
                   const SizedBox(width: 12),
@@ -520,11 +534,12 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                 borderRadius: BorderRadius.circular(7),
                               ),
                               child: Text(
-                                isOpen ? 'Aberto' : 'Fechado',
+                                isOpen
+                                    ? context.l10n.open
+                                    : context.l10n.closed,
                                 style: TextStyle(
-                                  color: isOpen
-                                      ? colors.success
-                                      : colors.danger,
+                                  color:
+                                      isOpen ? colors.success : colors.danger,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w800,
                                 ),
@@ -552,7 +567,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                 children: [
                   _buildPlaceActionButton(
                     icon: Icons.directions_rounded,
-                    label: 'Iniciar rota',
+                    label: context.l10n.startRouteAction,
                     onPressed: () {
                       Navigator.pop(context, place);
                     },
@@ -560,13 +575,12 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                   const SizedBox(width: 8),
                   _buildPlaceActionButton(
                     icon: Icons.ios_share_rounded,
-                    label: 'Compartilhar',
+                    label: context.l10n.share,
                     primary: false,
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Compartilhando "${place['nome']}"'),
-                          backgroundColor: colors.primaryDark,
                           behavior: SnackBarBehavior.floating,
                           margin: const EdgeInsets.all(16),
                           shape: RoundedRectangleBorder(
@@ -595,9 +609,9 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
           CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
           ),
-          SizedBox(height: 14),
+          const SizedBox(height: 14),
           Text(
-            'Carregando locais salvos...',
+            context.l10n.loadingSavedPlaces,
             style: TextStyle(
               color: colors.muted,
               fontSize: 14,
@@ -639,7 +653,9 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              hasSearch ? 'Nenhum local encontrado.' : 'Nenhum local salvo.',
+              hasSearch
+                  ? context.l10n.noPlaceFoundPeriod
+                  : context.l10n.noSavedPlaces,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: colors.text,
@@ -650,8 +666,8 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
             const SizedBox(height: 8),
             Text(
               hasSearch
-                  ? 'Tente pesquisar por outro nome ou endereço.'
-                  : 'Os locais disponíveis aparecerão aqui para você consultar depois.',
+                  ? context.l10n.tryAnotherSearch
+                  : context.l10n.savedPlacesEmptyHint,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: colors.muted,
@@ -693,7 +709,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
         ),
         titleSpacing: 12,
         title: Text(
-          'Locais Salvos',
+          context.l10n.savedPlacesTitle,
           style: TextStyle(
             color: colors.text,
             fontSize: 19,
@@ -716,33 +732,43 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                     horizontalPadding,
                     0,
                   ),
-                  child: _buildSearchField(),
+                  child: Column(children: [
+                    Text(context.l10n.allPlacesNotice,
+                        style: TextStyle(color: colors.muted),
+                        textAlign: TextAlign.center),
+                    const SizedBox(height: 12),
+                    _buildSearchField()
+                  ]),
                 ),
                 if (!_isLoading && _localesList.isNotEmpty)
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: horizontalPadding),
                     child: _buildOverviewCard(),
                   ),
                 const SizedBox(height: 14),
                 Expanded(
-                  child: _isLoading
-                      ? _buildLoadingState()
-                      : filteredPlaces.isEmpty
-                          ? _buildEmptyState()
-                          : ListView.builder(
-                              keyboardDismissBehavior:
-                                  ScrollViewKeyboardDismissBehavior.onDrag,
-                              padding: EdgeInsets.fromLTRB(
-                                horizontalPadding,
-                                0,
-                                horizontalPadding,
-                                20,
-                              ),
-                              itemCount: filteredPlaces.length,
-                              itemBuilder: (context, index) {
-                                return _buildPlaceCard(filteredPlaces[index]);
-                              },
-                            ),
+                  child: _loadFailed
+                      ? LoadError(onRetry: _fetchLocales)
+                      : _isLoading
+                          ? _buildLoadingState()
+                          : filteredPlaces.isEmpty
+                              ? _buildEmptyState()
+                              : ListView.builder(
+                                  keyboardDismissBehavior:
+                                      ScrollViewKeyboardDismissBehavior.onDrag,
+                                  padding: EdgeInsets.fromLTRB(
+                                    horizontalPadding,
+                                    0,
+                                    horizontalPadding,
+                                    20,
+                                  ),
+                                  itemCount: filteredPlaces.length,
+                                  itemBuilder: (context, index) {
+                                    return _buildPlaceCard(
+                                        filteredPlaces[index]);
+                                  },
+                                ),
                 ),
               ],
             );

@@ -1,9 +1,12 @@
+import '../widgets/load_error.dart';
+import '../widgets/safe_state.dart';
+import '../l10n/strings.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/app_http.dart';
 
 import '../app_theme.dart';
 import '../config.dart';
@@ -20,8 +23,25 @@ class InformacoesPessoaisScreen extends StatefulWidget {
       _InformacoesPessoaisScreenState();
 }
 
-class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
+class _InformacoesPessoaisScreenState
+    extends SafeState<InformacoesPessoaisScreen> {
+  final List<TextEditingController> _dialogControllers = [];
+  TextEditingController _controller({String? text}) {
+    final controller = TextEditingController(text: text);
+    _dialogControllers.add(controller);
+    return controller;
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _dialogControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
   bool _isLoading = true;
+  bool _loadFailed = false;
   String _nomeCompleto = '';
   String _email = '';
   String _telefone = '';
@@ -35,11 +55,16 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
   }
 
   Future<void> _loadProfile() async {
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+    });
     try {
       final uri = Uri.parse(
         '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(widget.userName)}',
       );
-      final resp = await http.get(uri);
+      final resp = await AppHttp.get(uri);
+      if (!mounted) return;
       if (resp.statusCode == 200) {
         final d = json.decode(utf8.decode(resp.bodyBytes));
         setState(() {
@@ -58,22 +83,20 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
   }
 
   Future<void> _saveField(String field, String value) async {
-    final colors = AppColors.of(context);
-
     try {
-      final resp = await http.put(
+      final resp = await AppHttp.put(
         Uri.parse(
           '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(widget.userName)}',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({field: value}),
       );
+      if (!mounted) return;
 
       if (resp.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Atualizado com sucesso!'),
-            backgroundColor: colors.primary,
+            content: Text(context.l10n.savedSuccessfully),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -81,8 +104,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao salvar: ${resp.body}'),
-            backgroundColor: colors.danger,
+            content: Text(context.l10n.saveError),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -90,8 +112,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro de conexão: $e'),
-          backgroundColor: colors.danger,
+          content: Text(context.l10n.connectionError),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -100,9 +121,9 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
 
   Future<void> _changePassword() async {
     final colors = AppColors.of(context);
-    final senhaAtualCtrl = TextEditingController();
-    final novaSenhaCtrl = TextEditingController();
-    final confirmarCtrl = TextEditingController();
+    final senhaAtualCtrl = _controller();
+    final novaSenhaCtrl = _controller();
+    final confirmarCtrl = _controller();
 
     final result = await showDialog<bool>(
       context: context,
@@ -115,9 +136,9 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
         title: Row(
           children: [
             Icon(Icons.lock_reset_rounded, color: colors.primaryDark, size: 24),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Text(
-              'Alterar senha',
+              context.l10n.changePassword,
               style: TextStyle(
                 color: colors.text,
                 fontSize: 19,
@@ -130,13 +151,15 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _dialogField(senhaAtualCtrl, 'Senha atual', obscure: true),
+              _dialogField(senhaAtualCtrl, context.l10n.currentPassword,
+                  obscure: true),
               const SizedBox(height: 12),
-              _dialogField(novaSenhaCtrl, 'Nova senha', obscure: true),
+              _dialogField(novaSenhaCtrl, context.l10n.newPassword,
+                  obscure: true),
               const SizedBox(height: 12),
               _dialogField(
                 confirmarCtrl,
-                'Confirmar nova senha',
+                context.l10n.confirmNewPassword,
                 obscure: true,
               ),
             ],
@@ -146,7 +169,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             style: TextButton.styleFrom(foregroundColor: colors.muted),
-            child: const Text('Cancelar'),
+            child: Text(context.l10n.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -162,15 +185,15 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
               if (novaSenhaCtrl.text != confirmarCtrl.text) {
                 ScaffoldMessenger.of(ctx).showSnackBar(
                   SnackBar(
-                    content: Text('As senhas não correspondem!'),
-                    backgroundColor: colors.danger,
+                    content: Text(context.l10n.passwordMismatch),
                   ),
                 );
+                if (!mounted) return;
                 return;
               }
               Navigator.pop(ctx, true);
             },
-            child: const Text('Salvar'),
+            child: Text(context.l10n.save),
           ),
         ],
       ),
@@ -178,7 +201,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
 
     if (result == true) {
       try {
-        final resp = await http.post(
+        final resp = await AppHttp.post(
           Uri.parse('${Config.baseUrl}/api/usuarios/alterar-senha/'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
@@ -187,29 +210,25 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
             'nova_senha': novaSenhaCtrl.text,
           }),
         );
+        if (!mounted) return;
         if (resp.statusCode == 200) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Senha alterada com sucesso!'),
-              backgroundColor: colors.primary,
+              content: Text(context.l10n.passwordChanged),
               behavior: SnackBarBehavior.floating,
             ),
           );
         } else {
           final d = json.decode(resp.body);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(d['error'] ?? 'Erro ao alterar senha.'),
-              backgroundColor: colors.danger,
-              behavior: SnackBarBehavior.floating,
-            )
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(d['error'] ?? context.l10n.passwordError),
+            behavior: SnackBarBehavior.floating,
+          ));
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro: $e'),
-            backgroundColor: colors.danger,
+            content: Text(context.l10n.connectionError),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -218,15 +237,12 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
   }
 
   Future<void> _pickPhoto() async {
-    final colors = AppColors.of(context);
-
     if (!kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Seleção de foto de perfil disponível apenas na versão Web!',
+            context.l10n.webPhotoOnly,
           ),
-          backgroundColor: colors.warning,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -237,17 +253,24 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
     uploadInput.click();
 
     uploadInput.onChange.listen((event) {
+      if (!mounted) return;
       final file = uploadInput.files?.first;
       if (file == null) return;
+      if (file.size > 5 * 1024 * 1024) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.photoTooLarge)));
+        return;
+      }
 
       final reader = html.FileReader();
       reader.readAsArrayBuffer(file);
       reader.onLoadEnd.listen((event) async {
+        if (!mounted) return;
         final bytes = reader.result as Uint8List;
         final b64 = base64Encode(bytes);
 
         try {
-          final resp = await http.post(
+          final resp = await AppHttp.post(
             Uri.parse('${Config.baseUrl}/api/usuarios/foto/'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
@@ -255,12 +278,12 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
               'foto_perfil': b64,
             }),
           );
+          if (!mounted) return;
           if (resp.statusCode == 200) {
             setState(() => _fotoPerfil = b64);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Foto atualizada!'),
-                backgroundColor: colors.primary,
+                content: Text(context.l10n.photoUpdated),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -284,13 +307,13 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
 
     return Semantics(
       button: true,
-      label: 'Voltar',
+      label: context.l10n.back,
       child: InkWell(
         onTap: () => Navigator.pop(context),
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          width: 42,
-          height: 42,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             color: colors.primarySoft,
             borderRadius: BorderRadius.circular(14),
@@ -315,9 +338,9 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
           CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
           ),
-          SizedBox(height: 14),
+          const SizedBox(height: 14),
           Text(
-            'Carregando informações...',
+            context.l10n.loadingInformation,
             style: TextStyle(
               color: colors.muted,
               fontSize: 14,
@@ -400,7 +423,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
             BoxShadow(
               color: colors.shadow,
               blurRadius: 12,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -408,8 +431,8 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 42,
-              height: 42,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: colors.primarySoft,
                 borderRadius: BorderRadius.circular(13),
@@ -448,7 +471,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
             if (onEdit != null)
               Semantics(
                 button: true,
-                label: 'Editar $label',
+                label: context.l10n.editLabel(label),
                 child: InkWell(
                   onTap: onEdit,
                   borderRadius: BorderRadius.circular(12),
@@ -469,7 +492,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
               )
             else
               Tooltip(
-                message: 'Este campo não pode ser alterado',
+                message: context.l10n.readOnlyField,
                 child: Icon(
                   Icons.lock_outline_rounded,
                   color: colors.muted,
@@ -520,7 +543,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
 
   void _editField(String fieldKey, String label, String currentValue) async {
     final colors = AppColors.of(context);
-    final ctrl = TextEditingController(text: currentValue);
+    final ctrl = _controller(text: currentValue);
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -539,7 +562,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Editar $label',
+                context.l10n.editLabel(label),
                 style: TextStyle(
                   color: colors.text,
                   fontSize: 19,
@@ -554,7 +577,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             style: TextButton.styleFrom(foregroundColor: colors.muted),
-            child: const Text('Cancelar'),
+            child: Text(context.l10n.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -567,13 +590,14 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
               ),
             ),
             onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
-            child: const Text('Salvar'),
+            child: Text(context.l10n.save),
           ),
         ],
       ),
     );
+    if (!mounted) return;
 
-    if (result != null && result.isNotEmpty) {
+    if (result != null) {
       _saveField(fieldKey, result);
     }
   }
@@ -596,7 +620,7 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
           child: _buildBackButton(),
         ),
         title: Text(
-          'Informações Pessoais',
+          context.l10n.personalInformation,
           style: TextStyle(
             color: colors.text,
             fontSize: 18,
@@ -606,226 +630,229 @@ class _InformacoesPessoaisScreenState extends State<InformacoesPessoaisScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: _isLoading
-            ? _buildLoadingState()
-            : LayoutBuilder(
-                builder: (context, constraints) {
-                  final horizontalPadding =
-                      constraints.maxWidth < 360 ? 16.0 : 24.0;
+        child: _loadFailed
+            ? LoadError(onRetry: _loadProfile)
+            : _isLoading
+                ? _buildLoadingState()
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final horizontalPadding =
+                          constraints.maxWidth < 360 ? 16.0 : 24.0;
 
-                  return Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 560),
-                      child: SingleChildScrollView(
-                        keyboardDismissBehavior:
-                            ScrollViewKeyboardDismissBehavior.onDrag,
-                        padding: EdgeInsets.fromLTRB(
-                          horizontalPadding,
-                          8,
-                          horizontalPadding,
-                          28,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Container(
-                              padding:
-                                  const EdgeInsets.fromLTRB(18, 20, 18, 17),
-                              decoration: BoxDecoration(
-                                color: colors.surface,
-                                borderRadius: BorderRadius.circular(22),
-                                border: Border.all(color: colors.border),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: colors.shadow,
-                                    blurRadius: 16,
-                                    offset: Offset(0, 5),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  Stack(
-                                    alignment: Alignment.bottomRight,
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: colors.primary,
-                                            width: 3,
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: colors.shadow,
-                                              blurRadius: 14,
-                                              offset: Offset(0, 5),
-                                            ),
-                                          ],
-                                        ),
-                                        child: CircleAvatar(
-                                          radius: 50,
-                                          backgroundColor: colors.primarySoft,
-                                          backgroundImage: avatarImage,
-                                          child: avatarImage == null
-                                              ? Icon(
-                                                  Icons.person_rounded,
-                                                  size: 50,
-                                                  color: colors.primaryDark,
-                                                )
-                                              : null,
-                                        ),
+                      return Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 560),
+                          child: SingleChildScrollView(
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            padding: EdgeInsets.fromLTRB(
+                              horizontalPadding,
+                              8,
+                              horizontalPadding,
+                              28,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Container(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(18, 20, 18, 17),
+                                  decoration: BoxDecoration(
+                                    color: colors.surface,
+                                    borderRadius: BorderRadius.circular(22),
+                                    border: Border.all(color: colors.border),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: colors.shadow,
+                                        blurRadius: 16,
+                                        offset: const Offset(0, 5),
                                       ),
-                                      Semantics(
-                                        button: true,
-                                        label: 'Alterar foto de perfil',
-                                        child: GestureDetector(
-                                          onTap: _pickPhoto,
-                                          child: Container(
-                                            width: 36,
-                                            height: 36,
+                                    ],
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Stack(
+                                        alignment: Alignment.bottomRight,
+                                        children: [
+                                          Container(
                                             decoration: BoxDecoration(
-                                              color: colors.primary,
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color: colors.surface,
-                                                width: 2,
+                                                color: colors.primary,
+                                                width: 3,
                                               ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: colors.shadow,
+                                                  blurRadius: 14,
+                                                  offset: const Offset(0, 5),
+                                                ),
+                                              ],
                                             ),
-                                            child: Icon(
-                                              Icons.camera_alt_rounded,
-                                              size: 18,
-                                              color: colors.onPrimary,
+                                            child: CircleAvatar(
+                                              radius: 50,
+                                              backgroundColor:
+                                                  colors.primarySoft,
+                                              backgroundImage: avatarImage,
+                                              child: avatarImage == null
+                                                  ? Icon(
+                                                      Icons.person_rounded,
+                                                      size: 50,
+                                                      color: colors.primaryDark,
+                                                    )
+                                                  : null,
                                             ),
                                           ),
+                                          Semantics(
+                                            button: true,
+                                            label: context.l10n.changePhoto,
+                                            child: InkWell(
+                                              onTap: _pickPhoto,
+                                              child: Container(
+                                                width: 36,
+                                                height: 36,
+                                                decoration: BoxDecoration(
+                                                  color: colors.primary,
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: colors.surface,
+                                                    width: 2,
+                                                  ),
+                                                ),
+                                                child: Icon(
+                                                  Icons.camera_alt_rounded,
+                                                  size: 18,
+                                                  color: colors.onPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 14),
+                                      Text(
+                                        _nomeCompleto.isNotEmpty
+                                            ? _nomeCompleto
+                                            : widget.userName,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: colors.text,
+                                          fontSize: 19,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      if (_email.isNotEmpty) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          _email,
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: colors.muted,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                      const SizedBox(height: 14),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 9,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: colors.primarySoft,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.alternate_email_rounded,
+                                              color: colors.primaryDark,
+                                              size: 17,
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              _nomeUsuario.isNotEmpty
+                                                  ? _nomeUsuario
+                                                  : widget.userName,
+                                              style: TextStyle(
+                                                color: colors.primaryDark,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 14),
-                                  Text(
-                                    _nomeCompleto.isNotEmpty
-                                        ? _nomeCompleto
-                                        : widget.userName,
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: colors.text,
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                                ),
+                                const SizedBox(height: 24),
+                                _buildSectionHeader(
+                                  icon: Icons.badge_outlined,
+                                  title: context.l10n.accountData,
+                                  subtitle: context.l10n.keepDataUpdated,
+                                ),
+                                _infoTile(
+                                  icon: Icons.person_outline_rounded,
+                                  label: context.l10n.fullName,
+                                  value: _nomeCompleto,
+                                  onEdit: () => _editField(
+                                    'nome_completo',
+                                    context.l10n.fullName,
+                                    _nomeCompleto,
                                   ),
-                                  if (_email.isNotEmpty) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      _email,
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: colors.muted,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                  const SizedBox(height: 14),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 9,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: colors.primarySoft,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.alternate_email_rounded,
-                                          color: colors.primaryDark,
-                                          size: 17,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          _nomeUsuario.isNotEmpty
-                                              ? _nomeUsuario
-                                              : widget.userName,
-                                          style: TextStyle(
-                                            color: colors.primaryDark,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                ),
+                                _infoTile(
+                                  icon: Icons.email_outlined,
+                                  label: context.l10n.email,
+                                  value: _email,
+                                  onEdit: () => _editField(
+                                      'email', context.l10n.email, _email),
+                                ),
+                                _infoTile(
+                                  icon: Icons.phone_outlined,
+                                  label: context.l10n.phoneNumber,
+                                  value: _telefone.isNotEmpty
+                                      ? _telefone
+                                      : context.l10n.notProvided,
+                                  onEdit: () => _editField(
+                                    'telefone',
+                                    context.l10n.phoneNumber,
+                                    _telefone,
                                   ),
-                                ],
-                              ),
+                                ),
+                                _infoTile(
+                                  icon: Icons.alternate_email_rounded,
+                                  label: context.l10n.username,
+                                  value: _nomeUsuario,
+                                  onEdit: null,
+                                ),
+                                const SizedBox(height: 14),
+                                _buildSectionHeader(
+                                  icon: Icons.security_outlined,
+                                  title: context.l10n.accountSecurity,
+                                  subtitle: context.l10n.accountSecurityHint,
+                                ),
+                                _infoTile(
+                                  icon: Icons.lock_outline_rounded,
+                                  label: context.l10n.password,
+                                  value: '••••••••••••••••',
+                                  onEdit: _changePassword,
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 24),
-                            _buildSectionHeader(
-                              icon: Icons.badge_outlined,
-                              title: 'Dados da conta',
-                              subtitle:
-                                  'Mantenha suas informações atualizadas.',
-                            ),
-                            _infoTile(
-                              icon: Icons.person_outline_rounded,
-                              label: 'Nome completo',
-                              value: _nomeCompleto,
-                              onEdit: () => _editField(
-                                'nome_completo',
-                                'Nome completo',
-                                _nomeCompleto,
-                              ),
-                            ),
-                            _infoTile(
-                              icon: Icons.email_outlined,
-                              label: 'E-mail',
-                              value: _email,
-                              onEdit: () =>
-                                  _editField('email', 'E-mail', _email),
-                            ),
-                            _infoTile(
-                              icon: Icons.phone_outlined,
-                              label: 'Número de Telefone',
-                              value: _telefone.isNotEmpty
-                                  ? _telefone
-                                  : 'Não informado',
-                              onEdit: () => _editField(
-                                'telefone',
-                                'Número de Telefone',
-                                _telefone,
-                              ),
-                            ),
-                            _infoTile(
-                              icon: Icons.alternate_email_rounded,
-                              label: 'Nome de usuário',
-                              value: _nomeUsuario,
-                              onEdit: null,
-                            ),
-                            const SizedBox(height: 14),
-                            _buildSectionHeader(
-                              icon: Icons.security_outlined,
-                              title: 'Segurança da conta',
-                              subtitle: 'Proteja o acesso ao seu perfil.',
-                            ),
-                            _infoTile(
-                              icon: Icons.lock_outline_rounded,
-                              label: 'Senha',
-                              value: '••••••••••••••••',
-                              onEdit: _changePassword,
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+                      );
+                    },
+                  ),
       ),
     );
   }

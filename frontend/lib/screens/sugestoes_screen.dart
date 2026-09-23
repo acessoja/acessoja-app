@@ -1,7 +1,10 @@
+import '../widgets/load_error.dart';
+import '../widgets/safe_state.dart';
+import '../l10n/strings.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/app_http.dart';
 
 import '../app_theme.dart';
 import '../config.dart';
@@ -10,10 +13,12 @@ import 'place_detail_screen.dart';
 class SugestoesScreen extends StatefulWidget {
   final String userName;
   final String unidadeDistancia;
+  final bool allowSuggestions;
 
   const SugestoesScreen({
     required this.userName,
     this.unidadeDistancia = 'KM',
+    this.allowSuggestions = true,
     Key? key,
   }) : super(key: key);
 
@@ -21,28 +26,22 @@ class SugestoesScreen extends StatefulWidget {
   _SugestoesScreenState createState() => _SugestoesScreenState();
 }
 
-class _SugestoesScreenState extends State<SugestoesScreen> {
+class _SugestoesScreenState extends SafeState<SugestoesScreen> {
   List<dynamic> _recentVisits = [];
   List<dynamic> _allLocales = [];
   bool _isLoading = true;
+  bool _loadFailed = false;
 
-  String _formatDistance(dynamic distanceValue) {
-    double km = 0.0;
-    if (distanceValue is num) {
-      km = distanceValue.toDouble();
-    } else if (distanceValue is String) {
-      final cleanStr = distanceValue
-          .replaceAll(RegExp(r'[^\d.,]'), '')
-          .replaceAll(',', '.');
-      km = double.tryParse(cleanStr) ?? 0.0;
-    }
-
-    if (widget.unidadeDistancia == 'Milha') {
-      final miles = km * 0.621371;
-      return '${miles.toStringAsFixed(1).replaceAll('.', ',')} mi';
-    }
-
-    return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
+  String _formatDistance(dynamic value) {
+    final km = value is num
+        ? value.toDouble()
+        : double.tryParse(value
+                .toString()
+                .replaceAll(RegExp(r'[^0-9.,]'), '')
+                .replaceAll(',', '.')) ??
+            0;
+    final miles = widget.unidadeDistancia == 'Milha';
+    return '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}';
   }
 
   @override
@@ -52,13 +51,17 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
   }
 
   Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+    });
     try {
-      final visitsResponse = await http.get(
+      final visitsResponse = await AppHttp.get(
         Uri.parse(
-          '${Config.baseUrl}/api/visitas/?nome_usuario=${widget.userName}',
+          '${Config.baseUrl}/api/visitas/?nome_usuario=${Uri.encodeComponent(widget.userName)}',
         ),
       );
-      final localesResponse = await http.get(
+      final localesResponse = await AppHttp.get(
         Uri.parse('${Config.baseUrl}/api/locais/'),
       );
 
@@ -74,12 +77,18 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
           _allLocales = localesData;
           _isLoading = false;
         });
+      } else {
+        _loadFailed = true;
       }
     } catch (e) {
+      if (!mounted) return;
+      _loadFailed = true;
       debugPrint('Error loading suggestions data: $e');
       setState(() {
         _isLoading = false;
       });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -108,7 +117,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
   // Suggest other places having those features, ordered by average rating.
   // If no visits, suggest top rated.
   List<dynamic> get recommendedPlaces {
-    if (_allLocales.isEmpty) return [];
+    if (!widget.allowSuggestions || _allLocales.isEmpty) return [];
 
     final visited = visitedPlaces;
     final Set<int> visitedIds =
@@ -196,12 +205,12 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
 
     return Semantics(
       button: true,
-      label: 'Voltar',
-      child: GestureDetector(
+      label: context.l10n.back,
+      child: InkWell(
         onTap: () => Navigator.pop(context),
         child: Container(
-          width: 42,
-          height: 42,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             color: colors.primarySoft,
             borderRadius: BorderRadius.circular(14),
@@ -280,6 +289,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
               width: width,
               height: height,
               fit: BoxFit.cover,
+              cacheWidth: 640,
               errorBuilder: (context, error, stackTrace) => placeholder(),
             )
           : placeholder(),
@@ -299,15 +309,13 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
             return Icon(
               active ? Icons.star_rounded : Icons.star_border_rounded,
               size: size,
-              color: active
-                  ? Colors.amber.shade700
-                  : colors.border,
+              color: active ? Colors.amber.shade700 : colors.border,
             );
           }),
         ),
         const SizedBox(width: 7),
         Text(
-          media.toStringAsFixed(1).replaceAll('.', ','),
+          context.number(media),
           style: TextStyle(
             color: colors.muted,
             fontSize: 11,
@@ -346,7 +354,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Você ainda não iniciou nenhuma rota.',
+            context.l10n.noRouteHistory,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: colors.text,
@@ -356,7 +364,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Seus locais visitados aparecerão aqui para gerar recomendações personalizadas!',
+            context.l10n.historyHint,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: colors.muted,
@@ -379,6 +387,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
         ),
       ),
     );
+    if (!mounted) return;
 
     if (result != null) {
       Navigator.pop(context, result);
@@ -398,8 +407,8 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
 
     return Semantics(
       button: true,
-      label: 'Abrir detalhes de $name',
-      child: GestureDetector(
+      label: context.l10n.detailsOf(name),
+      child: InkWell(
         onTap: () => _openVisitedPlace(place),
         child: Container(
           width: 170,
@@ -412,7 +421,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
               BoxShadow(
                 color: colors.shadow,
                 blurRadius: 12,
-                offset: Offset(0, 5),
+                offset: const Offset(0, 5),
               ),
             ],
           ),
@@ -458,13 +467,13 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
       children: [
         _buildSectionHeader(
           icon: Icons.history_rounded,
-          title: 'Visitados Recentemente',
+          title: context.l10n.recentlyVisited,
         ),
         if (visited.isEmpty)
           _buildEmptyVisitedState()
         else
           SizedBox(
-            height: 166,
+            height: 240,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.only(left: 1, right: 1),
@@ -545,7 +554,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
           BoxShadow(
             color: colors.shadow,
             blurRadius: 14,
-            offset: Offset(0, 5),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -557,7 +566,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
             children: [
               Semantics(
                 image: true,
-                label: 'Imagem de $displayName',
+                label: context.l10n.placeImage(displayName),
                 child: _buildPlaceImage(
                   place['imagem'],
                   width: 92,
@@ -605,17 +614,14 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: isOpen
-                                ? colors.successSoft
-                                : colors.dangerSoft,
+                            color:
+                                isOpen ? colors.successSoft : colors.dangerSoft,
                             borderRadius: BorderRadius.circular(7),
                           ),
                           child: Text(
-                            isOpen ? 'Aberto' : 'Fechado',
+                            isOpen ? context.l10n.open : context.l10n.closed,
                             style: TextStyle(
-                              color: isOpen
-                                  ? colors.success
-                                  : colors.danger,
+                              color: isOpen ? colors.success : colors.danger,
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
                             ),
@@ -643,8 +649,8 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
             children: [
               _buildRecommendationAction(
                 icon: Icons.directions_rounded,
-                label: 'Rota',
-                semanticsLabel: 'Iniciar rota para $displayName',
+                label: context.l10n.route,
+                semanticsLabel: context.l10n.routeTo(displayName),
                 onPressed: () {
                   Navigator.pop(context, place);
                 },
@@ -652,8 +658,8 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
               const SizedBox(width: 8),
               _buildRecommendationAction(
                 icon: Icons.chat_bubble_outline_rounded,
-                label: 'Detalhes',
-                semanticsLabel: 'Ver detalhes de $displayName',
+                label: context.l10n.details,
+                semanticsLabel: context.l10n.detailsOf(displayName),
                 primary: false,
                 onPressed: () async {
                   final result = await Navigator.push(
@@ -665,6 +671,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                       ),
                     ),
                   );
+                  if (!mounted) return;
                   if (result != null) {
                     Navigator.pop(context, result);
                   } else {
@@ -687,7 +694,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
       children: [
         _buildSectionHeader(
           icon: Icons.tips_and_updates_rounded,
-          title: 'Recomendados para Você',
+          title: context.l10n.recommended,
           iconColor: Colors.amber,
         ),
         if (recommended.isEmpty)
@@ -706,9 +713,11 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
                   color: colors.muted,
                   size: 30,
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Text(
-                  'Nenhuma recomendação disponível no momento.',
+                  widget.allowSuggestions
+                      ? context.l10n.noRecommendations
+                      : context.l10n.suggestionsDisabled,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: colors.muted,
@@ -735,9 +744,9 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
           CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
           ),
-          SizedBox(height: 14),
+          const SizedBox(height: 14),
           Text(
-            'Carregando sugestões...',
+            context.l10n.loadingSuggestions,
             style: TextStyle(
               color: colors.muted,
               fontSize: 14,
@@ -768,7 +777,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
         ),
         titleSpacing: 12,
         title: Text(
-          'Sugestões',
+          context.l10n.suggestions,
           style: TextStyle(
             color: colors.text,
             fontSize: 19,
@@ -778,38 +787,40 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: _isLoading
-            ? _buildLoadingState()
-            : LayoutBuilder(
-                builder: (context, constraints) {
-                  final horizontalPadding =
-                      constraints.maxWidth < 360 ? 16.0 : 24.0;
+        child: _loadFailed
+            ? LoadError(onRetry: _loadData)
+            : _isLoading
+                ? _buildLoadingState()
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final horizontalPadding =
+                          constraints.maxWidth < 360 ? 16.0 : 24.0;
 
-                  return Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 620),
-                      child: SingleChildScrollView(
-                        keyboardDismissBehavior:
-                            ScrollViewKeyboardDismissBehavior.onDrag,
-                        padding: EdgeInsets.fromLTRB(
-                          horizontalPadding,
-                          8,
-                          horizontalPadding,
-                          24,
+                      return Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 620),
+                          child: SingleChildScrollView(
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            padding: EdgeInsets.fromLTRB(
+                              horizontalPadding,
+                              8,
+                              horizontalPadding,
+                              24,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _buildVisitedSection(visited),
+                                const SizedBox(height: 28),
+                                _buildRecommendationsSection(recommended),
+                              ],
+                            ),
+                          ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildVisitedSection(visited),
-                            const SizedBox(height: 28),
-                            _buildRecommendationsSection(recommended),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+                      );
+                    },
+                  ),
       ),
     );
   }

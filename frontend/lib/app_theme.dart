@@ -3,18 +3,25 @@ import 'package:flutter/material.dart';
 const _brandColor = Color(0xFF4CABFF);
 
 class AppThemeController extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.light;
+  AppThemeController({ThemeMode initialMode = ThemeMode.system, this.onChanged})
+      : _themeMode = initialMode;
+  final ValueChanged<ThemeMode>? onChanged;
+  ThemeMode _themeMode;
 
   ThemeMode get themeMode => _themeMode;
 
   bool get isDarkMode => _themeMode == ThemeMode.dark;
 
   void setDarkMode(bool enabled) {
-    final nextMode = enabled ? ThemeMode.dark : ThemeMode.light;
+    setThemeMode(enabled ? ThemeMode.dark : ThemeMode.light);
+  }
+
+  void setThemeMode(ThemeMode nextMode) {
     if (_themeMode == nextMode) return;
 
     _themeMode = nextMode;
     notifyListeners();
+    onChanged?.call(nextMode);
   }
 }
 
@@ -80,45 +87,45 @@ class AppColors extends ThemeExtension<AppColors> {
   });
 
   static final light = AppColors(
-    pageBackground: Color(0xFFF5F8FF),
+    pageBackground: const Color(0xFFF5F8FF),
     surface: Colors.white,
     surfaceElevated: Colors.white,
-    primary: Color(0xFF4CABFF),
-    primaryDark: Color(0xFF4A69FF),
-    primarySoft: Color(0xFFE8EFFF),
-    text: Color(0xFF1E293B),
-    muted: Color(0xFF64748B),
-    border: Color(0xFFE2E8F0),
+    primary: const Color(0xFF185ABD),
+    primaryDark: const Color(0xFF185ABD),
+    primarySoft: const Color(0xFFE8EFFF),
+    text: const Color(0xFF1E293B),
+    muted: const Color(0xFF64748B),
+    border: const Color(0xFFE2E8F0),
     fieldBackground: Colors.white,
-    danger: Colors.redAccent,
+    danger: const Color(0xFFB42318),
     dangerSoft: Colors.redAccent.withOpacity(0.10),
-    success: Colors.green,
+    success: const Color(0xFF18713D),
     successSoft: Colors.green.withOpacity(0.10),
-    warning: Color(0xFF7A5C00),
-    warningSoft: Color(0xFFFFF9E6),
+    warning: const Color(0xFF7A5C00),
+    warningSoft: const Color(0xFFFFF9E6),
     shadow: Colors.black.withOpacity(0.04),
     onPrimary: Colors.white,
   );
 
   static final dark = AppColors(
-    pageBackground: Color(0xFF1E293B),
-    surface: Color(0xFF334155),
-    surfaceElevated: Color(0xFF475569),
-    primary: Color(0xFF4CABFF),
-    primaryDark: Color(0xFFE8EFFF),
-    primarySoft: Color(0xFF1E3A8A),
-    text: Color(0xFFF5F8FF),
-    muted: Color(0xFF94A3B8),
-    border: Color(0xFF475569),
-    fieldBackground: Color(0xFF334155),
-    danger: Colors.redAccent,
+    pageBackground: const Color(0xFF212121),
+    surface: const Color(0xFF2F2F2F),
+    surfaceElevated: const Color(0xFF383838),
+    primary: const Color(0xFF8AC2FF),
+    primaryDark: const Color(0xFF8AC2FF),
+    primarySoft: const Color(0xFF303E4D),
+    text: const Color(0xFFF1F1F1),
+    muted: const Color(0xFFB8B8B8),
+    border: const Color(0xFF525252),
+    fieldBackground: const Color(0xFF303030),
+    danger: const Color(0xFFFFA49D),
     dangerSoft: Colors.redAccent.withOpacity(0.18),
-    success: Colors.green,
+    success: const Color(0xFF8BDBAB),
     successSoft: Colors.green.withOpacity(0.18),
     warning: Colors.amber,
-    warningSoft: Color(0xFF334155),
+    warningSoft: const Color(0xFF40391F),
     shadow: Colors.black26,
-    onPrimary: Color(0xFF1E293B),
+    onPrimary: const Color(0xFF162230),
   );
 
   static AppColors of(BuildContext context) {
@@ -223,6 +230,7 @@ class AppThemes {
     );
 
     return ThemeData(
+      fontFamily: 'Roboto',
       brightness: brightness,
       useMaterial3: false,
       primaryColor: colors.primary,
@@ -238,6 +246,7 @@ class AppThemes {
         elevation: 0,
         iconTheme: IconThemeData(color: colors.text),
         titleTextStyle: TextStyle(
+          fontFamily: 'Roboto',
           color: colors.text,
           fontSize: 19,
           fontWeight: FontWeight.w800,

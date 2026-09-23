@@ -7,8 +7,7 @@ void main() {
   // para garantir um ScaffoldMessenger ancestral disponível para a
   // validação, e para manter o teste isolado do restante do app.
   Widget buildDialog({
-    required void Function(String q1, String q2, String q3, String q4)
-        onSubmit,
+    required void Function(String q1, String q2, String q3, String q4) onSubmit,
     VoidCallback? onDismiss,
   }) {
     return MaterialApp(
@@ -44,7 +43,8 @@ void main() {
   testWidgets('exibe o botão de envio', (tester) async {
     await tester.pumpWidget(buildDialog(onSubmit: (_, __, ___, ____) {}));
 
-    expect(find.widgetWithText(ElevatedButton, 'Enviar Avaliação'), findsOneWidget);
+    expect(find.widgetWithText(ElevatedButton, 'Enviar Avaliação'),
+        findsOneWidget);
   });
 
   testWidgets('permite selecionar uma resposta sem quebrar a tela',
@@ -72,7 +72,8 @@ void main() {
     await tester.tap(find.widgetWithText(ElevatedButton, 'Enviar Avaliação'));
     await tester.pump();
 
-    expect(find.text('Por favor, responda todas as perguntas!'), findsOneWidget);
+    expect(
+        find.text('Por favor, responda todas as perguntas!'), findsOneWidget);
     expect(submitted, isFalse);
   });
 

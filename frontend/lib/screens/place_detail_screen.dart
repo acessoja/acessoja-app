@@ -1,7 +1,11 @@
+import '../widgets/load_error.dart';
+import '../navigation.dart';
+import '../widgets/safe_state.dart';
+import '../l10n/strings.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/app_http.dart';
 
 import '../app_theme.dart';
 import '../config.dart';
@@ -24,13 +28,20 @@ class PlaceDetailScreen extends StatefulWidget {
   State<PlaceDetailScreen> createState() => _PlaceDetailScreenState();
 }
 
-class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
+class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
   late final ApiService _apiService = widget.apiService ?? HttpApiService();
   List<dynamic> comments = [];
   final TextEditingController _commentController = TextEditingController();
   int _selectedStars = 0;
   bool _isLoading = true;
+  bool _loadFailed = false;
   bool _hasVisited = false;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -39,12 +50,16 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   }
 
   Future<void> _loadAllData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+    });
 
     await Future.wait([
       _fetchEvaluations(),
       _checkIfVisited(),
     ]);
+    if (!mounted) return;
 
     setState(() => _isLoading = false);
   }
@@ -54,22 +69,26 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       final data = await _apiService.fetchEvaluations(
         localId: widget.place['id_local'],
       );
+      if (!mounted) return;
 
       setState(() {
         comments = data;
       });
     } catch (e) {
+      if (!mounted) return;
       debugPrint("Error fetching evaluations: $e");
+      _loadFailed = true;
     }
   }
 
   Future<void> _checkIfVisited() async {
     try {
-      final response = await http.get(
+      final response = await AppHttp.get(
         Uri.parse(
-          '${Config.baseUrl}/api/visitas/?nome_usuario=${widget.userName}',
+          '${Config.baseUrl}/api/visitas/?nome_usuario=${Uri.encodeComponent(widget.userName)}',
         ),
       );
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
         final List data = json.decode(utf8.decode(response.bodyBytes));
@@ -82,9 +101,13 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
         setState(() {
           _hasVisited = visited;
         });
+      } else {
+        _loadFailed = true;
       }
     } catch (e) {
+      if (!mounted) return;
       debugPrint("Error checking if visited: $e");
+      _loadFailed = true;
     }
   }
 
@@ -99,17 +122,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     return totalStars / comments.length;
   }
 
-  String getCommentsCountString() {
-    final count = comments.length;
-
-    if (count < 10) {
-      return '00$count avaliações';
-    } else if (count < 100) {
-      return '0$count avaliações';
-    }
-
-    return '$count avaliações';
-  }
+  String getCommentsCountString() => context.l10n.reviewCount(comments.length);
 
   String getLocalDisplayName(String name) {
     if (name == 'UniEVANGÉLICA') {
@@ -139,7 +152,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     String q3,
     String q4,
   ) async {
-    final colors = AppColors.of(context);
+    if (_isLoading) return;
 
     setState(() {
       _isLoading = true;
@@ -156,14 +169,14 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
         estrelas: _selectedStars,
         comentario: _commentController.text.trim(),
       );
+      if (!mounted) return;
 
       if (result.success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text(
-              'Avaliação enviada com sucesso! Obrigado por ajudar.',
+            content: Text(
+              context.l10n.evaluationSent,
             ),
-            backgroundColor: colors.primaryDark,
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(16),
             shape: RoundedRectangleBorder(
@@ -178,14 +191,14 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           _selectedStars = 0;
         });
 
-        _fetchEvaluations();
+        await _fetchEvaluations();
       } else {
         debugPrint("Error sending evaluation: ${result.message}");
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result.message ?? 'Erro ao enviar avaliação.'),
-            backgroundColor: colors.danger,
+            content: Text(context.apiMessage(result.message,
+                fallback: context.l10n.evaluationError)),
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(16),
             shape: RoundedRectangleBorder(
@@ -199,12 +212,12 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       debugPrint("Error sending evaluation: $e");
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Erro de conexão com o servidor.'),
-          backgroundColor: colors.danger,
+          content: Text(context.l10n.connectionError),
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
           shape: RoundedRectangleBorder(
@@ -216,6 +229,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       setState(() {
         _isLoading = false;
       });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -230,6 +245,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               width: double.infinity,
               height: 190,
               fit: BoxFit.cover,
+              cacheWidth: 640,
               errorBuilder: (context, error, stackTrace) {
                 return _buildImagePlaceholder();
               },
@@ -271,7 +287,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           BoxShadow(
             color: colors.shadow,
             blurRadius: 18,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -280,7 +296,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
         children: [
           Semantics(
             image: true,
-            label: 'Imagem de $name',
+            label: context.l10n.placeImage(name),
             child: Stack(
               children: [
                 _buildPlaceImage(),
@@ -297,7 +313,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      isOpen ? 'Aberto' : 'Fechado',
+                      isOpen ? context.l10n.open : context.l10n.closed,
                       style: TextStyle(
                         color: isOpen ? colors.success : colors.danger,
                         fontSize: 12,
@@ -368,7 +384,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Avaliação dos usuários',
+                  context.l10n.userRating,
                   style: TextStyle(
                     color: colors.text,
                     fontSize: 14,
@@ -390,7 +406,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                averageRating.toStringAsFixed(1).replaceAll('.', ','),
+                context.number(averageRating),
                 style: TextStyle(
                   color: colors.text,
                   fontSize: 30,
@@ -424,7 +440,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       padding: const EdgeInsets.only(top: 14),
       child: Semantics(
         button: true,
-        label: 'Começar rota para este local',
+        label: context.l10n.startRouteHere,
         child: SizedBox(
           width: double.infinity,
           height: 50,
@@ -438,12 +454,17 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               elevation: 0,
             ),
             onPressed: () {
+              if (routePlace(widget.place) == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(context.l10n.invalidLocation)));
+                return;
+              }
               Navigator.pop(context, widget.place);
             },
             icon: const Icon(Icons.directions_rounded, size: 20),
-            label: const Text(
-              'Começar Rota',
-              style: TextStyle(
+            label: Text(
+              context.l10n.startRoute,
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
               ),
@@ -482,7 +503,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Seja o primeiro a avaliar!',
+            context.l10n.firstReview,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: colors.primaryDark,
@@ -492,7 +513,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Ainda não há comentários para este local. Sua opinião sobre a acessibilidade ajudará centenas de pessoas que precisam desse suporte!',
+            context.l10n.noComments,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: colors.muted,
@@ -517,10 +538,10 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     size: 14,
                     color: colors.primaryDark,
                   ),
-                  SizedBox(width: 6),
+                  const SizedBox(width: 6),
                   Flexible(
                     child: Text(
-                      'Selecione as estrelas abaixo para começar',
+                      context.l10n.chooseStars,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -542,7 +563,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     final stars = (comment['estrelas'] ?? 0) as int;
     final text = (comment['comentario'] ?? '').toString();
     final nomeUsuario =
-        (comment['nome_usuario'] ?? 'Usuário AcessoJá').toString();
+        (comment['nome_usuario'] ?? context.l10n.anonymousUser).toString();
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
@@ -603,7 +624,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       children: [
         const SizedBox(height: 26),
         Text(
-          'Comentários e histórico',
+          context.l10n.commentsHistory,
           style: TextStyle(
             color: colors.text,
             fontSize: 18,
@@ -635,10 +656,10 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(Icons.info_outline_rounded, color: colors.warning, size: 26),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Você ainda não visitou este local recentemente. Para avaliá-lo, inicie uma rota clicando em "Começar Rota" acima.',
+                'Você ainda não visitou este local recentemente. Para avaliá-lo, inicie uma rota clicando em context.l10n.startRoute acima.',
                 style: TextStyle(
                   fontSize: 13,
                   color: colors.warning,
@@ -664,7 +685,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Compartilhe sua experiência',
+            context.l10n.shareExperience,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: colors.text,
@@ -674,7 +695,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           ),
           const SizedBox(height: 5),
           Text(
-            'Sua avaliação ajuda outras pessoas a encontrar locais mais acessíveis.',
+            context.l10n.reviewHint,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: colors.muted,
@@ -684,7 +705,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Qual sua nota?',
+            context.l10n.yourRating,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: colors.primaryDark,
@@ -698,15 +719,15 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
             children: List.generate(5, (index) {
               return Semantics(
                 button: true,
-                label: 'Dar ${index + 1} estrelas',
-                child: GestureDetector(
+                label: context.l10n.giveStars(index + 1),
+                child: InkWell(
                   onTap: () {
                     setState(() {
                       _selectedStars = index + 1;
                     });
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.all(6),
                     child: Icon(
                       index < _selectedStars
                           ? Icons.star
@@ -722,11 +743,11 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           const SizedBox(height: 16),
           Semantics(
             textField: true,
-            label: 'Comentário da avaliação',
+            label: context.l10n.reviewComment,
             child: TextField(
               controller: _commentController,
               decoration: InputDecoration(
-                hintText: 'Gostaria de adicionar comentários?',
+                hintText: context.l10n.commentHint,
                 hintStyle: TextStyle(
                   color: colors.muted,
                   fontSize: 14,
@@ -762,7 +783,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           const SizedBox(height: 16),
           Semantics(
             button: true,
-            label: 'Confirmar avaliação',
+            label: context.l10n.confirmReview,
             child: SizedBox(
               height: 48,
               child: ElevatedButton(
@@ -779,9 +800,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          'Por favor, escolha uma quantidade de estrelas!',
+                          context.l10n.starsRequired,
                         ),
-                        backgroundColor: colors.danger,
                       ),
                     );
                     return;
@@ -789,9 +809,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
 
                   _showAccessibilitySurveyDialog();
                 },
-                child: const Text(
-                  'Confirmar',
-                  style: TextStyle(
+                child: Text(
+                  context.l10n.confirm,
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
@@ -814,9 +834,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
           ),
-          SizedBox(height: 14),
+          const SizedBox(height: 14),
           Text(
-            'Carregando detalhes do local...',
+            context.l10n.loadingDetails,
             style: TextStyle(
               color: colors.muted,
               fontSize: 14,
@@ -846,8 +866,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           padding: const EdgeInsets.only(left: 16, top: 12, bottom: 12),
           child: Semantics(
             button: true,
-            label: 'Voltar',
-            child: GestureDetector(
+            label: context.l10n.back,
+            child: InkWell(
               onTap: () => Navigator.pop(context),
               child: Container(
                 decoration: BoxDecoration(
@@ -875,38 +895,40 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           ),
         ),
       ),
-      body: _isLoading
-          ? _buildLoadingState()
-          : SafeArea(
-              top: false,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final horizontalPadding =
-                      constraints.maxWidth < 360 ? 16.0 : 24.0;
+      body: _loadFailed
+          ? LoadError(onRetry: _loadAllData)
+          : _isLoading
+              ? _buildLoadingState()
+              : SafeArea(
+                  top: false,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final horizontalPadding =
+                          constraints.maxWidth < 360 ? 16.0 : 24.0;
 
-                  return Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 560),
-                      child: ListView(
-                        padding: EdgeInsets.fromLTRB(
-                          horizontalPadding,
-                          8,
-                          horizontalPadding,
-                          12,
+                      return Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 560),
+                          child: ListView(
+                            padding: EdgeInsets.fromLTRB(
+                              horizontalPadding,
+                              8,
+                              horizontalPadding,
+                              12,
+                            ),
+                            children: [
+                              _buildPlaceHeader(),
+                              _buildRatingSummary(),
+                              _buildRouteButton(),
+                              _buildCommentsSection(),
+                              _buildEvaluationSection(),
+                            ],
+                          ),
                         ),
-                        children: [
-                          _buildPlaceHeader(),
-                          _buildRatingSummary(),
-                          _buildRouteButton(),
-                          _buildCommentsSection(),
-                          _buildEvaluationSection(),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+                      );
+                    },
+                  ),
+                ),
     );
   }
 }

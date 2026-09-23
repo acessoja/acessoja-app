@@ -1,3 +1,4 @@
+import '../l10n/strings.dart';
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
@@ -40,7 +41,7 @@ class LocalCard extends StatelessWidget {
           BoxShadow(
             color: colors.shadow,
             blurRadius: 18,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -54,7 +55,7 @@ class LocalCard extends StatelessWidget {
               children: [
                 Semantics(
                   image: true,
-                  label: 'Imagem de $nome',
+                  label: context.l10n.placeImage(nome),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(15),
                     child: place['imagem'] != null
@@ -110,7 +111,7 @@ class LocalCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          '$distanceLabel - ${isOpen ? 'Aberto' : 'Fechado'}',
+                          '$distanceLabel - ${isOpen ? context.l10n.open : context.l10n.closed}',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -120,11 +121,14 @@ class LocalCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Semantics(
-                        label:
-                            'Avaliação média ${mediaEstrelas.toStringAsFixed(1)} de 5',
-                        child: Row(
+                        label: context.l10n
+                            .ratingValue(context.number(mediaEstrelas)),
+                        child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 6,
                           children: [
                             Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: List.generate(5, (starIndex) {
                                 return Icon(
                                   Icons.star,
@@ -137,7 +141,7 @@ class LocalCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              '(${mediaEstrelas.toStringAsFixed(1)})',
+                              '(${context.number(mediaEstrelas)})',
                               style: TextStyle(
                                 fontSize: 11,
                                 color: colors.muted,
@@ -158,7 +162,7 @@ class LocalCard extends StatelessWidget {
                 Expanded(
                   child: Semantics(
                     button: true,
-                    label: 'Traçar rota para $nome',
+                    label: context.l10n.routeTo(nome),
                     child: ElevatedButton(
                       onPressed: onRoutePressed,
                       style: ElevatedButton.styleFrom(
@@ -171,18 +175,20 @@ class LocalCard extends StatelessWidget {
                         ),
                         elevation: 0,
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.directions_rounded, size: 16),
-                          SizedBox(width: 5),
-                          Text(
-                            'Rota',
-                            style: TextStyle(
+                          const Icon(Icons.directions_rounded, size: 16),
+                          const SizedBox(width: 5),
+                          Flexible(
+                              child: Text(
+                            context.l10n.route,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
-                          ),
+                          )),
                         ],
                       ),
                     ),
@@ -192,7 +198,7 @@ class LocalCard extends StatelessWidget {
                 Expanded(
                   child: Semantics(
                     button: true,
-                    label: 'Abrir avaliações de $nome',
+                    label: context.l10n.reviewsOf(nome),
                     child: ElevatedButton(
                       onPressed: onDetailsPressed,
                       style: ElevatedButton.styleFrom(
@@ -206,18 +212,20 @@ class LocalCard extends StatelessWidget {
                         ),
                         elevation: 0,
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.rate_review_outlined, size: 15),
-                          SizedBox(width: 5),
-                          Text(
-                            'Avaliações',
-                            style: TextStyle(
+                          const Icon(Icons.rate_review_outlined, size: 15),
+                          const SizedBox(width: 5),
+                          Flexible(
+                              child: Text(
+                            context.l10n.reviews,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
-                          ),
+                          )),
                         ],
                       ),
                     ),

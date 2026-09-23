@@ -4,19 +4,14 @@ from .models import Usuario
 
 class UsuarioBackend(BaseBackend):
     def authenticate(self, request, nome=None, password=None, **kwargs):
-        print(f"Autenticando usuário: nome={nome}, senha={password}")  # Log para depuração
         try:
             usuario = Usuario.objects.get(nome=nome)
-            print(f"Usuário encontrado: {usuario.nome}")
         except Usuario.DoesNotExist:
-            print("Usuário não encontrado.")
             return None
 
         if usuario.check_password(password):
-            print("Senha correta.")
             return usuario
         else:
-            print("Senha incorreta.")
             return None
 
     def get_user(self, user_id):

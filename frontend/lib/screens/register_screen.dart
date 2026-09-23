@@ -1,12 +1,31 @@
+import '../widgets/preference_controls.dart';
+import '../widgets/safe_state.dart';
+import '../l10n/strings.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/app_http.dart';
 
 import '../app_theme.dart';
 import '../config.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends SafeState<RegisterScreen> {
+  bool _isSubmitting = false;
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -14,7 +33,8 @@ class RegisterScreen extends StatelessWidget {
       TextEditingController();
 
   Future<void> _register(BuildContext context) async {
-    final colors = AppColors.of(context);
+    if (_isSubmitting) return;
+
     final nome = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
@@ -26,8 +46,7 @@ class RegisterScreen extends StatelessWidget {
         confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Por favor, preencha todos os campos!'),
-          backgroundColor: colors.danger,
+          content: Text(context.l10n.requiredFields),
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
           shape: RoundedRectangleBorder(
@@ -41,8 +60,7 @@ class RegisterScreen extends StatelessWidget {
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('As senhas não correspondem!'),
-          backgroundColor: colors.danger,
+          content: Text(context.l10n.passwordMismatch),
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
           shape: RoundedRectangleBorder(
@@ -53,8 +71,14 @@ class RegisterScreen extends StatelessWidget {
       return;
     }
 
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(context.l10n.invalidEmail)));
+      return;
+    }
+    setState(() => _isSubmitting = true);
     try {
-      final response = await http.post(
+      final response = await AppHttp.post(
         Uri.parse('${Config.baseUrl}/auth/users/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -63,12 +87,12 @@ class RegisterScreen extends StatelessWidget {
           'password': password,
         }),
       );
+      if (!context.mounted) return;
 
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Conta criada com sucesso!'),
-            backgroundColor: colors.success,
+            content: Text(context.l10n.accountCreated),
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(16),
             shape: RoundedRectangleBorder(
@@ -78,15 +102,24 @@ class RegisterScreen extends StatelessWidget {
         );
         Navigator.pop(context); // Retorna à tela de login
       } else {
-        final data = jsonDecode(response.body);
-        String errorMessage = 'Erro ao criar conta.';
-        if (data is Map) {
-          errorMessage = data.values.map((v) => v.toString()).join('\n');
+        String errorMessage = context.l10n.registerError;
+        try {
+          final data = jsonDecode(utf8.decode(response.bodyBytes));
+          if (data is Map) {
+            final messages = <String>[];
+            for (final entry in data.entries) {
+              final value = entry.value;
+              final detail = value is List ? value.join(' ') : value.toString();
+              messages.add('${entry.key}: $detail');
+            }
+            if (messages.isNotEmpty) errorMessage = messages.join('\n');
+          }
+        } on FormatException {
+          // Keep the fallback message for non-JSON server errors.
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: colors.danger,
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(16),
             shape: RoundedRectangleBorder(
@@ -96,10 +129,10 @@ class RegisterScreen extends StatelessWidget {
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro de conexão: $e'),
-          backgroundColor: colors.danger,
+          content: Text(context.l10n.connectionError),
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
           shape: RoundedRectangleBorder(
@@ -107,6 +140,8 @@ class RegisterScreen extends StatelessWidget {
           ),
         ),
       );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -118,12 +153,13 @@ class RegisterScreen extends StatelessWidget {
       backgroundColor: colors.pageBackground,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
+        actions: const [LanguageSelector()],
         backgroundColor: colors.pageBackground,
         elevation: 0,
         iconTheme: IconThemeData(color: colors.text),
         titleSpacing: 0,
         title: Text(
-          'Criar conta',
+          context.l10n.createAccount,
           style: TextStyle(
             color: colors.text,
             fontSize: 19,
@@ -153,7 +189,7 @@ class RegisterScreen extends StatelessWidget {
                     children: [
                       Semantics(
                         image: true,
-                        label: 'Logotipo do AcessoJá',
+                        label: context.l10n.logo,
                         child: Image.asset(
                           'assets/logo.png',
                           width: 68,
@@ -163,7 +199,7 @@ class RegisterScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Crie sua conta',
+                        context.l10n.createYourAccount,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: colors.text,
@@ -174,7 +210,7 @@ class RegisterScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Preencha seus dados para começar a usar o AcessoJá.',
+                        context.l10n.registerIntro,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: colors.muted,
@@ -194,7 +230,7 @@ class RegisterScreen extends StatelessWidget {
                             BoxShadow(
                               color: colors.shadow,
                               blurRadius: 24,
-                              offset: Offset(0, 10),
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
@@ -202,7 +238,7 @@ class RegisterScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
-                              'Dados da conta',
+                              context.l10n.accountData,
                               style: TextStyle(
                                 color: colors.text,
                                 fontSize: 21,
@@ -211,7 +247,7 @@ class RegisterScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Informe seus dados para criar o acesso.',
+                              context.l10n.registerDetails,
                               style: TextStyle(
                                 color: colors.muted,
                                 fontSize: 13,
@@ -221,16 +257,16 @@ class RegisterScreen extends StatelessWidget {
                             _buildInputField(
                               context: context,
                               controller: _nameController,
-                              label: 'Nome Completo',
-                              hint: 'Digite seu nome completo',
+                              label: context.l10n.registerName,
+                              hint: context.l10n.registerNameHint,
                               icon: Icons.person_outline_rounded,
                             ),
                             const SizedBox(height: 12),
                             _buildInputField(
                               context: context,
                               controller: _emailController,
-                              label: 'Email',
-                              hint: 'Digite seu email',
+                              label: context.l10n.registerEmail,
+                              hint: context.l10n.emailHint,
                               icon: Icons.email_outlined,
                               keyboardType: TextInputType.emailAddress,
                             ),
@@ -238,8 +274,8 @@ class RegisterScreen extends StatelessWidget {
                             _buildInputField(
                               context: context,
                               controller: _passwordController,
-                              label: 'Senha',
-                              hint: 'Digite sua senha',
+                              label: context.l10n.password,
+                              hint: context.l10n.passwordHint,
                               icon: Icons.lock_outline_rounded,
                               obscureText: true,
                             ),
@@ -247,8 +283,8 @@ class RegisterScreen extends StatelessWidget {
                             _buildInputField(
                               context: context,
                               controller: _confirmPasswordController,
-                              label: 'Confirme sua senha',
-                              hint: 'Repita sua senha',
+                              label: context.l10n.confirmPassword,
+                              hint: context.l10n.repeatPassword,
                               icon: Icons.verified_user_outlined,
                               obscureText: true,
                             ),
@@ -256,11 +292,15 @@ class RegisterScreen extends StatelessWidget {
                             Semantics(
                               button: true,
                               enabled: true,
-                              label: 'Cadastrar',
+                              label: _isSubmitting
+                                  ? context.l10n.working
+                                  : context.l10n.register,
                               child: SizedBox(
                                 height: 48,
                                 child: ElevatedButton(
-                                  onPressed: () => _register(context),
+                                  onPressed: _isSubmitting
+                                      ? null
+                                      : () => _register(context),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: colors.primary,
                                     foregroundColor: colors.onPrimary,
@@ -269,18 +309,18 @@ class RegisterScreen extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                   ),
-                                  child: const Row(
+                                  child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        'Cadastrar',
-                                        style: TextStyle(
+                                        context.l10n.register,
+                                        style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                      SizedBox(width: 8),
-                                      Icon(
+                                      const SizedBox(width: 8),
+                                      const Icon(
                                         Icons.arrow_forward_rounded,
                                         size: 19,
                                       ),
@@ -294,7 +334,7 @@ class RegisterScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Ao continuar, você poderá avaliar e encontrar locais mais acessíveis.',
+                        context.l10n.registerFooter,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: colors.muted,

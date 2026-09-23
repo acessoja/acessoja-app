@@ -1,3 +1,5 @@
+import '../widgets/safe_state.dart';
+import '../l10n/strings.dart';
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
@@ -10,28 +12,28 @@ class AjudaScreen extends StatelessWidget {
     final colors = AppColors.of(context);
     final List<Map<String, String>> faqItems = [
       {
-        'q': 'Como encontrar estabelecimentos acessíveis?',
-        'a': 'Use a barra de pesquisa na tela principal ou acesse a aba "Explorar" para ver todos os estabelecimentos próximos. Você pode usar os filtros de acessibilidade para encontrar locais com rampa, banheiro acessível, entre outros.',
+        'q': context.l10n.findPlacesQuestion,
+        'a': context.l10n.findPlacesAnswer,
       },
       {
-        'q': 'Como avaliar um estabelecimento?',
-        'a': 'Abra o estabelecimento desejado em "Locais Salvos" ou "Explorar", role até a seção de avaliações e toque em "Avaliar". Você poderá dar uma nota de 1 a 5 estrelas e deixar um comentário.',
+        'q': context.l10n.reviewQuestion,
+        'a': context.l10n.reviewAnswer,
       },
       {
-        'q': 'Como traçar uma rota até um local?',
-        'a': 'Na tela principal, toque na barra de pesquisa, selecione o destino e o app traçará automaticamente a melhor rota. Você também pode iniciar rotas pela tela de detalhes do estabelecimento.',
+        'q': context.l10n.routeQuestion,
+        'a': context.l10n.routeAnswer,
       },
       {
-        'q': 'Posso alterar minha foto de perfil?',
-        'a': 'Sim! Acesse Menu → Informações Pessoais e toque no ícone de câmera sobre sua foto para selecionar uma nova imagem do seu dispositivo.',
+        'q': context.l10n.photoQuestion,
+        'a': context.l10n.photoAnswer,
       },
       {
-        'q': 'Meus dados estão seguros?',
-        'a': 'Sim, levamos a privacidade a sério. Você pode controlar quais informações ficam visíveis em Menu → Privacidade. Seus dados não são compartilhados com terceiros.',
+        'q': context.l10n.privacyQuestion,
+        'a': context.l10n.privacyAnswer,
       },
       {
-        'q': 'Como funciona o sistema de sugestões?',
-        'a': 'O app analisa os locais que você visitou e suas preferências de acessibilidade para recomendar novos estabelecimentos que atendam critérios semelhantes.',
+        'q': context.l10n.suggestionsQuestion,
+        'a': context.l10n.suggestionsAnswer,
       },
     ];
 
@@ -48,7 +50,7 @@ class AjudaScreen extends StatelessWidget {
           child: _buildBackButton(context),
         ),
         title: Text(
-          'Ajuda',
+          context.l10n.help,
           style: TextStyle(
             color: colors.text,
             fontSize: 19,
@@ -60,8 +62,7 @@ class AjudaScreen extends StatelessWidget {
         top: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final horizontalPadding =
-                constraints.maxWidth < 360 ? 16.0 : 24.0;
+            final horizontalPadding = constraints.maxWidth < 360 ? 16.0 : 24.0;
 
             return Center(
               child: ConstrainedBox(
@@ -78,7 +79,7 @@ class AjudaScreen extends StatelessWidget {
                     children: [
                       Semantics(
                         header: true,
-                        label: 'Central de ajuda',
+                        label: context.l10n.helpCenter,
                         child: Container(
                           padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
@@ -108,16 +109,16 @@ class AjudaScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Como podemos ajudar?',
+                                      context.l10n.helpTitle,
                                       style: TextStyle(
                                         color: colors.primaryDark,
                                         fontSize: 17,
                                         fontWeight: FontWeight.w800,
                                       ),
                                     ),
-                                    SizedBox(height: 5),
+                                    const SizedBox(height: 5),
                                     Text(
-                                      'Confira as perguntas frequentes ou fale com nossa equipe.',
+                                      context.l10n.helpIntro,
                                       style: TextStyle(
                                         color: colors.muted,
                                         fontSize: 12,
@@ -133,7 +134,7 @@ class AjudaScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        'Perguntas frequentes',
+                        context.l10n.faqTitle,
                         style: TextStyle(
                           color: colors.text,
                           fontSize: 17,
@@ -158,7 +159,7 @@ class AjudaScreen extends StatelessWidget {
                             BoxShadow(
                               color: colors.shadow,
                               blurRadius: 12,
-                              offset: Offset(0, 4),
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
@@ -181,19 +182,20 @@ class AjudaScreen extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 10),
-                                Text(
-                                  'Fale conosco',
+                                Expanded(
+                                    child: Text(
+                                  context.l10n.contact,
                                   style: TextStyle(
                                     color: colors.text,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w800,
                                   ),
-                                ),
+                                )),
                               ],
                             ),
                             const SizedBox(height: 11),
                             Text(
-                              'Não encontrou o que procurava? Entre em contato pelo e-mail:',
+                              context.l10n.contactIntro,
                               style: TextStyle(
                                 color: colors.muted,
                                 fontSize: 12,
@@ -241,13 +243,13 @@ class AjudaScreen extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: 'Voltar',
+      label: context.l10n.back,
       child: InkWell(
         onTap: () => Navigator.pop(context),
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          width: 42,
-          height: 42,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             color: colors.primarySoft,
             borderRadius: BorderRadius.circular(14),
@@ -273,7 +275,7 @@ class _FaqTile extends StatefulWidget {
   __FaqTileState createState() => __FaqTileState();
 }
 
-class __FaqTileState extends State<_FaqTile> {
+class __FaqTileState extends SafeState<_FaqTile> {
   bool _expanded = false;
 
   @override
@@ -294,7 +296,7 @@ class __FaqTileState extends State<_FaqTile> {
             BoxShadow(
               color: colors.shadow,
               blurRadius: 10,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             ),
           ],
         ),

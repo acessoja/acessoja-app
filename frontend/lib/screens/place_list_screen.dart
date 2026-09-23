@@ -47,8 +47,7 @@ class PlaceListScreen extends StatelessWidget {
         top: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final horizontalPadding =
-                constraints.maxWidth < 360 ? 16.0 : 24.0;
+            final horizontalPadding = constraints.maxWidth < 360 ? 16.0 : 24.0;
 
             return Center(
               child: ConstrainedBox(
@@ -98,7 +97,7 @@ class PlaceListScreen extends StatelessWidget {
             color: colors.primaryDark,
             size: 24,
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,7 +110,7 @@ class PlaceListScreen extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   'Consulte rapidamente os estabelecimentos que você adicionou.',
                   style: TextStyle(
@@ -163,7 +162,7 @@ class PlaceListScreen extends StatelessWidget {
                 BoxShadow(
                   color: colors.shadow,
                   blurRadius: 12,
-                  offset: Offset(0, 4),
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -228,7 +227,7 @@ class PlaceListScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Padding(
-                  padding: EdgeInsets.only(top: 2),
+                  padding: const EdgeInsets.only(top: 2),
                   child: Icon(
                     Icons.chevron_right_rounded,
                     color: colors.muted,
@@ -277,8 +276,7 @@ class PlaceListScreen extends StatelessWidget {
   Widget _buildStatusChip(BuildContext context, String status, bool isOpen) {
     final colors = AppColors.of(context);
     final color = isOpen ? colors.success : colors.danger;
-    final backgroundColor =
-        isOpen ? colors.successSoft : colors.dangerSoft;
+    final backgroundColor = isOpen ? colors.successSoft : colors.dangerSoft;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),

@@ -1,24 +1,11 @@
+import '../widgets/preference_controls.dart';
+import '../widgets/safe_state.dart';
+import '../l10n/strings.dart';
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../services/api_service.dart';
 import 'main_screen.dart';
 import 'register_screen.dart';
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'AcessoJá',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: LoginScreen(),
-    );
-  }
-}
 
 /// Tela de autenticação do AcessoJá.
 ///
@@ -39,16 +26,17 @@ class LoginScreen extends StatefulWidget {
   final void Function(BuildContext context, Map<String, dynamic> user)?
       onLoginSuccess;
 
-  LoginScreen({Key? key, this.apiService, this.onLoginSuccess})
+  const LoginScreen({Key? key, this.apiService, this.onLoginSuccess})
       : super(key: key);
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends SafeState<LoginScreen> {
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isSubmitting = false;
   late final ApiService _apiService = widget.apiService ?? HttpApiService();
 
   @override
@@ -60,18 +48,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // A lógica de autenticação permanece preservada.
   Future<void> _login(BuildContext context) async {
+    if (_isSubmitting) return;
     final nome = _userController.text.trim();
     final password = _passwordController.text.trim();
 
     if (nome.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, preencha todos os campos!')),
+        SnackBar(content: Text(context.l10n.requiredFields)),
       );
       return;
     }
 
+    setState(() => _isSubmitting = true);
     try {
       final result = await _apiService.login(nome: nome, password: password);
+      if (!mounted) return;
 
       if (result.success) {
         final user = result.user ?? <String, dynamic>{};
@@ -84,17 +75,17 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                MainScreen(
+            pageBuilder: (context, animation, secondaryAnimation) => MainScreen(
               userName: user['nome'],
             ),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
               const begin = Offset(0.0, 0.08);
               const end = Offset.zero;
               const curve = Curves.easeInOutCubic;
 
-              final tween = Tween(begin: begin, end: end)
-                  .chain(CurveTween(curve: curve));
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
               final fadeTween = Tween<double>(begin: 0.0, end: 1.0);
 
               return FadeTransition(
@@ -111,21 +102,26 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result.message ?? 'Usuário ou senha inválidos.'),
+            content: Text(context.apiMessage(result.message,
+                fallback: context.l10n.invalidCredentials)),
           ),
         );
       }
     } catch (e) {
+      if (!mounted) return;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro de conexão: $e')),
+        SnackBar(content: Text(context.l10n.connectionError)),
       );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
   void _showSocialLoginMessage(String provider) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Login com $provider ainda não configurado.'),
+        content: Text(context.l10n.socialUnavailable(provider)),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(
@@ -142,6 +138,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: colors.pageBackground,
       resizeToAvoidBottomInset: true,
+      appBar: AppBar(actions: const [
+        Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: const LanguageSelector())
+      ]),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, _) {
@@ -156,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 4),
                       Semantics(
                         image: true,
-                        label: 'Logotipo do AcessoJá',
+                        label: context.l10n.logo,
                         child: Image.asset(
                           'assets/logo.png',
                           width: 88,
@@ -176,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Acesse sua conta',
+                        context.l10n.accessAccount,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: colors.muted,
@@ -196,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             BoxShadow(
                               color: colors.shadow,
                               blurRadius: 24,
-                              offset: Offset(0, 10),
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
@@ -204,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
-                              'Entrar',
+                              context.l10n.signIn,
                               style: TextStyle(
                                 color: colors.text,
                                 fontSize: 22,
@@ -213,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Use seus dados para continuar.',
+                              context.l10n.signInHint,
                               style: TextStyle(
                                 color: colors.muted,
                                 fontSize: 13,
@@ -222,8 +223,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 18),
                             _buildInputField(
                               controller: _userController,
-                              label: 'Usuário',
-                              hint: 'Digite seu usuário',
+                              label: context.l10n.user,
+                              hint: context.l10n.usernameHint,
                               icon: Icons.person_outline_rounded,
                               primaryColor: colors.primary,
                               textColor: colors.text,
@@ -231,8 +232,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 12),
                             _buildInputField(
                               controller: _passwordController,
-                              label: 'Senha',
-                              hint: 'Digite sua senha',
+                              label: context.l10n.password,
+                              hint: context.l10n.passwordHint,
                               icon: Icons.lock_outline_rounded,
                               obscure: true,
                               primaryColor: colors.primary,
@@ -241,7 +242,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: () {},
+                                onPressed: () => ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                        content:
+                                            Text(context.l10n.passwordHelp))),
                                 style: TextButton.styleFrom(
                                   foregroundColor: colors.primaryDark,
                                   padding: const EdgeInsets.symmetric(
@@ -249,9 +253,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     vertical: 4,
                                   ),
                                 ),
-                                child: const Text(
-                                  'Esqueceu sua senha?',
-                                  style: TextStyle(
+                                child: Text(
+                                  context.l10n.forgotPassword,
+                                  style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -262,7 +266,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             SizedBox(
                               height: 48,
                               child: ElevatedButton(
-                                onPressed: () => _login(context),
+                                onPressed: _isSubmitting
+                                    ? null
+                                    : () => _login(context),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: colors.primary,
                                   foregroundColor: colors.onPrimary,
@@ -271,25 +277,35 @@ class _LoginScreenState extends State<LoginScreen> {
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                 ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Entrar',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
+                                child: _isSubmitting
+                                    ? SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: colors.onPrimary))
+                                    : Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            context.l10n.signIn,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          const Icon(
+                                              Icons.arrow_forward_rounded,
+                                              size: 19),
+                                        ],
                                       ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Icon(Icons.arrow_forward_rounded, size: 19),
-                                  ],
-                                ),
                               ),
                             ),
                             const SizedBox(height: 14),
                             Text(
-                              'ou continue com',
+                              context.l10n.continueWith,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: colors.muted,
@@ -323,7 +339,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => RegisterScreen(),
+                                      builder: (context) =>
+                                          const RegisterScreen(),
                                     ),
                                   );
                                 },
@@ -334,16 +351,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                     vertical: 4,
                                   ),
                                 ),
-                                child: RichText(
-                                  text: TextSpan(
-                                    text: 'Não tem uma conta? ',
+                                child: Text.rich(
+                                  TextSpan(
+                                    text: context.l10n.noAccount,
                                     style: TextStyle(
                                       color: colors.muted,
                                       fontSize: 14,
                                     ),
                                     children: [
                                       TextSpan(
-                                        text: 'Cadastre-se',
+                                        text: context.l10n.signUpLink,
                                         style: TextStyle(
                                           color: colors.primaryDark,
                                           fontWeight: FontWeight.w800,
@@ -359,7 +376,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        'Acessibilidade para todos, em todos os lugares.',
+                        context.l10n.tagline,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: colors.muted,
@@ -387,9 +404,9 @@ class _LoginScreenState extends State<LoginScreen> {
     return Semantics(
       button: true,
       enabled: true,
-      label: 'Login com $label',
+      label: label,
       child: Tooltip(
-        message: 'Login com $label ainda não configurado',
+        message: context.l10n.socialUnavailable(label),
         child: OutlinedButton(
           onPressed: () => _showSocialLoginMessage(label),
           style: OutlinedButton.styleFrom(
@@ -405,24 +422,29 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                glyph,
-                style: TextStyle(
-                  color: glyphColor,
-                  fontSize: label == 'Apple' ? 21 : 19,
-                  fontWeight: FontWeight.w800,
-                  height: 1,
+              if (label == 'Apple')
+                Icon(Icons.apple, color: glyphColor, size: 21)
+              else
+                Text(
+                  glyph,
+                  style: TextStyle(
+                    color: glyphColor,
+                    fontSize: label == 'Apple' ? 21 : 19,
+                    fontWeight: FontWeight.w800,
+                    height: 1,
+                  ),
                 ),
-              ),
               const SizedBox(width: 8),
-              Text(
+              Flexible(
+                  child: Text(
                 label,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: colors.text,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
-              ),
+              )),
             ],
           ),
         ),
@@ -447,6 +469,11 @@ class _LoginScreenState extends State<LoginScreen> {
       child: TextField(
         controller: controller,
         obscureText: obscure,
+        autofillHints: [
+          obscure ? AutofillHints.password : AutofillHints.username
+        ],
+        textInputAction: obscure ? TextInputAction.done : TextInputAction.next,
+        onSubmitted: obscure ? (_) => _login(context) : null,
         style: TextStyle(
           color: textColor,
           fontSize: 15,

@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'AcessoJá',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: LoginScreen(),
+      home: const LoginScreen(),
     );
   }
 }
@@ -38,7 +38,7 @@ class LoginScreen extends StatefulWidget {
   final void Function(BuildContext context, Map<String, dynamic> user)?
       onLoginSuccess;
 
-  LoginScreen({Key? key, this.apiService, this.onLoginSuccess})
+  const LoginScreen({Key? key, this.apiService, this.onLoginSuccess})
       : super(key: key);
 
   @override
@@ -83,17 +83,17 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                MainScreen(
+            pageBuilder: (context, animation, secondaryAnimation) => MainScreen(
               userName: user['nome'],
             ),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
               const begin = Offset(0.0, 0.08);
               const end = Offset.zero;
               const curve = Curves.easeInOutCubic;
 
-              final tween = Tween(begin: begin, end: end)
-                  .chain(CurveTween(curve: curve));
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
               final fadeTween = Tween<double>(begin: 0.0, end: 1.0);
 
               return FadeTransition(
@@ -307,7 +307,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => RegisterScreen(),
+                                      builder: (context) =>
+                                          const RegisterScreen(),
                                     ),
                                   );
                                 },

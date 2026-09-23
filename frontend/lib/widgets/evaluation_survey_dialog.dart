@@ -1,3 +1,4 @@
+import '../l10n/strings.dart';
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
@@ -46,7 +47,7 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
           child: Semantics(
             button: true,
             selected: isSelected,
-            label: value,
+            label: "$questionText: ${context.surveyAnswer(value)}",
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: isSelected ? colors.primary : colors.surface,
@@ -61,13 +62,13 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                 ),
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(horizontal: 4),
-                minimumSize: const Size(0, 42),
+                minimumSize: const Size(0, 48),
               ),
               onPressed: () => onSelected(value),
               child: Text(
-                value,
+                context.surveyAnswer(value),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                 ),
@@ -118,7 +119,7 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
     if (q1.isEmpty || q2.isEmpty || q3.isEmpty || q4.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Por favor, responda todas as perguntas!'),
+          content: Text(context.l10n.surveyRequired),
           backgroundColor: colors.danger,
         ),
       );
@@ -142,7 +143,8 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
         borderRadius: BorderRadius.circular(24),
         clipBehavior: Clip.antiAlias,
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: screenHeight * 0.86),
+          constraints:
+              BoxConstraints(maxHeight: screenHeight * 0.86, maxWidth: 560),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
             child: Column(
@@ -170,7 +172,7 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Responda uma breve pesquisa e ajude outros usuários',
+                            context.l10n.surveyTitle,
                             style: TextStyle(
                               color: colors.text,
                               fontSize: 16,
@@ -178,9 +180,9 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                               height: 1.25,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
-                            'Suas respostas ajudam a orientar outras pessoas.',
+                            context.l10n.surveyHint,
                             style: TextStyle(
                               color: colors.muted,
                               fontSize: 12,
@@ -200,22 +202,22 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                     child: Column(
                       children: [
                         _buildQuestionCard(
-                          '1. Existem rampas de acesso na entrada do local?',
+                          context.l10n.questionOne,
                           q1,
                           (value) => setState(() => q1 = value),
                         ),
                         _buildQuestionCard(
-                          '2. Esse lugar tem banheiro acessível?',
+                          context.l10n.questionTwo,
                           q2,
                           (value) => setState(() => q2 = value),
                         ),
                         _buildQuestionCard(
-                          '3. Há vagas de estacionamento reservadas para pessoas com deficiência?',
+                          context.l10n.questionThree,
                           q3,
                           (value) => setState(() => q3 = value),
                         ),
                         _buildQuestionCard(
-                          '4. O ambiente é livre de barreiras e obstáculos que dificultem a locomoção?',
+                          context.l10n.questionFour,
                           q4,
                           (value) => setState(() => q4 = value),
                         ),
@@ -242,9 +244,9 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                               .maybePop();
                           widget.onDismiss?.call();
                         },
-                        child: const Text(
-                          'Não, obrigado',
-                          style: TextStyle(fontWeight: FontWeight.w800),
+                        child: Text(
+                          context.l10n.dismissSurvey,
+                          style: const TextStyle(fontWeight: FontWeight.w800),
                         ),
                       ),
                     ),
@@ -261,9 +263,9 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                           elevation: 0,
                         ),
                         onPressed: _handleSubmit,
-                        child: const Text(
-                          'Enviar Avaliação',
-                          style: TextStyle(fontWeight: FontWeight.w800),
+                        child: Text(
+                          context.l10n.submitReview,
+                          style: const TextStyle(fontWeight: FontWeight.w800),
                         ),
                       ),
                     ),

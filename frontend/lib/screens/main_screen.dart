@@ -1,10 +1,13 @@
+import '../navigation.dart';
+import '../widgets/safe_state.dart';
+import '../l10n/strings.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
+import '../services/app_http.dart';
 import '../app_theme.dart';
 import '../config.dart';
 import 'saved_places_screen.dart';
@@ -15,29 +18,41 @@ import 'settings_screen.dart';
 class MainScreen extends StatefulWidget {
   final String userName;
 
-  const MainScreen({Key? key, required this.userName}) : super(key: key);
+  /// Injection points for deterministic tests without GPS or tile requests.
+  final bool trackLocation;
+  final TileProvider? tileProvider;
+
+  const MainScreen(
+      {Key? key,
+      required this.userName,
+      this.trackLocation = true,
+      this.tileProvider})
+      : super(key: key);
 
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends SafeState<MainScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String _unidadeDistancia = 'KM';
+  bool _allowSuggestions = true;
+  bool _hasLocation = false;
   String _nomeCompleto = '';
   String _fotoPerfil = '';
-  
 
   Future<void> _loadUserProfile() async {
     try {
       final uri = Uri.parse(
           '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(widget.userName)}');
-      final resp = await http.get(uri);
+      final resp = await AppHttp.get(uri);
+      if (!mounted) return;
       if (resp.statusCode == 200) {
         final data = json.decode(utf8.decode(resp.bodyBytes));
         setState(() {
           _unidadeDistancia = data['unidade_distancia'] ?? 'KM';
+          _allowSuggestions = data['permitir_sugestoes'] != false;
           _nomeCompleto = (data['nome_completo'] ?? '').toString().isNotEmpty
               ? data['nome_completo']
               : widget.userName;
@@ -45,6 +60,7 @@ class _MainScreenState extends State<MainScreen> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       debugPrint("Error loading user profile in MainScreen: $e");
     }
   }
@@ -59,23 +75,20 @@ class _MainScreenState extends State<MainScreen> {
     return null;
   }
 
-  String _formatDistance(dynamic distanceValue) {
-    double km = 0.0;
-    if (distanceValue is num) {
-      km = distanceValue.toDouble();
-    } else if (distanceValue is String) {
-      String cleanStr = distanceValue.replaceAll(RegExp(r'[^\d.,]'), '').replaceAll(',', '.');
-      km = double.tryParse(cleanStr) ?? 0.0;
-    }
-    if (_unidadeDistancia == 'Milha') {
-      double miles = km * 0.621371;
-      return '${miles.toStringAsFixed(1).replaceAll('.', ',')} mi';
-    } else {
-      return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
-    }
+  String _formatDistance(dynamic value) {
+    final km = value is num
+        ? value.toDouble()
+        : double.tryParse(value
+                .toString()
+                .replaceAll(RegExp(r'[^0-9.,]'), '')
+                .replaceAll(',', '.')) ??
+            0;
+    final miles = _unidadeDistancia == 'Milha';
+    return '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}';
   }
-  
-  LatLng _currentLocation = const LatLng(-16.3267, -48.9528); // Default: Anápolis, GO
+
+  LatLng _currentLocation =
+      const LatLng(-16.3267, -48.9528); // Default: Anápolis, GO
   LatLng? _destinationLocation;
   String _currentAddress = 'Anápolis, Goiás, Brasil';
   String _destinationAddress = '';
@@ -105,9 +118,11 @@ class _MainScreenState extends State<MainScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        backgroundColor: colors.primary,
         content: Row(
           children: [
-            Icon(Icons.check_circle_outline_rounded, color: colors.onPrimary, size: 28),
+            Icon(Icons.check_circle_outline_rounded,
+                color: colors.onPrimary, size: 28),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -115,19 +130,23 @@ class _MainScreenState extends State<MainScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Login realizado com sucesso!',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: colors.onPrimary),
+                    context.l10n.loginSuccess,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: colors.onPrimary),
                   ),
                   Text(
-                    'Bem-vindo ao AcessoJá, ${widget.userName}!',
-                    style: TextStyle(fontSize: 12, color: colors.onPrimary.withOpacity(0.72)),
+                    context.l10n.welcome(widget.userName),
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: colors.onPrimary.withOpacity(0.72)),
                   ),
                 ],
               ),
             ),
           ],
         ),
-        backgroundColor: colors.primaryDark,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         duration: const Duration(seconds: 4),
@@ -140,16 +159,17 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _loadUserProfile();
-    _initLocationTracking();
+    if (widget.trackLocation) _initLocationTracking();
     _fetchEstablishments(); // Preload all establishments
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showWelcomeBanner();
+      if (mounted) _showWelcomeBanner();
     });
   }
 
   @override
   void dispose() {
     _positionStream?.cancel();
+    _mapController.dispose();
     super.dispose();
   }
 
@@ -166,8 +186,10 @@ class _MainScreenState extends State<MainScreen> {
       if (_filterRampaAcesso) queryParams['rampa_acesso'] = 'true';
       if (_filterCardapioBraille) queryParams['cardapio_braille'] = 'true';
 
-      final uri = Uri.parse('${Config.baseUrl}/api/locais/').replace(queryParameters: queryParams);
-      final response = await http.get(uri);
+      final uri = Uri.parse('${Config.baseUrl}/api/locais/')
+          .replace(queryParameters: queryParams);
+      final response = await AppHttp.get(uri);
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
         final List data = json.decode(utf8.decode(response.bodyBytes));
@@ -178,6 +200,7 @@ class _MainScreenState extends State<MainScreen> {
         debugPrint("Error fetching locales: ${response.statusCode}");
       }
     } catch (e) {
+      if (!mounted) return;
       debugPrint("Error connecting to locales: $e");
     } finally {
       setState(() {
@@ -205,7 +228,7 @@ class _MainScreenState extends State<MainScreen> {
           return;
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         debugPrint("Location permissions are permanently denied.");
         return;
@@ -216,6 +239,7 @@ class _MainScreenState extends State<MainScreen> {
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 5),
       );
+      if (!mounted) return;
       _updateLocation(position);
 
       // Start stream listening for movements
@@ -233,6 +257,7 @@ class _MainScreenState extends State<MainScreen> {
         },
       );
     } catch (e) {
+      if (!mounted) return;
       debugPrint("Error initializing location: $e");
     }
   }
@@ -242,17 +267,20 @@ class _MainScreenState extends State<MainScreen> {
     final newLatLng = LatLng(position.latitude, position.longitude);
     setState(() {
       _currentLocation = newLatLng;
+      _hasLocation = true;
     });
-    
+
     // Move map to center
-    _mapController.move(newLatLng, 14.5);
+    if (!_isRouting) _mapController.move(newLatLng, 14.5);
 
     // Get readable address if significant movement (100 meters)
-    if (_lastGeocodedLocation == null || 
+    if (_lastGeocodedLocation == null ||
         Geolocator.distanceBetween(
-          _lastGeocodedLocation!.latitude, _lastGeocodedLocation!.longitude,
-          newLatLng.latitude, newLatLng.longitude
-        ) > 100) {
+                _lastGeocodedLocation!.latitude,
+                _lastGeocodedLocation!.longitude,
+                newLatLng.latitude,
+                newLatLng.longitude) >
+            100) {
       _lastGeocodedLocation = newLatLng;
       _getAddressFromLatLng(newLatLng);
     }
@@ -261,11 +289,11 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _getAddressFromLatLng(LatLng position) async {
     try {
       final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16'
-      );
-      final response = await http.get(url, headers: {
+          'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16');
+      final response = await AppHttp.get(url, headers: {
         'User-Agent': 'AcessoJaApp/1.0',
       });
+      if (!mounted) return;
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final displayName = data['display_name'];
@@ -276,12 +304,13 @@ class _MainScreenState extends State<MainScreen> {
         }
       }
     } catch (e) {
+      if (!mounted) return;
       debugPrint("Error in reverse geocoding: $e");
     }
   }
 
   Future<void> _searchAndRoute(String destinationText) async {
-    if (destinationText.trim().isEmpty) return;
+    if (destinationText.trim().isEmpty || _isLoadingRoute) return;
 
     setState(() {
       _isLoadingRoute = true;
@@ -289,15 +318,15 @@ class _MainScreenState extends State<MainScreen> {
 
     try {
       // 1. Search destination coordinates using Nominatim Search API
-      final searchUrl = Uri.parse(
-        'https://nominatim.openstreetmap.org/search?q='
-        '${Uri.encodeComponent(destinationText)}'
-        '&format=json&limit=1&addressdetails=1'
-      );
-      
-      final searchResponse = await http.get(searchUrl, headers: {
+      final searchUrl =
+          Uri.parse('https://nominatim.openstreetmap.org/search?q='
+              '${Uri.encodeComponent(destinationText)}'
+              '&format=json&limit=1&addressdetails=1');
+
+      final searchResponse = await AppHttp.get(searchUrl, headers: {
         'User-Agent': 'AcessoJaApp/1.0',
       });
+      if (!mounted) return;
 
       if (searchResponse.statusCode == 200) {
         final List results = json.decode(searchResponse.body);
@@ -316,14 +345,15 @@ class _MainScreenState extends State<MainScreen> {
           // 2. Fetch OSRM route between current location and destination
           await _calculateRoute(_currentLocation, destLatLng);
         } else {
-          _showErrorSnackBar('Nenhum local encontrado para "$destinationText"');
+          _showErrorSnackBar(context.l10n.destinationNotFound(destinationText));
         }
       } else {
-        _showErrorSnackBar('Erro ao buscar o destino. Tente novamente.');
+        _showErrorSnackBar(context.l10n.destinationError);
       }
     } catch (e) {
+      if (!mounted) return;
       debugPrint("Error in search and route: $e");
-      _showErrorSnackBar('Erro de conexão ao buscar rota.');
+      _showErrorSnackBar(context.l10n.routeConnectionError);
     } finally {
       setState(() {
         _isLoadingRoute = false;
@@ -334,15 +364,17 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _calculateRoute(LatLng start, LatLng end) async {
     try {
       final routeUrl = Uri.parse(
-        'https://router.project-osrm.org/route/v1/driving/'
-        '${start.longitude},${start.latitude};${end.longitude},${end.latitude}'
-        '?overview=full&geometries=geojson'
-      );
+          'https://router.project-osrm.org/route/v1/driving/'
+          '${start.longitude},${start.latitude};${end.longitude},${end.latitude}'
+          '?overview=full&geometries=geojson');
 
-      final response = await http.get(routeUrl);
+      final response = await AppHttp.get(routeUrl);
+      if (!mounted) return;
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['code'] == 'Ok' && data['routes'] != null && data['routes'].isNotEmpty) {
+        if (data['code'] == 'Ok' &&
+            data['routes'] != null &&
+            data['routes'].isNotEmpty) {
           final route = data['routes'][0];
           final geometry = route['geometry'];
           final coordinates = geometry['coordinates'] as List;
@@ -367,14 +399,15 @@ class _MainScreenState extends State<MainScreen> {
           // Zoom and move map to fit route
           _fitRouteBounds(start, end);
         } else {
-          _showErrorSnackBar('Não foi possível traçar uma rota para este local.');
+          _showErrorSnackBar(context.l10n.noRoute);
         }
       } else {
-        _showErrorSnackBar('Erro do servidor de rotas.');
+        _showErrorSnackBar(context.l10n.routeServerError);
       }
     } catch (e) {
+      if (!mounted) return;
       debugPrint("Error in OSRM routing: $e");
-      _showErrorSnackBar('Falha ao conectar com o serviço de rotas.');
+      _showErrorSnackBar(context.l10n.routeServiceError);
     }
   }
 
@@ -390,18 +423,18 @@ class _MainScreenState extends State<MainScreen> {
 
   void _showErrorSnackBar(String message) {
     if (!mounted) return;
-    final colors = AppColors.of(context);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: colors.danger,
       ),
     );
   }
 
   void _openSearchBottomSheet(BuildContext context) {
     final colors = AppColors.of(context);
-    final TextEditingController destinationController = TextEditingController(text: _destinationAddress);
+    final TextEditingController destinationController =
+        TextEditingController(text: _destinationAddress);
     String sheetView = 'route'; // 'route' ou 'filters'
     String filterSearchQuery = '';
 
@@ -415,11 +448,14 @@ class _MainScreenState extends State<MainScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
+      constraints: BoxConstraints(
+          maxWidth: 680, maxHeight: MediaQuery.sizeOf(context).height * .94),
       backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+        borderRadius: const BorderRadius.only(
+          topLeft: const Radius.circular(24),
+          topRight: const Radius.circular(24),
         ),
       ),
       builder: (context) {
@@ -427,7 +463,8 @@ class _MainScreenState extends State<MainScreen> {
           builder: (context, sheetSetState) {
             if (sheetView == 'route') {
               // 1. TELA DE ROTA
-              return Padding(
+              return SingleChildScrollView(
+                  child: Padding(
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom + 24,
                   top: 16,
@@ -450,20 +487,26 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                     const SizedBox(height: 20),
                     // Campo: Localização Atual (caixa de pílula branca com borda azul e lupa à direita)
-                    TextField(
-                      controller: TextEditingController(text: _currentAddress),
+                    TextFormField(
+                      key: ValueKey(_currentAddress),
+                      initialValue: _hasLocation
+                          ? _currentAddress
+                          : context.l10n.locationUnavailable,
                       readOnly: true,
                       decoration: InputDecoration(
-                        hintText: 'Localização atual',
+                        hintText: context.l10n.currentLocation,
                         suffixIcon: Icon(Icons.search, color: colors.primary),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(28),
-                          borderSide: BorderSide(color: colors.primary, width: 1.5),
+                          borderSide:
+                              BorderSide(color: colors.primary, width: 1.5),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(28),
-                          borderSide: BorderSide(color: colors.primary, width: 2.0),
+                          borderSide:
+                              BorderSide(color: colors.primary, width: 2.0),
                         ),
                         filled: true,
                         fillColor: colors.fieldBackground,
@@ -474,16 +517,19 @@ class _MainScreenState extends State<MainScreen> {
                     TextField(
                       controller: destinationController,
                       decoration: InputDecoration(
-                        hintText: 'Qual seu destino?',
+                        hintText: context.l10n.destinationHint,
                         suffixIcon: Icon(Icons.search, color: colors.primary),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(28),
-                          borderSide: BorderSide(color: colors.primary, width: 1.5),
+                          borderSide:
+                              BorderSide(color: colors.primary, width: 1.5),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(28),
-                          borderSide: BorderSide(color: colors.primary, width: 2.0),
+                          borderSide:
+                              BorderSide(color: colors.primary, width: 2.0),
                         ),
                         filled: true,
                         fillColor: colors.fieldBackground,
@@ -500,24 +546,27 @@ class _MainScreenState extends State<MainScreen> {
                     // Dropdown/Lista de sugestões de estabelecimentos por perto
                     if (_isLoadingLocals)
                       const Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8.0),
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                        child: const Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child:
+                              const CircularProgressIndicator(strokeWidth: 2),
                         ),
                       )
                     else ...[
                       (() {
-                        final text = destinationController.text.trim().toLowerCase();
+                        final text =
+                            destinationController.text.trim().toLowerCase();
                         final list = _matchingLocals.where((local) {
-                          final nome = (local['nome'] ?? '').toString().toLowerCase();
+                          final nome =
+                              (local['nome'] ?? '').toString().toLowerCase();
                           return nome.contains(text);
                         }).toList();
 
                         if (list.isEmpty) {
                           return Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12.0),
+                            padding: const EdgeInsets.symmetric(vertical: 12.0),
                             child: Text(
-                              'Nenhum resultado encontrado',
+                              context.l10n.noResults,
                               style: TextStyle(
                                 color: colors.danger,
                                 fontWeight: FontWeight.bold,
@@ -541,34 +590,48 @@ class _MainScreenState extends State<MainScreen> {
                             itemCount: list.length,
                             itemBuilder: (context, index) {
                               final local = list[index];
-                              return ListTile(
-                                dense: true,
-                                leading: Icon(Icons.location_on, color: colors.primary),
-                                title: Text(
-                                  local['nome'],
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: colors.text,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  local['endereco'],
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                trailing: Text(
-                                  _formatDistance(local['distancia']),
-                                  style: TextStyle(fontSize: 12, color: colors.muted),
-                                ),
-                                onTap: () {
-                                  setState(() {
-                                    _destinationLocation = LatLng(local['latitude'], local['longitude']);
-                                    _destinationAddress = local['nome'];
-                                    destinationController.text = local['nome'];
-                                  });
-                                  sheetSetState(() {});
-                                },
-                              );
+                              return Material(
+                                  color: Colors.transparent,
+                                  child: ListTile(
+                                    dense: true,
+                                    leading: Icon(Icons.location_on,
+                                        color: colors.primary),
+                                    title: Text(
+                                      local['nome'],
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: colors.text,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      local['endereco'],
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    trailing: Text(
+                                      _formatDistance(local['distancia']),
+                                      style: TextStyle(
+                                          fontSize: 12, color: colors.muted),
+                                    ),
+                                    onTap: () {
+                                      setState(() {
+                                        if (routePlace(local) == null) {
+                                          _showErrorSnackBar(
+                                              context.l10n.invalidLocation);
+                                          return;
+                                        }
+                                        _destinationLocation = LatLng(
+                                            (local['latitude'] as num)
+                                                .toDouble(),
+                                            (local['longitude'] as num)
+                                                .toDouble());
+                                        _destinationAddress = local['nome'];
+                                        destinationController.text =
+                                            local['nome'];
+                                      });
+                                      sheetSetState(() {});
+                                    },
+                                  ));
                             },
                           ),
                         );
@@ -578,7 +641,7 @@ class _MainScreenState extends State<MainScreen> {
                     Center(
                       child: SizedBox(
                         width: 180,
-                        child: GestureDetector(
+                        child: InkWell(
                           onTap: () {
                             sheetSetState(() {
                               sheetView = 'filters';
@@ -590,20 +653,23 @@ class _MainScreenState extends State<MainScreen> {
                             decoration: BoxDecoration(
                               color: colors.surface,
                               borderRadius: BorderRadius.circular(22),
-                              border: Border.all(color: colors.primary, width: 1.5),
+                              border:
+                                  Border.all(color: colors.primary, width: 1.5),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  'Filtros',
+                                Flexible(
+                                    child: Text(
+                                  context.l10n.filters,
                                   style: TextStyle(
                                     color: colors.text,
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
                                   ),
-                                ),
-                                Icon(Icons.search, color: colors.primary, size: 20),
+                                )),
+                                Icon(Icons.search,
+                                    color: colors.primary, size: 20),
                               ],
                             ),
                           ),
@@ -630,16 +696,20 @@ class _MainScreenState extends State<MainScreen> {
                           onPressed: () {
                             final destText = destinationController.text.trim();
                             if (destText.isEmpty) {
-                              _showErrorSnackBar('Selecione ou digite um destino.');
+                              _showErrorSnackBar(
+                                  context.l10n.selectDestination);
                               return;
                             }
                             Navigator.pop(context);
-                            
-                            if (_destinationLocation != null && _destinationAddress == destText) {
+
+                            if (_destinationLocation != null &&
+                                _destinationAddress == destText) {
                               setState(() {
                                 _isLoadingRoute = true;
                               });
-                              _calculateRoute(_currentLocation, _destinationLocation!).then((_) {
+                              _calculateRoute(
+                                      _currentLocation, _destinationLocation!)
+                                  .then((_) {
                                 setState(() {
                                   _isLoadingRoute = false;
                                 });
@@ -648,46 +718,47 @@ class _MainScreenState extends State<MainScreen> {
                               _searchAndRoute(destText);
                             }
                           },
-                          child: const Text(
-                            'Confirmar',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          child: Text(
+                            context.l10n.confirm,
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
                     ),
                   ],
                 ),
-              );
+              ));
             } else {
               // 2. TELA DE FILTROS (Visual da imagem)
               final List<Map<String, dynamic>> filterItems = [
                 {
                   'id': 'cao_guia',
-                  'name': 'Permissão de Entrada Cão Guia',
+                  'name': context.l10n.guideDog,
                   'icon': Icons.pets_rounded,
                   'checked': tempCaoGuia,
                 },
                 {
                   'id': 'mesa_acessivel',
-                  'name': 'Mesa acessível',
+                  'name': context.l10n.accessibleTable,
                   'icon': Icons.table_restaurant_rounded,
                   'checked': tempMesaAcessivel,
                 },
                 {
                   'id': 'banheiro_acessivel',
-                  'name': 'Banheiros Especiais',
+                  'name': context.l10n.accessibleRestroom,
                   'icon': Icons.accessible_rounded,
                   'checked': tempBanheiroAcessivel,
                 },
                 {
                   'id': 'rampa_acesso',
-                  'name': 'Rampas de Acesso',
+                  'name': context.l10n.accessRamp,
                   'icon': Icons.accessible_forward_rounded,
                   'checked': tempRampaAcesso,
                 },
                 {
                   'id': 'cardapio_braille',
-                  'name': 'Cardápio em Braille',
+                  'name': context.l10n.brailleMenu,
                   'icon': Icons.menu_book_rounded,
                   'checked': tempCardapioBraille,
                 },
@@ -698,7 +769,8 @@ class _MainScreenState extends State<MainScreen> {
                 return name.contains(filterSearchQuery.toLowerCase());
               }).toList();
 
-              return Padding(
+              return SingleChildScrollView(
+                  child: Padding(
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom + 24,
                   top: 16,
@@ -724,7 +796,8 @@ class _MainScreenState extends State<MainScreen> {
                     Row(
                       children: [
                         IconButton(
-                          icon: Icon(Icons.arrow_back_ios_new_rounded, color: colors.primary, size: 22),
+                          icon: Icon(Icons.arrow_back_ios_new_rounded,
+                              color: colors.primary, size: 22),
                           onPressed: () {
                             sheetSetState(() {
                               sheetView = 'route';
@@ -737,7 +810,8 @@ class _MainScreenState extends State<MainScreen> {
                             decoration: BoxDecoration(
                               color: colors.surface,
                               borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: colors.primary, width: 1.5),
+                              border:
+                                  Border.all(color: colors.primary, width: 1.5),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: TextField(
@@ -747,10 +821,11 @@ class _MainScreenState extends State<MainScreen> {
                                 });
                               },
                               decoration: InputDecoration(
-                                hintText: 'Pesquisar por filtros...',
+                                hintText: context.l10n.searchFilters,
                                 hintStyle: TextStyle(color: colors.muted),
                                 border: InputBorder.none,
-                                suffixIcon: Icon(Icons.search, color: colors.primary),
+                                suffixIcon:
+                                    Icon(Icons.search, color: colors.primary),
                               ),
                             ),
                           ),
@@ -765,23 +840,29 @@ class _MainScreenState extends State<MainScreen> {
                         return Column(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
                               child: Row(
                                 children: [
-                                  Icon(item['icon'], color: colors.primary, size: 28),
+                                  Icon(item['icon'],
+                                      color: colors.primary, size: 28),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Container(
-                                      height: 42,
+                                      height: 48,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
                                         color: colors.surface,
                                         borderRadius: BorderRadius.circular(21),
-                                        border: Border.all(color: colors.primary, width: 1.2),
+                                        border: Border.all(
+                                            color: colors.primary, width: 1.2),
                                       ),
                                       child: Text(
                                         item['name'],
-                                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: colors.text),
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: colors.text),
                                         textAlign: TextAlign.center,
                                       ),
                                     ),
@@ -793,29 +874,38 @@ class _MainScreenState extends State<MainScreen> {
                                       value: item['checked'],
                                       onChanged: (val) {
                                         sheetSetState(() {
-                                          if (item['id'] == 'cao_guia') tempCaoGuia = val ?? false;
-                                          if (item['id'] == 'mesa_acessivel') tempMesaAcessivel = val ?? false;
-                                          if (item['id'] == 'banheiro_acessivel') tempBanheiroAcessivel = val ?? false;
-                                          if (item['id'] == 'rampa_acesso') tempRampaAcesso = val ?? false;
-                                          if (item['id'] == 'cardapio_braille') tempCardapioBraille = val ?? false;
+                                          if (item['id'] == 'cao_guia')
+                                            tempCaoGuia = val ?? false;
+                                          if (item['id'] == 'mesa_acessivel')
+                                            tempMesaAcessivel = val ?? false;
+                                          if (item['id'] ==
+                                              'banheiro_acessivel')
+                                            tempBanheiroAcessivel =
+                                                val ?? false;
+                                          if (item['id'] == 'rampa_acesso')
+                                            tempRampaAcesso = val ?? false;
+                                          if (item['id'] == 'cardapio_braille')
+                                            tempCardapioBraille = val ?? false;
                                         });
                                       },
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(6),
                                       ),
-                                      side: BorderSide(color: colors.primary, width: 1.5),
+                                      side: BorderSide(
+                                          color: colors.primary, width: 1.5),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            Divider(height: 1, thickness: 1, color: colors.border),
+                            Divider(
+                                height: 1, thickness: 1, color: colors.border),
                           ],
                         );
                       }),
                     ),
                     const SizedBox(height: 24),
-                    // Botão azul "Filtrar"
+                    // Botão azul context.l10n.applyFilters
                     Center(
                       child: SizedBox(
                         width: 180,
@@ -839,31 +929,56 @@ class _MainScreenState extends State<MainScreen> {
                             });
 
                             _fetchEstablishments().then((_) {
+                              if (!context.mounted) return;
                               sheetSetState(() {
                                 sheetView = 'route';
                               });
                             });
                           },
-                          child: const Text(
-                            'Filtrar',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          child: Text(
+                            context.l10n.applyFilters,
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
                     ),
                   ],
                 ),
-              );
+              ));
             }
           },
         );
       },
-    );
+    ).whenComplete(destinationController.dispose);
+  }
+
+  Future<void> _startRoute(Map<String, dynamic> place) async {
+    if (_isLoadingRoute) return;
+    final valid = routePlace(place);
+    if (valid == null) {
+      _showErrorSnackBar(context.l10n.invalidLocation);
+      return;
+    }
+    final point = LatLng((valid['latitude'] as num).toDouble(),
+        (valid['longitude'] as num).toDouble());
+    setState(() {
+      _destinationLocation = point;
+      _destinationAddress = valid['nome']?.toString() ?? '';
+      _isLoadingRoute = true;
+    });
+    try {
+      if (valid['id_local'] is int) await _registraVisita(valid['id_local']);
+      if (!mounted) return;
+      await _calculateRoute(_currentLocation, point);
+    } finally {
+      if (mounted) setState(() => _isLoadingRoute = false);
+    }
   }
 
   Future<void> _registraVisita(int localId) async {
     try {
-      await http.post(
+      await AppHttp.post(
         Uri.parse('${Config.baseUrl}/api/visitas/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -872,6 +987,7 @@ class _MainScreenState extends State<MainScreen> {
         }),
       );
     } catch (e) {
+      if (!mounted) return;
       debugPrint("Error recording visit: $e");
     }
   }
@@ -886,17 +1002,8 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
     );
-    if (selectedLocal != null && selectedLocal is Map<String, dynamic>) {
-      _registraVisita(selectedLocal['id_local']);
-      setState(() {
-        _destinationLocation = LatLng(selectedLocal['latitude'], selectedLocal['longitude']);
-        _destinationAddress = selectedLocal['nome'];
-        _isLoadingRoute = true;
-      });
-      await _calculateRoute(_currentLocation, _destinationLocation!);
-      setState(() {
-        _isLoadingRoute = false;
-      });
+    if (mounted && selectedLocal is Map<String, dynamic>) {
+      await _startRoute(selectedLocal);
     }
   }
 
@@ -917,8 +1024,8 @@ class _MainScreenState extends State<MainScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
                 decoration: BoxDecoration(
                   color: colors.primaryDark,
-                  borderRadius: BorderRadius.only(
-                    bottomRight: Radius.circular(28),
+                  borderRadius: const BorderRadius.only(
+                    bottomRight: const Radius.circular(28),
                   ),
                 ),
                 child: Column(
@@ -938,7 +1045,7 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      'Sua conta',
+                      context.l10n.yourAccount,
                       style: TextStyle(
                         color: colors.onPrimary.withOpacity(0.72),
                         fontSize: 12,
@@ -947,7 +1054,9 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      _nomeCompleto.isNotEmpty ? _nomeCompleto : widget.userName,
+                      _nomeCompleto.isNotEmpty
+                          ? _nomeCompleto
+                          : widget.userName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -972,7 +1081,7 @@ class _MainScreenState extends State<MainScreen> {
                         color: colors.primaryDark,
                       ),
                       title: Text(
-                        'Locais Salvos',
+                        context.l10n.savedPlacesTitle,
                         style: TextStyle(
                           color: colors.text,
                           fontWeight: FontWeight.w600,
@@ -993,7 +1102,7 @@ class _MainScreenState extends State<MainScreen> {
                         color: colors.danger,
                       ),
                       title: Text(
-                        'Sair',
+                        context.l10n.signOut,
                         style: TextStyle(
                           color: colors.danger,
                           fontWeight: FontWeight.w600,
@@ -1001,7 +1110,7 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pop(context); // Retorna ao Login
+                        logOut(context);
                       },
                     ),
                   ],
@@ -1025,7 +1134,9 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      tileProvider: widget.tileProvider,
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.example.acessoja',
                     ),
                     if (_isRouting && _routePoints.isNotEmpty)
@@ -1064,7 +1175,8 @@ class _MainScreenState extends State<MainScreen> {
                                 decoration: BoxDecoration(
                                   color: colors.primary,
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: colors.surface, width: 2),
+                                  border: Border.all(
+                                      color: colors.surface, width: 2),
                                 ),
                               ),
                             ],
@@ -1073,7 +1185,9 @@ class _MainScreenState extends State<MainScreen> {
                         // Marcadores de estabelecimentos filtrados (visível apenas fora da navegação)
                         if (!_isRouting)
                           ..._matchingLocals
-                              .where((local) => local['latitude'] != null && local['longitude'] != null)
+                              .where((local) =>
+                                  local['latitude'] != null &&
+                                  local['longitude'] != null)
                               .map((local) {
                             final lat = local['latitude'] as double;
                             final lon = local['longitude'] as double;
@@ -1081,7 +1195,7 @@ class _MainScreenState extends State<MainScreen> {
                               point: LatLng(lat, lon),
                               width: 80,
                               height: 60,
-                              child: GestureDetector(
+                              child: InkWell(
                                 onTap: () {
                                   setState(() {
                                     _destinationLocation = LatLng(lat, lon);
@@ -1093,14 +1207,19 @@ class _MainScreenState extends State<MainScreen> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 3),
                                       decoration: BoxDecoration(
                                         color: colors.surface,
                                         borderRadius: BorderRadius.circular(8),
                                         boxShadow: [
-                                          BoxShadow(color: colors.shadow, blurRadius: 4, offset: Offset(0, 2)),
+                                          BoxShadow(
+                                              color: colors.shadow,
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2)),
                                         ],
-                                        border: Border.all(color: colors.primary, width: 1.2),
+                                        border: Border.all(
+                                            color: colors.primary, width: 1.2),
                                       ),
                                       child: Text(
                                         local['nome'],
@@ -1156,19 +1275,23 @@ class _MainScreenState extends State<MainScreen> {
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 16,
                   left: 16,
-                  child: GestureDetector(
+                  child: InkWell(
                     onTap: () async {
-                      await Navigator.push(
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => SettingsScreen(userName: widget.userName),
+                          builder: (_) =>
+                              SettingsScreen(userName: widget.userName),
                         ),
                       );
-                      _loadUserProfile(); // Re-fetch the user settings!
+                      if (!mounted) return;
+                      await _loadUserProfile();
+                      if (mounted && result is Map<String, dynamic>)
+                        await _startRoute(result);
                     },
                     child: Semantics(
                       button: true,
-                      label: 'Abrir configurações',
+                      label: context.l10n.openSettings,
                       child: Container(
                         width: 52,
                         height: 52,
@@ -1183,7 +1306,7 @@ class _MainScreenState extends State<MainScreen> {
                             BoxShadow(
                               color: colors.shadow,
                               blurRadius: 12,
-                              offset: Offset(0, 4),
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
@@ -1212,7 +1335,7 @@ class _MainScreenState extends State<MainScreen> {
                     mini: true,
                     backgroundColor: colors.surface,
                     foregroundColor: colors.primary,
-                    tooltip: 'Centralizar minha localização',
+                    tooltip: context.l10n.centerLocation,
                     elevation: 3,
                     onPressed: () {
                       _mapController.move(_currentLocation, 14.5);
@@ -1235,7 +1358,7 @@ class _MainScreenState extends State<MainScreen> {
                           BoxShadow(
                             color: colors.shadow,
                             blurRadius: 10,
-                            offset: Offset(0, 4),
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
@@ -1271,19 +1394,24 @@ class _MainScreenState extends State<MainScreen> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      'Distância: $_routeDistance',
+                                      context.l10n
+                                          .distanceValue(_routeDistance),
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: colors.muted,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
+                                    Text(context.l10n.drivingRoute,
+                                        style: TextStyle(
+                                            fontSize: 11, color: colors.muted)),
                                   ],
                                 ),
                               ),
                               IconButton(
-                                icon: Icon(Icons.close_rounded, color: colors.muted, size: 28),
-                                tooltip: 'Fechar rota',
+                                icon: Icon(Icons.close_rounded,
+                                    color: colors.muted, size: 28),
+                                tooltip: context.l10n.closeRoute,
                                 onPressed: () {
                                   setState(() {
                                     _isRouting = false;
@@ -1302,14 +1430,16 @@ class _MainScreenState extends State<MainScreen> {
                           const SizedBox(height: 12),
                           Row(
                             children: [
-                              Icon(Icons.my_location, color: colors.primary, size: 18),
+                              Icon(Icons.my_location,
+                                  color: colors.primary, size: 18),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   _currentAddress,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: colors.muted, fontSize: 13),
+                                  style: TextStyle(
+                                      color: colors.muted, fontSize: 13),
                                 ),
                               ),
                             ],
@@ -1317,14 +1447,16 @@ class _MainScreenState extends State<MainScreen> {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              Icon(Icons.location_on, color: colors.danger, size: 18),
+                              Icon(Icons.location_on,
+                                  color: colors.danger, size: 18),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   _destinationAddress,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: colors.muted, fontSize: 13),
+                                  style: TextStyle(
+                                      color: colors.muted, fontSize: 13),
                                 ),
                               ),
                             ],
@@ -1341,8 +1473,8 @@ class _MainScreenState extends State<MainScreen> {
                     right: 16,
                     child: Semantics(
                       button: true,
-                      label: 'Buscar destino ou calcular rota',
-                      child: GestureDetector(
+                      label: context.l10n.searchDestination,
+                      child: InkWell(
                         onTap: () => _openSearchBottomSheet(context),
                         child: Container(
                           height: 56,
@@ -1355,7 +1487,7 @@ class _MainScreenState extends State<MainScreen> {
                               BoxShadow(
                                 color: colors.shadow,
                                 blurRadius: 18,
-                                offset: Offset(0, 6),
+                                offset: const Offset(0, 6),
                               ),
                             ],
                           ),
@@ -1365,7 +1497,7 @@ class _MainScreenState extends State<MainScreen> {
                                 Expanded(
                                   child: TextField(
                                     decoration: InputDecoration(
-                                      hintText: 'Qual seu destino?',
+                                      hintText: context.l10n.destinationHint,
                                       hintStyle: TextStyle(
                                         color: colors.muted,
                                         fontSize: 15,
@@ -1392,7 +1524,8 @@ class _MainScreenState extends State<MainScreen> {
                     color: colors.shadow,
                     child: Center(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 16),
                         decoration: BoxDecoration(
                           color: colors.surface,
                           borderRadius: BorderRadius.circular(16),
@@ -1404,11 +1537,12 @@ class _MainScreenState extends State<MainScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(colors.primary),
                             ),
-                            SizedBox(width: 16),
+                            const SizedBox(width: 16),
                             Text(
-                              'Calculando rota...',
+                              context.l10n.calculatingRoute,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -1428,9 +1562,9 @@ class _MainScreenState extends State<MainScreen> {
             padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
             decoration: BoxDecoration(
               color: colors.surface,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
+              borderRadius: const BorderRadius.only(
+                topLeft: const Radius.circular(24),
+                topRight: const Radius.circular(24),
               ),
               border: Border(
                 top: BorderSide(color: colors.border),
@@ -1439,7 +1573,7 @@ class _MainScreenState extends State<MainScreen> {
                 BoxShadow(
                   color: colors.shadow,
                   blurRadius: 18,
-                  offset: Offset(0, -5),
+                  offset: const Offset(0, -5),
                 ),
               ],
             ),
@@ -1450,193 +1584,179 @@ class _MainScreenState extends State<MainScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                  // Botão Explorar
-                  Expanded(
-                    child: Semantics(
-                      button: true,
-                      label: 'Explorar locais',
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        splashColor: colors.primarySoft,
-                      onTap: () async {
-                        final selectedLocal = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ExplorarScreen(
-                              userName: widget.userName,
-                              currentLocation: _currentLocation,
-                              unidadeDistancia: _unidadeDistancia,
-                            ),
-                          ),
-                        );
-                        if (selectedLocal != null && selectedLocal is Map<String, dynamic>) {
-                          _registraVisita(selectedLocal['id_local']);
-                          setState(() {
-                            _destinationLocation = LatLng(selectedLocal['latitude'], selectedLocal['longitude']);
-                            _destinationAddress = selectedLocal['nome'];
-                            _isLoadingRoute = true;
-                          });
-                          await _calculateRoute(_currentLocation, _destinationLocation!);
-                          setState(() {
-                            _isLoadingRoute = false;
-                          });
-                        }
-                      },
-                        child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.explore_rounded,
-                            size: 38,
-                            color: colors.primary,
-                          ),
-                          SizedBox(height: 6),
-                          Text(
-                            'Explorar',
-                            style: TextStyle(
-                              color: colors.primary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Divisor Vertical Azul
-                  Container(
-                    width: 1.5,
-                    height: 40,
-                    color: colors.primary.withOpacity(0.2),
-                  ),
-                  // Botão Locais Salvos
-                  Expanded(
-                    child: Semantics(
-                      button: true,
-                      label: 'Locais salvos',
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        splashColor: colors.primarySoft,
-                        onTap: () {
-                          _navigateToSavedPlaces();
-                        },
-                        child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(bottom: 2, right: 2),
-                                child: Icon(
-                                  Icons.bookmark_outline_rounded,
-                                  size: 36,
-                                  color: colors.primary,
+                    // Botão Explorar
+                    Expanded(
+                      child: Semantics(
+                        button: true,
+                        label: context.l10n.explorePlaces,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          splashColor: colors.primarySoft,
+                          onTap: () async {
+                            final selectedLocal = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ExplorarScreen(
+                                  userName: widget.userName,
+                                  currentLocation: _currentLocation,
+                                  unidadeDistancia: _unidadeDistancia,
                                 ),
                               ),
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Icon(
-                                  Icons.favorite_rounded,
-                                  size: 16,
-                                  color: colors.primary,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Locais Salvos',
-                            style: TextStyle(
-                              color: colors.primary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Divisor Vertical Azul
-                  Container(
-                    width: 1.5,
-                    height: 40,
-                    color: colors.primary.withOpacity(0.2),
-                  ),
-                  // Botão Sugestões
-                  Expanded(
-                    child: Semantics(
-                      button: true,
-                      label: 'Sugestões de locais',
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        splashColor: colors.primarySoft,
-                        onTap: () async {
-                          final selectedLocal = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SugestoesScreen(
-                                userName: widget.userName,
-                                unidadeDistancia: _unidadeDistancia,
-                              ),
-                            ),
-                          );
-                          if (selectedLocal != null && selectedLocal is Map<String, dynamic>) {
-                            _registraVisita(selectedLocal['id_local']);
-                            setState(() {
-                              _destinationLocation = LatLng(selectedLocal['latitude'], selectedLocal['longitude']);
-                              _destinationAddress = selectedLocal['nome'];
-                              _isLoadingRoute = true;
-                            });
-                            await _calculateRoute(_currentLocation, _destinationLocation!);
-                            setState(() {
-                              _isLoadingRoute = false;
-                            });
-                          }
-                        },
-                        child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Stack(
-                            alignment: Alignment.center,
+                            );
+                            if (mounted &&
+                                selectedLocal is Map<String, dynamic>) {
+                              await _startRoute(selectedLocal);
+                            }
+                          },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                Icons.public_rounded,
-                                size: 36,
+                                Icons.explore_rounded,
+                                size: 38,
                                 color: colors.primary,
                               ),
-                              Positioned(
-                                bottom: 0,
-                                child: Icon(
-                                  Icons.volunteer_activism_rounded,
-                                  size: 14,
-                                color: colors.primary,
+                              const SizedBox(height: 6),
+                              Text(
+                                context.l10n.explore,
+                                style: TextStyle(
+                                  color: colors.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Sugestões',
-                            style: TextStyle(
-                                color: colors.primary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    // Divisor Vertical Azul
+                    Container(
+                      width: 1.5,
+                      height: 40,
+                      color: colors.primary.withOpacity(0.2),
+                    ),
+                    // Botão Locais Salvos
+                    Expanded(
+                      child: Semantics(
+                        button: true,
+                        label: context.l10n.savedPlaces,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          splashColor: colors.primarySoft,
+                          onTap: () {
+                            _navigateToSavedPlaces();
+                          },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        bottom: 2, right: 2),
+                                    child: Icon(
+                                      Icons.bookmark_outline_rounded,
+                                      size: 36,
+                                      color: colors.primary,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Icon(
+                                      Icons.favorite_rounded,
+                                      size: 16,
+                                      color: colors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                context.l10n.savedPlacesTitle,
+                                style: TextStyle(
+                                  color: colors.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Divisor Vertical Azul
+                    Container(
+                      width: 1.5,
+                      height: 40,
+                      color: colors.primary.withOpacity(0.2),
+                    ),
+                    // Botão Sugestões
+                    Expanded(
+                      child: Semantics(
+                        button: true,
+                        label: context.l10n.placeSuggestions,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          splashColor: colors.primarySoft,
+                          onTap: () async {
+                            final selectedLocal = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SugestoesScreen(
+                                  allowSuggestions: _allowSuggestions,
+                                  userName: widget.userName,
+                                  unidadeDistancia: _unidadeDistancia,
+                                ),
+                              ),
+                            );
+                            if (mounted &&
+                                selectedLocal is Map<String, dynamic>) {
+                              await _startRoute(selectedLocal);
+                            }
+                          },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.public_rounded,
+                                    size: 36,
+                                    color: colors.primary,
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    child: Icon(
+                                      Icons.volunteer_activism_rounded,
+                                      size: 14,
+                                      color: colors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                context.l10n.suggestions,
+                                style: TextStyle(
+                                  color: colors.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
         ],
       ),
     );

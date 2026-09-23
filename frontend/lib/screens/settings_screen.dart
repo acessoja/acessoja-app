@@ -1,7 +1,11 @@
+import '../widgets/load_error.dart';
+import '../navigation.dart';
+import '../widgets/safe_state.dart';
+import '../l10n/strings.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/app_http.dart';
 
 import '../app_theme.dart';
 import '../config.dart';
@@ -20,10 +24,12 @@ class SettingsScreen extends StatefulWidget {
   _SettingsScreenState createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends SafeState<SettingsScreen> {
   String _nomeCompleto = '';
+  String _unit = 'KM';
   String _fotoPerfil = '';
   bool _isLoading = true;
+  bool _loadFailed = false;
 
   @override
   void initState() {
@@ -32,22 +38,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadProfile() async {
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+    });
     try {
       final uri = Uri.parse(
         '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(widget.userName)}',
       );
-      final resp = await http.get(uri);
+      final resp = await AppHttp.get(uri);
+      if (!mounted) return;
       if (resp.statusCode == 200) {
         final data = json.decode(utf8.decode(resp.bodyBytes));
         setState(() {
-          _nomeCompleto =
-              (data['nome_completo'] ?? '').toString().isNotEmpty
-                  ? data['nome_completo']
-                  : widget.userName;
+          _nomeCompleto = (data['nome_completo'] ?? '').toString().isNotEmpty
+              ? data['nome_completo']
+              : widget.userName;
           _fotoPerfil = (data['foto_perfil'] ?? '').toString();
+          _unit = data['unidade_distancia'] ?? 'KM';
         });
+      } else {
+        _loadFailed = true;
       }
-    } catch (_) {}
+    } catch (_) {
+      _loadFailed = true;
+    }
 
     setState(() => _isLoading = false);
   }
@@ -64,10 +79,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _navigateTo(Widget screen) async {
-    await Navigator.push(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => screen),
     );
+    if (!mounted) return;
+    if (result is Map<String, dynamic>) {
+      Navigator.pop(context, result);
+      return;
+    }
     _loadProfile();
   }
 
@@ -76,13 +96,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Semantics(
       button: true,
-      label: 'Voltar',
+      label: context.l10n.back,
       child: InkWell(
         onTap: () => Navigator.pop(context),
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          width: 42,
-          height: 42,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             color: colors.primarySoft,
             borderRadius: BorderRadius.circular(14),
@@ -101,9 +121,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final colors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final avatarImage = _avatarImage();
-    final displayName = _nomeCompleto.isNotEmpty
-        ? _nomeCompleto
-        : widget.userName;
+    final displayName =
+        _nomeCompleto.isNotEmpty ? _nomeCompleto : widget.userName;
     final headerBackground = isDark ? colors.primarySoft : colors.primaryDark;
     final headerText = isDark ? colors.primaryDark : colors.onPrimary;
     final headerMuted = isDark
@@ -112,8 +131,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Semantics(
       button: true,
-      label: 'Abrir informações pessoais de $displayName',
-      child: GestureDetector(
+      label: context.l10n.profileOf(displayName),
+      child: InkWell(
         onTap: () => _navigateTo(
           InformacoesPessoaisScreen(userName: widget.userName),
         ),
@@ -127,7 +146,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               BoxShadow(
                 color: colors.shadow,
                 blurRadius: 18,
-                offset: Offset(0, 7),
+                offset: const Offset(0, 7),
               ),
             ],
           ),
@@ -158,7 +177,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Sua conta',
+                      context.l10n.yourAccount,
                       style: TextStyle(
                         color: headerMuted,
                         fontSize: 12,
@@ -179,7 +198,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Toque para editar seu perfil',
+                      context.l10n.editProfileHint,
                       style: TextStyle(
                         color: headerMuted,
                         fontSize: 11,
@@ -229,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   BoxShadow(
                     color: colors.shadow,
                     blurRadius: 12,
-                    offset: Offset(0, 4),
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -293,19 +312,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Semantics(
       button: true,
-      label: 'Sair da conta',
+      label: context.l10n.signOutAccount,
       child: SizedBox(
         width: double.infinity,
         height: 50,
         child: OutlinedButton.icon(
           onPressed: () {
             // Preserved existing logout navigation behavior.
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            logOut(context);
           },
           icon: const Icon(Icons.logout_rounded, size: 19),
-          label: const Text(
-            'Sair',
-            style: TextStyle(
+          label: Text(
+            context.l10n.signOut,
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
@@ -333,9 +352,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
           ),
-          SizedBox(height: 14),
+          const SizedBox(height: 14),
           Text(
-            'Carregando perfil...',
+            context.l10n.loadingProfile,
             style: TextStyle(
               color: colors.muted,
               fontSize: 14,
@@ -364,7 +383,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: _buildBackButton(),
         ),
         title: Text(
-          'Menu',
+          context.l10n.menu,
           style: TextStyle(
             color: colors.text,
             fontSize: 19,
@@ -374,91 +393,96 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: _isLoading
-            ? _buildLoadingState()
-            : LayoutBuilder(
-                builder: (context, constraints) {
-                  final horizontalPadding =
-                      constraints.maxWidth < 360 ? 16.0 : 24.0;
+        child: _loadFailed
+            ? LoadError(onRetry: _loadProfile)
+            : _isLoading
+                ? _buildLoadingState()
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final horizontalPadding =
+                          constraints.maxWidth < 360 ? 16.0 : 24.0;
 
-                  return Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 560),
-                      child: SingleChildScrollView(
-                        keyboardDismissBehavior:
-                            ScrollViewKeyboardDismissBehavior.onDrag,
-                        padding: EdgeInsets.fromLTRB(
-                          horizontalPadding,
-                          8,
-                          horizontalPadding,
-                          24,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildProfileHeader(),
-                            const SizedBox(height: 24),
-                            Text(
-                              'Gerencie sua conta',
-                              style: TextStyle(
-                                color: colors.text,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                              ),
+                      return Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 560),
+                          child: SingleChildScrollView(
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            padding: EdgeInsets.fromLTRB(
+                              horizontalPadding,
+                              8,
+                              horizontalPadding,
+                              24,
                             ),
-                            const SizedBox(height: 12),
-                            _menuTile(
-                              icon: Icons.settings_outlined,
-                              label: 'Configurações gerais',
-                              description: 'Preferências e unidades',
-                              onTap: () => _navigateTo(
-                                ConfiguracoesGeraisScreen(
-                                  userName: widget.userName,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _buildProfileHeader(),
+                                const SizedBox(height: 24),
+                                Text(
+                                  context.l10n.manageAccount,
+                                  style: TextStyle(
+                                    color: colors.text,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
-                              ),
-                            ),
-                            _menuTile(
-                              icon: Icons.bookmark_border_rounded,
-                              label: 'Locais Salvos',
-                              description: 'Acesse seus locais favoritos',
-                              onTap: () => _navigateTo(
-                                SavedPlacesScreen(userName: widget.userName),
-                              ),
-                            ),
-                            _menuTile(
-                              icon: Icons.lock_outline_rounded,
-                              label: 'Privacidade',
-                              description: 'Controle a visibilidade dos dados',
-                              onTap: () => _navigateTo(
-                                PrivacidadeScreen(userName: widget.userName),
-                              ),
-                            ),
-                            _menuTile(
-                              icon: Icons.person_outline_rounded,
-                              label: 'Informações Pessoais',
-                              description: 'Atualize seus dados e foto',
-                              onTap: () => _navigateTo(
-                                InformacoesPessoaisScreen(
-                                  userName: widget.userName,
+                                const SizedBox(height: 12),
+                                _menuTile(
+                                  icon: Icons.settings_outlined,
+                                  label: context.l10n.generalSettings,
+                                  description: context.l10n.settingsDescription,
+                                  onTap: () => _navigateTo(
+                                    ConfiguracoesGeraisScreen(
+                                      userName: widget.userName,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                _menuTile(
+                                  icon: Icons.bookmark_border_rounded,
+                                  label: context.l10n.savedPlacesTitle,
+                                  description: context.l10n.savedDescription,
+                                  onTap: () => _navigateTo(
+                                    SavedPlacesScreen(
+                                        userName: widget.userName,
+                                        unidadeDistancia: _unit),
+                                  ),
+                                ),
+                                _menuTile(
+                                  icon: Icons.lock_outline_rounded,
+                                  label: context.l10n.privacy,
+                                  description: context.l10n.privacyDescription,
+                                  onTap: () => _navigateTo(
+                                    PrivacidadeScreen(
+                                        userName: widget.userName),
+                                  ),
+                                ),
+                                _menuTile(
+                                  icon: Icons.person_outline_rounded,
+                                  label: context.l10n.personalInformation,
+                                  description: context.l10n.personalDescription,
+                                  onTap: () => _navigateTo(
+                                    InformacoesPessoaisScreen(
+                                      userName: widget.userName,
+                                    ),
+                                  ),
+                                ),
+                                _menuTile(
+                                  icon: Icons.help_outline_rounded,
+                                  label: context.l10n.help,
+                                  description: context.l10n.helpDescription,
+                                  onTap: () => _navigateTo(const AjudaScreen()),
+                                ),
+                                const SizedBox(height: 14),
+                                _buildLogoutButton(),
+                                const SizedBox(height: 8),
+                              ],
                             ),
-                            _menuTile(
-                              icon: Icons.help_outline_rounded,
-                              label: 'Ajuda',
-                              description: 'Encontre respostas para suas dúvidas',
-                              onTap: () => _navigateTo(AjudaScreen()),
-                            ),
-                            const SizedBox(height: 14),
-                            _buildLogoutButton(),
-                            const SizedBox(height: 8),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+                      );
+                    },
+                  ),
       ),
     );
   }

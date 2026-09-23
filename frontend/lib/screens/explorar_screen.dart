@@ -1,7 +1,10 @@
+import '../widgets/load_error.dart';
+import '../widgets/safe_state.dart';
+import '../l10n/strings.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/app_http.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../app_theme.dart';
@@ -25,27 +28,22 @@ class ExplorarScreen extends StatefulWidget {
   _ExplorarScreenState createState() => _ExplorarScreenState();
 }
 
-class _ExplorarScreenState extends State<ExplorarScreen> {
+class _ExplorarScreenState extends SafeState<ExplorarScreen> {
   String searchQuery = "";
   List<dynamic> _localesList = [];
   bool _isLoading = true;
+  bool _loadFailed = false;
 
-  String _formatDistance(dynamic distanceValue) {
-    double km = 0.0;
-    if (distanceValue is num) {
-      km = distanceValue.toDouble();
-    } else if (distanceValue is String) {
-      String cleanStr = distanceValue
-          .replaceAll(RegExp(r'[^\d.,]'), '')
-          .replaceAll(',', '.');
-      km = double.tryParse(cleanStr) ?? 0.0;
-    }
-    if (widget.unidadeDistancia == 'Milha') {
-      double miles = km * 0.621371;
-      return '${miles.toStringAsFixed(1).replaceAll('.', ',')} mi';
-    } else {
-      return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
-    }
+  String _formatDistance(dynamic value) {
+    final km = value is num
+        ? value.toDouble()
+        : double.tryParse(value
+                .toString()
+                .replaceAll(RegExp(r'[^0-9.,]'), '')
+                .replaceAll(',', '.')) ??
+            0;
+    final miles = widget.unidadeDistancia == 'Milha';
+    return '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}';
   }
 
   @override
@@ -55,8 +53,14 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
   }
 
   Future<void> _fetchLocales() async {
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+    });
     try {
-      final response = await http.get(Uri.parse('${Config.baseUrl}/api/locais/'));
+      final response =
+          await AppHttp.get(Uri.parse('${Config.baseUrl}/api/locais/'));
+      if (!mounted) return;
       if (response.statusCode == 200) {
         final List data = json.decode(utf8.decode(response.bodyBytes));
         // Sort locales by distance
@@ -69,12 +73,18 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
           _localesList = data;
           _isLoading = false;
         });
+      } else {
+        _loadFailed = true;
       }
     } catch (e) {
+      if (!mounted) return;
+      _loadFailed = true;
       debugPrint("Error fetching explorar places: $e");
       setState(() {
         _isLoading = false;
       });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -115,7 +125,7 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
           ),
           const SizedBox(height: 14),
           Text(
-            'Buscando locais acessíveis...',
+            context.l10n.loadingPlaces,
             style: TextStyle(
               color: colors.muted,
               fontSize: 14,
@@ -153,8 +163,8 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
             const SizedBox(height: 18),
             Text(
               hasSearch
-                  ? 'Nenhum local encontrado'
-                  : 'Nenhum local próximo encontrado.',
+                  ? context.l10n.noPlaceFound
+                  : context.l10n.noNearbyPlaces,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: colors.text,
@@ -165,8 +175,8 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
             const SizedBox(height: 8),
             Text(
               hasSearch
-                  ? 'Tente pesquisar por outro nome ou endereço.'
-                  : 'Ainda não há estabelecimentos disponíveis para exibir.',
+                  ? context.l10n.tryAnotherSearch
+                  : context.l10n.noAvailablePlaces,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: colors.muted,
@@ -185,7 +195,8 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
     final colors = AppColors.of(context);
     final filteredPlaces = _localesList.where((place) {
       final name = (place['nome'] ?? '').toString().toLowerCase();
-      final displayName = getLocalDisplayName(place['nome'] ?? '').toLowerCase();
+      final displayName =
+          getLocalDisplayName(place['nome'] ?? '').toLowerCase();
       final address = (place['endereco'] ?? '').toString().toLowerCase();
       final query = searchQuery.toLowerCase();
       return name.contains(query) ||
@@ -204,8 +215,8 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
           padding: const EdgeInsets.only(left: 16, top: 14, bottom: 14),
           child: Semantics(
             button: true,
-            label: 'Voltar',
-            child: GestureDetector(
+            label: context.l10n.back,
+            child: InkWell(
               onTap: () => Navigator.pop(context),
               child: Container(
                 decoration: BoxDecoration(
@@ -227,7 +238,7 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Explorar',
+              context.l10n.explore,
               style: TextStyle(
                 color: colors.text,
                 fontSize: 22,
@@ -235,9 +246,9 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                 letterSpacing: -0.3,
               ),
             ),
-            SizedBox(height: 2),
+            const SizedBox(height: 2),
             Text(
-              'Encontre locais acessíveis perto de você',
+              context.l10n.exploreIntro,
               style: TextStyle(
                 color: colors.muted,
                 fontSize: 12,
@@ -264,7 +275,7 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                   ),
                   child: Semantics(
                     textField: true,
-                    label: 'Pesquisar estabelecimentos',
+                    label: context.l10n.searchPlaces,
                     child: Container(
                       height: 52,
                       decoration: BoxDecoration(
@@ -275,7 +286,7 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                           BoxShadow(
                             color: colors.shadow,
                             blurRadius: 14,
-                            offset: Offset(0, 5),
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -291,7 +302,7 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Pesquise por estabelecimentos',
+                          hintText: context.l10n.searchPlacesHint,
                           hintStyle: TextStyle(
                             color: colors.muted,
                             fontSize: 14,
@@ -302,7 +313,8 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                             size: 22,
                           ),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 15),
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 15),
                         ),
                       ),
                     ),
@@ -326,7 +338,7 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                         const SizedBox(width: 7),
                         Expanded(
                           child: Text(
-                            'Estabelecimentos mais próximos a você',
+                            context.l10n.nearbyPlaces,
                             style: TextStyle(
                               color: colors.text,
                               fontSize: 13,
@@ -344,7 +356,7 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
-                            '${filteredPlaces.length} locais',
+                            context.l10n.placeCount(filteredPlaces.length),
                             style: TextStyle(
                               color: colors.primaryDark,
                               fontSize: 11,
@@ -356,42 +368,48 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                     ),
                   ),
                 Expanded(
-                  child: _isLoading
-                      ? _buildLoadingState()
-                      : filteredPlaces.isEmpty
-                          ? _buildEmptyState()
-                          : ListView.builder(
-                              padding: const EdgeInsets.only(top: 2, bottom: 24),
-                              itemCount: filteredPlaces.length,
-                              itemBuilder: (context, index) {
-                                final place = filteredPlaces[index];
+                  child: _loadFailed
+                      ? LoadError(onRetry: _fetchLocales)
+                      : _isLoading
+                          ? _buildLoadingState()
+                          : filteredPlaces.isEmpty
+                              ? _buildEmptyState()
+                              : ListView.builder(
+                                  padding:
+                                      const EdgeInsets.only(top: 2, bottom: 24),
+                                  itemCount: filteredPlaces.length,
+                                  itemBuilder: (context, index) {
+                                    final place = filteredPlaces[index];
 
-                                return LocalCard(
-                                  place: place,
-                                  distanceLabel: _formatDistance(place['distancia']),
-                                  displayNameBuilder: getLocalDisplayName,
-                                  onRoutePressed: () {
-                                    Navigator.pop(context, place);
-                                  },
-                                  onDetailsPressed: () async {
-                                    final result = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => PlaceDetailScreen(
-                                          place: place,
-                                          userName: widget.userName,
-                                        ),
-                                      ),
+                                    return LocalCard(
+                                      place: place,
+                                      distanceLabel:
+                                          _formatDistance(place['distancia']),
+                                      displayNameBuilder: getLocalDisplayName,
+                                      onRoutePressed: () {
+                                        Navigator.pop(context, place);
+                                      },
+                                      onDetailsPressed: () async {
+                                        final result = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                PlaceDetailScreen(
+                                              place: place,
+                                              userName: widget.userName,
+                                            ),
+                                          ),
+                                        );
+                                        if (!mounted) return;
+                                        if (result != null) {
+                                          Navigator.pop(context, result);
+                                        } else {
+                                          _fetchLocales();
+                                        }
+                                      },
                                     );
-                                    if (result != null) {
-                                      Navigator.pop(context, result);
-                                    } else {
-                                      _fetchLocales();
-                                    }
                                   },
-                                );
-                              },
-                            ),
+                                ),
                 ),
               ],
             );

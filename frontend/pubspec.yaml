@@ -30,6 +30,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  shared_preferences: ^2.5.3
   http: 1.2.2
   google_maps_flutter: ^2.2.3
   flutter_map: ^6.2.1
@@ -61,6 +65,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
   assets:
     - assets/logo.png
     - assets/map_placeholder.png
