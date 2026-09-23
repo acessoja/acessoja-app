@@ -30,7 +30,7 @@ class MainScreen extends StatefulWidget {
       : super(key: key);
 
   @override
-  _MainScreenState createState() => _MainScreenState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends SafeState<MainScreen> {
@@ -180,11 +180,21 @@ class _MainScreenState extends SafeState<MainScreen> {
 
     try {
       final queryParams = <String, String>{};
-      if (_filterCaoGuia) queryParams['cao_guia'] = 'true';
-      if (_filterMesaAcessivel) queryParams['mesa_acessivel'] = 'true';
-      if (_filterBanheiroAcessivel) queryParams['banheiro_acessivel'] = 'true';
-      if (_filterRampaAcesso) queryParams['rampa_acesso'] = 'true';
-      if (_filterCardapioBraille) queryParams['cardapio_braille'] = 'true';
+      if (_filterCaoGuia) {
+        queryParams['cao_guia'] = 'true';
+      }
+      if (_filterMesaAcessivel) {
+        queryParams['mesa_acessivel'] = 'true';
+      }
+      if (_filterBanheiroAcessivel) {
+        queryParams['banheiro_acessivel'] = 'true';
+      }
+      if (_filterRampaAcesso) {
+        queryParams['rampa_acesso'] = 'true';
+      }
+      if (_filterCardapioBraille) {
+        queryParams['cardapio_braille'] = 'true';
+      }
 
       final uri = Uri.parse('${Config.baseUrl}/api/locais/')
           .replace(queryParameters: queryParams);
@@ -236,8 +246,10 @@ class _MainScreenState extends SafeState<MainScreen> {
 
       // Get initial position with a timeout to prevent hanging on emulators
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 5),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 5),
+        ),
       );
       if (!mounted) return;
       _updateLocation(position);
@@ -263,7 +275,9 @@ class _MainScreenState extends SafeState<MainScreen> {
   }
 
   void _updateLocation(Position position) {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     final newLatLng = LatLng(position.latitude, position.longitude);
     setState(() {
       _currentLocation = newLatLng;
@@ -422,8 +436,9 @@ class _MainScreenState extends SafeState<MainScreen> {
   }
 
   void _showErrorSnackBar(String message) {
-    if (!mounted) return;
-
+    if (!mounted) {
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -656,7 +671,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                               border:
                                   Border.all(color: colors.primary, width: 1.5),
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Flexible(
@@ -874,18 +889,24 @@ class _MainScreenState extends SafeState<MainScreen> {
                                       value: item['checked'],
                                       onChanged: (val) {
                                         sheetSetState(() {
-                                          if (item['id'] == 'cao_guia')
+                                          if (item['id'] == 'cao_guia') {
                                             tempCaoGuia = val ?? false;
-                                          if (item['id'] == 'mesa_acessivel')
+                                          }
+                                          if (item['id'] == 'mesa_acessivel') {
                                             tempMesaAcessivel = val ?? false;
+                                          }
                                           if (item['id'] ==
-                                              'banheiro_acessivel')
+                                              'banheiro_acessivel') {
                                             tempBanheiroAcessivel =
                                                 val ?? false;
-                                          if (item['id'] == 'rampa_acesso')
+                                          }
+                                          if (item['id'] == 'rampa_acesso') {
                                             tempRampaAcesso = val ?? false;
-                                          if (item['id'] == 'cardapio_braille')
+                                          }
+                                          if (item['id'] ==
+                                              'cardapio_braille') {
                                             tempCardapioBraille = val ?? false;
+                                          }
                                         });
                                       },
                                       shape: RoundedRectangleBorder(
@@ -1241,7 +1262,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                                 ),
                               ),
                             );
-                          }).toList(),
+                          }),
                         // Marcador de destino da rota calculada
                         if (_isRouting && _destinationLocation != null)
                           Marker(
@@ -1533,7 +1554,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                             BoxShadow(color: colors.shadow, blurRadius: 10),
                           ],
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             CircularProgressIndicator(

@@ -15,15 +15,15 @@ class SugestoesScreen extends StatefulWidget {
   final String unidadeDistancia;
   final bool allowSuggestions;
 
-  const SugestoesScreen({
+   const SugestoesScreen({
+    super.key,
     required this.userName,
     this.unidadeDistancia = 'KM',
     this.allowSuggestions = true,
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
-  _SugestoesScreenState createState() => _SugestoesScreenState();
+  State<SugestoesScreen> createState() => _SugestoesScreenState();
 }
 
 class _SugestoesScreenState extends SafeState<SugestoesScreen> {
@@ -142,11 +142,21 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
     int brailleCount = 0;
 
     for (var p in visited) {
-      if (p['rampa_acesso'] == true) rampaCount++;
-      if (p['banheiro_acessivel'] == true) banheiroCount++;
-      if (p['mesa_acessivel'] == true) mesaCount++;
-      if (p['cao_guia'] == true) caoCount++;
-      if (p['cardapio_braille'] == true) brailleCount++;
+      if (p['rampa_acesso'] == true) {
+        rampaCount++;
+      }
+      if (p['banheiro_acessivel'] == true) {
+        banheiroCount++;
+      }
+      if (p['mesa_acessivel'] == true) {
+        mesaCount++;
+      }
+      if (p['cao_guia'] == true) {
+        caoCount++;
+      }
+      if (p['cardapio_braille'] == true) {
+        brailleCount++;
+      }
     }
 
     // Determine the most common feature.

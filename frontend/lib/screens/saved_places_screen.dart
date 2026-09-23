@@ -15,13 +15,13 @@ class SavedPlacesScreen extends StatefulWidget {
   final String unidadeDistancia;
 
   const SavedPlacesScreen({
+    super.key,
     required this.userName,
     this.unidadeDistancia = 'KM',
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
-  _SavedPlacesScreenState createState() => _SavedPlacesScreenState();
+  State<SavedPlacesScreen> createState() => _SavedPlacesScreenState();
 }
 
 class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {

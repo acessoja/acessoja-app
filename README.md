@@ -35,18 +35,69 @@ O **AcessoJá** é uma plataforma integrada desenvolvida para facilitar a identi
 
 ## 🛠️ Configuração e Instalação
 
-### **Pré-requisitos**
-*   Python 3.10+
-*   Flutter SDK
-*   PostgreSQL rodando localmente
+### **Versões oficiais**
 
-### **1. Configurando o Backend**
+Estas são as versões usadas localmente e no CI. Use exatamente estas versões
+para evitar o clássico "funciona na minha máquina":
+
+| Ferramenta | Versão |
+|---|---|
+| Flutter | 3.47.4 (fixado em [`frontend/.fvmrc`](frontend/.fvmrc)) |
+| Dart | 3.13.3 (vem junto com o Flutter acima) |
+| Java / JDK | 17 |
+| Python | 3.12 |
+| Gradle | 8.14 (ou patch compatível dentro da série 8.14.x) |
+| Android Gradle Plugin (AGP) | 8.11.1 |
+| Kotlin | 2.2.20 |
+| Android SDK | compileSdk/targetSdk seguem o padrão do Flutter 3.47.4 (API 36) |
+| Android NDK | 28.2.13676358 |
+
+> Recomendado: instale o [FVM](https://fvm.app/) e rode `fvm use` dentro de
+> `frontend/` para que o Flutter correto seja usado automaticamente (o
+> `.fvmrc` já aponta para a versão certa). Sem FVM, basta ter o Flutter
+> 3.47.4 no PATH.
+
+### **Primeira instalação**
+
+```powershell
+git clone https://github.com/acessoja/acessoja-app.git
+cd acessoja-app
+
+.\scripts\setup-dev.ps1
+```
+
+O `setup-dev.ps1` verifica Flutter, Java, Python, Android SDK (incluindo a
+Platform API 36) e NDK, instala as dependências do Flutter e do backend, cria
+o `.env` (a partir do `.env.example`) se ele não existir, e aplica as
+migrations. Ele **não** instala ferramentas de sistema automaticamente — se
+algo estiver faltando, ele explica o que instalar.
+
+A versão do Flutter (3.47.4) **não é opcional**: se o Flutter do PATH for
+outra versão, o script usa automaticamente `fvm flutter` (respeitando o
+`frontend/.fvmrc`) quando o FVM estiver instalado; caso contrário, ele
+**interrompe o setup** e explica como instalar o FVM ou o Flutter 3.47.4.
+
+### **Executar o projeto**
+
+```powershell
+.\scripts\dev.ps1
+```
+
+Isso abre o backend Django (`0.0.0.0:8000`) e o Flutter em janelas separadas.
+Use `.\scripts\dev.ps1 -BackendOnly` ou `-FrontendOnly` para subir só uma
+parte, e `-Device <id>` para escolher um dispositivo/emulador específico.
+
+### **Passo a passo manual**
+
+Se preferir não usar os scripts, ou estiver fora do Windows:
+
+#### **1. Backend**
 
 O `manage.py` fica na **raiz do projeto** — o ambiente virtual e os comandos
 abaixo também devem ser executados a partir da raiz, não de dentro de `backend/`.
 
 ```bash
-# 1. Crie e ative o ambiente virtual a partir da raiz do projeto
+# 1. Crie e ative o ambiente virtual a partir da raiz do projeto (Python 3.12)
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 
@@ -57,13 +108,16 @@ pip install -r backend/requirements.txt
 cp .env.example .env   # no Windows (PowerShell): copy .env.example .env
 ```
 
-Edite o `.env` recém-criado e preencha:
-*   `SECRET_KEY` — gere uma chave própria, nunca reutilize a do `.env.example`:
-    ```bash
-    python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-    ```
-*   `DATABASE_URL` — credenciais do seu PostgreSQL local (usuário, senha, host,
-    porta e nome do banco).
+Por padrão o `.env.example` já vem configurado para **SQLite** — você não
+precisa instalar PostgreSQL para desenvolver localmente. PostgreSQL continua
+disponível como alternativa (veja o `DATABASE_URL` comentado no
+`.env.example`) para quem quiser usá-lo.
+
+Edite o `.env` recém-criado e gere sua própria `SECRET_KEY` (nunca reutilize
+a do `.env.example`):
+```bash
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
 
 > ⚠️ **O arquivo `.env` nunca deve ser commitado.** Ele já está listado no
 > `.gitignore`; apenas o `.env.example` (com placeholders, sem segredos reais)
@@ -72,17 +126,48 @@ Edite o `.env` recém-criado e preencha:
 ```bash
 # 4. Aplique as migrations e suba o servidor
 python manage.py migrate
-python manage.py runserver
+python manage.py runserver 0.0.0.0:8000
 ```
 
-### **2. Configurando o Frontend**
+#### **2. Frontend**
 ```bash
 cd frontend
 flutter pub get
 flutter run -d chrome  # Para versão web
 # ou
-flutter run  # Para versão mobile configurada
+flutter run  # Para versão mobile (emulador ou dispositivo conectado)
 ```
+
+### **Por que `10.0.2.2` e não `localhost`?**
+
+O **Android Emulator roda em sua própria máquina virtual**, isolada do
+sistema operacional que o hospeda. Para o app (rodando dentro do emulador)
+acessar o backend Django (rodando no seu computador, fora do emulador),
+`localhost` dentro do emulador aponta para o próprio emulador — não para o
+seu PC. O endereço especial `10.0.2.2` é fornecido pelo emulador do Android
+justamente como um alias para o `localhost` da máquina host.
+
+Isso já é tratado automaticamente por [`frontend/lib/config.dart`](frontend/lib/config.dart):
+Web e demais plataformas usam `localhost`, o emulador Android usa `10.0.2.2`.
+Para **dispositivo físico** ou produção — onde nenhum dos dois alcança o
+backend — defina a URL em tempo de build, sem editar código:
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://SEU_IP_NA_REDE:8000
+```
+
+### **Problemas comuns**
+
+| Sintoma | Causa provável / solução |
+|---|---|
+| `flutter: comando não encontrado` | Flutter não está no PATH. Instale-o (ou use FVM) e reabra o terminal. |
+| Erro de versão de Java no build Android | JDK diferente de 17 no PATH/`JAVA_HOME`. O Android Studio já traz um JDK 17 embutido (`Android Studio\jbr`). |
+| Erro de Android SDK / `local.properties` ausente | Abra o projeto `frontend/android` uma vez no Android Studio para ele gerar o `local.properties`, ou defina `ANDROID_HOME`. |
+| Gradle pedindo para baixar uma NDK diferente | Rode o build normalmente uma vez — o Gradle baixa a NDK `28.2.13676358` (fixada em `frontend/android/app/build.gradle`) automaticamente. |
+| Emulador não inicia / muito lento | Ative a virtualização (Hyper-V/VT-x) e use uma imagem de sistema com Google APIs. |
+| App mostra "Connection refused" ao tentar logar | O backend Django não está rodando, ou o emulador está usando `localhost` em vez de `10.0.2.2` (ver seção acima) — confirme com `.\scripts\dev.ps1`. |
+| `.env` ausente / `SECRET_KEY` não definida | Rode `.\scripts\setup-dev.ps1`, ou copie manualmente `.env.example` para `.env`. |
+| `setup-dev.ps1` interrompe com "versão do Flutter incompatível" | O Flutter do PATH não é a 3.47.4 e o FVM não está instalado. Instale o [FVM](https://fvm.app/) e rode `fvm install` em `frontend/`, ou instale o Flutter 3.47.4 diretamente. |
 
 ---
 
@@ -116,8 +201,8 @@ Exportar o schema para um arquivo:
 python manage.py spectacular --file schema.yaml
 ```
 
-O Quality Gate roda `spectacular --fail-on-warn` a cada PR: endpoint sem
-contrato válido quebra o build.
+O Quality Gate valida o backend com Flake8, `manage.py check`, verificação e
+aplicação das migrations e testes com pytest, exigindo cobertura mínima de 65%.
 
 ---
 

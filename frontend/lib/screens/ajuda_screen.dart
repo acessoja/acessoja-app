@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../app_theme.dart';
 
 class AjudaScreen extends StatelessWidget {
-  const AjudaScreen({Key? key}) : super(key: key);
+  const AjudaScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -272,7 +272,7 @@ class _FaqTile extends StatefulWidget {
   const _FaqTile({required this.question, required this.answer});
 
   @override
-  __FaqTileState createState() => __FaqTileState();
+  State<_FaqTile> createState() => _FaqTileState();
 }
 
 class __FaqTileState extends SafeState<_FaqTile> {

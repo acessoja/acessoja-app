@@ -17,11 +17,10 @@ import 'saved_places_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String userName;
-
-  const SettingsScreen({Key? key, required this.userName}) : super(key: key);
+  const SettingsScreen({super.key, required this.userName});
 
   @override
-  _SettingsScreenState createState() => _SettingsScreenState();
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends SafeState<SettingsScreen> {

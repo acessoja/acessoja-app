@@ -18,11 +18,11 @@ class PlaceDetailScreen extends StatefulWidget {
   final ApiService? apiService;
 
   const PlaceDetailScreen({
+    super.key,
     required this.place,
     required this.userName,
     this.apiService,
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
   State<PlaceDetailScreen> createState() => _PlaceDetailScreenState();
@@ -112,13 +112,11 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
   }
 
   double get averageRating {
-    if (comments.isEmpty) return 0.0;
-
+    if (comments.isEmpty) {
+      return 0.0;
+    }
     final totalStars = comments.fold<num>(
-      0,
-      (sum, comment) => sum + (comment['estrelas'] as num),
-    );
-
+        0, (sum, comment) => sum + (comment['estrelas'] as num));
     return totalStars / comments.length;
   }
 
@@ -659,8 +657,8 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Você ainda não visitou este local recentemente. Para avaliá-lo, inicie uma rota clicando em context.l10n.startRoute acima.',
-                style: TextStyle(
+                  'Você ainda não visitou este local recentemente. Para avaliá-lo, inicie uma rota clicando em "${context.l10n.startRoute}" acima.',                
+                  style: TextStyle(
                   fontSize: 13,
                   color: colors.warning,
                   fontWeight: FontWeight.w500,

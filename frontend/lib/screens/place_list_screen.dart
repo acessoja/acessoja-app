@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../app_theme.dart';
 
 class PlaceListScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> places = [
+  const PlaceListScreen({super.key});
+
+  final List<Map<String, dynamic>> places = const [
     {
       'name': 'UniEVANGÉLICA',
       'distance': '1,2 km',

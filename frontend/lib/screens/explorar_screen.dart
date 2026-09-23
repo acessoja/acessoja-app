@@ -18,14 +18,14 @@ class ExplorarScreen extends StatefulWidget {
   final String unidadeDistancia;
 
   const ExplorarScreen({
+    super.key,
     required this.userName,
     required this.currentLocation,
     this.unidadeDistancia = 'KM',
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
-  _ExplorarScreenState createState() => _ExplorarScreenState();
+  State<ExplorarScreen> createState() => _ExplorarScreenState();
 }
 
 class _ExplorarScreenState extends SafeState<ExplorarScreen> {

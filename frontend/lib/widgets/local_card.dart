@@ -15,13 +15,13 @@ class LocalCard extends StatelessWidget {
   final VoidCallback? onDetailsPressed;
 
   const LocalCard({
-    Key? key,
+    super.key,
     required this.place,
     required this.distanceLabel,
     required this.displayNameBuilder,
     this.onRoutePressed,
     this.onDetailsPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

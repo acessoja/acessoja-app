@@ -89,6 +89,10 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
       );
       if (!context.mounted) return;
 
+      if (!context.mounted) {
+        return;
+      }
+
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -129,7 +133,9 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
         );
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!context.mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.connectionError),

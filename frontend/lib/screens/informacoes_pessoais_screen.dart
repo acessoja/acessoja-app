@@ -14,12 +14,10 @@ import 'web_stub.dart' if (dart.library.html) 'dart:html' as html;
 
 class InformacoesPessoaisScreen extends StatefulWidget {
   final String userName;
-
-  const InformacoesPessoaisScreen({Key? key, required this.userName})
-      : super(key: key);
+  const InformacoesPessoaisScreen({super.key, required this.userName});
 
   @override
-  _InformacoesPessoaisScreenState createState() =>
+  State<InformacoesPessoaisScreen> createState() =>
       _InformacoesPessoaisScreenState();
 }
 
@@ -110,6 +108,9 @@ class _InformacoesPessoaisScreenState
         );
       }
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.connectionError),
@@ -226,6 +227,9 @@ class _InformacoesPessoaisScreenState
           ));
         }
       } catch (e) {
+        if (!mounted) {
+          return;
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.connectionError),

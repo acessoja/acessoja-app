@@ -26,11 +26,10 @@ class LoginScreen extends StatefulWidget {
   final void Function(BuildContext context, Map<String, dynamic> user)?
       onLoginSuccess;
 
-  const LoginScreen({Key? key, this.apiService, this.onLoginSuccess})
-      : super(key: key);
+  const LoginScreen({super.key, this.apiService, this.onLoginSuccess});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends SafeState<LoginScreen> {
@@ -62,7 +61,9 @@ class _LoginScreenState extends SafeState<LoginScreen> {
     setState(() => _isSubmitting = true);
     try {
       final result = await _apiService.login(nome: nome, password: password);
-      if (!mounted) return;
+      if (!context.mounted) {
+        return;
+      }
 
       if (result.success) {
         final user = result.user ?? <String, dynamic>{};
@@ -108,8 +109,9 @@ class _LoginScreenState extends SafeState<LoginScreen> {
         );
       }
     } catch (e) {
-      if (!mounted) return;
-      if (!mounted) return;
+      if (!context.mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.connectionError)),
       );

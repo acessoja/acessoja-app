@@ -16,10 +16,10 @@ class EvaluationSurveyDialog extends StatefulWidget {
   final VoidCallback? onDismiss;
 
   const EvaluationSurveyDialog({
-    Key? key,
+    super.key,
     required this.onSubmit,
     this.onDismiss,
-  }) : super(key: key);
+  });
 
   @override
   State<EvaluationSurveyDialog> createState() => _EvaluationSurveyDialogState();
