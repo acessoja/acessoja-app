@@ -1,43 +1,47 @@
+import '../widgets/load_error.dart';
+import '../widgets/safe_state.dart';
+import '../l10n/strings.dart';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/app_http.dart';
+
+import '../app_theme.dart';
 import '../config.dart';
 import 'place_detail_screen.dart';
 
 class SugestoesScreen extends StatefulWidget {
   final String userName;
   final String unidadeDistancia;
+  final bool allowSuggestions;
 
-  const SugestoesScreen({
+   const SugestoesScreen({
     super.key,
     required this.userName,
     this.unidadeDistancia = 'KM',
+    this.allowSuggestions = true,
   });
 
   @override
   State<SugestoesScreen> createState() => _SugestoesScreenState();
 }
 
-class _SugestoesScreenState extends State<SugestoesScreen> {
+class _SugestoesScreenState extends SafeState<SugestoesScreen> {
   List<dynamic> _recentVisits = [];
   List<dynamic> _allLocales = [];
   bool _isLoading = true;
+  bool _loadFailed = false;
 
-  String _formatDistance(dynamic distanceValue) {
-    double km = 0.0;
-    if (distanceValue is num) {
-      km = distanceValue.toDouble();
-    } else if (distanceValue is String) {
-      String cleanStr =
-          distanceValue.replaceAll(RegExp(r'[^\d.,]'), '').replaceAll(',', '.');
-      km = double.tryParse(cleanStr) ?? 0.0;
-    }
-    if (widget.unidadeDistancia == 'Milha') {
-      double miles = km * 0.621371;
-      return '${miles.toStringAsFixed(1).replaceAll('.', ',')} mi';
-    } else {
-      return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
-    }
+  String _formatDistance(dynamic value) {
+    final km = value is num
+        ? value.toDouble()
+        : double.tryParse(value
+                .toString()
+                .replaceAll(RegExp(r'[^0-9.,]'), '')
+                .replaceAll(',', '.')) ??
+            0;
+    final miles = widget.unidadeDistancia == 'Milha';
+    return '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}';
   }
 
   @override
@@ -47,11 +51,19 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
   }
 
   Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+    });
     try {
-      final visitsResponse = await http.get(Uri.parse(
-          '${Config.baseUrl}/api/visitas/?nome_usuario=${widget.userName}'));
-      final localesResponse =
-          await http.get(Uri.parse('${Config.baseUrl}/api/locais/'));
+      final visitsResponse = await AppHttp.get(
+        Uri.parse(
+          '${Config.baseUrl}/api/visitas/?nome_usuario=${Uri.encodeComponent(widget.userName)}',
+        ),
+      );
+      final localesResponse = await AppHttp.get(
+        Uri.parse('${Config.baseUrl}/api/locais/'),
+      );
 
       if (visitsResponse.statusCode == 200 &&
           localesResponse.statusCode == 200) {
@@ -65,16 +77,22 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
           _allLocales = localesData;
           _isLoading = false;
         });
+      } else {
+        _loadFailed = true;
       }
     } catch (e) {
-      debugPrint("Error loading suggestions data: $e");
+      if (!mounted) return;
+      _loadFailed = true;
+      debugPrint('Error loading suggestions data: $e');
       setState(() {
         _isLoading = false;
       });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  // Deduplicate and get actual unique recently visited places
+  // Deduplicate and get actual unique recently visited places.
   List<dynamic> get visitedPlaces {
     final List<dynamic> list = [];
     final Set<int> ids = {};
@@ -89,24 +107,24 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
         }
       }
     }
+
     return list;
   }
 
   // Recommendation algorithm:
-  // If the user has visited places, count accessibility features they cared about (where visited place was True).
+  // If the user has visited places, count accessibility features they cared
+  // about (where visited place was True).
   // Suggest other places having those features, ordered by average rating.
   // If no visits, suggest top rated.
   List<dynamic> get recommendedPlaces {
-    if (_allLocales.isEmpty) {
-      return [];
-    }
+    if (!widget.allowSuggestions || _allLocales.isEmpty) return [];
 
     final visited = visitedPlaces;
     final Set<int> visitedIds =
         visited.map<int>((e) => e['id_local'] as int).toSet();
 
     if (visited.isEmpty) {
-      // General recommendations: sort all by rating average (highest first)
+      // General recommendations: sort all by rating average (highest first).
       final List<dynamic> candidates = List.from(_allLocales);
       candidates.sort((a, b) {
         final ratingA = (a['media_estrelas'] ?? 0.0) as num;
@@ -116,7 +134,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
       return candidates.take(3).toList();
     }
 
-    // Visited is not empty. Count frequented features:
+    // Visited is not empty. Count frequented features.
     int rampaCount = 0;
     int banheiroCount = 0;
     int mesaCount = 0;
@@ -141,7 +159,7 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
       }
     }
 
-    // Determine the most common feature
+    // Determine the most common feature.
     final featuresMap = {
       'rampa_acesso': rampaCount,
       'banheiro_acessivel': banheiroCount,
@@ -159,12 +177,13 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
       }
     });
 
-    // Filter candidate places that have this top feature, prioritizing those the user hasn't visited yet
+    // Filter candidate places that have this top feature, prioritizing those
+    // the user has not visited yet.
     final List<dynamic> candidates = _allLocales.where((place) {
       return place[topFeature] == true;
     }).toList();
 
-    // Sort: unvisited first, then higher rating
+    // Sort: unvisited first, then higher rating.
     candidates.sort((a, b) {
       final aVisited = visitedIds.contains(a['id_local']) ? 1 : 0;
       final bVisited = visitedIds.contains(b['id_local']) ? 1 : 0;
@@ -187,443 +206,632 @@ class _SugestoesScreenState extends State<SugestoesScreen> {
     } else if (name == 'Correios - Anápolis') {
       return 'CORREIOS - Anápolis';
     }
+
     return name;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final visited = visitedPlaces;
-    final recommended = recommendedPlaces;
+  Widget _buildBackButton() {
+    final colors = AppColors.of(context);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Sugestões',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
+    return Semantics(
+      button: true,
+      label: context.l10n.back,
+      child: InkWell(
+        onTap: () => Navigator.pop(context),
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: colors.primarySoft,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            Icons.arrow_back_rounded,
+            color: colors.primaryDark,
+            size: 21,
           ),
         ),
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
-          child: GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFF4A69FF),
-                shape: BoxShape.circle,
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader({
+    required IconData icon,
+    required String title,
+    Color? iconColor,
+  }) {
+    final colors = AppColors.of(context);
+    final resolvedIconColor = iconColor ?? colors.primaryDark;
+    final isWarning = iconColor == Colors.amber;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isWarning ? colors.warningSoft : colors.primarySoft,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: resolvedIconColor, size: 20),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: colors.text,
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlaceImage(
+    dynamic imagePath, {
+    double width = 96,
+    double height = 96,
+  }) {
+    final colors = AppColors.of(context);
+    final path = (imagePath ?? '').toString();
+
+    Widget placeholder() {
+      return Container(
+        width: width,
+        height: height,
+        color: colors.primarySoft,
+        child: Icon(
+          Icons.business_outlined,
+          color: colors.primaryDark,
+          size: 34,
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(15),
+      child: path.isNotEmpty
+          ? Image.asset(
+              path,
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
+              cacheWidth: 640,
+              errorBuilder: (context, error, stackTrace) => placeholder(),
+            )
+          : placeholder(),
+    );
+  }
+
+  Widget _buildRating(num media, {double size = 15}) {
+    final colors = AppColors.of(context);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(5, (starIndex) {
+            final active = starIndex < media.round();
+            return Icon(
+              active ? Icons.star_rounded : Icons.star_border_rounded,
+              size: size,
+              color: active ? Colors.amber.shade700 : colors.border,
+            );
+          }),
+        ),
+        const SizedBox(width: 7),
+        Text(
+          context.number(media),
+          style: TextStyle(
+            color: colors.muted,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyVisitedState() {
+    final colors = AppColors.of(context);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colors.border),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colors.primarySoft,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.route_outlined,
+              color: colors.primaryDark,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            context.l10n.noRouteHistory,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: colors.text,
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            context.l10n.historyHint,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: colors.muted,
+              fontSize: 12,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openVisitedPlace(dynamic place) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlaceDetailScreen(
+          place: place,
+          userName: widget.userName,
+        ),
+      ),
+    );
+    if (!mounted) return;
+
+    if (result != null) {
+      Navigator.pop(context, result);
+    } else {
+      _loadData();
+    }
+  }
+
+  Widget _buildVisitedCard(dynamic place) {
+    final colors = AppColors.of(context);
+
+    final name = (place['nome'] ?? '').toString();
+    final mediaValue = place['media_estrelas'] ?? 0.0;
+    final media = mediaValue is num
+        ? mediaValue
+        : double.tryParse(mediaValue.toString()) ?? 0.0;
+
+    return Semantics(
+      button: true,
+      label: context.l10n.detailsOf(name),
+      child: InkWell(
+        onTap: () => _openVisitedPlace(place),
+        child: Container(
+          width: 170,
+          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: colors.border),
+            boxShadow: [
+              BoxShadow(
+                color: colors.shadow,
+                blurRadius: 12,
+                offset: const Offset(0, 5),
               ),
-              child: const Icon(
-                Icons.arrow_back_rounded,
-                color: Colors.white,
-                size: 20,
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildPlaceImage(
+                place['imagem'],
+                width: double.infinity,
+                height: 78,
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 9, 10, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: colors.text,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    _buildRating(media, size: 13),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVisitedSection(List<dynamic> visited) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSectionHeader(
+          icon: Icons.history_rounded,
+          title: context.l10n.recentlyVisited,
+        ),
+        if (visited.isEmpty)
+          _buildEmptyVisitedState()
+        else
+          SizedBox(
+            height: 240,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(left: 1, right: 1),
+              itemCount: visited.length,
+              itemBuilder: (context, index) {
+                return _buildVisitedCard(visited[index]);
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildRecommendationAction({
+    required IconData icon,
+    required String label,
+    required String semanticsLabel,
+    required VoidCallback onPressed,
+    bool primary = true,
+  }) {
+    final colors = AppColors.of(context);
+
+    return Expanded(
+      child: Semantics(
+        button: true,
+        label: semanticsLabel,
+        child: SizedBox(
+          height: 40,
+          child: ElevatedButton.icon(
+            onPressed: onPressed,
+            icon: Icon(icon, size: 17),
+            label: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primary ? colors.primary : colors.primarySoft,
+              foregroundColor: primary ? colors.onPrimary : colors.primaryDark,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: primary
+                    ? BorderSide.none
+                    : BorderSide(color: colors.border),
               ),
             ),
           ),
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Seção: Visitados Recentemente
-                  const Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                    child: Row(
+    );
+  }
+
+  Widget _buildRecommendationCard(dynamic place) {
+    final colors = AppColors.of(context);
+
+    final name = (place['nome'] ?? '').toString();
+    final displayName = getLocalDisplayName(name);
+    final address = (place['endereco'] ?? '').toString();
+    final mediaValue = place['media_estrelas'] ?? 0.0;
+    final media = mediaValue is num
+        ? mediaValue
+        : double.tryParse(mediaValue.toString()) ?? 0.0;
+    final isOpen = (place['aberto'] ?? true) as bool;
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.border),
+        boxShadow: [
+          BoxShadow(
+            color: colors.shadow,
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Semantics(
+                image: true,
+                label: context.l10n.placeImage(displayName),
+                child: _buildPlaceImage(
+                  place['imagem'],
+                  width: 92,
+                  height: 92,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      displayName,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: colors.text,
+                        fontSize: 14,
+                        height: 1.2,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (address.isNotEmpty) ...[
+                      const SizedBox(height: 5),
+                      Text(
+                        address,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.muted,
+                          fontSize: 11,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 7),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 5,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Icon(Icons.history_rounded,
-                            color: Color(0xFF4A69FF), size: 22),
-                        SizedBox(width: 8),
-                        Text(
-                          'Visitados Recentemente',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E3A8A),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 4,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (visited.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        child: Text(
-                          'Você ainda não iniciou nenhuma rota. Seus locais visitados aparecerão aqui para gerar recomendações personalizadas!',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                            height: 1.4,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    )
-                  else
-                    SizedBox(
-                      height: 155,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        itemCount: visited.length,
-                        itemBuilder: (context, index) {
-                          final place = visited[index];
-                          final media = (place['media_estrelas'] ?? 0.0) as num;
-
-                          return GestureDetector(
-                            onTap: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PlaceDetailScreen(
-                                    place: place,
-                                    userName: widget.userName,
-                                  ),
-                                ),
-                              );
-                              if (!context.mounted) {
-                                return;
-                              }
-                              if (result != null) {
-                                Navigator.pop(context, result);
-                              } else {
-                                _loadData();
-                              }
-                            },
-                            child: Container(
-                              width: 160,
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(16),
-                                      topRight: Radius.circular(16),
-                                    ),
-                                    child: place['imagem'] != null
-                                        ? Image.asset(
-                                            place['imagem'],
-                                            height: 70,
-                                            width: double.infinity,
-                                            fit: BoxFit.cover,
-                                          )
-                                        : Container(
-                                            height: 70,
-                                            color: Colors.grey[200],
-                                            child: const Icon(Icons.business,
-                                                color: Colors.grey),
-                                          ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          place['nome'],
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            const Icon(Icons.star,
-                                                size: 12, color: Colors.amber),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              media.toStringAsFixed(1),
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.grey[700],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-
-                  const SizedBox(height: 16),
-                  // Seção: Recomendados
-                  const Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    child: Row(
-                      children: [
-                        Icon(Icons.tips_and_updates_rounded,
-                            color: Colors.amber, size: 22),
-                        SizedBox(width: 8),
-                        Text(
-                          'Recomendados para Você',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E3A8A),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (recommended.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Center(
-                        child: Text(
-                          'Nenhuma recomendação disponível no momento.',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ),
-                    )
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: recommended.length,
-                      itemBuilder: (context, index) {
-                        final place = recommended[index];
-                        final mediaEstrelas =
-                            (place['media_estrelas'] ?? 0.0) as num;
-                        final isOpen = (place['aberto'] ?? true) as bool;
-
-                        return Container(
-                          margin: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 6,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
+                            color:
+                                isOpen ? colors.successSoft : colors.dangerSoft,
+                            borderRadius: BorderRadius.circular(7),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Text(
+                            isOpen ? context.l10n.open : context.l10n.closed,
+                            style: TextStyle(
+                              color: isOpen ? colors.success : colors.danger,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          _formatDistance(place['distancia']),
+                          style: TextStyle(
+                            color: colors.muted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 7),
+                    _buildRating(media),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildRecommendationAction(
+                icon: Icons.directions_rounded,
+                label: context.l10n.route,
+                semanticsLabel: context.l10n.routeTo(displayName),
+                onPressed: () {
+                  Navigator.pop(context, place);
+                },
+              ),
+              const SizedBox(width: 8),
+              _buildRecommendationAction(
+                icon: Icons.chat_bubble_outline_rounded,
+                label: context.l10n.details,
+                semanticsLabel: context.l10n.detailsOf(displayName),
+                primary: false,
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlaceDetailScreen(
+                        place: place,
+                        userName: widget.userName,
+                      ),
+                    ),
+                  );
+                  if (!mounted) return;
+                  if (result != null) {
+                    Navigator.pop(context, result);
+                  } else {
+                    _loadData();
+                  }
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecommendationsSection(List<dynamic> recommended) {
+    final colors = AppColors.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSectionHeader(
+          icon: Icons.tips_and_updates_rounded,
+          title: context.l10n.recommended,
+          iconColor: Colors.amber,
+        ),
+        if (recommended.isEmpty)
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: colors.border),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.lightbulb_outline_rounded,
+                  color: colors.muted,
+                  size: 30,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  widget.allowSuggestions
+                      ? context.l10n.noRecommendations
+                      : context.l10n.suggestionsDisabled,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: colors.muted,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ...recommended.map(_buildRecommendationCard),
+      ],
+    );
+  }
+
+  Widget _buildLoadingState() {
+    final colors = AppColors.of(context);
+
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            context.l10n.loadingSuggestions,
+            style: TextStyle(
+              color: colors.muted,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final visited = visitedPlaces;
+    final recommended = recommendedPlaces;
+
+    return Scaffold(
+      backgroundColor: colors.pageBackground,
+      appBar: AppBar(
+        backgroundColor: colors.pageBackground,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        toolbarHeight: 70,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16, top: 14, bottom: 14),
+          child: _buildBackButton(),
+        ),
+        titleSpacing: 12,
+        title: Text(
+          context.l10n.suggestions,
+          style: TextStyle(
+            color: colors.text,
+            fontSize: 19,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        top: false,
+        child: _loadFailed
+            ? LoadError(onRetry: _loadData)
+            : _isLoading
+                ? _buildLoadingState()
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final horizontalPadding =
+                          constraints.maxWidth < 360 ? 16.0 : 24.0;
+
+                      return Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 620),
+                          child: SingleChildScrollView(
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            padding: EdgeInsets.fromLTRB(
+                              horizontalPadding,
+                              8,
+                              horizontalPadding,
+                              24,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: place['imagem'] != null
-                                      ? Image.asset(
-                                          place['imagem'],
-                                          width: 85,
-                                          height: 85,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Container(
-                                          width: 85,
-                                          height: 85,
-                                          color: Colors.grey[200],
-                                          child: const Icon(Icons.business,
-                                              color: Colors.grey),
-                                        ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        getLocalDisplayName(place['nome']),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 13,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        '${_formatDistance(place['distancia'])} - ${isOpen ? 'Aberto' : 'Fechado'}',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                          color: isOpen
-                                              ? Colors.green
-                                              : Colors.red,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Row(
-                                        children: [
-                                          Row(
-                                            children:
-                                                List.generate(5, (starIndex) {
-                                              return Icon(
-                                                Icons.star,
-                                                size: 13,
-                                                color: starIndex <
-                                                        mediaEstrelas.round()
-                                                    ? Colors.amber
-                                                    : Colors.grey[300],
-                                              );
-                                            }),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            '(${mediaEstrelas.toStringAsFixed(1)})',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: Colors.grey[600],
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pop(context, place);
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xFF4CABFF),
-                                        foregroundColor: Colors.white,
-                                        minimumSize: const Size(90, 32),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(16),
-                                        ),
-                                        elevation: 0,
-                                      ),
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(Icons.directions_rounded,
-                                              size: 14),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            'Rota',
-                                            style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        final result = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                PlaceDetailScreen(
-                                              place: place,
-                                              userName: widget.userName,
-                                            ),
-                                          ),
-                                        );
-                                        if (!context.mounted) {
-                                          return;
-                                        }
-                                        if (result != null) {
-                                          Navigator.pop(context, result);
-                                        } else {
-                                          _loadData();
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.grey[100],
-                                        foregroundColor:
-                                            const Color(0xFF4A69FF),
-                                        minimumSize: const Size(90, 32),
-                                        side: const BorderSide(
-                                            color: Color(0xFF4A69FF),
-                                            width: 1.2),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(16),
-                                        ),
-                                        elevation: 0,
-                                      ),
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                              Icons.chat_bubble_outline_rounded,
-                                              size: 12),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            'Detalhes',
-                                            style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                _buildVisitedSection(visited),
+                                const SizedBox(height: 28),
+                                _buildRecommendationsSection(recommended),
                               ],
                             ),
                           ),
-                        );
-                      },
-                    ),
-                ],
-              ),
-            ),
+                        ),
+                      );
+                    },
+                  ),
+      ),
     );
   }
 }

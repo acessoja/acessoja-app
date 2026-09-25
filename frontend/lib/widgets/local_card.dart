@@ -1,10 +1,12 @@
+import '../l10n/strings.dart';
 import 'package:flutter/material.dart';
+
+import '../app_theme.dart';
 
 /// Card de estabelecimento exibido na tela "Explorar Locais".
 ///
-/// Extraído de `explorar_screen.dart` (estava implementado diretamente
-/// dentro do `ListView.builder`) para permitir testes de widget isolados.
-/// A aparência e o comportamento são idênticos aos originais.
+/// A interface pública e os callbacks são preservados para que a tela de
+/// exploração continue controlando rota e abertura dos detalhes do local.
 class LocalCard extends StatelessWidget {
   final Map<String, dynamic> place;
   final String distanceLabel;
@@ -23,170 +25,229 @@ class LocalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final mediaEstrelas = (place['media_estrelas'] ?? 0.0) as num;
     final isOpen = (place['aberto'] ?? true) as bool;
     final nome = (place['nome'] ?? '').toString();
+    final endereco = (place['endereco'] ?? '').toString();
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: const EdgeInsets.symmetric(vertical: 7, horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.border),
+        boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: Offset(0, 2),
+            color: colors.shadow,
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Imagem arredondada na esquerda
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: place['imagem'] != null
-                  ? Image.asset(
-                      place['imagem'],
-                      width: 85,
-                      height: 85,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 85,
-                          height: 85,
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.business,
-                              color: Colors.grey, size: 36),
-                        );
-                      },
-                    )
-                  : Container(
-                      width: 85,
-                      height: 85,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.business,
-                          color: Colors.grey, size: 36),
-                    ),
-            ),
-            const SizedBox(width: 12),
-            // Informações do local na direita
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    displayNameBuilder(nome),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '$distanceLabel - ${isOpen ? 'Aberto' : 'Fechado'}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: isOpen ? Colors.green : Colors.red,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Row(
-                        children: List.generate(5, (starIndex) {
-                          return Icon(
-                            Icons.star,
-                            size: 13,
-                            color: starIndex < mediaEstrelas.round()
-                                ? Colors.amber
-                                : Colors.grey[300],
-                          );
-                        }),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '(${mediaEstrelas.toStringAsFixed(1)})',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Botões Verticais à Direita
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ElevatedButton(
-                  onPressed: onRoutePressed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CABFF),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(100, 32),
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.directions_rounded, size: 14),
-                      SizedBox(width: 4),
-                      Text(
-                        'Rota',
-                        style: TextStyle(
-                            fontSize: 10, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                Semantics(
+                  image: true,
+                  label: context.l10n.placeImage(nome),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: place['imagem'] != null
+                        ? Image.asset(
+                            place['imagem'],
+                            width: 86,
+                            height: 86,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return _imagePlaceholder(colors);
+                            },
+                          )
+                        : _imagePlaceholder(colors),
                   ),
                 ),
-                const SizedBox(height: 6),
-                ElevatedButton(
-                  onPressed: onDetailsPressed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[100],
-                    foregroundColor: const Color(0xFF4A69FF),
-                    minimumSize: const Size(100, 32),
-                    side:
-                        const BorderSide(color: Color(0xFF4A69FF), width: 1.2),
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.chat_bubble_outline_rounded, size: 12),
-                      SizedBox(width: 4),
                       Text(
-                        'Avaliações',
+                        displayNameBuilder(nome),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontSize: 10, fontWeight: FontWeight.bold),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                          height: 1.2,
+                          color: colors.text,
+                        ),
+                      ),
+                      if (endereco.isNotEmpty) ...[
+                        const SizedBox(height: 5),
+                        Text(
+                          endereco,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: colors.muted,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color:
+                              isOpen ? colors.successSoft : colors.dangerSoft,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '$distanceLabel - ${isOpen ? context.l10n.open : context.l10n.closed}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: isOpen ? colors.success : colors.danger,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Semantics(
+                        label: context.l10n
+                            .ratingValue(context.number(mediaEstrelas)),
+                        child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 6,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: List.generate(5, (starIndex) {
+                                return Icon(
+                                  Icons.star,
+                                  size: 15,
+                                  color: starIndex < mediaEstrelas.round()
+                                      ? Colors.amber
+                                      : colors.border,
+                                );
+                              }),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '(${context.number(mediaEstrelas)})',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: colors.muted,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: Semantics(
+                    button: true,
+                    label: context.l10n.routeTo(nome),
+                    child: ElevatedButton(
+                      onPressed: onRoutePressed,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.primary,
+                        foregroundColor: colors.onPrimary,
+                        minimumSize: const Size.fromHeight(40),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.directions_rounded, size: 16),
+                          const SizedBox(width: 5),
+                          Flexible(
+                              child: Text(
+                            context.l10n.route,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          )),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Semantics(
+                    button: true,
+                    label: context.l10n.reviewsOf(nome),
+                    child: ElevatedButton(
+                      onPressed: onDetailsPressed,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.fieldBackground,
+                        foregroundColor: colors.primaryDark,
+                        minimumSize: const Size.fromHeight(40),
+                        side: BorderSide(color: colors.primary, width: 1.2),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.rate_review_outlined, size: 15),
+                          const SizedBox(width: 5),
+                          Flexible(
+                              child: Text(
+                            context.l10n.reviews,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          )),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _imagePlaceholder(AppColors colors) {
+    return Container(
+      width: 86,
+      height: 86,
+      color: colors.primarySoft,
+      child: Icon(
+        Icons.business,
+        color: colors.primaryDark,
+        size: 34,
       ),
     );
   }

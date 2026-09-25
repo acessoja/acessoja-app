@@ -13,7 +13,7 @@ class Config {
 
   static String get baseUrl {
     if (_apiBaseUrlOverride.isNotEmpty) {
-      return _apiBaseUrlOverride;
+      return _apiBaseUrlOverride.replaceFirst(RegExp(r'/+$'), '');
     }
 
     if (kIsWeb) {
