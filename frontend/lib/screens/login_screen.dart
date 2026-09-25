@@ -6,6 +6,7 @@ import '../app_theme.dart';
 import '../services/api_service.dart';
 import 'main_screen.dart';
 import 'register_screen.dart';
+import 'rights_screen.dart';
 
 /// Tela de autenticação do AcessoJá.
 ///
@@ -162,22 +163,12 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                         label: context.l10n.logo,
                         child: Image.asset(
                           'assets/logo.png',
-                          width: 88,
-                          height: 88,
+                          width: 120,
+                          height: 120,
                           fit: BoxFit.contain,
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        'AcessoJá',
-                        style: TextStyle(
-                          color: colors.text,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.6,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
                       Text(
                         context.l10n.accessAccount,
                         textAlign: TextAlign.center,
@@ -375,6 +366,12 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                             ),
                           ],
                         ),
+                      ),
+                      TextButton.icon(
+                        onPressed: () =>
+                            Navigator.push(context, RightsScreen.route()),
+                        icon: const Icon(Icons.balance_rounded),
+                        label: Text(context.l10n.rightsTitle),
                       ),
                       const SizedBox(height: 14),
                       Text(

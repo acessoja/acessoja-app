@@ -9,6 +9,273 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
+  String get rightsCategories => 'Explore por categoria';
+
+  @override
+  String get rightsBrowseCategory => 'Ver leis e normas';
+
+  @override
+  String get rightsCategoryIntro => 'Principais leis e normas';
+
+  @override
+  String get rightsCatalogNotice =>
+      'Seleção de normas federais sobre este tema. Não é uma lista completa. Confira o público atendido e as condições de cada norma na fonte oficial.';
+
+  @override
+  String get rightsReadOfficial => 'Ler na fonte oficial';
+
+  @override
+  String get rightsMoreLaws => 'Consultar mais leis de acessibilidade';
+
+  @override
+  String get rightsMoreDescription =>
+      'Para conhecer outras normas, acesse a coleção de legislação do Ministério dos Direitos Humanos e da Cidadania.';
+
+  @override
+  String get rightsSeatsTitle => 'Transporte coletivo e assentos reservados';
+
+  @override
+  String get rightsSeatsBody =>
+      'Prevê assentos identificados para pessoas com deficiência, autistas e outros grupos previstos na lei, além de acessibilidade dos veículos de transporte coletivo.';
+
+  @override
+  String get rightsPriorityLaw =>
+      'Lei nº 10.048/2000 • Atendimento prioritário';
+
+  @override
+  String get rightsPassTitle => 'Passe livre interestadual';
+
+  @override
+  String get rightsPassBody =>
+      'Destinado a pessoas com deficiência que comprovem baixa renda, conforme a regulamentação. Aplica-se ao transporte coletivo interestadual; não estabelece gratuidade geral para ônibus municipais ou passagens aéreas.';
+
+  @override
+  String get rightsPassLaw => 'Lei nº 8.899/1994 • Passe Livre';
+
+  @override
+  String get rightsAirTitle => 'Assistência no transporte aéreo';
+
+  @override
+  String get rightsAirBody =>
+      'Regula o atendimento a passageiros que precisam de assistência especial. Consulte condições e prazos para solicitar apoio à companhia aérea; as exigências variam conforme a assistência.';
+
+  @override
+  String get rightsAirRule =>
+      'Resolução ANAC nº 280/2013 • Assistência especial';
+
+  @override
+  String get rightsParkingTitle => 'Vagas de estacionamento reservadas';
+
+  @override
+  String get rightsParkingBody =>
+      'Para veículos que transportam pessoas com deficiência com comprometimento de mobilidade. A identificação exige credencial; consulte as regras de emissão do órgão de trânsito.';
+
+  @override
+  String get rightsAccessTitle => 'Acessibilidade em edifícios e espaços';
+
+  @override
+  String get rightsAccessBody =>
+      'Estabelece critérios para remover barreiras. Construções, ampliações e reformas de edifícios públicos ou privados de uso coletivo devem seguir requisitos de acessibilidade.';
+
+  @override
+  String get rightsAccessLaw => 'Lei nº 10.098/2000 • Acessibilidade';
+
+  @override
+  String get rightsPriorityTitle => 'Prioridade no atendimento';
+
+  @override
+  String get rightsPriorityBody =>
+      'Abrange pessoas com deficiência e outros grupos previstos na lei. Obriga repartições públicas, concessionárias de serviços públicos e instituições financeiras a oferecer atendimento prioritário.';
+
+  @override
+  String get rightsLibrasTitle => 'Libras e comunicação acessível';
+
+  @override
+  String get rightsLibrasBody =>
+      'Reconhece a Libras e prevê apoio à sua difusão, atendimento adequado na saúde pública e inclusão de seu ensino nas formações indicadas pela lei. Consulte também a regulamentação.';
+
+  @override
+  String get rightsLibrasLaw => 'Lei nº 10.436/2002 • Libras';
+
+  @override
+  String get rightsSchoolTitle => 'Educação especial e apoio escolar';
+
+  @override
+  String get rightsSchoolBody =>
+      'A LDB prevê educação especial, preferencialmente na rede regular, e recursos e apoio especializado conforme as necessidades dos estudantes abrangidos pelos artigos 58 e 59.';
+
+  @override
+  String get rightsSchoolLaw =>
+      'Lei nº 9.394/1996 • Diretrizes e Bases da Educação';
+
+  @override
+  String get rightsQuotaTitle => 'Reserva de postos de trabalho';
+
+  @override
+  String get rightsQuotaBody =>
+      'Empresas com 100 ou mais empregados devem destinar de 2% a 5% dos cargos a pessoas com deficiência habilitadas ou beneficiários reabilitados, conforme o tamanho da empresa.';
+
+  @override
+  String get rightsQuotaLaw => 'Lei nº 8.213/1991 • Cotas no trabalho';
+
+  @override
+  String get rightsTicketsTitle => 'Meia-entrada em eventos';
+
+  @override
+  String get rightsTicketsBody =>
+      'Prevê meia-entrada para pessoas com deficiência e, quando necessário, seu acompanhante, nos eventos abrangidos. Há requisitos de comprovação e limite legal de ingressos destinados ao benefício; consulte a regulamentação.';
+
+  @override
+  String get rightsTicketsLaw => 'Lei nº 12.933/2013 • Meia-entrada';
+
+  @override
+  String get rightsTitle => 'Seus direitos';
+
+  @override
+  String get rightsIntro => 'Informação para viver com mais autonomia';
+
+  @override
+  String get rightsDescription =>
+      'Conheça direitos de pessoas com deficiência no Brasil e consulte as fontes oficiais.';
+
+  @override
+  String get rightsScope => 'Legislação federal • Brasil';
+
+  @override
+  String get rightsReviewed => 'Fontes conferidas em 25/09/2026';
+
+  @override
+  String get rightsNotice =>
+      'Este guia traz resumos informativos. Consulte os artigos para condições e detalhes. Regras e procedimentos estaduais e municipais podem complementar a legislação federal.';
+
+  @override
+  String get rightsAll => 'Todos';
+
+  @override
+  String get rightsFilter => 'Filtrar por tema';
+
+  @override
+  String get rightsTransport => 'Transporte';
+
+  @override
+  String get rightsPlaces => 'Estabelecimentos';
+
+  @override
+  String get rightsHealth => 'Saúde';
+
+  @override
+  String get rightsEducation => 'Educação';
+
+  @override
+  String get rightsWork => 'Trabalho';
+
+  @override
+  String get rightsCulture => 'Cultura e lazer';
+
+  @override
+  String get rightsTransportTitle => 'Mobilidade sem barreiras';
+
+  @override
+  String get rightsTransportBody =>
+      'Pessoas com deficiência ou mobilidade reduzida têm direito ao transporte acessível.';
+
+  @override
+  String get rightsPlacesTitle => 'Acesso aos espaços coletivos';
+
+  @override
+  String get rightsPlacesBody =>
+      'Edificações públicas e privadas de uso coletivo devem garantir acessibilidade conforme as normas.';
+
+  @override
+  String get rightsHealthTitle => 'Cuidado pelo SUS';
+
+  @override
+  String get rightsHealthBody =>
+      'Pessoas com deficiência têm direito ao cuidado integral de saúde pelo SUS.';
+
+  @override
+  String get rightsEducationTitle => 'Aprender com inclusão';
+
+  @override
+  String get rightsEducationBody =>
+      'A educação deve ser inclusiva, com recursos de acessibilidade e apoio à aprendizagem.';
+
+  @override
+  String get rightsWorkTitle => 'Oportunidades no trabalho';
+
+  @override
+  String get rightsWorkBody =>
+      'Pessoas com deficiência têm direito ao trabalho acessível, inclusivo e sem discriminação.';
+
+  @override
+  String get rightsCultureTitle => 'Participar da vida cultural';
+
+  @override
+  String get rightsCultureBody =>
+      'Pessoas com deficiência têm direito a atividades culturais e de lazer acessíveis.';
+
+  @override
+  String get rightsLaw => 'Lei Brasileira de Inclusão • Lei nº 13.146/2015';
+
+  @override
+  String get rightsReadLaw => 'Ler legislação no Planalto';
+
+  @override
+  String get rightsHelpTitle => 'Um direito foi desrespeitado?';
+
+  @override
+  String get rightsHelpBody =>
+      'O Disque 100 recebe denúncias de violações de direitos humanos. A ligação é gratuita, com atendimento 24 horas. Consulte também os canais digitais e o atendimento em Libras na página oficial.';
+
+  @override
+  String get rightsHelpLink => 'Ver canais oficiais do Disque 100';
+
+  @override
+  String get rightsLinkError =>
+      'Não foi possível abrir o navegador. Você pode copiar o endereço abaixo.';
+
+  @override
+  String get rightsCopyLink => 'Copiar link';
+
+  @override
+  String get rightsCopied => 'Link copiado';
+
+  @override
+  String get onboardingFindTitle => 'Encontre locais acessíveis';
+
+  @override
+  String get onboardingFindBody =>
+      'Descubra lugares e confira informações de acessibilidade na sua região.';
+
+  @override
+  String get onboardingReviewTitle => 'Avalie e contribua';
+
+  @override
+  String get onboardingReviewBody =>
+      'Compartilhe sua experiência e ajude outras pessoas a fazer escolhas mais informadas.';
+
+  @override
+  String get onboardingTogetherTitle => 'Juntos por uma cidade melhor';
+
+  @override
+  String get onboardingTogetherBody =>
+      'Mais inclusão, mais respeito e mais acessibilidade para todos. Sua participação faz a diferença.';
+
+  @override
+  String get onboardingNext => 'Próximo';
+
+  @override
+  String get onboardingSkip => 'Pular';
+
+  @override
+  String get onboardingStart => 'Começar';
+
+  @override
+  String onboardingProgress(int current, int total) {
+    return 'Etapa $current de $total';
+  }
+
+  @override
   String get back => 'Voltar';
 
   @override

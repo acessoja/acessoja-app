@@ -98,6 +98,480 @@ abstract class AppLocalizations {
     Locale('pt')
   ];
 
+  /// No description provided for @rightsCategories.
+  ///
+  /// In pt, this message translates to:
+  /// **'Explore por categoria'**
+  String get rightsCategories;
+
+  /// No description provided for @rightsBrowseCategory.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ver leis e normas'**
+  String get rightsBrowseCategory;
+
+  /// No description provided for @rightsCategoryIntro.
+  ///
+  /// In pt, this message translates to:
+  /// **'Principais leis e normas'**
+  String get rightsCategoryIntro;
+
+  /// No description provided for @rightsCatalogNotice.
+  ///
+  /// In pt, this message translates to:
+  /// **'Seleção de normas federais sobre este tema. Não é uma lista completa. Confira o público atendido e as condições de cada norma na fonte oficial.'**
+  String get rightsCatalogNotice;
+
+  /// No description provided for @rightsReadOfficial.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ler na fonte oficial'**
+  String get rightsReadOfficial;
+
+  /// No description provided for @rightsMoreLaws.
+  ///
+  /// In pt, this message translates to:
+  /// **'Consultar mais leis de acessibilidade'**
+  String get rightsMoreLaws;
+
+  /// No description provided for @rightsMoreDescription.
+  ///
+  /// In pt, this message translates to:
+  /// **'Para conhecer outras normas, acesse a coleção de legislação do Ministério dos Direitos Humanos e da Cidadania.'**
+  String get rightsMoreDescription;
+
+  /// No description provided for @rightsSeatsTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Transporte coletivo e assentos reservados'**
+  String get rightsSeatsTitle;
+
+  /// No description provided for @rightsSeatsBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Prevê assentos identificados para pessoas com deficiência, autistas e outros grupos previstos na lei, além de acessibilidade dos veículos de transporte coletivo.'**
+  String get rightsSeatsBody;
+
+  /// No description provided for @rightsPriorityLaw.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lei nº 10.048/2000 • Atendimento prioritário'**
+  String get rightsPriorityLaw;
+
+  /// No description provided for @rightsPassTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Passe livre interestadual'**
+  String get rightsPassTitle;
+
+  /// No description provided for @rightsPassBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Destinado a pessoas com deficiência que comprovem baixa renda, conforme a regulamentação. Aplica-se ao transporte coletivo interestadual; não estabelece gratuidade geral para ônibus municipais ou passagens aéreas.'**
+  String get rightsPassBody;
+
+  /// No description provided for @rightsPassLaw.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lei nº 8.899/1994 • Passe Livre'**
+  String get rightsPassLaw;
+
+  /// No description provided for @rightsAirTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Assistência no transporte aéreo'**
+  String get rightsAirTitle;
+
+  /// No description provided for @rightsAirBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Regula o atendimento a passageiros que precisam de assistência especial. Consulte condições e prazos para solicitar apoio à companhia aérea; as exigências variam conforme a assistência.'**
+  String get rightsAirBody;
+
+  /// No description provided for @rightsAirRule.
+  ///
+  /// In pt, this message translates to:
+  /// **'Resolução ANAC nº 280/2013 • Assistência especial'**
+  String get rightsAirRule;
+
+  /// No description provided for @rightsParkingTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Vagas de estacionamento reservadas'**
+  String get rightsParkingTitle;
+
+  /// No description provided for @rightsParkingBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Para veículos que transportam pessoas com deficiência com comprometimento de mobilidade. A identificação exige credencial; consulte as regras de emissão do órgão de trânsito.'**
+  String get rightsParkingBody;
+
+  /// No description provided for @rightsAccessTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Acessibilidade em edifícios e espaços'**
+  String get rightsAccessTitle;
+
+  /// No description provided for @rightsAccessBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Estabelece critérios para remover barreiras. Construções, ampliações e reformas de edifícios públicos ou privados de uso coletivo devem seguir requisitos de acessibilidade.'**
+  String get rightsAccessBody;
+
+  /// No description provided for @rightsAccessLaw.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lei nº 10.098/2000 • Acessibilidade'**
+  String get rightsAccessLaw;
+
+  /// No description provided for @rightsPriorityTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Prioridade no atendimento'**
+  String get rightsPriorityTitle;
+
+  /// No description provided for @rightsPriorityBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abrange pessoas com deficiência e outros grupos previstos na lei. Obriga repartições públicas, concessionárias de serviços públicos e instituições financeiras a oferecer atendimento prioritário.'**
+  String get rightsPriorityBody;
+
+  /// No description provided for @rightsLibrasTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Libras e comunicação acessível'**
+  String get rightsLibrasTitle;
+
+  /// No description provided for @rightsLibrasBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reconhece a Libras e prevê apoio à sua difusão, atendimento adequado na saúde pública e inclusão de seu ensino nas formações indicadas pela lei. Consulte também a regulamentação.'**
+  String get rightsLibrasBody;
+
+  /// No description provided for @rightsLibrasLaw.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lei nº 10.436/2002 • Libras'**
+  String get rightsLibrasLaw;
+
+  /// No description provided for @rightsSchoolTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Educação especial e apoio escolar'**
+  String get rightsSchoolTitle;
+
+  /// No description provided for @rightsSchoolBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'A LDB prevê educação especial, preferencialmente na rede regular, e recursos e apoio especializado conforme as necessidades dos estudantes abrangidos pelos artigos 58 e 59.'**
+  String get rightsSchoolBody;
+
+  /// No description provided for @rightsSchoolLaw.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lei nº 9.394/1996 • Diretrizes e Bases da Educação'**
+  String get rightsSchoolLaw;
+
+  /// No description provided for @rightsQuotaTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reserva de postos de trabalho'**
+  String get rightsQuotaTitle;
+
+  /// No description provided for @rightsQuotaBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Empresas com 100 ou mais empregados devem destinar de 2% a 5% dos cargos a pessoas com deficiência habilitadas ou beneficiários reabilitados, conforme o tamanho da empresa.'**
+  String get rightsQuotaBody;
+
+  /// No description provided for @rightsQuotaLaw.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lei nº 8.213/1991 • Cotas no trabalho'**
+  String get rightsQuotaLaw;
+
+  /// No description provided for @rightsTicketsTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Meia-entrada em eventos'**
+  String get rightsTicketsTitle;
+
+  /// No description provided for @rightsTicketsBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Prevê meia-entrada para pessoas com deficiência e, quando necessário, seu acompanhante, nos eventos abrangidos. Há requisitos de comprovação e limite legal de ingressos destinados ao benefício; consulte a regulamentação.'**
+  String get rightsTicketsBody;
+
+  /// No description provided for @rightsTicketsLaw.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lei nº 12.933/2013 • Meia-entrada'**
+  String get rightsTicketsLaw;
+
+  /// No description provided for @rightsTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Seus direitos'**
+  String get rightsTitle;
+
+  /// No description provided for @rightsIntro.
+  ///
+  /// In pt, this message translates to:
+  /// **'Informação para viver com mais autonomia'**
+  String get rightsIntro;
+
+  /// No description provided for @rightsDescription.
+  ///
+  /// In pt, this message translates to:
+  /// **'Conheça direitos de pessoas com deficiência no Brasil e consulte as fontes oficiais.'**
+  String get rightsDescription;
+
+  /// No description provided for @rightsScope.
+  ///
+  /// In pt, this message translates to:
+  /// **'Legislação federal • Brasil'**
+  String get rightsScope;
+
+  /// No description provided for @rightsReviewed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fontes conferidas em 25/09/2026'**
+  String get rightsReviewed;
+
+  /// No description provided for @rightsNotice.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este guia traz resumos informativos. Consulte os artigos para condições e detalhes. Regras e procedimentos estaduais e municipais podem complementar a legislação federal.'**
+  String get rightsNotice;
+
+  /// No description provided for @rightsAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todos'**
+  String get rightsAll;
+
+  /// No description provided for @rightsFilter.
+  ///
+  /// In pt, this message translates to:
+  /// **'Filtrar por tema'**
+  String get rightsFilter;
+
+  /// No description provided for @rightsTransport.
+  ///
+  /// In pt, this message translates to:
+  /// **'Transporte'**
+  String get rightsTransport;
+
+  /// No description provided for @rightsPlaces.
+  ///
+  /// In pt, this message translates to:
+  /// **'Estabelecimentos'**
+  String get rightsPlaces;
+
+  /// No description provided for @rightsHealth.
+  ///
+  /// In pt, this message translates to:
+  /// **'Saúde'**
+  String get rightsHealth;
+
+  /// No description provided for @rightsEducation.
+  ///
+  /// In pt, this message translates to:
+  /// **'Educação'**
+  String get rightsEducation;
+
+  /// No description provided for @rightsWork.
+  ///
+  /// In pt, this message translates to:
+  /// **'Trabalho'**
+  String get rightsWork;
+
+  /// No description provided for @rightsCulture.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cultura e lazer'**
+  String get rightsCulture;
+
+  /// No description provided for @rightsTransportTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mobilidade sem barreiras'**
+  String get rightsTransportTitle;
+
+  /// No description provided for @rightsTransportBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pessoas com deficiência ou mobilidade reduzida têm direito ao transporte acessível.'**
+  String get rightsTransportBody;
+
+  /// No description provided for @rightsPlacesTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Acesso aos espaços coletivos'**
+  String get rightsPlacesTitle;
+
+  /// No description provided for @rightsPlacesBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Edificações públicas e privadas de uso coletivo devem garantir acessibilidade conforme as normas.'**
+  String get rightsPlacesBody;
+
+  /// No description provided for @rightsHealthTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cuidado pelo SUS'**
+  String get rightsHealthTitle;
+
+  /// No description provided for @rightsHealthBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pessoas com deficiência têm direito ao cuidado integral de saúde pelo SUS.'**
+  String get rightsHealthBody;
+
+  /// No description provided for @rightsEducationTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aprender com inclusão'**
+  String get rightsEducationTitle;
+
+  /// No description provided for @rightsEducationBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'A educação deve ser inclusiva, com recursos de acessibilidade e apoio à aprendizagem.'**
+  String get rightsEducationBody;
+
+  /// No description provided for @rightsWorkTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Oportunidades no trabalho'**
+  String get rightsWorkTitle;
+
+  /// No description provided for @rightsWorkBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pessoas com deficiência têm direito ao trabalho acessível, inclusivo e sem discriminação.'**
+  String get rightsWorkBody;
+
+  /// No description provided for @rightsCultureTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Participar da vida cultural'**
+  String get rightsCultureTitle;
+
+  /// No description provided for @rightsCultureBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pessoas com deficiência têm direito a atividades culturais e de lazer acessíveis.'**
+  String get rightsCultureBody;
+
+  /// No description provided for @rightsLaw.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lei Brasileira de Inclusão • Lei nº 13.146/2015'**
+  String get rightsLaw;
+
+  /// No description provided for @rightsReadLaw.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ler legislação no Planalto'**
+  String get rightsReadLaw;
+
+  /// No description provided for @rightsHelpTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Um direito foi desrespeitado?'**
+  String get rightsHelpTitle;
+
+  /// No description provided for @rightsHelpBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'O Disque 100 recebe denúncias de violações de direitos humanos. A ligação é gratuita, com atendimento 24 horas. Consulte também os canais digitais e o atendimento em Libras na página oficial.'**
+  String get rightsHelpBody;
+
+  /// No description provided for @rightsHelpLink.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ver canais oficiais do Disque 100'**
+  String get rightsHelpLink;
+
+  /// No description provided for @rightsLinkError.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível abrir o navegador. Você pode copiar o endereço abaixo.'**
+  String get rightsLinkError;
+
+  /// No description provided for @rightsCopyLink.
+  ///
+  /// In pt, this message translates to:
+  /// **'Copiar link'**
+  String get rightsCopyLink;
+
+  /// No description provided for @rightsCopied.
+  ///
+  /// In pt, this message translates to:
+  /// **'Link copiado'**
+  String get rightsCopied;
+
+  /// No description provided for @onboardingFindTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Encontre locais acessíveis'**
+  String get onboardingFindTitle;
+
+  /// No description provided for @onboardingFindBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descubra lugares e confira informações de acessibilidade na sua região.'**
+  String get onboardingFindBody;
+
+  /// No description provided for @onboardingReviewTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Avalie e contribua'**
+  String get onboardingReviewTitle;
+
+  /// No description provided for @onboardingReviewBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Compartilhe sua experiência e ajude outras pessoas a fazer escolhas mais informadas.'**
+  String get onboardingReviewBody;
+
+  /// No description provided for @onboardingTogetherTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Juntos por uma cidade melhor'**
+  String get onboardingTogetherTitle;
+
+  /// No description provided for @onboardingTogetherBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mais inclusão, mais respeito e mais acessibilidade para todos. Sua participação faz a diferença.'**
+  String get onboardingTogetherBody;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In pt, this message translates to:
+  /// **'Próximo'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pular'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In pt, this message translates to:
+  /// **'Começar'**
+  String get onboardingStart;
+
+  /// No description provided for @onboardingProgress.
+  ///
+  /// In pt, this message translates to:
+  /// **'Etapa {current} de {total}'**
+  String onboardingProgress(int current, int total);
+
   /// No description provided for @back.
   ///
   /// In pt, this message translates to:

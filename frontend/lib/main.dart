@@ -6,6 +6,7 @@ import 'l10n/generated/app_localizations.dart';
 import 'app_theme.dart';
 import 'screens/login_screen.dart'; // Certifique-se de que o caminho está correto
 import 'screens/place_detail_screen.dart';
+import 'screens/onboarding_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,7 +59,9 @@ class _MyAppState extends State<MyApp> {
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               initialRoute: '/',
               routes: {
-                '/': (context) => const LoginScreen(), // Tela inicial de login
+                '/': (context) => widget.preferences.hasSeenOnboarding
+                    ? const LoginScreen()
+                    : OnboardingScreen(preferences: widget.preferences),
                 // Legacy bookmarks return to the entry point instead of opening
                 // demo data with a fabricated account.
                 '/places': (context) => const LoginScreen(),

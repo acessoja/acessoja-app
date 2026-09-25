@@ -286,7 +286,7 @@ void main() {
 
   testWidgets('language and theme update the app without clearing typed fields',
       (tester) async {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'onboarding_completed': true});
     final preferences = AppPreferences(await SharedPreferences.getInstance());
     await tester.pumpWidget(app.MyApp(preferences: preferences));
     await tester.pumpAndSettle();

@@ -14,6 +14,7 @@ import 'saved_places_screen.dart';
 import 'explorar_screen.dart';
 import 'sugestoes_screen.dart';
 import 'settings_screen.dart';
+import 'rights_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final String userName;
@@ -562,8 +563,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                       const Center(
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 8.0),
-                          child:
-                              CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       )
                     else ...[
@@ -1110,6 +1110,15 @@ class _MainScreenState extends SafeState<MainScreen> {
                       onTap: () {
                         Navigator.pop(context); // Fecha o drawer
                         _navigateToSavedPlaces();
+                      },
+                    ),
+                    ListTile(
+                      leading:
+                          Icon(Icons.balance_rounded, color: colors.primary),
+                      title: Text(context.l10n.rightsTitle),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(context, RightsScreen.route());
                       },
                     ),
                     const SizedBox(height: 4),

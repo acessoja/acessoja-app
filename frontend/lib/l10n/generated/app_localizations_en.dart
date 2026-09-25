@@ -9,6 +9,271 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get rightsCategories => 'Explore by category';
+
+  @override
+  String get rightsBrowseCategory => 'View laws and regulations';
+
+  @override
+  String get rightsCategoryIntro => 'Key laws and regulations';
+
+  @override
+  String get rightsCatalogNotice =>
+      'Selected federal provisions on this topic, not a complete list. Check eligibility and conditions in each official source.';
+
+  @override
+  String get rightsReadOfficial => 'Read the official source';
+
+  @override
+  String get rightsMoreLaws => 'Explore more accessibility legislation';
+
+  @override
+  String get rightsMoreDescription =>
+      'For other provisions, visit the legislation collection of Brazil’s Ministry of Human Rights and Citizenship.';
+
+  @override
+  String get rightsSeatsTitle => 'Public transport and reserved seats';
+
+  @override
+  String get rightsSeatsBody =>
+      'Provides identified seats for people with disabilities, autistic people and other listed groups, as well as accessibility in public transport vehicles.';
+
+  @override
+  String get rightsPriorityLaw => 'Law No. 10,048/2000 • Priority service';
+
+  @override
+  String get rightsPassTitle => 'Interstate free travel';
+
+  @override
+  String get rightsPassBody =>
+      'For people with disabilities who demonstrate low income under the regulations. Applies to interstate public transport; it does not establish general free travel on municipal buses or flights.';
+
+  @override
+  String get rightsPassLaw => 'Law No. 8,899/1994 • Passe Livre';
+
+  @override
+  String get rightsAirTitle => 'Assistance with air travel';
+
+  @override
+  String get rightsAirBody =>
+      'Regulates service for passengers needing special assistance. Check conditions and deadlines for requesting support from the airline; requirements vary with the assistance needed.';
+
+  @override
+  String get rightsAirRule =>
+      'ANAC Resolution No. 280/2013 • Special assistance';
+
+  @override
+  String get rightsParkingTitle => 'Reserved parking spaces';
+
+  @override
+  String get rightsParkingBody =>
+      'For vehicles carrying people with disabilities affecting mobility. Identification requires a parking permit; check the traffic authority’s issuance rules.';
+
+  @override
+  String get rightsAccessTitle => 'Accessible buildings and spaces';
+
+  @override
+  String get rightsAccessBody =>
+      'Sets criteria for removing barriers. Construction, expansion and renovation of public or private collective-use buildings must meet accessibility requirements.';
+
+  @override
+  String get rightsAccessLaw => 'Law No. 10,098/2000 • Accessibility';
+
+  @override
+  String get rightsPriorityTitle => 'Priority service';
+
+  @override
+  String get rightsPriorityBody =>
+      'Covers people with disabilities and other listed groups. Requires public offices, public service concessionaires and financial institutions to provide priority service.';
+
+  @override
+  String get rightsLibrasTitle => 'Brazilian Sign Language and communication';
+
+  @override
+  String get rightsLibrasBody =>
+      'Recognizes Libras and provides for its promotion, appropriate public healthcare and its teaching in specified training programs. Also consult the implementing regulations.';
+
+  @override
+  String get rightsLibrasLaw => 'Law No. 10,436/2002 • Libras';
+
+  @override
+  String get rightsSchoolTitle => 'Special education and school support';
+
+  @override
+  String get rightsSchoolBody =>
+      'The LDB provides special education, preferably in mainstream schools, and resources and specialized support based on the needs of students covered by articles 58 and 59.';
+
+  @override
+  String get rightsSchoolLaw => 'Law No. 9,394/1996 • Education guidelines';
+
+  @override
+  String get rightsQuotaTitle => 'Reserved employment positions';
+
+  @override
+  String get rightsQuotaBody =>
+      'Companies with at least 100 employees must reserve 2% to 5% of positions for qualified people with disabilities or rehabilitated beneficiaries, depending on company size.';
+
+  @override
+  String get rightsQuotaLaw => 'Law No. 8,213/1991 • Employment quotas';
+
+  @override
+  String get rightsTicketsTitle => 'Half-price event tickets';
+
+  @override
+  String get rightsTicketsBody =>
+      'Provides half-price tickets for people with disabilities and, when necessary, their companion at covered events. Evidence requirements and a statutory ticket allocation limit apply; consult the regulations.';
+
+  @override
+  String get rightsTicketsLaw => 'Law No. 12,933/2013 • Half-price tickets';
+
+  @override
+  String get rightsTitle => 'Your rights';
+
+  @override
+  String get rightsIntro => 'Information for greater independence';
+
+  @override
+  String get rightsDescription =>
+      'Explore disability rights in Brazil and consult official sources.';
+
+  @override
+  String get rightsScope => 'Federal legislation • Brazil';
+
+  @override
+  String get rightsReviewed => 'Sources checked on September 25, 2026';
+
+  @override
+  String get rightsNotice =>
+      'This guide provides informational summaries. Read the articles for conditions and details. State and municipal rules and procedures may complement federal legislation.';
+
+  @override
+  String get rightsAll => 'All';
+
+  @override
+  String get rightsFilter => 'Filter by topic';
+
+  @override
+  String get rightsTransport => 'Transport';
+
+  @override
+  String get rightsPlaces => 'Establishments';
+
+  @override
+  String get rightsHealth => 'Health';
+
+  @override
+  String get rightsEducation => 'Education';
+
+  @override
+  String get rightsWork => 'Work';
+
+  @override
+  String get rightsCulture => 'Culture and leisure';
+
+  @override
+  String get rightsTransportTitle => 'Mobility without barriers';
+
+  @override
+  String get rightsTransportBody =>
+      'People with disabilities or reduced mobility are entitled to accessible transport.';
+
+  @override
+  String get rightsPlacesTitle => 'Access to shared spaces';
+
+  @override
+  String get rightsPlacesBody =>
+      'Public and private collective-use buildings must provide accessibility under applicable standards.';
+
+  @override
+  String get rightsHealthTitle => 'Care through SUS';
+
+  @override
+  String get rightsHealthBody =>
+      'People with disabilities are entitled to comprehensive healthcare through SUS.';
+
+  @override
+  String get rightsEducationTitle => 'Inclusive learning';
+
+  @override
+  String get rightsEducationBody =>
+      'Education must be inclusive, with accessibility resources and learning support.';
+
+  @override
+  String get rightsWorkTitle => 'Work opportunities';
+
+  @override
+  String get rightsWorkBody =>
+      'People with disabilities are entitled to accessible, inclusive work without discrimination.';
+
+  @override
+  String get rightsCultureTitle => 'Taking part in cultural life';
+
+  @override
+  String get rightsCultureBody =>
+      'People with disabilities are entitled to accessible cultural and leisure activities.';
+
+  @override
+  String get rightsLaw => 'Brazilian Inclusion Law • Law No. 13,146/2015';
+
+  @override
+  String get rightsReadLaw => 'Read legislation on Planalto';
+
+  @override
+  String get rightsHelpTitle => 'Has a right been violated?';
+
+  @override
+  String get rightsHelpBody =>
+      'Disque 100 receives reports of human rights violations. Calls are free, with 24-hour service. The official page also lists digital channels and Brazilian Sign Language support.';
+
+  @override
+  String get rightsHelpLink => 'View official Disque 100 channels';
+
+  @override
+  String get rightsLinkError =>
+      'Could not open the browser. You can copy the address below.';
+
+  @override
+  String get rightsCopyLink => 'Copy link';
+
+  @override
+  String get rightsCopied => 'Link copied';
+
+  @override
+  String get onboardingFindTitle => 'Find accessible places';
+
+  @override
+  String get onboardingFindBody =>
+      'Discover places and check accessibility information in your area.';
+
+  @override
+  String get onboardingReviewTitle => 'Review and contribute';
+
+  @override
+  String get onboardingReviewBody =>
+      'Share your experience and help others make more informed choices.';
+
+  @override
+  String get onboardingTogetherTitle => 'Together for a better city';
+
+  @override
+  String get onboardingTogetherBody =>
+      'More inclusion, more respect and more accessibility for everyone. Your participation makes a difference.';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingStart => 'Get started';
+
+  @override
+  String onboardingProgress(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
   String get back => 'Back';
 
   @override

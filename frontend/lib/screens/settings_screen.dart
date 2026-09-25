@@ -14,6 +14,7 @@ import 'configuracoes_gerais_screen.dart';
 import 'informacoes_pessoais_screen.dart';
 import 'privacidade_screen.dart';
 import 'saved_places_screen.dart';
+import 'rights_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String userName;
@@ -465,6 +466,13 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
                                       userName: widget.userName,
                                     ),
                                   ),
+                                ),
+                                _menuTile(
+                                  icon: Icons.balance_rounded,
+                                  label: context.l10n.rightsTitle,
+                                  description: context.l10n.rightsDescription,
+                                  onTap: () => Navigator.of(context)
+                                      .push(RightsScreen.route()),
                                 ),
                                 _menuTile(
                                   icon: Icons.help_outline_rounded,
