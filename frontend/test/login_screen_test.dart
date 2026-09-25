@@ -52,7 +52,8 @@ void main() {
         ));
   });
 
-  testWidgets('login inválido exibe a mensagem de erro retornada pelo ApiService',
+  testWidgets(
+      'login inválido exibe a mensagem de erro retornada pelo ApiService',
       (tester) async {
     when(() => mockApiService.login(
           nome: any(named: 'nome'),

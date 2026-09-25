@@ -1,266 +1,89 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import '../config.dart';
+import '../l10n/strings.dart';
+import '../services/profile_service.dart';
+import '../widgets/settings_page.dart';
+import '../widgets/load_error.dart';
 
 class PrivacidadeScreen extends StatefulWidget {
-  final String userName;
   const PrivacidadeScreen({super.key, required this.userName});
-
+  final String userName;
   @override
   State<PrivacidadeScreen> createState() => _PrivacidadeScreenState();
 }
 
 class _PrivacidadeScreenState extends State<PrivacidadeScreen> {
-  bool _isLoading = true;
-  bool _perfilPublico = true;
-  bool _mostrarAvaliacoes = true;
-  bool _compartilharLocalizacao = false;
-  bool _historicoVisivel = true;
-
+  final _service = ProfileService();
+  Map<String, dynamic> _profile = {};
+  bool _loading = true, _failed = false, _saving = false;
   @override
   void initState() {
     super.initState();
-    _loadSettings();
+    _load();
   }
 
-  Future<void> _loadSettings() async {
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _failed = false;
+    });
     try {
-      final uri = Uri.parse(
-          '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(widget.userName)}');
-      final resp = await http.get(uri);
-      if (resp.statusCode == 200) {
-        final d = json.decode(utf8.decode(resp.bodyBytes));
-        setState(() {
-          _perfilPublico = d['perfil_publico'] ?? true;
-          _mostrarAvaliacoes = d['mostrar_avaliacoes'] ?? true;
-          _compartilharLocalizacao = d['compartilhar_localizacao'] ?? false;
-          _historicoVisivel = d['historico_visivel'] ?? true;
-        });
+      final profile = await _service.load(widget.userName);
+      if (mounted) setState(() => _profile = profile);
+    } catch (_) {
+      if (mounted) setState(() => _failed = true);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _save(String field, bool value) async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      await _service.save(widget.userName, field, value);
+      if (mounted) setState(() => _profile[field] = value);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.saveError)));
       }
-    } catch (_) {}
-    setState(() => _isLoading = false);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
-  Future<void> _saveField(String field, bool value) async {
-    try {
-      await http.put(
-        Uri.parse(
-            '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(widget.userName)}'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({field: value}),
+  Widget _toggle(
+          String field, String title, String description, bool fallback) =>
+      SwitchListTile.adaptive(
+        title: Text(title),
+        subtitle: Text(description),
+        value: _profile[field] as bool? ?? fallback,
+        onChanged: _saving ? null : (value) => _save(field, value),
       );
-    } catch (_) {}
-  }
-
   @override
   Widget build(BuildContext context) {
-    const Color accentBlue = Color(0xFF4CABFF);
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F8FF),
-      body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  // ── Header ──
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    child: Row(
-                      children: [
-                        _backButton(),
-                        const Expanded(
-                          child: Text(
-                            'Privacidade',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1E293B),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 42),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1, color: Color(0xFFE2E8F0)),
-
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 20),
-                      child: Column(
-                        children: [
-                          // ── Info banner ──
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            margin: const EdgeInsets.only(bottom: 20),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE8EFFF),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.shield_outlined,
-                                    color: accentBlue, size: 28),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    'Controle quem pode ver suas informações e como seus dados são usados.',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Color(0xFF475569),
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          _privacyTile(
-                            icon: Icons.public_rounded,
-                            title: 'Perfil público',
-                            subtitle:
-                                'Outros usuários podem ver seu perfil e nome.',
-                            value: _perfilPublico,
-                            onChanged: (v) {
-                              setState(() => _perfilPublico = v);
-                              _saveField('perfil_publico', v);
-                            },
-                          ),
-                          _privacyTile(
-                            icon: Icons.star_border_rounded,
-                            title: 'Mostrar avaliações',
-                            subtitle:
-                                'Suas avaliações ficam visíveis nos estabelecimentos.',
-                            value: _mostrarAvaliacoes,
-                            onChanged: (v) {
-                              setState(() => _mostrarAvaliacoes = v);
-                              _saveField('mostrar_avaliacoes', v);
-                            },
-                          ),
-                          _privacyTile(
-                            icon: Icons.location_on_outlined,
-                            title: 'Compartilhar localização',
-                            subtitle:
-                                'Permite que o app utilize sua localização em tempo real.',
-                            value: _compartilharLocalizacao,
-                            onChanged: (v) {
-                              setState(() => _compartilharLocalizacao = v);
-                              _saveField('compartilhar_localizacao', v);
-                            },
-                          ),
-                          _privacyTile(
-                            icon: Icons.history_rounded,
-                            title: 'Histórico visível',
-                            subtitle:
-                                'Seu histórico de locais visitados fica disponível nas sugestões.',
-                            value: _historicoVisivel,
-                            onChanged: (v) {
-                              setState(() => _historicoVisivel = v);
-                              _saveField('historico_visivel', v);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-      ),
-    );
-  }
-
-  // ── Helpers ──
-
-  Widget _backButton() {
-    return GestureDetector(
-      onTap: () => Navigator.pop(context),
-      child: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          color: const Color(0xFF4CABFF),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF4CABFF).withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: const Icon(Icons.arrow_back_ios_new_rounded,
-            color: Colors.white, size: 22),
-      ),
-    );
-  }
-
-  Widget _privacyTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8EFFF),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: const Color(0xFF4A69FF), size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF334155),
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                ),
-              ],
-            ),
-          ),
-          Switch(
-            value: value,
-            activeThumbColor: const Color(0xFF4CABFF),
-            onChanged: onChanged,
-          ),
-        ],
-      ),
+    final t = context.l10n;
+    return SettingsPage(
+      title: t.privacy,
+      loading: _loading,
+      error: _failed ? LoadError(onRetry: _load) : null,
+      children: [
+        Text(t.privacyTitle, style: Theme.of(context).textTheme.headlineSmall),
+        const SizedBox(height: 8),
+        Text(t.privacyIntro),
+        const SizedBox(height: 24),
+        if (_saving) const LinearProgressIndicator(),
+        SettingsSection(title: t.dataVisibility, children: [
+          _toggle('perfil_publico', t.publicProfile, t.publicProfileHint, true),
+          _toggle('mostrar_avaliacoes', t.showReviews, t.showReviewsHint, true),
+        ]),
+        SettingsSection(title: t.locationHistory, children: [
+          _toggle('compartilhar_localizacao', t.shareLocation,
+              t.shareLocationHint, false),
+          _toggle('historico_visivel', t.visibleHistory, t.visibleHistoryHint,
+              true),
+        ]),
+      ],
     );
   }
 }

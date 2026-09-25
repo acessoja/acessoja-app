@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'app_http.dart';
 import '../config.dart';
 
 /// Resultado de uma tentativa de login.
@@ -51,42 +51,42 @@ class HttpApiService implements ApiService {
     required String nome,
     required String password,
   }) async {
-    final response = await http.post(
+    final response = await AppHttp.post(
       Uri.parse('${Config.baseUrl}/api/login/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'nome': nome, 'password': password}),
     );
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
       if (data['status'] == 'success') {
         return LoginResult(success: true, user: data['user']);
       }
-      return LoginResult(
+      return const LoginResult(
         success: false,
-        message: data['message'] ?? 'Usuário ou senha inválidos.',
+        message: 'invalid_credentials',
       );
     } else if (response.statusCode == 401) {
       return const LoginResult(
         success: false,
-        message: 'Usuário ou senha inválidos.',
+        message: 'invalid_credentials',
       );
     }
-    return LoginResult(
+    return const LoginResult(
       success: false,
-      message: 'Erro inesperado do servidor (${response.statusCode}).',
+      message: 'connection_error',
     );
   }
 
   @override
   Future<List<dynamic>> fetchEvaluations({required dynamic localId}) async {
-    final response = await http.get(Uri.parse(
+    final response = await AppHttp.get(Uri.parse(
       '${Config.baseUrl}/api/avaliacoes/modal-avaliacoes/?local_id=$localId',
     ));
     if (response.statusCode == 200) {
       return json.decode(utf8.decode(response.bodyBytes)) as List<dynamic>;
     }
-    return [];
+    throw StateError('evaluation_load_failed');
   }
 
   @override
@@ -100,7 +100,7 @@ class HttpApiService implements ApiService {
     required int estrelas,
     required String comentario,
   }) async {
-    final response = await http.post(
+    final response = await AppHttp.post(
       Uri.parse('${Config.baseUrl}/api/avaliacoes/modal-avaliacoes/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
@@ -118,9 +118,9 @@ class HttpApiService implements ApiService {
     if (response.statusCode == 201) {
       return const SubmitEvaluationResult(success: true);
     }
-    return SubmitEvaluationResult(
+    return const SubmitEvaluationResult(
       success: false,
-      message: 'Erro ao enviar avaliação (${response.statusCode}).',
+      message: 'evaluation_error',
     );
   }
 }

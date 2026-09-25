@@ -61,7 +61,8 @@ void main() {
     expect(filled, 4);
   });
 
-  testWidgets('aciona o callback de Rota ao tocar no botão Rota', (tester) async {
+  testWidgets('aciona o callback de Rota ao tocar no botão Rota',
+      (tester) async {
     var routeTapped = false;
     await tester.pumpWidget(buildCard(onRoute: () => routeTapped = true));
 
