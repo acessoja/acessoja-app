@@ -31,7 +31,10 @@ def test_community_place_creation_round_trip_and_duplicate():
     {'guia_visita': {'site': 'javascript:alert(1)'}},
 ])
 def test_registration_rejects_invalid_fields(extra):
-    response = APIClient().post('/api/locais/',
-        {'nome': 'Teste', 'endereco': 'Rua', **extra}, format='json')
+    response = APIClient().post(
+        '/api/locais/',
+        {'nome': 'Teste', 'endereco': 'Rua', **extra},
+        format='json',
+    )
     assert response.status_code == 400
     assert not Local.objects.exists()

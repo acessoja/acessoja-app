@@ -36,16 +36,26 @@ def test_guide_round_trip_with_independent_areas():
     {'atualizado_em': 'data inválida'},
 ])
 def test_invalid_guide_is_rejected(guide):
-    serializer = LocalSerializer(data={'nome': 'Teste', 'endereco': 'Rua',
-                                     'distancia': 0, 'guia_visita': guide})
+    serializer = LocalSerializer(
+        data={
+            'nome': 'Teste',
+            'endereco': 'Rua',
+            'distancia': 0,
+            'guia_visita': guide,
+        }
+    )
     assert not serializer.is_valid()
     assert 'guia_visita' in serializer.errors
 
 
 @pytest.mark.django_db
 def test_small_place_requires_no_areas_and_patch_preserves_existing_data():
-    local = Local.objects.create(nome='Restaurante de teste', endereco='Rua', distancia=0,
-                                guia_visita={'descricao': 'Térreo'})
+    local = Local.objects.create(
+        nome='Restaurante de teste',
+        endereco='Rua',
+        distancia=0,
+        guia_visita={'descricao': 'Térreo'},
+    )
     serializer = LocalSerializer(local, data={'nome': 'Novo nome'}, partial=True)
     assert serializer.is_valid(), serializer.errors
     serializer.save()

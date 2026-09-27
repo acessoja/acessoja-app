@@ -17,8 +17,12 @@ class Command(BaseCommand):
         # Never overwrite later community edits or duplicate an existing campus.
         for local in Local.objects.all():
             name = unicodedata.normalize('NFKD', local.nome).encode('ascii', 'ignore').decode().lower()
-            if 'unievangelica' in name and (abs((local.latitude or 0) + 16.293057) < 0.02
-                                         or 'anapolis' in unicodedata.normalize('NFKD', local.endereco).encode('ascii', 'ignore').decode().lower()):
+            address = unicodedata.normalize('NFKD', local.endereco).encode('ascii', 'ignore').decode().lower()
+            matches_campus = (
+                abs((local.latitude or 0) + 16.293057) < 0.02
+                or 'anapolis' in address
+            )
+            if 'unievangelica' in name and matches_campus:
                 self.stdout.write(f'Cadastro existente preservado: id={local.pk}')
                 return
         path = Path(__file__).resolve().parents[2] / 'data' / 'unievangelica_anapolis.json'

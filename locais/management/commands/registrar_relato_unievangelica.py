@@ -16,11 +16,17 @@ class Command(BaseCommand):
         resources = guide.setdefault('recursos', {})
         for key, statement in {
             'rampa_acesso': 'O responsável pelo cadastro relata rampas de acesso em todos os blocos.',
-            'banheiro_acessivel': 'O responsável pelo cadastro relata banheiros destinados a pessoas em cadeira de rodas nos conjuntos de banheiros.',
+            'banheiro_acessivel': (
+                'O responsável pelo cadastro relata banheiros destinados a pessoas em cadeira de rodas'
+                ' nos conjuntos de banheiros.'
+            ),
         }.items():
             resources[key] = {
                 'estado': 'disponivel',
-                'observacao': statement + ' Data da observação não informada. Relato ainda sem verificação presencial ou técnica pelo aplicativo.',
+                'observacao': (
+                    statement + ' Data da observação não informada. Relato ainda sem verificação '
+                    'presencial ou técnica pelo aplicativo.'
+                ),
                 'fonte': 'Relato do responsável pelo cadastro, fornecido na conversa do projeto',
                 'atualizado_em': None,
             }

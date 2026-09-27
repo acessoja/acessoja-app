@@ -30,7 +30,13 @@ class AreaVisitaSerializer(serializers.Serializer):
 
 
 class GuiaVisitaSerializer(AreaVisitaSerializer):
-    categoria = serializers.ChoiceField(choices=['educacao', 'alimentacao', 'saude', 'comercio', 'servico', 'lazer', 'outro'], required=False)
+    categoria = serializers.ChoiceField(
+        choices=[
+            'educacao', 'alimentacao', 'saude', 'comercio',
+            'servico', 'lazer', 'outro',
+        ],
+        required=False,
+    )
     nome = serializers.CharField(required=False, max_length=255)
     horarios = serializers.CharField(required=False, allow_blank=True, max_length=2000)
     telefone = serializers.CharField(required=False, allow_blank=True, max_length=40)
