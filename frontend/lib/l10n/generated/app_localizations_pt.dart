@@ -1093,4 +1093,335 @@ class AppLocalizationsPt extends AppLocalizations {
   String socialUnavailable(String name) {
     return 'Login com $name ainda não configurado.';
   }
+
+  @override
+  String get visitGuide => 'Informações do local';
+
+  @override
+  String get visitFullDetails => 'Ver informações completas';
+
+  @override
+  String get visitRate => 'Avaliar este local';
+
+  @override
+  String get visitAccessibility => 'Acessibilidade do local';
+
+  @override
+  String get visitUnknown => 'Ainda não informado';
+
+  @override
+  String get visitHoursUnknown => 'Horário não informado';
+
+  @override
+  String get visitAvailable => 'Disponível';
+
+  @override
+  String get visitUnavailable => 'Indisponível';
+
+  @override
+  String get visitNotApplicable => 'Não se aplica';
+
+  @override
+  String get visitAbout => 'Sobre o local';
+
+  @override
+  String get visitHours => 'Horários de funcionamento';
+
+  @override
+  String get visitPhone => 'Telefone';
+
+  @override
+  String get visitWebsite => 'Site oficial';
+
+  @override
+  String get visitEntrance => 'Como acessar a entrada';
+
+  @override
+  String get visitAreas => 'Áreas do local';
+
+  @override
+  String get visitAreasHint =>
+      'Consulte as condições de cada ambiente antes de visitar.';
+
+  @override
+  String get visitSource => 'Fonte';
+
+  @override
+  String get visitUpdated => 'Atualizado em';
+
+  @override
+  String get visitConfirm =>
+      'Informações não cadastradas não significam ausência de acessibilidade. Confirme os detalhes com o local antes da visita.';
+
+  @override
+  String get visitStepFree => 'Entrada sem degraus';
+
+  @override
+  String get visitRamp => 'Rampa de acesso';
+
+  @override
+  String get visitLift => 'Elevador';
+
+  @override
+  String get visitToilet => 'Banheiro acessível';
+
+  @override
+  String get visitParking => 'Vaga reservada';
+
+  @override
+  String get visitCirculation => 'Circulação interna';
+
+  @override
+  String get visitTable => 'Mesa acessível';
+
+  @override
+  String get visitMenu => 'Cardápio em braile';
+
+  @override
+  String get visitTactile => 'Sinalização tátil';
+
+  @override
+  String get visitService => 'Recursos de atendimento acessível';
+
+  @override
+  String get visitGuideDog => 'Informação sobre cão-guia';
+
+  @override
+  String get visitLinkError =>
+      'Não foi possível abrir o link. Você pode copiar o endereço abaixo.';
+
+  @override
+  String get visitReviewRequirement =>
+      'Para avaliar, registre uma visita pelo fluxo de rota do aplicativo.';
+
+  @override
+  String get a11yTextSize => 'Tamanho das letras';
+
+  @override
+  String get a11ySystem => 'Padrão do celular';
+
+  @override
+  String get a11yLarge => 'Grande';
+
+  @override
+  String get a11yExtraLarge => 'Muito grande';
+
+  @override
+  String get a11yMaximum => 'Máximo';
+
+  @override
+  String get a11yTextHelp =>
+      'Aumente as letras do aplicativo. Se o celular usar letras ainda maiores, essa configuração será respeitada.';
+
+  @override
+  String get a11yPreview =>
+      'Prévia: encontre locais, consulte informações e compartilhe sua experiência.';
+
+  @override
+  String get a11yContrast => 'Alto contraste';
+
+  @override
+  String get a11yContrastHelp =>
+      'Destaca textos e contornos nos temas claro e escuro.';
+
+  @override
+  String get a11yListHelp =>
+      'No mapa, use Explorar para consultar os locais em lista, acessar suas informações e iniciar uma rota sem selecionar um marcador.';
+
+  @override
+  String get a11yReaderHelp =>
+      'Os controles têm descrições para o leitor de tela do celular. Ative o TalkBack ou o VoiceOver nas configurações de acessibilidade do aparelho.';
+
+  @override
+  String get a11yReset => 'Restaurar ajustes de acessibilidade';
+
+  @override
+  String get a11ySaved => 'Ajustes salvos neste aparelho.';
+
+  @override
+  String get visitNeedsTitle => 'Minhas necessidades de acesso';
+
+  @override
+  String get visitNeedsHelp =>
+      'Escolha os recursos importantes para suas visitas. Você não precisa informar uma deficiência ou diagnóstico. As escolhas ficam apenas neste aparelho.';
+
+  @override
+  String get visitNeedsUse => 'Usar minhas preferências';
+
+  @override
+  String get visitNeedsOrder =>
+      'Priorizamos os recursos informados como disponíveis. Nenhum local é ocultado. Confirme os detalhes e as fontes antes de visitar.';
+
+  @override
+  String get visitNeedsEdit => 'Escolher ou editar recursos';
+
+  @override
+  String get visitNeedsClear => 'Limpar minhas escolhas';
+
+  @override
+  String get visitNeedsSave => 'Salvar preferências';
+
+  @override
+  String get visitNeedsMatches => 'Recursos que você procura';
+
+  @override
+  String get visitNeedsEmpty =>
+      'Escolha seus recursos para personalizar a ordem dos locais.';
+
+  @override
+  String get addPlace => 'Adicionar local';
+
+  @override
+  String get addPlaceHelp =>
+      'Compartilhe um local e os recursos que você conhece. Informações da comunidade não são uma certificação de acessibilidade.';
+
+  @override
+  String get placeNameField => 'Nome do local';
+
+  @override
+  String get placeAddressField => 'Endereço completo';
+
+  @override
+  String get placeCategoryField => 'Categoria';
+
+  @override
+  String get categoryEducation => 'Educação';
+
+  @override
+  String get categoryFood => 'Alimentação';
+
+  @override
+  String get categoryHealth => 'Saúde';
+
+  @override
+  String get categoryCommerce => 'Comércio';
+
+  @override
+  String get categoryService => 'Serviços';
+
+  @override
+  String get categoryLeisure => 'Lazer';
+
+  @override
+  String get categoryOther => 'Outro';
+
+  @override
+  String get pickLocation => 'Marcar localização no mapa';
+
+  @override
+  String get pickLocationHelp =>
+      'Toque no ponto da entrada do local. Você também pode informar latitude e longitude nos campos abaixo.';
+
+  @override
+  String get latitudeField => 'Latitude';
+
+  @override
+  String get longitudeField => 'Longitude';
+
+  @override
+  String get confirmLocation => 'Confirmar localização';
+
+  @override
+  String get locationRequired =>
+      'Confirme a localização do estabelecimento no mapa.';
+
+  @override
+  String get invalidCoordinate => 'Informe uma coordenada válida.';
+
+  @override
+  String get fieldRequired => 'Preencha este campo.';
+
+  @override
+  String get optionalHours => 'Horários de funcionamento (opcional)';
+
+  @override
+  String get optionalPhone => 'Telefone (opcional)';
+
+  @override
+  String get optionalSite => 'Site oficial (opcional)';
+
+  @override
+  String get optionalPhoto => 'Link de uma foto (opcional)';
+
+  @override
+  String get optionalEntrance =>
+      'Como encontrar a entrada acessível (opcional)';
+
+  @override
+  String get validWebLink =>
+      'Informe um link completo começando com https:// ou http://.';
+
+  @override
+  String get dontKnow => 'Não sei';
+
+  @override
+  String get publishPlace => 'Cadastrar local';
+
+  @override
+  String get placeSaved => 'Local cadastrado. Obrigado por contribuir!';
+
+  @override
+  String get placeSaveFailed =>
+      'Não foi possível cadastrar. Confira os dados e tente novamente. Suas informações continuam no formulário.';
+
+  @override
+  String get communitySource => 'Relato da comunidade — não verificado';
+
+  @override
+  String get possibleDuplicates => 'Este local já está cadastrado?';
+
+  @override
+  String get duplicateHelp =>
+      'Encontramos locais com nome semelhante ou próximos ao ponto escolhido. Confira antes de adicionar.';
+
+  @override
+  String get differentPlace => 'É outro local, continuar';
+
+  @override
+  String get checkExisting => 'Voltar e conferir';
+
+  @override
+  String get tutorialTitle => 'Como usar o app';
+
+  @override
+  String get tutorialInvite => 'Quer conhecer o AcessoJá?';
+
+  @override
+  String get tutorialInviteBody =>
+      'Veja como encontrar locais, compartilhar informações e ajustar a acessibilidade.';
+
+  @override
+  String get tutorialStart => 'Mostrar como funciona';
+
+  @override
+  String get tutorialLater => 'Agora não';
+
+  @override
+  String get tutorialNext => 'Próximo';
+
+  @override
+  String get tutorialSkip => 'Pular tutorial';
+
+  @override
+  String get tutorialFinish => 'Concluir';
+
+  @override
+  String get tutorialSearch =>
+      'No mapa, use “Qual seu destino?” para pesquisar um endereço ou estabelecimento.';
+
+  @override
+  String get tutorialExplore =>
+      'Abra Explorar na barra inferior. Toque em um local para consultar informações de acessibilidade e avaliações. Na ficha, você também pode compartilhar sua experiência.';
+
+  @override
+  String get tutorialAdd =>
+      'Em Explorar, toque em Adicionar local. Informe nome, endereço e posição no mapa. Compartilhe os recursos que conhece; para os demais, marque Não sei.';
+
+  @override
+  String get tutorialRights =>
+      'Abra Seus direitos na barra do mapa. Escolha um tema para consultar orientações, legislação e fontes oficiais.';
+
+  @override
+  String get tutorialAccess =>
+      'Toque no ícone de acessibilidade para ajustar letras e contraste e escolher suas necessidades de acesso. Você pode rever este tutorial em Ajuda.';
 }

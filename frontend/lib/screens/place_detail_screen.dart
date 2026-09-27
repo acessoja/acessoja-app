@@ -1,3 +1,4 @@
+import 'accessibility_screen.dart';
 import '../widgets/load_error.dart';
 import '../navigation.dart';
 import '../widgets/safe_state.dart';
@@ -11,6 +12,8 @@ import '../app_theme.dart';
 import '../config.dart';
 import '../services/api_service.dart';
 import '../widgets/evaluation_survey_dialog.dart';
+import 'place_information_screen.dart';
+import 'visit_needs_screen.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> place;
@@ -36,6 +39,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
   bool _isLoading = true;
   bool _loadFailed = false;
   bool _hasVisited = false;
+  final _evaluationKey = GlobalKey();
 
   @override
   void dispose() {
@@ -273,7 +277,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
       (widget.place['nome'] ?? '').toString(),
     ).replaceAll('\n', ' ');
     final address = (widget.place['endereco'] ?? '').toString();
-    final isOpen = (widget.place['aberto'] ?? true) as bool;
+    final isOpen = widget.place['aberto'] as bool?;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -307,13 +311,25 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: isOpen ? colors.successSoft : colors.dangerSoft,
+                      color: isOpen == null
+                          ? colors.primarySoft
+                          : isOpen
+                              ? colors.successSoft
+                              : colors.dangerSoft,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      isOpen ? context.l10n.open : context.l10n.closed,
+                      isOpen == null
+                          ? context.l10n.visitHoursUnknown
+                          : isOpen
+                              ? context.l10n.open
+                              : context.l10n.closed,
                       style: TextStyle(
-                        color: isOpen ? colors.success : colors.danger,
+                        color: isOpen == null
+                            ? colors.muted
+                            : isOpen
+                                ? colors.success
+                                : colors.danger,
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                       ),
@@ -439,9 +455,8 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
       child: Semantics(
         button: true,
         label: context.l10n.startRouteHere,
-        child: SizedBox(
-          width: double.infinity,
-          height: 50,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 50),
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: colors.primary,
@@ -657,8 +672,8 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                  'Você ainda não visitou este local recentemente. Para avaliá-lo, inicie uma rota clicando em "${context.l10n.startRoute}" acima.',                
-                  style: TextStyle(
+                context.l10n.visitReviewRequirement,
+                style: TextStyle(
                   fontSize: 13,
                   color: colors.warning,
                   fontWeight: FontWeight.w500,
@@ -712,11 +727,13 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
             children: List.generate(5, (index) {
               return Semantics(
                 button: true,
+                selected: _selectedStars == index + 1,
+                excludeSemantics: true,
                 label: context.l10n.giveStars(index + 1),
                 child: InkWell(
                   onTap: () {
@@ -782,8 +799,8 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
           Semantics(
             button: true,
             label: context.l10n.confirmReview,
-            child: SizedBox(
-              height: 48,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.primary,
@@ -856,6 +873,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
     return Scaffold(
       backgroundColor: colors.pageBackground,
       appBar: AppBar(
+        actions: const [AccessibilitySettingsButton()],
         backgroundColor: colors.pageBackground,
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -907,20 +925,39 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
                       return Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 560),
-                          child: ListView(
+                          child: SingleChildScrollView(
                             padding: EdgeInsets.fromLTRB(
                               horizontalPadding,
                               8,
                               horizontalPadding,
                               12,
                             ),
-                            children: [
-                              _buildPlaceHeader(),
-                              _buildRatingSummary(),
-                              _buildRouteButton(),
-                              _buildCommentsSection(),
-                              _buildEvaluationSection(),
-                            ],
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _buildPlaceHeader(),
+                                  _buildRatingSummary(),
+                              VisitNeedsSummary(place: widget.place),
+                                  const SizedBox(height: 12),
+                                  FilledButton.icon(
+                                    onPressed: () => Scrollable.ensureVisible(
+                                      _evaluationKey.currentContext!,
+                                      duration:
+                                          const Duration(milliseconds: 300),
+                                      alignment: 0.1,
+                                    ),
+                                    icon:
+                                        const Icon(Icons.rate_review_outlined),
+                                    label: Text(context.l10n.visitRate),
+                                  ),
+                                  VisitAccessibilitySummary(
+                                      place: widget.place),
+                                  _buildCommentsSection(),
+                                  Container(
+                                      key: _evaluationKey,
+                                      child: _buildEvaluationSection()),
+                                  _buildRouteButton(),
+                                ]),
                           ),
                         ),
                       );

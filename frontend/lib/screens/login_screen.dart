@@ -6,7 +6,7 @@ import '../app_theme.dart';
 import '../services/api_service.dart';
 import 'main_screen.dart';
 import 'register_screen.dart';
-import 'rights_screen.dart';
+import 'accessibility_screen.dart';
 
 /// Tela de autenticação do AcessoJá.
 ///
@@ -79,6 +79,7 @@ class _LoginScreenState extends SafeState<LoginScreen> {
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => MainScreen(
               userName: user['nome'],
+              offerTutorial: true,
             ),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
@@ -142,6 +143,7 @@ class _LoginScreenState extends SafeState<LoginScreen> {
       backgroundColor: colors.pageBackground,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(actions: const [
+        AccessibilitySettingsButton(),
         Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: LanguageSelector())
@@ -256,8 +258,8 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            SizedBox(
-                              height: 48,
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 48),
                               child: ElevatedButton(
                                 onPressed: _isSubmitting
                                     ? null
@@ -281,13 +283,14 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          Text(
+                                          Flexible(child: Text(
                                             context.l10n.signIn,
+                                            textAlign: TextAlign.center,
                                             style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w700,
                                             ),
-                                          ),
+                                          )),
                                           const SizedBox(width: 8),
                                           const Icon(
                                               Icons.arrow_forward_rounded,
@@ -367,12 +370,6 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                           ],
                         ),
                       ),
-                      TextButton.icon(
-                        onPressed: () =>
-                            Navigator.push(context, RightsScreen.route()),
-                        icon: const Icon(Icons.balance_rounded),
-                        label: Text(context.l10n.rightsTitle),
-                      ),
                       const SizedBox(height: 14),
                       Text(
                         context.l10n.tagline,
@@ -409,8 +406,8 @@ class _LoginScreenState extends SafeState<LoginScreen> {
         child: OutlinedButton(
           onPressed: () => _showSocialLoginMessage(label),
           style: OutlinedButton.styleFrom(
-            minimumSize: const Size.fromHeight(46),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            minimumSize: const Size.fromHeight(48),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             backgroundColor: colors.surface,
             foregroundColor: colors.text,
             side: BorderSide(color: colors.border, width: 1.2),
@@ -422,7 +419,8 @@ class _LoginScreenState extends SafeState<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (label == 'Apple')
-                Icon(Icons.apple, color: glyphColor, size: 21)
+                Icon(Icons.apple, color: glyphColor,
+                    size: MediaQuery.textScalerOf(context).scale(24))
               else
                 Text(
                   glyph,

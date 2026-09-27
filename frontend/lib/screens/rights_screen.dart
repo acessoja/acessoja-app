@@ -1,3 +1,4 @@
+import 'accessibility_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -143,6 +144,7 @@ class _RightsScreenState extends State<RightsScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        actions: const [AccessibilitySettingsButton()],
         automaticallyImplyLeading: false,
         toolbarHeight: 64 + MediaQuery.textScalerOf(context).scale(19) * 2,
         titleSpacing: 20,

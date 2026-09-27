@@ -1,0 +1,63 @@
+{
+  "nome": "UniEVANGÉLICA",
+  "endereco": "Av. Universitária, km 3,5 — Cidade Universitária, Anápolis - GO, CEP 75083-515",
+  "latitude": -16.293057,
+  "longitude": -48.943459,
+  "distancia": null,
+  "aberto": null,
+  "guia_visita": {
+    "descricao": "Universidade Evangélica de Goiás — Campus Anápolis (Arthur Wesley Archibald). Contato geral: (62) 3310-6600; WhatsApp institucional: (62) 3310-6684. Informações consultadas no site institucional em 26/09/2026; não representam vistoria presencial.",
+    "telefone": "+556233106600",
+    "horarios": "Horários de atendimento publicados por setor:\n• UniAtender: 7h30 às 22h (Bloco A, térreo, sala A113).\n• Secretaria Geral: atendimento presencial das 13h às 18h.\nAs páginas desses setores não especificam os dias da semana. Esses horários não representam a abertura de todo o campus nem o atendimento do Núcleo de Acessibilidade. Confirme com o setor antes da visita.",
+    "site": "https://www4.unievangelica.edu.br/",
+    "fonte": "https://www4.unievangelica.edu.br/pagina/contatos",
+    "atualizado_em": "2026-09-26",
+    "entrada": "O ponto no mapa é uma referência geral do campus, extraída do mapa incorporado na página oficial de contatos. Não identifica uma entrada acessível. Confirme o portão e o trajeto até o setor com o Núcleo de Acessibilidade e Inclusão: (62) 3310-6727.",
+    "recursos": {
+      "atendimento_acessivel": {
+        "estado": "disponivel",
+        "observacao": "A instituição informa manter um Núcleo de Acessibilidade e Inclusão na Biblioteca Central. Contatos: (62) 3310-6727, (62) 99660-4292 e nucleo.acessibilidade@unievangelica.edu.br. Consulte o setor sobre o apoio necessário e o horário de atendimento. Informação institucional, sem confirmação presencial.",
+        "fonte": "https://www4.unievangelica.edu.br/departamento/nucleo-de-acessibilidade",
+        "atualizado_em": "2026-09-26"
+      }
+    },
+    "areas": [
+      {
+        "nome": "Biblioteca Central",
+        "descricao": "Contato da biblioteca: (62) 3310-6671; biblioteca@unievangelica.edu.br. Confirme os horários e as condições de acesso antes da visita.",
+        "fonte": "https://www4.unievangelica.edu.br/departamento/biblioteca",
+        "atualizado_em": "2026-09-26",
+        "recursos": {}
+      },
+      {
+        "nome": "Núcleo de Acessibilidade e Inclusão",
+        "descricao": "Setor de apoio à inclusão acadêmica, localizado na Biblioteca Central. Telefone: (62) 3310-6727; celular: (62) 99660-4292; e-mail: nucleo.acessibilidade@unievangelica.edu.br. Consulte o setor sobre as condições de atendimento.",
+        "entrada": "A página institucional situa o setor nas dependências da Biblioteca Central, sem detalhar portão, andar ou trajeto acessível.",
+        "fonte": "https://www4.unievangelica.edu.br/departamento/nucleo-de-acessibilidade",
+        "atualizado_em": "2026-09-26",
+        "recursos": {
+          "atendimento_acessivel": {
+            "estado": "disponivel",
+            "observacao": "Serviço de apoio à inclusão informado pela instituição. Confirme a disponibilidade do atendimento específico de que você precisa.",
+            "fonte": "https://www4.unievangelica.edu.br/departamento/nucleo-de-acessibilidade",
+            "atualizado_em": "2026-09-26"
+          }
+        }
+      },
+      {
+        "nome": "Sala de Recursos Multifuncionais",
+        "descricao": "A instituição descreve apoio pedagógico a alunos e colaboradores com necessidades educacionais específicas, individualmente ou em pequenos grupos. A sala fica na Biblioteca Central. Consulte o Núcleo de Acessibilidade sobre atendimento e acesso.",
+        "fonte": "https://www4.unievangelica.edu.br/departamento/nucleo-de-acessibilidade/sala-multifuncional",
+        "atualizado_em": "2026-09-26",
+        "recursos": {
+          "atendimento_acessivel": {
+            "estado": "disponivel",
+            "observacao": "Apoio pedagógico informado no site institucional. Horários, agendamento e recursos específicos precisam de confirmação com o setor.",
+            "fonte": "https://www4.unievangelica.edu.br/departamento/nucleo-de-acessibilidade/sala-multifuncional",
+            "atualizado_em": "2026-09-26"
+          }
+        }
+      }
+    ]
+  }
+}

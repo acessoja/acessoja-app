@@ -205,9 +205,34 @@ class AppColors extends ThemeExtension<AppColors> {
 }
 
 class AppThemes {
-  static ThemeData light() => _buildTheme(AppColors.light, Brightness.light);
+  static ThemeData light({bool highContrast = false}) => _buildTheme(
+      highContrast
+          ? AppColors.light.copyWith(
+              pageBackground: Colors.white,
+              surface: Colors.white,
+              surfaceElevated: Colors.white,
+              primary: const Color(0xFF003B80),
+              primaryDark: const Color(0xFF003B80),
+              text: Colors.black,
+              muted: const Color(0xFF202020),
+              border: Colors.black)
+          : AppColors.light,
+      Brightness.light);
 
-  static ThemeData dark() => _buildTheme(AppColors.dark, Brightness.dark);
+  static ThemeData dark({bool highContrast = false}) => _buildTheme(
+      highContrast
+          ? AppColors.dark.copyWith(
+              pageBackground: Colors.black,
+              surface: Colors.black,
+              surfaceElevated: Colors.black,
+              fieldBackground: Colors.black,
+              primary: const Color(0xFFB8DCFF),
+              primaryDark: const Color(0xFFB8DCFF),
+              text: Colors.white,
+              muted: Colors.white,
+              border: Colors.white)
+          : AppColors.dark,
+      Brightness.dark);
 
   static ThemeData _buildTheme(AppColors colors, Brightness brightness) {
     final colorScheme = ColorScheme.fromSeed(
@@ -227,8 +252,16 @@ class AppThemes {
 
     return ThemeData(
       fontFamily: 'Roboto',
+      textTheme: (brightness == Brightness.dark
+              ? Typography.material2021().white
+              : Typography.material2021().black)
+          .apply(
+              bodyColor: colors.text,
+              displayColor: colors.text,
+              fontFamily: 'Roboto'),
       brightness: brightness,
       useMaterial3: false,
+      materialTapTargetSize: MaterialTapTargetSize.padded,
       primaryColor: colors.primary,
       scaffoldBackgroundColor: colors.pageBackground,
       canvasColor: colors.pageBackground,
@@ -273,12 +306,18 @@ class AppThemes {
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: colors.surface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: colors.border),
+        ),
         titleTextStyle: TextStyle(
+          fontFamily: 'Roboto',
           color: colors.text,
           fontSize: 19,
           fontWeight: FontWeight.w800,
         ),
-        contentTextStyle: TextStyle(color: colors.muted),
+        contentTextStyle: TextStyle(fontFamily: 'Roboto', color: colors.text, fontSize: 16),
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
