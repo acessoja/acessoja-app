@@ -404,7 +404,7 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
         await tester.pumpWidget(
-            harness(entry.value(), language: 'en', dark: true, scale: 1.5));
+            harness(entry.value(), language: 'en', dark: true, scale: 2));
         await tester.pumpAndSettle();
         final vertical = find.byWidgetPredicate((widget) =>
             widget is Scrollable && widget.axisDirection == AxisDirection.down);

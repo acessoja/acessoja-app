@@ -1,3 +1,4 @@
+import 'accessibility_screen.dart';
 import '../widgets/load_error.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -11,6 +12,10 @@ import '../app_theme.dart';
 import '../config.dart';
 import '../widgets/local_card.dart';
 import 'place_detail_screen.dart';
+import '../app_preferences.dart';
+import '../data/visit_preferences.dart';
+import 'visit_needs_screen.dart';
+import 'add_place_screen.dart';
 
 class ExplorarScreen extends StatefulWidget {
   final String userName;
@@ -34,7 +39,20 @@ class _ExplorarScreenState extends SafeState<ExplorarScreen> {
   bool _isLoading = true;
   bool _loadFailed = false;
 
+  Future<void> _addPlace() async {
+    final saved = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+            builder: (_) =>
+                AddPlaceScreen(initialLocation: widget.currentLocation)));
+    if (!mounted || saved != true) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(context.l10n.placeSaved)));
+    await _fetchLocales();
+  }
+
   String _formatDistance(dynamic value) {
+    if (value == null) return context.l10n.visitUnknown;
     final km = value is num
         ? value.toDouble()
         : double.tryParse(value
@@ -193,20 +211,28 @@ class _ExplorarScreenState extends SafeState<ExplorarScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final filteredPlaces = _localesList.where((place) {
-      final name = (place['nome'] ?? '').toString().toLowerCase();
-      final displayName =
-          getLocalDisplayName(place['nome'] ?? '').toLowerCase();
-      final address = (place['endereco'] ?? '').toString().toLowerCase();
-      final query = searchQuery.toLowerCase();
-      return name.contains(query) ||
-          displayName.contains(query) ||
-          address.contains(query);
-    }).toList();
+    var filteredPlaces = _localesList
+        .where((place) {
+          final name = (place['nome'] ?? '').toString().toLowerCase();
+          final displayName =
+              getLocalDisplayName(place['nome'] ?? '').toLowerCase();
+          final address = (place['endereco'] ?? '').toString().toLowerCase();
+          final query = searchQuery.toLowerCase();
+          return name.contains(query) ||
+              displayName.contains(query) ||
+              address.contains(query);
+        })
+        .map((place) => Map<String, dynamic>.from(place as Map))
+        .toList();
+    final preferences = PreferencesScope.maybeOf(context);
+    if (preferences != null && preferences.useVisitPreferences) {
+      filteredPlaces = prioritizePlaces(filteredPlaces, preferences.visitNeeds);
+    }
 
     return Scaffold(
       backgroundColor: colors.pageBackground,
       appBar: AppBar(
+        actions: const [AccessibilitySettingsButton()],
         backgroundColor: colors.pageBackground,
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -276,20 +302,8 @@ class _ExplorarScreenState extends SafeState<ExplorarScreen> {
                   child: Semantics(
                     textField: true,
                     label: context.l10n.searchPlaces,
-                    child: Container(
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: colors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: colors.border),
-                        boxShadow: [
-                          BoxShadow(
-                            color: colors.shadow,
-                            blurRadius: 14,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 52),
                       child: TextField(
                         onChanged: (value) {
                           setState(() {
@@ -312,7 +326,16 @@ class _ExplorarScreenState extends SafeState<ExplorarScreen> {
                             color: colors.primary,
                             size: 22,
                           ),
-                          border: InputBorder.none,
+                          filled: true,
+                          fillColor: colors.surface,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(color: colors.border),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(color: colors.primary, width: 2),
+                          ),
                           contentPadding:
                               const EdgeInsets.symmetric(vertical: 15),
                         ),
@@ -372,46 +395,62 @@ class _ExplorarScreenState extends SafeState<ExplorarScreen> {
                       ? LoadError(onRetry: _fetchLocales)
                       : _isLoading
                           ? _buildLoadingState()
-                          : filteredPlaces.isEmpty
-                              ? _buildEmptyState()
-                              : ListView.builder(
-                                  padding:
-                                      const EdgeInsets.only(top: 2, bottom: 24),
-                                  itemCount: filteredPlaces.length,
-                                  itemBuilder: (context, index) {
-                                    final place = filteredPlaces[index];
+                          : ListView.builder(
+                              padding:
+                                  const EdgeInsets.only(top: 2, bottom: 24),
+                              itemCount: filteredPlaces.isEmpty
+                                  ? 2
+                                  : filteredPlaces.length + 1,
+                              itemBuilder: (context, index) {
+                                if (index == 0) {
+                                  return Column(children: [
+                                    Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 12),
+                                        child: FilledButton.icon(
+                                            onPressed: _addPlace,
+                                            icon: const Icon(Icons
+                                                .add_location_alt_outlined),
+                                            label:
+                                                Text(context.l10n.addPlace))),
+                                    const VisitPreferencesControls(),
+                                  ]);
+                                }
+                                if (filteredPlaces.isEmpty) {
+                                  return _buildEmptyState();
+                                }
+                                final place = filteredPlaces[index - 1];
 
-                                    return LocalCard(
-                                      place: place,
-                                      distanceLabel:
-                                          _formatDistance(place['distancia']),
-                                      displayNameBuilder: getLocalDisplayName,
-                                      onRoutePressed: () {
-                                        Navigator.pop(context, place);
-                                      },
-                                      onDetailsPressed: () async {
-                                        final result = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                PlaceDetailScreen(
-                                              place: place,
-                                              userName: widget.userName,
-                                            ),
-                                          ),
-                                        );
-                                        if (!mounted || !context.mounted) {
-                                          return;
-                                        }
-                                        if (result != null) {
-                                          Navigator.pop(context, result);
-                                        } else {
-                                          _fetchLocales();
-                                        }
-                                      },
-                                    );
+                                return LocalCard(
+                                  place: place,
+                                  distanceLabel:
+                                      _formatDistance(place['distancia']),
+                                  displayNameBuilder: getLocalDisplayName,
+                                  onRoutePressed: () {
+                                    Navigator.pop(context, place);
                                   },
-                                ),
+                                  onDetailsPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => PlaceDetailScreen(
+                                          place: place,
+                                          userName: widget.userName,
+                                        ),
+                                      ),
+                                    );
+                                    if (!mounted || !context.mounted) {
+                                      return;
+                                    }
+                                    if (result != null) {
+                                      Navigator.pop(context, result);
+                                    } else {
+                                      _fetchLocales();
+                                    }
+                                  },
+                                );
+                              },
+                            ),
                 ),
               ],
             );

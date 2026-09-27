@@ -15,6 +15,7 @@ import 'informacoes_pessoais_screen.dart';
 import 'privacidade_screen.dart';
 import 'saved_places_screen.dart';
 import 'rights_screen.dart';
+import 'accessibility_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String userName;
@@ -373,6 +374,7 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
     return Scaffold(
       backgroundColor: colors.pageBackground,
       appBar: AppBar(
+        actions: const [AccessibilitySettingsButton()],
         backgroundColor: colors.pageBackground,
         elevation: 0,
         automaticallyImplyLeading: false,

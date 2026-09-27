@@ -51,8 +51,21 @@ class _MyAppState extends State<MyApp> {
             child: MaterialApp(
               debugShowCheckedModeBanner: false,
               title: 'Acesso Já',
-              theme: AppThemes.light(),
-              darkTheme: AppThemes.dark(),
+              theme: AppThemes.light(
+                  highContrast: widget.preferences.highContrast),
+              darkTheme:
+                  AppThemes.dark(highContrast: widget.preferences.highContrast),
+              highContrastTheme: AppThemes.light(highContrast: true),
+              highContrastDarkTheme: AppThemes.dark(highContrast: true),
+              builder: (context, child) {
+                final media = MediaQuery.of(context);
+                return MediaQuery(
+                  data: media.copyWith(
+                      textScaler: AccessibleTextScaler(
+                          media.textScaler, widget.preferences.textScale)),
+                  child: child!,
+                );
+              },
               themeMode: _themeController.themeMode,
               locale: widget.preferences.locale,
               supportedLocales: AppLocalizations.supportedLocales,

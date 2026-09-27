@@ -1,3 +1,4 @@
+import 'accessibility_screen.dart';
 import '../widgets/load_error.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -613,6 +614,7 @@ class _InformacoesPessoaisScreenState
     return Scaffold(
       backgroundColor: colors.pageBackground,
       appBar: AppBar(
+        actions: const [AccessibilitySettingsButton()],
         backgroundColor: colors.pageBackground,
         elevation: 0,
         automaticallyImplyLeading: false,
