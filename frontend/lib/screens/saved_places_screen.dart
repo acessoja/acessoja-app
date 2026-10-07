@@ -1,3 +1,4 @@
+import '../widgets/app_empty.dart';
 import '../widgets/load_error.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -25,6 +26,7 @@ class SavedPlacesScreen extends StatefulWidget {
 }
 
 class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
+  final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
   List<dynamic> _localesList = [];
   bool _isLoading = true;
@@ -57,6 +59,17 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
   void initState() {
     super.initState();
     _fetchLocales();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() => searchQuery = '');
   }
 
   Future<void> _fetchLocales() async {
@@ -169,6 +182,7 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
       textField: true,
       label: context.l10n.searchSavedPlaces,
       child: TextField(
+        controller: _searchController,
         onChanged: (value) {
           setState(() {
             searchQuery = value;
@@ -624,60 +638,18 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
   }
 
   Widget _buildEmptyState() {
-    final colors = AppColors.of(context);
-    final hasSearch = searchQuery.trim().isNotEmpty;
+    final hasSearch = _localesList.isNotEmpty && searchQuery.isNotEmpty;
 
-    return Center(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: colors.border),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: colors.primarySoft,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.bookmark_border_rounded,
-                color: colors.primaryDark,
-                size: 32,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              hasSearch
-                  ? context.l10n.noPlaceFoundPeriod
-                  : context.l10n.noSavedPlaces,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: colors.text,
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              hasSearch
-                  ? context.l10n.tryAnotherSearch
-                  : context.l10n.savedPlacesEmptyHint,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: colors.muted,
-                fontSize: 13,
-                height: 1.4,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return AppEmpty(
+      icon: Icons.bookmark_border_rounded,
+      title: hasSearch
+          ? context.l10n.noPlaceFoundPeriod
+          : context.l10n.noSavedPlaces,
+      description: hasSearch
+          ? context.l10n.tryAnotherSearch
+          : context.l10n.savedPlacesEmptyHint,
+      actionText: hasSearch ? context.l10n.clearSearch : context.l10n.retry,
+      onAction: hasSearch ? _clearSearch : _fetchLocales,
     );
   }
 
