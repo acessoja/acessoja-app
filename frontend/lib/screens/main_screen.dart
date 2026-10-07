@@ -1606,7 +1606,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                       if (widget.trackLocation) {
                         await _initLocationTracking();
                       }
-                      if (!mounted) return;
+                      if (!context.mounted) return;
                       if (_hasLocation) {
                         _mapController.move(_currentLocation, 14.5);
                       } else {
