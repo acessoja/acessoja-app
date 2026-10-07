@@ -150,3 +150,25 @@ class TestVisitaRecente:
         VisitaRecente.objects.create(user=usuario, local=local_acessivel)
         total = VisitaRecente.objects.filter(user=usuario, local=local_acessivel).count()
         assert total == 2
+
+
+class TestSeedSprint1Command:
+    """Garante que o pacote entregue para a Sprint 1 pode ser testado do zero."""
+
+    def test_seed_cria_tres_locais_com_coordenadas(self, db):
+        from django.core.management import call_command
+
+        call_command('seed_sprint1')
+
+        locais = Local.objects.filter(nome__startswith='[Sprint 1]')
+        assert locais.count() == 3
+        assert all(local.latitude is not None for local in locais)
+        assert all(local.longitude is not None for local in locais)
+
+    def test_seed_with_user_cria_login_de_teste(self, db):
+        from django.core.management import call_command
+
+        call_command('seed_sprint1', with_user=True)
+
+        user = User.objects.get(nome='teste_sprint1')
+        assert user.check_password('Teste123!')

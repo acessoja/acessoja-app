@@ -8,6 +8,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/app_http.dart';
+import '../services/places_service.dart';
+import '../widgets/map_place_preview.dart';
 import '../app_theme.dart';
 import '../config.dart';
 import 'saved_places_screen.dart';
@@ -15,6 +17,7 @@ import 'explorar_screen.dart';
 import 'sugestoes_screen.dart';
 import 'settings_screen.dart';
 import 'rights_screen.dart';
+import 'place_detail_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final String userName;
@@ -35,6 +38,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends SafeState<MainScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final PlacesService _placesService = const PlacesService();
 
   String _unidadeDistancia = 'KM';
   bool _allowSuggestions = true;
@@ -106,7 +110,8 @@ class _MainScreenState extends SafeState<MainScreen> {
   bool _filterCardapioBraille = false;
 
   // List of filtered establishments from backend
-  List<dynamic> _matchingLocals = [];
+  List<Map<String, dynamic>> _matchingLocals = [];
+  bool _localsLoadFailed = false;
   bool _isLoadingLocals = false;
 
   final MapController _mapController = MapController();
@@ -174,48 +179,38 @@ class _MainScreenState extends SafeState<MainScreen> {
   }
 
   Future<void> _fetchEstablishments() async {
-    setState(() {
-      _isLoadingLocals = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoadingLocals = true;
+        _localsLoadFailed = false;
+      });
+    }
 
     try {
-      final queryParams = <String, String>{};
-      if (_filterCaoGuia) {
-        queryParams['cao_guia'] = 'true';
-      }
-      if (_filterMesaAcessivel) {
-        queryParams['mesa_acessivel'] = 'true';
-      }
-      if (_filterBanheiroAcessivel) {
-        queryParams['banheiro_acessivel'] = 'true';
-      }
-      if (_filterRampaAcesso) {
-        queryParams['rampa_acesso'] = 'true';
-      }
-      if (_filterCardapioBraille) {
-        queryParams['cardapio_braille'] = 'true';
-      }
-
-      final uri = Uri.parse('${Config.baseUrl}/api/locais/')
-          .replace(queryParameters: queryParams);
-      final response = await AppHttp.get(uri);
+      final data = await _placesService.fetchPlaces(
+        caoGuia: _filterCaoGuia,
+        mesaAcessivel: _filterMesaAcessivel,
+        banheiroAcessivel: _filterBanheiroAcessivel,
+        rampaAcesso: _filterRampaAcesso,
+        cardapioBraille: _filterCardapioBraille,
+      );
       if (!mounted) return;
 
-      if (response.statusCode == 200) {
-        final List data = json.decode(utf8.decode(response.bodyBytes));
-        setState(() {
-          _matchingLocals = data;
-        });
-      } else {
-        debugPrint("Error fetching locales: ${response.statusCode}");
-      }
+      setState(() {
+        _matchingLocals = data;
+      });
     } catch (e) {
       if (!mounted) return;
       debugPrint("Error connecting to locales: $e");
-    } finally {
       setState(() {
-        _isLoadingLocals = false;
+        _localsLoadFailed = true;
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingLocals = false;
+        });
+      }
     }
   }
 
@@ -325,6 +320,17 @@ class _MainScreenState extends SafeState<MainScreen> {
 
   Future<void> _searchAndRoute(String destinationText) async {
     if (destinationText.trim().isEmpty || _isLoadingRoute) return;
+
+    if (!_hasLocation) {
+      if (widget.trackLocation) {
+        await _initLocationTracking();
+      }
+      if (!mounted) return;
+      if (!_hasLocation) {
+        _showErrorSnackBar(context.l10n.locationUnavailable);
+        return;
+      }
+    }
 
     setState(() {
       _isLoadingRoute = true;
@@ -622,10 +628,19 @@ class _MainScreenState extends SafeState<MainScreen> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    trailing: Text(
-                                      _formatDistance(local['distancia']),
-                                      style: TextStyle(
-                                          fontSize: 12, color: colors.muted),
+                                    trailing: ConstrainedBox(
+                                      constraints:
+                                          const BoxConstraints(maxWidth: 60),
+                                      child: Text(
+                                        _distanceLabelForLocal(local),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.end,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: colors.muted,
+                                        ),
+                                      ),
                                     ),
                                     onTap: () {
                                       setState(() {
@@ -975,6 +990,20 @@ class _MainScreenState extends SafeState<MainScreen> {
 
   Future<void> _startRoute(Map<String, dynamic> place) async {
     if (_isLoadingRoute) return;
+
+    // Nunca calcula uma rota usando o ponto padrão de Anápolis como se fosse
+    // a posição real do usuário.
+    if (!_hasLocation) {
+      if (widget.trackLocation) {
+        await _initLocationTracking();
+      }
+      if (!mounted) return;
+      if (!_hasLocation) {
+        _showErrorSnackBar(context.l10n.locationUnavailable);
+        return;
+      }
+    }
+
     final valid = routePlace(place);
     if (valid == null) {
       _showErrorSnackBar(context.l10n.invalidLocation);
@@ -988,7 +1017,8 @@ class _MainScreenState extends SafeState<MainScreen> {
       _isLoadingRoute = true;
     });
     try {
-      if (valid['id_local'] is int) await _registraVisita(valid['id_local']);
+      final localId = valid['id_local'];
+      if (localId is num) await _registraVisita(localId.toInt());
       if (!mounted) return;
       await _calculateRoute(_currentLocation, point);
     } finally {
@@ -998,17 +1028,104 @@ class _MainScreenState extends SafeState<MainScreen> {
 
   Future<void> _registraVisita(int localId) async {
     try {
-      await AppHttp.post(
-        Uri.parse('${Config.baseUrl}/api/visitas/'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'local': localId,
-          'nome_usuario': widget.userName,
-        }),
+      await _placesService.registerVisit(
+        localId: localId,
+        userName: widget.userName,
       );
     } catch (e) {
       if (!mounted) return;
       debugPrint("Error recording visit: $e");
+    }
+  }
+
+  double? _asDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '');
+  }
+
+  LatLng? _localPoint(Map<String, dynamic> local) {
+    final lat = _asDouble(local['latitude']);
+    final lon = _asDouble(local['longitude']);
+    if (lat == null || lon == null) return null;
+    if (!lat.isFinite || !lon.isFinite || lat.abs() > 90 || lon.abs() > 180) {
+      return null;
+    }
+    return LatLng(lat, lon);
+  }
+
+  String _distanceLabelForLocal(Map<String, dynamic> local) {
+    final point = _localPoint(local);
+    if (_hasLocation && point != null) {
+      final meters = Geolocator.distanceBetween(
+        _currentLocation.latitude,
+        _currentLocation.longitude,
+        point.latitude,
+        point.longitude,
+      );
+      return _formatDistance(meters / 1000);
+    }
+    return context.l10n.unavailable;
+  }
+
+  Future<void> _openLocalPreview(Map<String, dynamic> local) async {
+    final point = _localPoint(local);
+    if (point == null) {
+      _showErrorSnackBar(context.l10n.invalidLocation);
+      return;
+    }
+
+    setState(() {
+      _destinationLocation = point;
+      _destinationAddress = (local['nome'] ?? '').toString();
+    });
+
+    final result = await showModalBottomSheet<Object?>(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: false,
+      isScrollControlled: true,
+      backgroundColor: AppColors.of(context).surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => MapPlacePreview(
+        place: local,
+        distanceLabel: _distanceLabelForLocal(local),
+        onDetailsPressed: () {
+          Navigator.pop(sheetContext, 'details');
+        },
+        onRoutePressed: () {
+          Navigator.pop(sheetContext, 'route');
+        },
+      ),
+    );
+    if (!mounted) return;
+
+    if (result == 'route') {
+      await _startRoute(local);
+      return;
+    }
+
+    if (result == 'details') {
+      final detailResult = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PlaceDetailScreen(
+            place: local,
+            userName: widget.userName,
+          ),
+        ),
+      );
+      if (!mounted) return;
+
+      // A tela de detalhes devolve o local quando o usuário escolhe iniciar
+      // uma rota. Caso contrário, atualizamos a lista para refletir uma nova
+      // avaliação/média de estrelas feita na tela.
+      if (detailResult is Map) {
+        await _startRoute(Map<String, dynamic>.from(detailResult));
+      } else {
+        await _fetchEstablishments();
+      }
     }
   }
 
@@ -1182,91 +1299,103 @@ class _MainScreenState extends SafeState<MainScreen> {
                       ),
                     MarkerLayer(
                       markers: [
-                        // Marcador da localização do usuário (ponto azul)
-                        Marker(
-                          point: _currentLocation,
-                          width: 60,
-                          height: 60,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: colors.primary.withValues(alpha: 0.3),
-                                  shape: BoxShape.circle,
-                                ),
+                        // Só mostra o ponto azul quando a localização real foi
+                        // obtida. Antes disso, Anápolis é apenas o centro de
+                        // referência do mapa e não deve parecer a posição do usuário.
+                        if (_hasLocation)
+                          Marker(
+                            point: _currentLocation,
+                            width: 60,
+                            height: 60,
+                            child: Semantics(
+                              label: context.l10n.currentLocation,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          colors.primary.withValues(alpha: 0.3),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: BoxDecoration(
+                                      color: colors.primary,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                          color: colors.surface, width: 2),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Container(
-                                width: 14,
-                                height: 14,
-                                decoration: BoxDecoration(
-                                  color: colors.primary,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      color: colors.surface, width: 2),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
                         // Marcadores de estabelecimentos filtrados (visível apenas fora da navegação)
                         if (!_isRouting)
                           ..._matchingLocals
-                              .where((local) =>
-                                  local['latitude'] != null &&
-                                  local['longitude'] != null)
+                              .where((local) => _localPoint(local) != null)
                               .map((local) {
-                            final lat = local['latitude'] as double;
-                            final lon = local['longitude'] as double;
+                            final point = _localPoint(local)!;
+                            final localId = local['id_local']?.toString() ??
+                                local['nome']?.toString() ??
+                                'local';
+                            final name = (local['nome'] ?? '').toString();
                             return Marker(
-                              point: LatLng(lat, lon),
-                              width: 80,
-                              height: 60,
-                              child: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    _destinationLocation = LatLng(lat, lon);
-                                    _destinationAddress = local['nome'];
-                                  });
-                                  _openSearchBottomSheet(context);
-                                },
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 6, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: colors.surface,
-                                        borderRadius: BorderRadius.circular(8),
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color: colors.shadow,
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 2)),
-                                        ],
-                                        border: Border.all(
-                                            color: colors.primary, width: 1.2),
-                                      ),
-                                      child: Text(
-                                        local['nome'],
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.bold,
-                                          color: colors.primary,
+                              point: point,
+                              width: 104,
+                              height: 68,
+                              child: Semantics(
+                                button: true,
+                                label: context.l10n.detailsOf(name),
+                                child: InkWell(
+                                  key: ValueKey('map-place-$localId'),
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () => _openLocalPreview(local),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        constraints:
+                                            const BoxConstraints(maxWidth: 100),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 7, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: colors.surface,
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          boxShadow: [
+                                            BoxShadow(
+                                                color: colors.shadow,
+                                                blurRadius: 4,
+                                                offset: const Offset(0, 2)),
+                                          ],
+                                          border: Border.all(
+                                              color: colors.primary,
+                                              width: 1.2),
+                                        ),
+                                        child: Text(
+                                          name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                            color: colors.primaryDark,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Icon(
-                                      Icons.location_on_rounded,
-                                      color: colors.primary,
-                                      size: 26,
-                                    ),
-                                  ],
+                                      Icon(
+                                        Icons.location_on_rounded,
+                                        color: colors.primary,
+                                        size: 28,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             );
@@ -1300,6 +1429,108 @@ class _MainScreenState extends SafeState<MainScreen> {
                     ),
                   ],
                 ),
+                if (!_isRouting)
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 16,
+                    right: 16,
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 170),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.surface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: colors.border),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colors.shadow,
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: _isLoadingLocals
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: colors.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      context.l10n.loadingPlaces,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: colors.text,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : _localsLoadFailed
+                                ? InkWell(
+                                    key: const ValueKey('map-retry-places'),
+                                    onTap: _fetchEstablishments,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.refresh_rounded,
+                                          color: colors.danger,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          context.l10n.retry,
+                                          style: TextStyle(
+                                            color: colors.danger,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.place_outlined,
+                                        color: colors.primaryDark,
+                                        size: 17,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        context.l10n.placeCount(
+                                          _matchingLocals
+                                              .where((local) =>
+                                                  _localPoint(local) != null)
+                                              .length,
+                                        ),
+                                        style: TextStyle(
+                                          color: colors.text,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                      ),
+                    ),
+                  ),
                 // Botão flutuante do Menu (hambúrguer)
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 16,
@@ -1367,8 +1598,20 @@ class _MainScreenState extends SafeState<MainScreen> {
                     foregroundColor: colors.primary,
                     tooltip: context.l10n.centerLocation,
                     elevation: 3,
-                    onPressed: () {
-                      _mapController.move(_currentLocation, 14.5);
+                    onPressed: () async {
+                      if (_hasLocation) {
+                        _mapController.move(_currentLocation, 14.5);
+                        return;
+                      }
+                      if (widget.trackLocation) {
+                        await _initLocationTracking();
+                      }
+                      if (!context.mounted) return;
+                      if (_hasLocation) {
+                        _mapController.move(_currentLocation, 14.5);
+                      } else {
+                        _showErrorSnackBar(context.l10n.locationUnavailable);
+                      }
                     },
                     child: const Icon(Icons.my_location),
                   ),
