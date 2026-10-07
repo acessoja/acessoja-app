@@ -1,0 +1,202 @@
+ACESSOJÁ — TASK 1: ESTADO VAZIO DE LOCAIS SALVOS
+
+Implementação baseada no arquivo acessoja-app-main (9).zip enviado nesta conversa.
+O arquivo enviado é um snapshot sem histórico .git. Não foi possível confirmar
+se corresponde ao HEAD remoto atual de main. Nenhum commit, push ou PR foi
+realizado nesta entrega; o fluxo é aplicar este ZIP em uma branch local e revisar.
+
+1. ARQUIVOS DE CÓDIGO INCLUÍDOS
+
+Novo: frontend/lib/widgets/app_empty.dart
+Modificado: frontend/lib/screens/saved_places_screen.dart
+Novo: frontend/test/saved_places_state_test.dart
+
+Também está incluído este INSTRUCOES_APLICACAO.txt, que é somente uma orientação
+de entrega e não precisa ser adicionado ao commit.
+
+2. COMPORTAMENTO IMPLEMENTADO
+
+AppEmpty recebe ícone, título, descrição e ação opcional (texto e callback).
+Os textos da tela continuam vindo das traduções existentes. O componente usa
+AppColors e preserva o visual do estado vazio atual. Seu conteúdo pode rolar
+quando não couber na área disponível.
+
+Lista vazia: mostra "Nenhum local salvo." e a descrição existente. A ação
+"Tentar novamente" chama o mesmo _fetchLocales() utilizado pela tela.
+
+Busca sem resultados em uma lista carregada: mostra "Nenhum local encontrado."
+e "Tente pesquisar por outro nome ou endereço.". "Limpar busca" apaga o texto
+do campo, zera searchQuery e restaura a lista já carregada, sem nova requisição.
+O TextEditingController da busca é descartado em dispose(). Uma busca composta
+somente de espaços que não corresponda à lista também permite limpar a busca.
+
+Erro: preserva LoadError(onRetry: _fetchLocales). Não foi criado outro tratamento
+de erro. Nenhum arquivo do backend, dependência, tradução ou workflow foi alterado.
+
+3. VALIDAÇÃO EXECUTADA NESTA ENTREGA
+
+Backend com Python 3.12 e dependências instaladas conforme o workflow:
+- flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv --statistics --count: PASSOU (0 violações).
+- python manage.py check: PASSOU (0 problemas).
+- python manage.py makemigrations --check --dry-run: PASSOU (sem mudanças).
+- python manage.py migrate: PASSOU.
+- pytest --cov=. --cov-report=term-missing --cov-fail-under=65 -v: PASSOU.
+  Resultado: 48 testes passaram; cobertura total 83,44% (mínimo 65%).
+
+NÃO VALIDADO LOCALMENTE:
+- dart format lib/widgets/app_empty.dart lib/screens/saved_places_screen.dart test/saved_places_state_test.dart
+- flutter test test/saved_places_state_test.dart
+- flutter analyze
+- flutter test
+- flutter build apk --debug
+
+Motivo: Flutter e Dart não estão instalados neste ambiente (comandos indisponíveis).
+A tentativa de obter o SDK Flutter 3.47.4 configurado pelo projeto retornou HTTP 404.
+A validação Flutter, a formatação oficial e o build devem ser realizados no seu
+ambiente antes do commit/push/PR. Não considere o Quality Gate completo aprovado.
+
+O novo arquivo de testes define oito casos, todos com MockClient, sem HTTP real:
+1. Lista vazia, mensagens e retry que carrega um estabelecimento.
+2. Busca inexistente, limpeza do texto e restauração sem nova requisição.
+3. Busca composta por espaços e limpeza sem nova requisição.
+4. HTTP 500, LoadError e recuperação pelo retry.
+5. Exceção de rede, LoadError e recuperação pelo retry.
+6. Indicador de carregamento até a resposta da API.
+7. Estado vazio em inglês e tema escuro.
+8. Uso de AppEmpty sem ação.
+
+4. PREPARAR A BRANCH ANTES DE APLICAR
+
+No PowerShell, entre na raiz do seu repositório acessoja-app (a pasta que contém
+manage.py, frontend, backend e .git).
+
+Execute primeiro:
+
+git status
+git remote -v
+git branch --show-current
+
+Se existirem alterações suas ou de outra pessoa, preserve-as e resolva a situação
+antes de continuar. Não use comandos de descarte/restauração para aplicar o ZIP.
+
+Com a árvore de trabalho limpa:
+
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git status
+git checkout -b feature/estado-vazio-locais-salvos
+git branch --show-current
+
+Resultado esperado: feature/estado-vazio-locais-salvos.
+Se essa branch já existir, confira seu conteúdo e origem antes de reutilizá-la.
+Não use develop. Não aplique o ZIP diretamente em main.
+
+5. APLICAR O ZIP
+
+Baixe acessoja_task1_estado_vazio.zip e abra o arquivo.
+Copie a pasta frontend do ZIP para a raiz de acessoja-app e permita substituir
+frontend/lib/screens/saved_places_screen.dart.
+
+O ZIP contém frontend/ diretamente na raiz, sem outra pasta envolvendo o projeto.
+Não extraia dentro de frontend/ e não crie acessoja-app/acessoja-app/frontend/.
+INSTRUCOES_APLICACAO.txt pode ficar fora do repositório.
+
+Confira:
+
+git status
+git diff --stat
+git diff
+
+Arquivos novos não aparecem em git diff antes do git add; confira-os também no
+editor. As únicas mudanças de código esperadas são os três arquivos da seção 1.
+Se main já tiver alterações novas na mesma tela, compare-as antes de substituir.
+Se aparecer qualquer arquivo inesperado, não faça commit até revisar.
+
+6. FORMATAR E VALIDAR O FRONTEND
+
+Use a versão configurada em frontend/.fvmrc e no workflow (Flutter 3.47.4).
+Se a versão não estiver disponível no seu ambiente, documente o impedimento;
+não altere dependências, versões ou o Quality Gate como parte desta task.
+
+cd frontend
+flutter --version
+flutter pub get
+dart format lib/widgets/app_empty.dart lib/screens/saved_places_screen.dart test/saved_places_state_test.dart
+flutter test test/saved_places_state_test.dart
+flutter analyze
+flutter test
+flutter build apk --debug
+cd ..
+
+Cada comando deve terminar com sucesso antes de prosseguir. Não use ignore,
+remoção de testes, redução de cobertura ou continue-on-error para ocultar falhas.
+
+7. VALIDAR O BACKEND NA SUA CÓPIA
+
+Com seu ambiente virtual Python ativo e dependências instaladas:
+
+$env:DJANGO_SETTINGS_MODULE="acessoja.settings"
+$env:DATABASE_URL="sqlite:///./db_ci.sqlite3"
+$env:SECRET_KEY="ci-secret-key-not-for-production"
+$env:DEBUG="True"
+
+flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv --statistics --count
+python manage.py check
+python manage.py makemigrations --check --dry-run
+python manage.py migrate
+pytest --cov=. --cov-report=term-missing --cov-fail-under=65 -v
+
+Os checks precisam passar também na sua branch. Não inclua bancos, .env, logs,
+ambientes virtuais, cobertura ou artefatos de build no commit.
+
+8. REVISAR E PUBLICAR SOMENTE APÓS OS CHECKS PASSAREM
+
+git status
+git diff --stat
+git diff
+
+git add frontend/lib/widgets/app_empty.dart frontend/lib/screens/saved_places_screen.dart frontend/test/saved_places_state_test.dart
+git diff --cached
+
+Após revisar:
+
+git commit -m "feat(ui): padroniza estado vazio de locais salvos"
+git fetch origin
+git log --oneline HEAD..origin/main
+
+Se main tiver commits novos, incorpore SOMENTE origin/main na branch da task,
+preserve as mudanças de outras pessoas e repita todos os checks.
+Nunca incorpore develop.
+
+Com os checks aprovados:
+
+git push -u origin feature/estado-vazio-locais-salvos
+
+Abra um Pull Request de feature/estado-vazio-locais-salvos para main.
+Título: feat(ui): padroniza estado vazio de locais salvos
+
+Descrição sugerida:
+
+## O que este PR faz
+A tela de Locais Salvos passa a usar AppEmpty. Quando a API retorna uma lista
+vazia, permite tentar carregar novamente; quando a busca não encontra resultados,
+permite apagar o filtro e restaurar a lista sem nova chamada HTTP.
+O LoadError existente foi preservado, com testes de recuperação após falha.
+
+## Alterações
+- Adiciona AppEmpty com ação opcional e cores do tema existente.
+- Conecta o componente à SavedPlacesScreen e descarta o controller da busca.
+- Adiciona oito testes de widget para vazio, busca, carregamento, erro/retry,
+  internacionalização e uso sem ação.
+
+## Validação
+Preencher com os resultados reais de flutter analyze, flutter test, build APK
+e checks do backend executados na branch final. Não marcar checks não executados.
+
+## Branch base
+PR para main conforme a regra excepcional desta execução.
+
+Após abrir o PR, aguarde o Quality Gate e a revisão/aprovação de outra pessoa.
+Não faça push direto em main, merge do próprio PR ou inicie a Task 2 antes de
+receber confirmação de aprovação e merge.
