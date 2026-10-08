@@ -1,4 +1,3 @@
-import 'accessibility_screen.dart';
 import '../widgets/load_error.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -32,7 +31,6 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
   bool _loadFailed = false;
 
   String _formatDistance(dynamic value) {
-    if (value == null) return context.l10n.visitUnknown;
     final km = value is num
         ? value.toDouble()
         : double.tryParse(value
@@ -458,7 +456,7 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
     final mediaEstrelas = mediaValue is num
         ? mediaValue
         : double.tryParse(mediaValue.toString()) ?? 0.0;
-    final isOpen = place['aberto'] as bool?;
+    final isOpen = (place['aberto'] ?? true) as bool;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -530,21 +528,18 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: isOpen == true
+                                color: isOpen
                                     ? colors.successSoft
                                     : colors.dangerSoft,
                                 borderRadius: BorderRadius.circular(7),
                               ),
                               child: Text(
-                                isOpen == null
-                                    ? context.l10n.visitHoursUnknown
-                                    : isOpen
-                                        ? context.l10n.open
-                                        : context.l10n.closed,
+                                isOpen
+                                    ? context.l10n.open
+                                    : context.l10n.closed,
                                 style: TextStyle(
-                                  color: isOpen == true
-                                      ? colors.success
-                                      : colors.danger,
+                                  color:
+                                      isOpen ? colors.success : colors.danger,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w800,
                                 ),
@@ -704,7 +699,6 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
     return Scaffold(
       backgroundColor: colors.pageBackground,
       appBar: AppBar(
-        actions: const [AccessibilitySettingsButton()],
         backgroundColor: colors.pageBackground,
         elevation: 0,
         automaticallyImplyLeading: false,

@@ -1,5 +1,3 @@
-import 'accessibility_screen.dart';
-import 'app_tutorial.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +40,6 @@ class AjudaScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: colors.pageBackground,
       appBar: AppBar(
-        actions: const [AccessibilitySettingsButton()],
         backgroundColor: colors.pageBackground,
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -80,12 +77,6 @@ class AjudaScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Padding(
-                          padding: const EdgeInsets.only(bottom: 20),
-                          child: OutlinedButton.icon(
-                              onPressed: () => showAppTutorial(context),
-                              icon: const Icon(Icons.help_outline),
-                              label: Text(context.l10n.tutorialTitle))),
                       Semantics(
                         header: true,
                         label: context.l10n.helpCenter,

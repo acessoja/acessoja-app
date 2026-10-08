@@ -2,7 +2,6 @@ import '../l10n/strings.dart';
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
-import '../screens/visit_needs_screen.dart';
 
 /// Card de estabelecimento exibido na tela "Explorar Locais".
 ///
@@ -28,7 +27,7 @@ class LocalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     final mediaEstrelas = (place['media_estrelas'] ?? 0.0) as num;
-    final isOpen = place['aberto'] as bool?;
+    final isOpen = (place['aberto'] ?? true) as bool;
     final nome = (place['nome'] ?? '').toString();
     final endereco = (place['endereco'] ?? '').toString();
 
@@ -107,18 +106,16 @@ class LocalCard extends StatelessWidget {
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: isOpen == true
-                              ? colors.successSoft
-                              : colors.dangerSoft,
+                          color:
+                              isOpen ? colors.successSoft : colors.dangerSoft,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          '$distanceLabel - ${isOpen == null ? context.l10n.visitHoursUnknown : isOpen ? context.l10n.open : context.l10n.closed}',
+                          '$distanceLabel - ${isOpen ? context.l10n.open : context.l10n.closed}',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color:
-                                isOpen == true ? colors.success : colors.danger,
+                            color: isOpen ? colors.success : colors.danger,
                           ),
                         ),
                       ),
@@ -160,7 +157,6 @@ class LocalCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            VisitNeedsSummary(place: place),
             Row(
               children: [
                 Expanded(

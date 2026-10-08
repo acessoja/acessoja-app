@@ -137,7 +137,7 @@ class LocalViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        queryset = self.queryset.all()
+        queryset = self.queryset
 
         # Filtros de acessibilidade
         cao_guia = self.request.query_params.get('cao_guia')

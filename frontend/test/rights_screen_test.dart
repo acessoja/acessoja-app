@@ -18,15 +18,10 @@ void main() {
       AppHttp.client = MockClient((request) async => fixtureResponse(request)));
   tearDown(() => AppHttp.client.close());
 
-  testWidgets('bottom bar rights returns to map through category routes',
+  testWidgets('visible back preserves login input and category route names',
       (tester) async {
-    await tester.pumpWidget(harness(MainScreen(
-        userName: 'teste',
-        trackLocation: false,
-        tileProvider: OfflineTiles())));
-    await tester.pumpAndSettle();
-    await tester.pump(const Duration(seconds: 5));
-    await tester.pumpAndSettle();
+    await tester.pumpWidget(harness(const LoginScreen()));
+    await tester.enterText(find.byType(TextField).first, 'usuario_teste');
     await tapVisible(tester, find.text('Seus direitos'));
     expect(
         ModalRoute.of(tester.element(find.byType(RightsScreen)))!.settings.name,
@@ -41,7 +36,7 @@ void main() {
     expect(find.text('Explore por categoria'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('rights-back')));
     await tester.pumpAndSettle();
-    expect(find.byType(MainScreen), findsOneWidget);
+    expect(find.text('usuario_teste'), findsOneWidget);
   });
 
   testWidgets('system back returns category to rights to settings',
@@ -72,10 +67,7 @@ void main() {
     final mapState = tester.state(find.byType(MainScreen));
     tester.state<ScaffoldState>(find.byType(Scaffold).first).openDrawer();
     await tester.pumpAndSettle();
-    await tapVisible(
-        tester,
-        find.descendant(
-            of: find.byType(Drawer), matching: find.text('Seus direitos')));
+    await tapVisible(tester, find.text('Seus direitos'));
     await tapVisible(tester, find.byKey(const ValueKey('category-health')));
     await tester.tap(find.byKey(const ValueKey('rights-back')));
     await tester.pumpAndSettle();
@@ -199,9 +191,13 @@ void main() {
     expect(find.byType(AlertDialog), findsNothing);
   });
 
-  testWidgets('login no longer shows rights entry', (tester) async {
+  testWidgets('rights are available from login without an account',
+      (tester) async {
     await tester.pumpWidget(harness(const LoginScreen()));
-    expect(find.text('Seus direitos'), findsNothing);
+    await tapVisible(tester, find.text('Seus direitos'));
+    expect(find.byType(RightsScreen), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('rights-back')));
+    await tester.pumpAndSettle();
     expect(find.byType(LoginScreen), findsOneWidget);
   });
 

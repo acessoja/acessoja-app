@@ -1,4 +1,3 @@
-import 'accessibility_screen.dart';
 import '../widgets/preference_controls.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -81,12 +80,7 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
     try {
       final response = await AppHttp.post(
         Uri.parse('${Config.baseUrl}/auth/users/'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': Localizations.localeOf(context).languageCode == 'pt'
-              ? 'pt-br'
-              : 'en',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'nome': nome,
           'email': email,
@@ -120,13 +114,7 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
             for (final entry in data.entries) {
               final value = entry.value;
               final detail = value is List ? value.join(' ') : value.toString();
-              final label = switch (entry.key) {
-                'password' => context.l10n.password,
-                'nome' => context.l10n.registerName,
-                'email' => context.l10n.email,
-                _ => '',
-              };
-              messages.add(label.isEmpty ? detail : '$label: $detail');
+              messages.add('${entry.key}: $detail');
             }
             if (messages.isNotEmpty) errorMessage = messages.join('\n');
           }
@@ -171,7 +159,7 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
       backgroundColor: colors.pageBackground,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        actions: const [AccessibilitySettingsButton(), LanguageSelector()],
+        actions: const [LanguageSelector()],
         backgroundColor: colors.pageBackground,
         elevation: 0,
         iconTheme: IconThemeData(color: colors.text),
@@ -313,9 +301,8 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
                               label: _isSubmitting
                                   ? context.l10n.working
                                   : context.l10n.register,
-                              child: ConstrainedBox(
-                                constraints:
-                                    const BoxConstraints(minHeight: 48),
+                              child: SizedBox(
+                                height: 48,
                                 child: ElevatedButton(
                                   onPressed: _isSubmitting
                                       ? null
@@ -331,15 +318,13 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Flexible(
-                                          child: Text(
+                                      Text(
                                         context.l10n.register,
-                                        textAlign: TextAlign.center,
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w700,
                                         ),
-                                      )),
+                                      ),
                                       const SizedBox(width: 8),
                                       const Icon(
                                         Icons.arrow_forward_rounded,
