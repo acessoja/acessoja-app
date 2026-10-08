@@ -1,9 +1,5 @@
-import 'accessibility_screen.dart';
-import 'app_tutorial.dart';
 import '../navigation.dart';
 import '../widgets/safe_state.dart';
-import '../widgets/map_action_button.dart';
-import '../widgets/destination_search_sheet.dart';
 import '../l10n/strings.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -16,6 +12,7 @@ import '../app_theme.dart';
 import '../config.dart';
 import 'saved_places_screen.dart';
 import 'explorar_screen.dart';
+import 'sugestoes_screen.dart';
 import 'settings_screen.dart';
 import 'rights_screen.dart';
 
@@ -24,14 +21,12 @@ class MainScreen extends StatefulWidget {
 
   /// Injection points for deterministic tests without GPS or tile requests.
   final bool trackLocation;
-  final bool offerTutorial;
   final TileProvider? tileProvider;
 
   const MainScreen(
       {super.key,
       required this.userName,
       this.trackLocation = true,
-      this.offerTutorial = false,
       this.tileProvider});
 
   @override
@@ -42,6 +37,7 @@ class _MainScreenState extends SafeState<MainScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String _unidadeDistancia = 'KM';
+  bool _allowSuggestions = true;
   bool _hasLocation = false;
   String _nomeCompleto = '';
   String _fotoPerfil = '';
@@ -56,6 +52,7 @@ class _MainScreenState extends SafeState<MainScreen> {
         final data = json.decode(utf8.decode(resp.bodyBytes));
         setState(() {
           _unidadeDistancia = data['unidade_distancia'] ?? 'KM';
+          _allowSuggestions = data['permitir_sugestoes'] != false;
           _nomeCompleto = (data['nome_completo'] ?? '').toString().isNotEmpty
               ? data['nome_completo']
               : widget.userName;
@@ -79,7 +76,6 @@ class _MainScreenState extends SafeState<MainScreen> {
   }
 
   String _formatDistance(dynamic value) {
-    if (value == null) return context.l10n.visitUnknown;
     final km = value is num
         ? value.toDouble()
         : double.tryParse(value
@@ -166,12 +162,7 @@ class _MainScreenState extends SafeState<MainScreen> {
     if (widget.trackLocation) _initLocationTracking();
     _fetchEstablishments(); // Preload all establishments
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (widget.offerTutorial) {
-        inviteToTutorial(context, widget.userName);
-      } else {
-        _showWelcomeBanner();
-      }
+      if (mounted) _showWelcomeBanner();
     });
   }
 
@@ -457,6 +448,8 @@ class _MainScreenState extends SafeState<MainScreen> {
 
   void _openSearchBottomSheet(BuildContext context) {
     final colors = AppColors.of(context);
+    final TextEditingController destinationController =
+        TextEditingController(text: _destinationAddress);
     String sheetView = 'route'; // 'route' ou 'filters'
     String filterSearchQuery = '';
 
@@ -481,9 +474,8 @@ class _MainScreenState extends SafeState<MainScreen> {
         ),
       ),
       builder: (context) {
-        return DestinationSearchSheet(
-          initialDestination: _destinationAddress,
-          builder: (context, sheetSetState, destinationController) {
+        return StatefulBuilder(
+          builder: (context, sheetSetState) {
             if (sheetView == 'route') {
               // 1. TELA DE ROTA
               return SingleChildScrollView(
@@ -818,7 +810,6 @@ class _MainScreenState extends SafeState<MainScreen> {
                     Row(
                       children: [
                         IconButton(
-                          tooltip: context.l10n.back,
                           icon: Icon(Icons.arrow_back_ios_new_rounded,
                               color: colors.primary, size: 22),
                           onPressed: () {
@@ -979,7 +970,7 @@ class _MainScreenState extends SafeState<MainScreen> {
           },
         );
       },
-    );
+    ).whenComplete(destinationController.dispose);
   }
 
   Future<void> _startRoute(Map<String, dynamic> place) async {
@@ -1158,528 +1149,646 @@ class _MainScreenState extends SafeState<MainScreen> {
           ),
         ),
       ),
-      extendBody: true,
-      bottomNavigationBar: Material(
-        color: colors.surface,
-        elevation: 10,
-        shadowColor: colors.shadow,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        clipBehavior: Clip.antiAlias,
-        child: SafeArea(
-          top: false,
-          minimum: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-          child: IntrinsicHeight(
-            child:
-                Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Expanded(
-                  child: MapActionButton(
-                icon: Icons.explore_outlined,
-                label: context.l10n.explore,
-                semanticLabel: context.l10n.explorePlaces,
-                onTap: () async {
-                  final selectedLocal = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => ExplorarScreen(
-                              userName: widget.userName,
-                              currentLocation: _currentLocation,
-                              unidadeDistancia: _unidadeDistancia)));
-                  if (mounted && selectedLocal is Map<String, dynamic>) {
-                    await _startRoute(selectedLocal);
-                  }
-                  if (mounted) await _fetchEstablishments();
-                },
-              )),
-              Expanded(
-                  child: MapActionButton(
-                icon: Icons.bookmark_outline_rounded,
-                label: context.l10n.savedPlacesTitle,
-                semanticLabel: context.l10n.savedPlaces,
-                onTap: _navigateToSavedPlaces,
-              )),
-              Expanded(
-                  child: MapActionButton(
-                icon: Icons.balance_rounded,
-                label: context.l10n.rightsTitle,
-                semanticLabel: context.l10n.rightsTitle,
-                onTap: () => Navigator.push(context, RightsScreen.route()),
-              )),
-            ]),
-          ),
-        ),
-      ),
-      body: Builder(
-          builder: (bodyContext) => Column(
-                children: [
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        // Mapa em tempo real (OpenStreetMap)
-                        FlutterMap(
-                          mapController: _mapController,
-                          options: MapOptions(
-                            initialCenter:
-                                _currentLocation, // Anápolis, GO default
-                            initialZoom: 14.5,
+      body: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                // Mapa em tempo real (OpenStreetMap)
+                FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: _currentLocation, // Anápolis, GO default
+                    initialZoom: 14.5,
+                  ),
+                  children: [
+                    TileLayer(
+                      tileProvider: widget.tileProvider,
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.acessoja',
+                    ),
+                    if (_isRouting && _routePoints.isNotEmpty)
+                      PolylineLayer(
+                        polylines: [
+                          Polyline(
+                            points: _routePoints,
+                            strokeWidth: 5.0,
+                            color: colors.primary,
+                            borderStrokeWidth: 2.0,
+                            borderColor: colors.primaryDark,
                           ),
-                          children: [
-                            TileLayer(
-                              tileProvider: widget.tileProvider,
-                              urlTemplate:
-                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'com.example.acessoja',
-                            ),
-                            if (_isRouting && _routePoints.isNotEmpty)
-                              PolylineLayer(
-                                polylines: [
-                                  Polyline(
-                                    points: _routePoints,
-                                    strokeWidth: 5.0,
-                                    color: colors.primary,
-                                    borderStrokeWidth: 2.0,
-                                    borderColor: colors.primaryDark,
-                                  ),
-                                ],
+                        ],
+                      ),
+                    MarkerLayer(
+                      markers: [
+                        // Marcador da localização do usuário (ponto azul)
+                        Marker(
+                          point: _currentLocation,
+                          width: 60,
+                          height: 60,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  color: colors.primary.withValues(alpha: 0.3),
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            MarkerLayer(
-                              markers: [
-                                // Marcador da localização do usuário (ponto azul)
-                                Marker(
-                                  point: _currentLocation,
-                                  width: 60,
-                                  height: 60,
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Container(
-                                        width: 24,
-                                        height: 24,
-                                        decoration: BoxDecoration(
-                                          color: colors.primary
-                                              .withValues(alpha: 0.3),
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      Container(
-                                        width: 14,
-                                        height: 14,
-                                        decoration: BoxDecoration(
-                                          color: colors.primary,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                              color: colors.surface, width: 2),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                // Marcadores de estabelecimentos filtrados (visível apenas fora da navegação)
-                                if (!_isRouting)
-                                  ..._matchingLocals
-                                      .where((local) =>
-                                          local['latitude'] != null &&
-                                          local['longitude'] != null)
-                                      .map((local) {
-                                    final lat = local['latitude'] as double;
-                                    final lon = local['longitude'] as double;
-                                    return Marker(
-                                      point: LatLng(lat, lon),
-                                      width: 80,
-                                      height: 60,
-                                      child: InkWell(
-                                        onTap: () {
-                                          setState(() {
-                                            _destinationLocation =
-                                                LatLng(lat, lon);
-                                            _destinationAddress = local['nome'];
-                                          });
-                                          _openSearchBottomSheet(context);
-                                        },
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 6,
-                                                      vertical: 3),
-                                              decoration: BoxDecoration(
-                                                color: colors.surface,
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                      color: colors.shadow,
-                                                      blurRadius: 4,
-                                                      offset:
-                                                          const Offset(0, 2)),
-                                                ],
-                                                border: Border.all(
-                                                    color: colors.primary,
-                                                    width: 1.2),
-                                              ),
-                                              child: Text(
-                                                local['nome'],
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 9,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: colors.primary,
-                                                ),
-                                              ),
-                                            ),
-                                            Icon(
-                                              Icons.location_on_rounded,
-                                              color: colors.primary,
-                                              size: 26,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                                // Marcador de destino da rota calculada
-                                if (_isRouting && _destinationLocation != null)
-                                  Marker(
-                                    point: _destinationLocation!,
-                                    width: 60,
-                                    height: 60,
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: colors.danger
-                                                .withValues(alpha: 0.2),
-                                            shape: BoxShape.circle,
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.location_on_rounded,
-                                          color: colors.danger,
-                                          size: 38,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Positioned(
-                          top: MediaQuery.of(context).padding.top + 16,
-                          right: 16,
-                          child: Material(
-                            color: colors.surface,
-                            elevation: 3,
-                            borderRadius: BorderRadius.circular(16),
-                            child: const SizedBox(
-                                width: 52,
-                                height: 52,
-                                child: AccessibilitySettingsButton()),
-                          ),
-                        ),
-                        // Botão flutuante do Menu (hambúrguer)
-                        Positioned(
-                          top: MediaQuery.of(context).padding.top + 16,
-                          left: 16,
-                          child: InkWell(
-                            onTap: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      SettingsScreen(userName: widget.userName),
-                                ),
-                              );
-                              if (!mounted) return;
-                              await _loadUserProfile();
-                              if (mounted && result is Map<String, dynamic>) {
-                                await _startRoute(result);
-                              }
-                            },
-                            child: Semantics(
-                              button: true,
-                              label: context.l10n.openSettings,
-                              child: Container(
-                                width: 52,
-                                height: 52,
+                              Container(
+                                width: 14,
+                                height: 14,
                                 decoration: BoxDecoration(
                                   color: colors.primary,
-                                  borderRadius: BorderRadius.circular(16),
+                                  shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: colors.surface,
-                                    width: 2,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: colors.shadow,
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
+                                      color: colors.surface, width: 2),
                                 ),
-                                child: _avatarImage() != null
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(14),
-                                        child: Image(
-                                          image: _avatarImage()!,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      )
-                                    : Icon(
-                                        Icons.menu_rounded,
-                                        color: colors.onPrimary,
-                                        size: 28,
-                                      ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
-                        // Floating Action Button para recentralizar o mapa
-                        Positioned(
-                          bottom: MediaQuery.paddingOf(bodyContext).bottom +
-                              (_isRouting ? 190 : 88),
-                          right: 16,
-                          child: FloatingActionButton(
-                            mini: true,
-                            backgroundColor: colors.surface,
-                            foregroundColor: colors.primary,
-                            tooltip: context.l10n.centerLocation,
-                            elevation: 3,
-                            onPressed: () {
-                              _mapController.move(_currentLocation, 14.5);
-                            },
-                            child: const Icon(Icons.my_location),
-                          ),
-                        ),
-                        // Painel de detalhes da rota ou Barra de busca flutuante
-                        if (_isRouting)
-                          Positioned(
-                            bottom:
-                                MediaQuery.paddingOf(bodyContext).bottom + 16,
-                            left: 16,
-                            right: 16,
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: colors.surface,
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: colors.shadow,
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: colors.primarySoft,
-                                          borderRadius:
-                                              BorderRadius.circular(16),
-                                        ),
-                                        child: Icon(
-                                          Icons.directions_car_rounded,
-                                          color: colors.primary,
-                                          size: 28,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              _routeDuration,
-                                              style: TextStyle(
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.bold,
-                                                color: colors.text,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              context.l10n.distanceValue(
-                                                  _routeDistance),
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: colors.muted,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            Text(context.l10n.drivingRoute,
-                                                style: TextStyle(
-                                                    fontSize: 11,
-                                                    color: colors.muted)),
-                                          ],
-                                        ),
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Icons.close_rounded,
-                                            color: colors.muted, size: 28),
-                                        tooltip: context.l10n.closeRoute,
-                                        onPressed: () {
-                                          setState(() {
-                                            _isRouting = false;
-                                            _destinationLocation = null;
-                                            _routePoints = [];
-                                            _routeDistance = '';
-                                            _routeDuration = '';
-                                          });
-                                          _mapController.move(
-                                              _currentLocation, 14.5);
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Divider(height: 1, color: colors.border),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    children: [
-                                      Icon(Icons.my_location,
-                                          color: colors.primary, size: 18),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          _currentAddress,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              color: colors.muted,
-                                              fontSize: 13),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    children: [
-                                      Icon(Icons.location_on,
-                                          color: colors.danger, size: 18),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          _destinationAddress,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              color: colors.muted,
-                                              fontSize: 13),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        else
-                          // Campo de busca flutuante sobreposto ao mapa
-                          Positioned(
-                            bottom:
-                                MediaQuery.paddingOf(bodyContext).bottom + 16,
-                            left: 16,
-                            right: 16,
-                            child: Semantics(
-                              button: true,
-                              label: context.l10n.searchDestination,
-                              excludeSemantics: true,
+                        // Marcadores de estabelecimentos filtrados (visível apenas fora da navegação)
+                        if (!_isRouting)
+                          ..._matchingLocals
+                              .where((local) =>
+                                  local['latitude'] != null &&
+                                  local['longitude'] != null)
+                              .map((local) {
+                            final lat = local['latitude'] as double;
+                            final lon = local['longitude'] as double;
+                            return Marker(
+                              point: LatLng(lat, lon),
+                              width: 80,
+                              height: 60,
                               child: InkWell(
-                                onTap: () => _openSearchBottomSheet(context),
-                                child: Container(
-                                  constraints:
-                                      const BoxConstraints(minHeight: 56),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 14),
-                                  decoration: BoxDecoration(
-                                    color: colors.surface,
-                                    borderRadius: BorderRadius.circular(18),
-                                    border: Border.all(color: colors.border),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: colors.shadow,
-                                        blurRadius: 18,
-                                        offset: const Offset(0, 6),
-                                      ),
-                                    ],
-                                  ),
-                                  child: IgnorePointer(
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            context.l10n.destinationHint,
-                                            style: TextStyle(
-                                                color: colors.muted,
-                                                fontSize: 15),
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.search_rounded,
-                                          color: colors.primary,
-                                          size: 26,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        // Overlay de carregamento ao calcular rota
-                        if (_isLoadingRoute)
-                          Container(
-                            color: colors.shadow,
-                            child: Center(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 16),
-                                decoration: BoxDecoration(
-                                  color: colors.surface,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                        color: colors.shadow, blurRadius: 10),
-                                  ],
-                                ),
-                                child: Row(
+                                onTap: () {
+                                  setState(() {
+                                    _destinationLocation = LatLng(lat, lon);
+                                    _destinationAddress = local['nome'];
+                                  });
+                                  _openSearchBottomSheet(context);
+                                },
+                                child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          colors.primary),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Text(
-                                      context.l10n.calculatingRoute,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: colors.text,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: colors.surface,
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: [
+                                          BoxShadow(
+                                              color: colors.shadow,
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2)),
+                                        ],
+                                        border: Border.all(
+                                            color: colors.primary, width: 1.2),
                                       ),
+                                      child: Text(
+                                        local['nome'],
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                          color: colors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.location_on_rounded,
+                                      color: colors.primary,
+                                      size: 26,
                                     ),
                                   ],
                                 ),
                               ),
+                            );
+                          }),
+                        // Marcador de destino da rota calculada
+                        if (_isRouting && _destinationLocation != null)
+                          Marker(
+                            point: _destinationLocation!,
+                            width: 60,
+                            height: 60,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: colors.danger.withValues(alpha: 0.2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.location_on_rounded,
+                                  color: colors.danger,
+                                  size: 38,
+                                ),
+                              ],
                             ),
                           ),
                       ],
                     ),
+                  ],
+                ),
+                // Botão flutuante do Menu (hambúrguer)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 16,
+                  left: 16,
+                  child: InkWell(
+                    onTap: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              SettingsScreen(userName: widget.userName),
+                        ),
+                      );
+                      if (!mounted) return;
+                      await _loadUserProfile();
+                      if (mounted && result is Map<String, dynamic>) {
+                        await _startRoute(result);
+                      }
+                    },
+                    child: Semantics(
+                      button: true,
+                      label: context.l10n.openSettings,
+                      child: Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: colors.primary,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: colors.surface,
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colors.shadow,
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: _avatarImage() != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: Image(
+                                  image: _avatarImage()!,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Icon(
+                                Icons.menu_rounded,
+                                color: colors.onPrimary,
+                                size: 28,
+                              ),
+                      ),
+                    ),
                   ),
-                ],
-              )),
+                ),
+                // Floating Action Button para recentralizar o mapa
+                Positioned(
+                  bottom: _isRouting ? 190 : 88,
+                  right: 16,
+                  child: FloatingActionButton(
+                    mini: true,
+                    backgroundColor: colors.surface,
+                    foregroundColor: colors.primary,
+                    tooltip: context.l10n.centerLocation,
+                    elevation: 3,
+                    onPressed: () {
+                      _mapController.move(_currentLocation, 14.5);
+                    },
+                    child: const Icon(Icons.my_location),
+                  ),
+                ),
+                // Painel de detalhes da rota ou Barra de busca flutuante
+                if (_isRouting)
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.shadow,
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: colors.primarySoft,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Icon(
+                                  Icons.directions_car_rounded,
+                                  color: colors.primary,
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _routeDuration,
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: colors.text,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      context.l10n
+                                          .distanceValue(_routeDistance),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: colors.muted,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Text(context.l10n.drivingRoute,
+                                        style: TextStyle(
+                                            fontSize: 11, color: colors.muted)),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.close_rounded,
+                                    color: colors.muted, size: 28),
+                                tooltip: context.l10n.closeRoute,
+                                onPressed: () {
+                                  setState(() {
+                                    _isRouting = false;
+                                    _destinationLocation = null;
+                                    _routePoints = [];
+                                    _routeDistance = '';
+                                    _routeDuration = '';
+                                  });
+                                  _mapController.move(_currentLocation, 14.5);
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Divider(height: 1, color: colors.border),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Icon(Icons.my_location,
+                                  color: colors.primary, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _currentAddress,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      color: colors.muted, fontSize: 13),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(Icons.location_on,
+                                  color: colors.danger, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _destinationAddress,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      color: colors.muted, fontSize: 13),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  // Campo de busca flutuante sobreposto ao mapa
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                    child: Semantics(
+                      button: true,
+                      label: context.l10n.searchDestination,
+                      child: InkWell(
+                        onTap: () => _openSearchBottomSheet(context),
+                        child: Container(
+                          height: 56,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          decoration: BoxDecoration(
+                            color: colors.surface,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: colors.border),
+                            boxShadow: [
+                              BoxShadow(
+                                color: colors.shadow,
+                                blurRadius: 18,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: IgnorePointer(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    decoration: InputDecoration(
+                                      hintText: context.l10n.destinationHint,
+                                      hintStyle: TextStyle(
+                                        color: colors.muted,
+                                        fontSize: 15,
+                                      ),
+                                      border: InputBorder.none,
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.search_rounded,
+                                  color: colors.primary,
+                                  size: 26,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                // Overlay de carregamento ao calcular rota
+                if (_isLoadingRoute)
+                  Container(
+                    color: colors.shadow,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: colors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(color: colors.shadow, blurRadius: 10),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(colors.primary),
+                            ),
+                            const SizedBox(width: 16),
+                            Text(
+                              context.l10n.calculatingRoute,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: colors.text,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          // Painel de controle inferior branco com os botões personalizados
+          Container(
+            padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+              border: Border(
+                top: BorderSide(color: colors.border),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: colors.shadow,
+                  blurRadius: 18,
+                  offset: const Offset(0, -5),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              top: false,
+              child: Material(
+                color: Colors.transparent,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Botão Explorar
+                    Expanded(
+                      child: Semantics(
+                        button: true,
+                        label: context.l10n.explorePlaces,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          splashColor: colors.primarySoft,
+                          onTap: () async {
+                            final selectedLocal = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ExplorarScreen(
+                                  userName: widget.userName,
+                                  currentLocation: _currentLocation,
+                                  unidadeDistancia: _unidadeDistancia,
+                                ),
+                              ),
+                            );
+                            if (mounted &&
+                                selectedLocal is Map<String, dynamic>) {
+                              await _startRoute(selectedLocal);
+                            }
+                          },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.explore_rounded,
+                                size: 38,
+                                color: colors.primary,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                context.l10n.explore,
+                                style: TextStyle(
+                                  color: colors.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Divisor Vertical Azul
+                    Container(
+                      width: 1.5,
+                      height: 40,
+                      color: colors.primary.withValues(alpha: 0.2),
+                    ),
+                    // Botão Locais Salvos
+                    Expanded(
+                      child: Semantics(
+                        button: true,
+                        label: context.l10n.savedPlaces,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          splashColor: colors.primarySoft,
+                          onTap: () {
+                            _navigateToSavedPlaces();
+                          },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        bottom: 2, right: 2),
+                                    child: Icon(
+                                      Icons.bookmark_outline_rounded,
+                                      size: 36,
+                                      color: colors.primary,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Icon(
+                                      Icons.favorite_rounded,
+                                      size: 16,
+                                      color: colors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                context.l10n.savedPlacesTitle,
+                                style: TextStyle(
+                                  color: colors.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Divisor Vertical Azul
+                    Container(
+                      width: 1.5,
+                      height: 40,
+                      color: colors.primary.withValues(alpha: 0.2),
+                    ),
+                    // Botão Sugestões
+                    Expanded(
+                      child: Semantics(
+                        button: true,
+                        label: context.l10n.placeSuggestions,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          splashColor: colors.primarySoft,
+                          onTap: () async {
+                            final selectedLocal = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SugestoesScreen(
+                                  allowSuggestions: _allowSuggestions,
+                                  userName: widget.userName,
+                                  unidadeDistancia: _unidadeDistancia,
+                                ),
+                              ),
+                            );
+                            if (mounted &&
+                                selectedLocal is Map<String, dynamic>) {
+                              await _startRoute(selectedLocal);
+                            }
+                          },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.public_rounded,
+                                    size: 36,
+                                    color: colors.primary,
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    child: Icon(
+                                      Icons.volunteer_activism_rounded,
+                                      size: 14,
+                                      color: colors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                context.l10n.suggestions,
+                                style: TextStyle(
+                                  color: colors.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

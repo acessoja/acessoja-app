@@ -60,18 +60,18 @@ class TestLocalModel:
         )
         assert local.id_local is not None
         assert local.nome == "Café Acessível"
-        assert local.aberto is None  # unknown until explicitly supplied
+        assert local.aberto is True  # default
 
     def test_media_estrelas_sem_avaliacoes(self, local_acessivel):
         """Sem avaliações, media_estrelas deve retornar 0.0."""
         assert local_acessivel.media_estrelas == 0.0
 
-    def test_local_horario_desconhecido_por_padrao(self, db):
-        """Campo 'aberto' deve ser desconhecido por padrão."""
+    def test_local_aberto_por_padrao(self, db):
+        """Campo 'aberto' deve ser True por padrão."""
         local = Local.objects.create(
             nome="Local X", endereco="End X", distancia=0.1
         )
-        assert local.aberto is None
+        assert local.aberto is True
 
     def test_local_fechado(self, local_sem_acessibilidade):
         """Local criado com aberto=False deve persistir corretamente."""

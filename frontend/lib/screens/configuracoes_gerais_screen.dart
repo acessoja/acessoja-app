@@ -6,7 +6,6 @@ import '../widgets/preference_controls.dart';
 import '../widgets/settings_page.dart';
 import '../widgets/load_error.dart';
 import 'sugestoes_screen.dart';
-import 'accessibility_screen.dart';
 
 class ConfiguracoesGeraisScreen extends StatefulWidget {
   const ConfiguracoesGeraisScreen({super.key, required this.userName});
@@ -163,13 +162,6 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
         // Keep the existing server preference visible without claiming an
         // unavailable native wake-lock implementation.
         SettingsSection(title: t.accessibility, children: [
-          ListTile(
-            leading: const Icon(Icons.accessibility_new_rounded),
-            title: Text(t.accessibility),
-            subtitle: Text(t.a11yTextSize),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.push(context, AccessibilityScreen.route()),
-          ),
           ListTile(
               title: Text(t.keepAwake),
               subtitle: Text(t.unavailable),

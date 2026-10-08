@@ -1,4 +1,3 @@
-import 'accessibility_screen.dart';
 import '../widgets/load_error.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -16,7 +15,7 @@ class SugestoesScreen extends StatefulWidget {
   final String unidadeDistancia;
   final bool allowSuggestions;
 
-  const SugestoesScreen({
+   const SugestoesScreen({
     super.key,
     required this.userName,
     this.unidadeDistancia = 'KM',
@@ -34,7 +33,6 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
   bool _loadFailed = false;
 
   String _formatDistance(dynamic value) {
-    if (value == null) return context.l10n.visitUnknown;
     final km = value is num
         ? value.toDouble()
         : double.tryParse(value
@@ -553,7 +551,7 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
     final media = mediaValue is num
         ? mediaValue
         : double.tryParse(mediaValue.toString()) ?? 0.0;
-    final isOpen = place['aberto'] as bool?;
+    final isOpen = (place['aberto'] ?? true) as bool;
 
     return Container(
       margin: const EdgeInsets.only(top: 12),
@@ -626,21 +624,14 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: isOpen == true
-                                ? colors.successSoft
-                                : colors.dangerSoft,
+                            color:
+                                isOpen ? colors.successSoft : colors.dangerSoft,
                             borderRadius: BorderRadius.circular(7),
                           ),
                           child: Text(
-                            isOpen == null
-                                ? context.l10n.visitHoursUnknown
-                                : isOpen
-                                    ? context.l10n.open
-                                    : context.l10n.closed,
+                            isOpen ? context.l10n.open : context.l10n.closed,
                             style: TextStyle(
-                              color: isOpen == true
-                                  ? colors.success
-                                  : colors.danger,
+                              color: isOpen ? colors.success : colors.danger,
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
                             ),
@@ -786,7 +777,6 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
     return Scaffold(
       backgroundColor: colors.pageBackground,
       appBar: AppBar(
-        actions: const [AccessibilitySettingsButton()],
         backgroundColor: colors.pageBackground,
         elevation: 0,
         automaticallyImplyLeading: false,
