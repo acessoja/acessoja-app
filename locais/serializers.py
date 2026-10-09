@@ -8,13 +8,22 @@ class LocalSerializer(serializers.ModelSerializer):
         help_text='Media das estrelas das avaliacoes do local, de 0 a 5 (calculada).',
     )
 
+    quantidade_avaliacoes = serializers.IntegerField(source='avaliacoes.count', read_only=True)
+    categoria_label = serializers.SerializerMethodField()
+
+    def get_categoria_label(self, obj) -> str:
+        from .services.categories import CATEGORIES
+        return CATEGORIES[obj.categoria]['label'] if obj.categoria in CATEGORIES else 'Categoria não informada'
+
     class Meta:
         model = Local
         fields = [
             'id_local', 'nome', 'endereco', 'distancia', 'latitude', 'longitude',
             'aberto', 'imagem', 'cao_guia', 'mesa_acessivel', 'banheiro_acessivel',
-            'rampa_acesso', 'cardapio_braille', 'media_estrelas', 'data_criacao'
+            'rampa_acesso', 'cardapio_braille', 'media_estrelas', 'data_criacao',
+            'categoria', 'categoria_label', 'osm_id', 'quantidade_avaliacoes'
         ]
+        read_only_fields = ['osm_id']
         extra_kwargs = {
             'id_local': {'help_text': 'Identificador unico do local.'},
             'nome': {'help_text': 'Nome do estabelecimento ou local publico.'},

@@ -7,9 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/app_http.dart';
 import '../services/places_service.dart';
+import '../models/map_place.dart';
+import '../services/location_service.dart';
+import '../widgets/external_place_registration.dart';
 import '../widgets/map_place_preview.dart';
+import '../widgets/map_search_sheet.dart';
 import '../app_theme.dart';
 import '../config.dart';
 import 'saved_places_screen.dart';
@@ -25,11 +30,13 @@ class MainScreen extends StatefulWidget {
   /// Injection points for deterministic tests without GPS or tile requests.
   final bool trackLocation;
   final TileProvider? tileProvider;
+  final LocationService? locationService;
 
   const MainScreen(
       {super.key,
       required this.userName,
       this.trackLocation = true,
+      this.locationService,
       this.tileProvider});
 
   @override
@@ -39,6 +46,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends SafeState<MainScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final PlacesService _placesService = const PlacesService();
+  late final LocationService _locationService =
+      widget.locationService ?? const LocationService();
 
   String _unidadeDistancia = 'KM';
   bool _allowSuggestions = true;
@@ -110,13 +119,52 @@ class _MainScreenState extends SafeState<MainScreen> {
   bool _filterCardapioBraille = false;
 
   // List of filtered establishments from backend
-  List<Map<String, dynamic>> _matchingLocals = [];
+  List<MapPlace> _internalLocals = [];
+  List<MapPlace> _externalLocals = [];
+  List<Map<String, dynamic>> _categories = [];
+  String _sourceFilter = 'all';
+  String? _categoryFilter;
+  String? _externalError;
+  String? _locationMessage;
+  String? _selectedPlaceId;
+  bool _isLoadingExternal = false;
+  bool _externalTruncated = false;
+  bool _areaMoved = false;
+  bool _mapReady = false;
+  bool _locating = false;
+  int _internalRequest = 0;
+  int _externalRequest = 0;
+  int _searchRequest = 0;
+  LatLng? _pendingExternalCenter;
+  LatLng _externalCenter = const LatLng(-16.3267, -48.9528);
+  int _externalRadius = 1500;
+
+  List<Map<String, dynamic>> get _matchingLocals =>
+      mergeMapPlaces(_internalLocals, _externalLocals).where((place) {
+        if (_sourceFilter == 'internal' && place.isExternal) return false;
+        if (_sourceFilter == 'external' && !place.isExternal) return false;
+        if (_categoryFilter != null && place.category != _categoryFilter) {
+          return false;
+        }
+        for (final entry in {
+          'cao_guia': _filterCaoGuia, 'mesa_acessivel': _filterMesaAcessivel,
+          'banheiro_acessivel': _filterBanheiroAcessivel,
+          'rampa_acesso': _filterRampaAcesso,
+          'cardapio_braille': _filterCardapioBraille,
+        }.entries) {
+          if (entry.value &&
+              place.accessibility(entry.key) != AccessibilityValue.available) {
+            return false;
+          }
+        }
+        return true;
+      }).map((p) => p.toMap()).toList(growable: false);
   bool _localsLoadFailed = false;
   bool _isLoadingLocals = false;
 
   final MapController _mapController = MapController();
+  final ValueNotifier<int> _placesRevision = ValueNotifier(0);
   StreamSubscription<Position>? _positionStream;
-  LatLng? _lastGeocodedLocation;
 
   void _showWelcomeBanner() {
     final colors = AppColors.of(context);
@@ -166,6 +214,8 @@ class _MainScreenState extends SafeState<MainScreen> {
     _loadUserProfile();
     if (widget.trackLocation) _initLocationTracking();
     _fetchEstablishments(); // Preload all establishments
+    if (!widget.trackLocation) _fetchExternalPlaces(_externalCenter);
+    _loadCategories();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _showWelcomeBanner();
     });
@@ -173,12 +223,17 @@ class _MainScreenState extends SafeState<MainScreen> {
 
   @override
   void dispose() {
+    _internalRequest++;
+    _externalRequest++;
+    _searchRequest++;
     _positionStream?.cancel();
     _mapController.dispose();
+    _placesRevision.dispose();
     super.dispose();
   }
 
   Future<void> _fetchEstablishments() async {
+    final request = ++_internalRequest;
     if (mounted) {
       setState(() {
         _isLoadingLocals = true;
@@ -187,197 +242,177 @@ class _MainScreenState extends SafeState<MainScreen> {
     }
 
     try {
-      final data = await _placesService.fetchPlaces(
-        caoGuia: _filterCaoGuia,
-        mesaAcessivel: _filterMesaAcessivel,
-        banheiroAcessivel: _filterBanheiroAcessivel,
-        rampaAcesso: _filterRampaAcesso,
-        cardapioBraille: _filterCardapioBraille,
-      );
-      if (!mounted) return;
+      // Merge before filtering so an internal local hidden by an accessibility
+      // filter cannot reappear as an unreviewed OSM duplicate.
+      final data = await _placesService.fetchPlaces();
+      if (!mounted || request != _internalRequest) return;
 
       setState(() {
-        _matchingLocals = data;
+        _internalLocals = data.map(MapPlace.internal).toList(growable: false);
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || request != _internalRequest) return;
       debugPrint("Error connecting to locales: $e");
       setState(() {
         _localsLoadFailed = true;
+        _internalLocals = [];
       });
     } finally {
-      if (mounted) {
+      if (mounted && request == _internalRequest) {
         setState(() {
           _isLoadingLocals = false;
         });
+        _placesRevision.value++;
       }
     }
   }
 
-  Future<void> _initLocationTracking() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
+  Future<void> _loadCategories() async {
     try {
-      serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        debugPrint("Location services are disabled.");
-        return;
-      }
+      final categories = await _placesService.fetchCategories();
+      if (mounted) setState(() => _categories = categories);
+    } catch (_) {
+      // Category failure does not remove either source's valid places.
+    }
+  }
 
-      permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          debugPrint("Location permissions are denied.");
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        debugPrint("Location permissions are permanently denied.");
-        return;
-      }
-
-      // Get initial position with a timeout to prevent hanging on emulators
-      Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 5),
-        ),
+  Future<void> _fetchExternalPlaces(LatLng center) async {
+    if (_isLoadingExternal) {
+      // Queue only the latest area and logically invalidate the previous one.
+      _externalRequest++;
+      _pendingExternalCenter = center;
+      setState(() => _externalLocals = []);
+      return;
+    }
+    final request = ++_externalRequest;
+    setState(() {
+      _externalCenter = center;
+      _externalLocals = [];
+      _externalError = null;
+      _externalTruncated = false;
+      _isLoadingExternal = true;
+      _areaMoved = false;
+    });
+    try {
+      final result = await _placesService.fetchExternalPlaces(
+        latitude: center.latitude, longitude: center.longitude,
+        radius: _externalRadius, category: _categoryFilter,
       );
+      if (!mounted || request != _externalRequest) return;
+      setState(() {
+        _externalLocals = result.places;
+        _externalTruncated = result.truncated;
+      });
+    } catch (error) {
+      if (!mounted || request != _externalRequest) return;
+      setState(() => _externalError = error is PlacesException
+          ? error.message : 'Locais externos indisponíveis. Tente novamente.');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingExternal = false);
+        _placesRevision.value++;
+        final pending = _pendingExternalCenter;
+        _pendingExternalCenter = null;
+        if (pending != null) _fetchExternalPlaces(pending);
+      }
+    }
+  }
+
+  Future<void> _searchVisibleArea() async {
+    final camera = _mapController.camera;
+    final corner = camera.visibleBounds.northEast;
+    final radius = mapDistanceMeters(camera.center.latitude,
+        camera.center.longitude, corner.latitude, corner.longitude);
+    if (radius > 3000) {
+      _showErrorSnackBar('Aproxime o mapa para pesquisar uma área de até 3 km.');
+      return;
+    }
+    _externalRadius = radius.ceil().clamp(100, 3000).toInt();
+    await _fetchExternalPlaces(camera.center);
+  }
+
+  Future<void> _initLocationTracking() async {
+    if (_locating) return;
+    _locating = true;
+    try {
+      final position = await _locationService.currentPosition();
       if (!mounted) return;
       _updateLocation(position);
-
-      // Start stream listening for movements
-      _positionStream = Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 10,
-        ),
-      ).listen(
-        (Position position) {
-          _updateLocation(position);
-        },
-        onError: (e) {
-          debugPrint("Error in location stream: $e");
+      await _positionStream?.cancel();
+      if (!mounted) return;
+      _positionStream = _locationService.positions().listen(_updateLocation,
+        onError: (_) {
+          if (!mounted) return;
+          setState(() {
+            _hasLocation = false;
+            _locationMessage = 'Sinal de localização indisponível. Tente novamente.';
+          });
         },
       );
-    } catch (e) {
+    } catch (error) {
       if (!mounted) return;
-      debugPrint("Error initializing location: $e");
+      setState(() {
+        _hasLocation = false;
+        _locationMessage = error is LocationFailure ? error.message
+            : 'Localização indisponível. Verifique as permissões e tente novamente.';
+      });
+      if (_externalRequest == 0) _fetchExternalPlaces(_externalCenter);
+    } finally {
+      _locating = false;
     }
   }
 
   void _updateLocation(Position position) {
-    if (!mounted) {
-      return;
-    }
-    final newLatLng = LatLng(position.latitude, position.longitude);
+    if (!mounted) return;
+    final valid = routePlace({'latitude': position.latitude,
+      'longitude': position.longitude});
+    if (valid == null) return;
+    final firstFix = !_hasLocation;
+    final point = LatLng(position.latitude, position.longitude);
     setState(() {
-      _currentLocation = newLatLng;
+      _currentLocation = point;
       _hasLocation = true;
+      _currentAddress = '${position.latitude.toStringAsFixed(5)}, '
+          '${position.longitude.toStringAsFixed(5)}';
+      _locationMessage = position.accuracy > 100
+          ? 'Localização aproximada (precisão de '
+            '${position.accuracy.toStringAsFixed(0)} m).'
+          : null;
     });
-
-    // Move map to center
-    if (!_isRouting) _mapController.move(newLatLng, 14.5);
-
-    // Get readable address if significant movement (100 meters)
-    if (_lastGeocodedLocation == null ||
-        Geolocator.distanceBetween(
-                _lastGeocodedLocation!.latitude,
-                _lastGeocodedLocation!.longitude,
-                newLatLng.latitude,
-                newLatLng.longitude) >
-            100) {
-      _lastGeocodedLocation = newLatLng;
-      _getAddressFromLatLng(newLatLng);
-    }
-  }
-
-  Future<void> _getAddressFromLatLng(LatLng position) async {
-    try {
-      final url = Uri.parse(
-          'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16');
-      final response = await AppHttp.get(url, headers: {
-        'User-Agent': 'AcessoJaApp/1.0',
-      });
-      if (!mounted) return;
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final displayName = data['display_name'];
-        if (displayName != null) {
-          setState(() {
-            _currentAddress = displayName;
-          });
-        }
-      }
-    } catch (e) {
-      if (!mounted) return;
-      debugPrint("Error in reverse geocoding: $e");
-    }
+    if (firstFix && !_isRouting && _mapReady) _mapController.move(point, 14.5);
+    if (_externalRequest == 0) _fetchExternalPlaces(point);
   }
 
   Future<void> _searchAndRoute(String destinationText) async {
-    if (destinationText.trim().isEmpty || _isLoadingRoute) return;
-
-    if (!_hasLocation) {
-      if (widget.trackLocation) {
-        await _initLocationTracking();
-      }
-      if (!mounted) return;
-      if (!_hasLocation) {
-        _showErrorSnackBar(context.l10n.locationUnavailable);
+    final text = destinationText.trim();
+    if (text.isEmpty) return;
+    final matches = _matchingLocals.where((p) =>
+        (p['source'] == 'openstreetmap' ? MapPlace.external(p)
+            : MapPlace.internal(p)).matches(text)).toList();
+    if (matches.isNotEmpty) {
+      await _openLocalPreview(matches.first);
+      return;
+    }
+    final request = ++_searchRequest;
+    try {
+      // Explicit submission only; local filtering never calls Nominatim.
+      final results = await _placesService.geocode(text);
+      if (!mounted || request != _searchRequest) return;
+      if (results.isEmpty) {
+        _showErrorSnackBar(context.l10n.destinationNotFound(text));
         return;
       }
-    }
-
-    setState(() {
-      _isLoadingRoute = true;
-    });
-
-    try {
-      // 1. Search destination coordinates using Nominatim Search API
-      final searchUrl =
-          Uri.parse('https://nominatim.openstreetmap.org/search?q='
-              '${Uri.encodeComponent(destinationText)}'
-              '&format=json&limit=1&addressdetails=1');
-
-      final searchResponse = await AppHttp.get(searchUrl, headers: {
-        'User-Agent': 'AcessoJaApp/1.0',
-      });
-      if (!mounted) return;
-
-      if (searchResponse.statusCode == 200) {
-        final List results = json.decode(searchResponse.body);
-        if (results.isNotEmpty) {
-          final firstResult = results.first;
-          final lat = double.parse(firstResult['lat']);
-          final lon = double.parse(firstResult['lon']);
-          final destLatLng = LatLng(lat, lon);
-          final displayName = firstResult['display_name'] ?? destinationText;
-
-          setState(() {
-            _destinationLocation = destLatLng;
-            _destinationAddress = displayName;
-          });
-
-          // 2. Fetch OSRM route between current location and destination
-          await _calculateRoute(_currentLocation, destLatLng);
-        } else {
-          _showErrorSnackBar(context.l10n.destinationNotFound(destinationText));
-        }
-      } else {
-        _showErrorSnackBar(context.l10n.destinationError);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      debugPrint("Error in search and route: $e");
-      _showErrorSnackBar(context.l10n.routeConnectionError);
-    } finally {
-      setState(() {
-        _isLoadingRoute = false;
-      });
+      final place = results.first;
+      final point = _localPoint(place);
+      if (point == null) throw const FormatException('Coordenadas inválidas');
+      _mapController.move(point, 15);
+      _externalRadius = 1500;
+      await _fetchExternalPlaces(point);
+      if (mounted && request == _searchRequest) _openSearchBottomSheet(context);
+    } catch (error) {
+      if (!mounted || request != _searchRequest) return;
+      _showErrorSnackBar(error is PlacesException
+          ? error.message : context.l10n.destinationError);
     }
   }
 
@@ -454,10 +489,10 @@ class _MainScreenState extends SafeState<MainScreen> {
 
   void _openSearchBottomSheet(BuildContext context) {
     final colors = AppColors.of(context);
-    final TextEditingController destinationController =
-        TextEditingController(text: _destinationAddress);
     String sheetView = 'route'; // 'route' ou 'filters'
     String filterSearchQuery = '';
+    String tempSource = _sourceFilter;
+    String? tempCategory = _categoryFilter;
 
     // Temporary filter values in bottom sheet to support confirmation or cancellation
     bool tempCaoGuia = _filterCaoGuia;
@@ -480,7 +515,11 @@ class _MainScreenState extends SafeState<MainScreen> {
         ),
       ),
       builder: (context) {
-        return StatefulBuilder(
+        return MapSearchSheet(
+          initialText: _destinationAddress,
+          builder: (context, destinationController) => ValueListenableBuilder<int>(
+          valueListenable: _placesRevision,
+          builder: (context, revision, child) => StatefulBuilder(
           builder: (context, sheetSetState) {
             if (sheetView == 'route') {
               // 1. TELA DE ROTA
@@ -536,6 +575,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                     const SizedBox(height: 16),
                     // Campo: Qual seu destino? (caixa de pílula branca com borda azul e lupa à direita)
                     TextField(
+                      key: const ValueKey('map-place-search'),
                       controller: destinationController,
                       decoration: InputDecoration(
                         hintText: context.l10n.destinationHint,
@@ -555,9 +595,6 @@ class _MainScreenState extends SafeState<MainScreen> {
                         filled: true,
                         fillColor: colors.fieldBackground,
                       ),
-                      onChanged: (value) {
-                        sheetSetState(() {});
-                      },
                       onSubmitted: (value) {
                         Navigator.pop(context);
                         _searchAndRoute(value);
@@ -577,9 +614,9 @@ class _MainScreenState extends SafeState<MainScreen> {
                         final text =
                             destinationController.text.trim().toLowerCase();
                         final list = _matchingLocals.where((local) {
-                          final nome =
-                              (local['nome'] ?? '').toString().toLowerCase();
-                          return nome.contains(text);
+                          final place = local['source'] == 'openstreetmap'
+                              ? MapPlace.external(local) : MapPlace.internal(local);
+                          return place.matches(text);
                         }).toList();
 
                         if (list.isEmpty) {
@@ -614,7 +651,8 @@ class _MainScreenState extends SafeState<MainScreen> {
                                   color: Colors.transparent,
                                   child: ListTile(
                                     dense: true,
-                                    leading: Icon(Icons.location_on,
+                                    leading: Icon(local['source'] == 'openstreetmap'
+                                        ? Icons.public : Icons.location_on,
                                         color: colors.primary),
                                     title: Text(
                                       local['nome'],
@@ -624,7 +662,8 @@ class _MainScreenState extends SafeState<MainScreen> {
                                       ),
                                     ),
                                     subtitle: Text(
-                                      local['endereco'],
+                                      '${local['source'] == 'openstreetmap' ? 'OpenStreetMap' : 'AcessoJá'}'
+                                      ' · ${local['categoria_label']} · ${local['endereco']}',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -643,22 +682,8 @@ class _MainScreenState extends SafeState<MainScreen> {
                                       ),
                                     ),
                                     onTap: () {
-                                      setState(() {
-                                        if (routePlace(local) == null) {
-                                          _showErrorSnackBar(
-                                              context.l10n.invalidLocation);
-                                          return;
-                                        }
-                                        _destinationLocation = LatLng(
-                                            (local['latitude'] as num)
-                                                .toDouble(),
-                                            (local['longitude'] as num)
-                                                .toDouble());
-                                        _destinationAddress = local['nome'];
-                                        destinationController.text =
-                                            local['nome'];
-                                      });
-                                      sheetSetState(() {});
+                                      Navigator.pop(context);
+                                      _openLocalPreview(local);
                                     },
                                   ));
                             },
@@ -731,25 +756,11 @@ class _MainScreenState extends SafeState<MainScreen> {
                             }
                             Navigator.pop(context);
 
-                            if (_destinationLocation != null &&
-                                _destinationAddress == destText) {
-                              setState(() {
-                                _isLoadingRoute = true;
-                              });
-                              _calculateRoute(
-                                      _currentLocation, _destinationLocation!)
-                                  .then((_) {
-                                setState(() {
-                                  _isLoadingRoute = false;
-                                });
-                              });
-                            } else {
-                              _searchAndRoute(destText);
-                            }
+                            _searchAndRoute(destText);
                           },
-                          child: Text(
-                            context.l10n.confirm,
-                            style: const TextStyle(
+                          child: const Text(
+                            'Pesquisar',
+                            style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -863,6 +874,43 @@ class _MainScreenState extends SafeState<MainScreen> {
                     ),
                     const SizedBox(height: 20),
                     // Lista de Opções de Filtro com divisores e caixas de seleção
+                    DropdownButtonFormField<String>(
+                      key: const ValueKey('map-source-filter'),
+                      initialValue: tempSource,
+                      isExpanded: true,
+                      decoration: const InputDecoration(labelText: 'Origem dos locais'),
+                      items: const [
+                        DropdownMenuItem(value: 'all', child: Text('Todos os estabelecimentos',
+                          maxLines: 1, overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: 'internal', child: Text('Somente AcessoJá',
+                          maxLines: 1, overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: 'external', child: Text('Somente OpenStreetMap',
+                          maxLines: 1, overflow: TextOverflow.ellipsis)),
+                      ],
+                      onChanged: (value) => sheetSetState(() => tempSource = value ?? 'all'),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      key: const ValueKey('map-category-filter'),
+                      initialValue: tempCategory ?? 'all',
+                      isExpanded: true,
+                      decoration: const InputDecoration(labelText: 'Categoria'),
+                      items: [
+                        const DropdownMenuItem(value: 'all', child: Text('Todas as categorias',
+                          maxLines: 1, overflow: TextOverflow.ellipsis)),
+                        ..._categories.where((c) => c['id'] is String && c['label'] is String).map((c) =>
+                          DropdownMenuItem(value: c['id'].toString(), child: Text(c['label'].toString(),
+                            maxLines: 1, overflow: TextOverflow.ellipsis))),
+                      ],
+                      onChanged: (value) => sheetSetState(() => tempCategory = value == 'all' ? null : value),
+                    ),
+                    if (_categories.isEmpty)
+                      TextButton(onPressed: () async {
+                        await _loadCategories();
+                        if (context.mounted) sheetSetState(() {});
+                      }, child: const Text('Carregar categorias')),
+                    const SizedBox(height: 12),
+                    const Text('Filtros de acessibilidade mostram apenas recursos informados no AcessoJá.'),
                     Column(
                       children: List.generate(filteredItems.length, (idx) {
                         final item = filteredItems[idx];
@@ -955,7 +1003,10 @@ class _MainScreenState extends SafeState<MainScreen> {
                             elevation: 0,
                           ),
                           onPressed: () {
+                            final categoryChanged = _categoryFilter != tempCategory;
                             setState(() {
+                              _sourceFilter = tempSource;
+                              _categoryFilter = tempCategory;
                               _filterCaoGuia = tempCaoGuia;
                               _filterMesaAcessivel = tempMesaAcessivel;
                               _filterBanheiroAcessivel = tempBanheiroAcessivel;
@@ -963,7 +1014,8 @@ class _MainScreenState extends SafeState<MainScreen> {
                               _filterCardapioBraille = tempCardapioBraille;
                             });
 
-                            _fetchEstablishments().then((_) {
+                            (categoryChanged ? _fetchExternalPlaces(_externalCenter)
+                                : Future<void>.value()).then((_) {
                               if (!context.mounted) return;
                               sheetSetState(() {
                                 sheetView = 'route';
@@ -982,10 +1034,11 @@ class _MainScreenState extends SafeState<MainScreen> {
                 ),
               ));
             }
-          },
+          }),
+          ),
         );
       },
-    ).whenComplete(destinationController.dispose);
+    );
   }
 
   Future<void> _startRoute(Map<String, dynamic> place) async {
@@ -1075,9 +1128,11 @@ class _MainScreenState extends SafeState<MainScreen> {
     }
 
     setState(() {
+      _selectedPlaceId = local['id']?.toString();
       _destinationLocation = point;
       _destinationAddress = (local['nome'] ?? '').toString();
     });
+    _mapController.move(point, 16);
 
     final result = await showModalBottomSheet<Object?>(
       context: context,
@@ -1107,6 +1162,10 @@ class _MainScreenState extends SafeState<MainScreen> {
     }
 
     if (result == 'details') {
+      if (local['source'] == 'openstreetmap') {
+        await _contributeExternal(local);
+        return;
+      }
       final detailResult = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -1127,6 +1186,26 @@ class _MainScreenState extends SafeState<MainScreen> {
         await _fetchEstablishments();
       }
     }
+  }
+
+  Future<void> _contributeExternal(Map<String, dynamic> external) async {
+    final local = await showDialog<Map<String, dynamic>>(
+      context: context, barrierDismissible: false,
+      builder: (_) => ExternalPlaceRegistration(place: external,
+          userName: widget.userName),
+    );
+    if (!mounted || local == null) return;
+    // Update immediately using the confirmed INTERNAL ID before opening details.
+    setState(() {
+      _internalLocals = [..._internalLocals.where((p) =>
+          p.internalId != local['id_local']), MapPlace.internal(local)];
+    });
+    final result = await Navigator.push(context, MaterialPageRoute(
+      builder: (_) => PlaceDetailScreen(place: local, userName: widget.userName),
+    ));
+    if (!mounted) return;
+    if (result is Map<String, dynamic>) await _startRoute(result);
+    await _fetchEstablishments();
   }
 
   Future<void> _navigateToSavedPlaces() async {
@@ -1277,6 +1356,13 @@ class _MainScreenState extends SafeState<MainScreen> {
                   options: MapOptions(
                     initialCenter: _currentLocation, // Anápolis, GO default
                     initialZoom: 14.5,
+                    onMapReady: () {
+                      _mapReady = true;
+                      if (_hasLocation) _mapController.move(_currentLocation, 14.5);
+                    },
+                    onPositionChanged: (position, hasGesture) {
+                      if (hasGesture && !_areaMoved) setState(() => _areaMoved = true);
+                    },
                   ),
                   children: [
                     TileLayer(
@@ -1342,16 +1428,19 @@ class _MainScreenState extends SafeState<MainScreen> {
                               .map((local) {
                             final point = _localPoint(local)!;
                             final localId = local['id_local']?.toString() ??
-                                local['nome']?.toString() ??
+                                local['external_id']?.toString() ??
                                 'local';
                             final name = (local['nome'] ?? '').toString();
+                            final external = local['source'] == 'openstreetmap';
+                            final selected = local['id'] == _selectedPlaceId;
                             return Marker(
                               point: point,
                               width: 104,
-                              height: 68,
+                              height: 84,
                               child: Semantics(
                                 button: true,
-                                label: context.l10n.detailsOf(name),
+                                label: '${context.l10n.detailsOf(name)}. '
+                                    '${external ? 'OpenStreetMap, ainda não avaliado no AcessoJá' : 'AcessoJá'}',
                                 child: InkWell(
                                   key: ValueKey('map-place-$localId'),
                                   borderRadius: BorderRadius.circular(12),
@@ -1367,7 +1456,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                                         decoration: BoxDecoration(
                                           color: colors.surface,
                                           borderRadius:
-                                              BorderRadius.circular(8),
+                                              BorderRadius.circular(external ? 2 : 8),
                                           boxShadow: [
                                             BoxShadow(
                                                 color: colors.shadow,
@@ -1376,11 +1465,11 @@ class _MainScreenState extends SafeState<MainScreen> {
                                           ],
                                           border: Border.all(
                                               color: colors.primary,
-                                              width: 1.2),
+                                              width: selected ? 3 : 1.2),
                                         ),
                                         child: Text(
-                                          name,
-                                          maxLines: 1,
+                                          '$name\n${external ? 'OSM' : 'AcessoJá'}',
+                                          maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
                                             fontSize: 9,
@@ -1390,7 +1479,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                                         ),
                                       ),
                                       Icon(
-                                        Icons.location_on_rounded,
+                                        external ? Icons.public : Icons.location_on_rounded,
                                         color: colors.primary,
                                         size: 28,
                                       ),
@@ -1493,12 +1582,16 @@ class _MainScreenState extends SafeState<MainScreen> {
                                           size: 18,
                                         ),
                                         const SizedBox(width: 6),
-                                        Text(
-                                          context.l10n.retry,
-                                          style: TextStyle(
-                                            color: colors.danger,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w800,
+                                        Flexible(
+                                          child: Text(
+                                            context.l10n.retry,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: colors.danger,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w800,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -1513,17 +1606,21 @@ class _MainScreenState extends SafeState<MainScreen> {
                                         size: 17,
                                       ),
                                       const SizedBox(width: 6),
-                                      Text(
-                                        context.l10n.placeCount(
-                                          _matchingLocals
-                                              .where((local) =>
-                                                  _localPoint(local) != null)
-                                              .length,
-                                        ),
-                                        style: TextStyle(
-                                          color: colors.text,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w800,
+                                      Flexible(
+                                        child: Text(
+                                          context.l10n.placeCount(
+                                            _matchingLocals
+                                                .where((local) =>
+                                                    _localPoint(local) != null)
+                                                .length,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: colors.text,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w800,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -1531,6 +1628,27 @@ class _MainScreenState extends SafeState<MainScreen> {
                       ),
                     ),
                   ),
+                if (!_isRouting)
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 82,
+                    left: 16,
+                    right: 16,
+                    child: _discoveryStatus(),
+                  ),
+                Positioned(
+                  bottom: _isRouting ? 240 : 78,
+                  left: 12,
+                  child: Material(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(8),
+                    child: InkWell(
+                      onTap: () => launchUrl(Uri.parse('https://www.openstreetmap.org/copyright')),
+                      child: const Padding(padding: EdgeInsets.all(8),
+                        child: Text('© OpenStreetMap contributors · ODbL',
+                          style: TextStyle(fontSize: 10))),
+                    ),
+                  ),
+                ),
                 // Botão flutuante do Menu (hambúrguer)
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 16,
@@ -1718,6 +1836,9 @@ class _MainScreenState extends SafeState<MainScreen> {
                             ],
                           ),
                           const SizedBox(height: 6),
+                          const Text('Rota comum do OSRM; acessibilidade do trajeto não verificada.',
+                            key: ValueKey('map-route-accessibility-notice'),
+                            style: TextStyle(fontSize: 11)),
                           Row(
                             children: [
                               Icon(Icons.location_on,
@@ -1748,6 +1869,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                       button: true,
                       label: context.l10n.searchDestination,
                       child: InkWell(
+                        key: const ValueKey('map-open-search'),
                         onTap: () => _openSearchBottomSheet(context),
                         child: Container(
                           height: 56,
@@ -2033,5 +2155,46 @@ class _MainScreenState extends SafeState<MainScreen> {
         ],
       ),
     );
+  }
+
+  Widget _discoveryStatus() {
+    final colors = AppColors.of(context);
+    return Semantics(liveRegion: true, child: Material(
+      color: colors.surface,
+      borderRadius: BorderRadius.circular(14),
+      child: Padding(padding: const EdgeInsets.all(10),
+        child: Column(mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('📍 AcessoJá   🌐 OpenStreetMap', style: TextStyle(fontSize: 12)),
+            if (_isLoadingExternal) const Text('Buscando locais externos…'),
+            if (_externalError != null) Text(_externalError!),
+            if (_locationMessage != null) Text(_locationMessage!),
+            if (!_hasLocation && _locationMessage == null)
+              const Text('Anápolis é o centro de referência; sua localização ainda não foi obtida.'),
+            if (_externalTruncated)
+              const Text('Resultados limitados. Aproxime o mapa ou escolha uma categoria.'),
+            if (!_isLoadingLocals && !_isLoadingExternal && _matchingLocals.isEmpty)
+              const Text('Nenhum local com os filtros atuais. Limpe os filtros ou busque outra área.'),
+            Wrap(spacing: 8, children: [
+              if (_areaMoved || _externalError != null)
+                TextButton.icon(key: const ValueKey('map-search-area'),
+                  onPressed: _isLoadingExternal ? null : _searchVisibleArea,
+                  icon: const Icon(Icons.search), label: const Text('Buscar nesta área')),
+              if (_externalError != null)
+                TextButton(onPressed: _isLoadingExternal ? null : () => _fetchExternalPlaces(_externalCenter),
+                  child: const Text('Tentar fonte externa novamente')),
+              if (!_isLoadingLocals && !_isLoadingExternal && _matchingLocals.isEmpty)
+                TextButton(onPressed: () {
+                  setState(() {
+                    _sourceFilter = 'all'; _categoryFilter = null;
+                    _filterCaoGuia = false; _filterMesaAcessivel = false;
+                    _filterBanheiroAcessivel = false; _filterRampaAcesso = false;
+                    _filterCardapioBraille = false;
+                  });
+                  _fetchExternalPlaces(_externalCenter);
+                }, child: const Text('Limpar filtros')),
+            ]),
+          ])),
+    ));
   }
 }

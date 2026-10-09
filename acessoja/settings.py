@@ -226,3 +226,12 @@ SPECTACULAR_SETTINGS = {
     },
     'LICENSE': {'name': 'Projeto educacional'},
 }
+
+
+# Sprint 2: providers are controlled by deployment, never by query parameters.
+OVERPASS_URL = env('OVERPASS_URL', default='https://overpass-api.de/api/interpreter')
+# Explicit opt-in: configure an instance/provider appropriate to this app.
+NOMINATIM_URL = env('NOMINATIM_URL', default='')
+GEO_USER_AGENT = env('GEO_USER_AGENT', default='AcessoJa/2.0 (https://github.com/acessoja/acessoja-app)')
+EXTERNAL_PLACES_CACHE_SECONDS = env.int('EXTERNAL_PLACES_CACHE_SECONDS', default=300)
+CACHES = {'default': env.cache('CACHE_URL', default='locmemcache://acessoja-geographic')}

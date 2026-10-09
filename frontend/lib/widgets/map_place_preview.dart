@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
 import '../l10n/strings.dart';
+import '../models/map_place.dart';
 
 /// Resumo do estabelecimento exibido ao tocar em um marcador do mapa.
 class MapPlacePreview extends StatelessWidget {
@@ -27,6 +28,8 @@ class MapPlacePreview extends StatelessWidget {
     final address = (place['endereco'] ?? '').toString();
     final isOpen = place['aberto'] != false;
     final rating = (place['media_estrelas'] as num?)?.toDouble() ?? 0;
+    final model = place['source'] == 'openstreetmap'
+        ? MapPlace.external(place) : MapPlace.internal(place);
 
     final accessibility = <({IconData icon, String label})>[
       if (_isEnabled('cao_guia'))
@@ -120,6 +123,11 @@ class MapPlacePreview extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 14),
+              Text('${model.sourceLabel} · ${model.categoryLabel}',
+                style: TextStyle(color: colors.muted, fontWeight: FontWeight.w600)),
+              if (!model.hasCommunityReviews)
+                const Text('Ainda não avaliado no AcessoJá'),
+              const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -128,11 +136,11 @@ class MapPlacePreview extends StatelessWidget {
                     icon: Icons.near_me_outlined,
                     label: distanceLabel,
                   ),
-                  _InfoChip(
+                  if (model.hasCommunityReviews) _InfoChip(
                     icon: Icons.star_rounded,
                     label: context.number(rating),
                   ),
-                  _InfoChip(
+                  if (!model.isExternal && model.externalId == null) _InfoChip(
                     icon: isOpen
                         ? Icons.check_circle_outline
                         : Icons.cancel_outlined,
@@ -164,6 +172,16 @@ class MapPlacePreview extends StatelessWidget {
                       .toList(growable: false),
                 ),
               ],
+              const SizedBox(height: 10),
+              const Text('Recursos não informados: acessibilidade desconhecida.'),
+              if (model.isExternal && place['additional_data'] is Map &&
+                  (place['additional_data'] as Map)['opening_hours'] != null)
+                Text('Horário informado no OSM: '
+                  '${(place['additional_data'] as Map)['opening_hours']}'),
+              if (model.isExternal && place['accessibility_data'] is Map &&
+                  (place['accessibility_data'] as Map).isNotEmpty)
+                Text('Informações do OSM (sem verificação AcessoJá): '
+                  '${(place['accessibility_data'] as Map).entries.map((e) => '${e.key}: ${e.value}').join(', ')}'),
               const SizedBox(height: 18),
               Row(
                 children: [
@@ -171,7 +189,7 @@ class MapPlacePreview extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: onDetailsPressed,
                       icon: const Icon(Icons.info_outline_rounded, size: 18),
-                      label: Text(context.l10n.details),
+                      label: Text(model.isExternal ? 'Contribuir' : context.l10n.details),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: colors.primaryDark,
                         side: BorderSide(color: colors.primary),

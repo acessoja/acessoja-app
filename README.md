@@ -208,15 +208,16 @@ aplicação das migrations e testes com pytest, exigindo cobertura mínima de 65
 
 ## 👥 Contribuindo
 
-O time trabalha com `main` (estável) + `develop` (integração) e **Pull Request
-obrigatório com 1 aprovação**, com o Quality Gate como required status check.
+Para esta entrega, trabalhe a partir de `main` atualizada e abra o Pull Request
+para `main`, com revisão humana e o Quality Gate como required status check.
 
 O combinado completo — nomes de branch, mensagens de commit, revisão,
 conflitos, migrations, proteção de branch e o checklist antes do PR — está em
 **[CONTRIBUTING.md](CONTRIBUTING.md)**. Leia antes do primeiro Pull Request.
 
 ```bash
-git checkout develop && git pull origin develop
+git checkout main
+git pull --ff-only origin main
 git checkout -b feature/minha-tarefa
 # ... código ...
 git commit -m "feat(escopo): descricao curta"
@@ -240,3 +241,136 @@ Este projeto foi desenvolvido para fins educacionais e de impacto social. Sinta-
 <p align="center">
 Desenvolvido com ❤️ para um mundo mais acessível.
 </p>
+
+## Sprint 2 — descoberta de estabelecimentos externos
+
+O mapa da Sprint 1 é mantido. A nova integração segue o fluxo
+**Flutter → Django → Overpass/OpenStreetMap**. A aplicação não cadastra
+automaticamente os resultados externos nem envia IDs OSM às rotas internas
+de visitas e avaliações. O contrato de `GET /api/locais/` continua compatível;
+`categoria`, `categoria_label`, `osm_id` e `quantidade_avaliacoes` são aditivos.
+Os novos contratos estão documentados no Swagger pelas próprias views.
+
+### Funcionamento
+
+- Locais AcessoJá usam o marcador de pino; locais OSM usam um globo com uma
+  caixa de nome diferente. A origem também aparece em texto e na semântica.
+- A busca filtra nome, endereço, categoria e bairro dos resultados carregados,
+  com debounce local. Consultas geográficas só ocorrem ao confirmar a pesquisa.
+- Os filtros de origem/categoria complementam os cinco filtros existentes.
+  Um `false` legado ou uma tag OSM não significa um recurso verificado como
+  indisponível: no mapa, informação ausente permanece desconhecida.
+- Mover o mapa apenas habilita **Buscar nesta área**. A consulta externa é
+  limitada ao círculo que cobre a região visível, com raio máximo de 3 km.
+  Se a região for maior, aproxime o mapa. Novas consultas substituem a lista
+  externa anterior; falhas não removem resultados válidos da fonte interna.
+- Selecionar um resultado centraliza o mapa, destaca seu marcador e abre a
+  prévia. A ação **Rota** usa as coordenadas no OSRM e exige uma posição real.
+  Uma rota OSRM comum não representa um trajeto acessível verificado.
+- **Contribuir** abre confirmação de nome/endereço e exige a senha do usuário
+  autenticado por HTTP Basic nessa única escrita (ou sessão no backend).
+  Como o login legado não retorna token, a senha é solicitada nessa ação,
+  sem persistência no dispositivo. Use HTTPS fora do desenvolvimento local.
+- O servidor recebe um token assinado dos resultados da busca, com validade
+  de 15 minutos. Coordenadas, categoria e ID OSM são recuperados do token,
+  sem confiar em IDs/coordenadas arbitrários enviados pelo cliente.
+- Após confirmar o cadastro (ou localizar um cadastro anterior), a tela
+  existente de detalhes é aberta com `id_local`. A avaliação segue a regra
+  atual: é necessário iniciar uma rota/registrar uma visita antes de avaliar.
+  O novo fluxo não cria nem altera avaliações de terceiros.
+
+### Configuração e limites dos serviços
+
+Execute `pip install -r backend/requirements.txt` e `python manage.py migrate`.
+A migration `0006` adiciona somente dois campos opcionais, sem apagar registros,
+visitas ou avaliações. Nenhuma dependência Flutter foi adicionada; no Python,
+`requests>=2.32.3,<3` passa a ser uma dependência direta da integração.
+
+Copie as variáveis comentadas de `.env.example` para seu `.env` existente.
+Não sobrescreva credenciais/configurações já preenchidas.
+
+`OVERPASS_URL` aponta inicialmente para a instância pública, para demonstrações
+acadêmicas pequenas e limitadas. Há cache de 300 segundos, uma consulta ativa
+por provedor, cooldown de 15 segundos após a chamada (60 segundos em caso de
+429), máximo de 100 locais retornados e até 500 objetos OSM inspecionados.
+A resposta HTTP é limitada a 2 MiB; os timeouts são 3 s para conectar e 12 s de
+leitura, com deadline adicional de transferência. Resultados limitados são
+indicados na interface. Não há retries automáticos em loop.
+
+O catálogo OSM é centralizado em `locais/services/categories.py`; os seletores
+Flutter recebem as categorias pela API, sem montar consultas QL no cliente.
+Latitude/longitude, raio (100–3000 m), limite (1–100) e categoria são validados.
+Os endpoints geográficos aceitam até 20 consultas/min por IP anônimo ou
+40/min por usuário autenticado; o gate global continua valendo para ambos.
+
+**Nominatim é opt-in:** `NOMINATIM_URL` vem vazio. Configure uma instância
+própria ou um provedor compatível para buscar endereços/regiões não encontrados
+nos resultados locais. A descoberta por mapa/Overpass funciona sem Nominatim.
+Se você decidir deliberadamente usar o serviço público do Nominatim, leia sua
+[política de uso](https://operations.osmfoundation.org/policies/nominatim/):
+no máximo 1 requisição/s para o app inteiro, identificação do aplicativo,
+atribuição, cache e proibição de autocomplete. O proxy desta sprint é mais
+conservador (uma consulta ativa, cooldown de 2 s e cache de geocodificação de
+24 h). A posição GPS não dispara consultas periódicas de geocodificação.
+Não use o endpoint como um serviço genérico de geocodificação.
+
+O cache padrão `locmemcache` funciona em **um processo**. Com vários workers,
+configure cache compartilhado com operações atômicas `add`, por exemplo Redis
+(`pip install redis` e `CACHE_URL=rediscache://127.0.0.1:6379/1`). Para tráfego
+contínuo/produção, configure Overpass próprio ou provedor com capacidade
+adequada; a instância pública não deve sustentar o app como backend permanente.
+Consulte o [manual de utilização Overpass](https://dev.overpass-api.de/overpass-doc/en/preface/commons.html)
+e a [política de tiles OSM](https://operations.osmfoundation.org/policies/tiles/).
+A atribuição OSM/ODbL é exibida no mapa e no retorno da integração.
+
+### Deduplicação e compatibilidade
+
+O identificador é composto: `osm:node:123`, `osm:way:123` e
+`osm:relation:123` representam objetos distintos. `osm_id` é único, opcional e
+somente leitura no serializer público. Importações repetidas retornam o mesmo
+local; a restrição única e o bloqueio da linha protegem escritas concorrentes.
+
+Um vínculo explícito prevalece. Sem vínculo, só se considera correspondência
+forte com nome normalizado **igual**, endereço normalizado **igual**, até 25 m
+entre coordenadas e sem conflito de categoria. Se houver mais de um candidato,
+os registros permanecem separados. Lojas diferentes no mesmo shopping não
+são agrupadas por endereço/proximidade apenas. Essa regra evita falsos positivos
+mas pode deixar duplicatas com endereços abreviados para revisão futura.
+
+Os dados e a média de avaliações do registro interno sempre prevalecem. A
+combinação ocorre antes dos filtros de acessibilidade. Os campos booleanos
+existentes não são convertidos para nulos. Categorias de registros antigos
+continuam desconhecidas até serem informadas; não são inferidas pelo nome.
+
+`distancia` conserva seu contrato legado. No cadastro OSM, o campo obrigatório
+recebe zero como placeholder **não medido**. A distância dinâmica exibida no
+mapa é calculada separadamente no DTO, somente quando há GPS válido. Tags de
+horário OSM são exibidas como texto de origem; não confirmam que o local esteja
+aberto agora. A prévia não mostra status de funcionamento para locais OSM
+ou registros vinculados, evitando tratar o padrão legado como horário real.
+
+A geolocalização tem timeout, mensagem de permissão negada/bloqueada, serviço
+indisponível, baixa precisão e contexto inseguro no Web. Anápolis é somente o
+centro inicial de referência; nenhum ponto de usuário ou rota é inventado.
+
+### Validação da entrega
+
+Os testes novos de backend mockam HTTP externo e cobrem parâmetros, normalização
+node/way/relation, cache, limites, 429/5xx, timeout, respostas malformadas,
+deduplicação, importação autenticada/idempotente e preservação por migration.
+`frontend/test/map_sprint2_test.dart` acrescenta testes do DTO, serviços, mapa,
+origens/categorias, busca, falhas parciais, localização, rotas e contribuição.
+Os testes da Sprint 1 foram preservados.
+
+Resultados e limitações efetivamente verificados estão em
+`INSTRUCOES_APLICACAO.txt`. A validação Flutter/Android ainda deve ser executada
+com o SDK fixado pelo projeto; análise sintática isolada não substitui
+`flutter analyze`, `flutter test` ou o build. Esta entrega não altera as
+permissões públicas legadas do restante da aplicação.
+
+Para esta entrega, siga a regra do prompt: branch
+`feature/sprint-2-locais-externos`, com PR para **main**. Commit, push e PR são
+operações manuais do usuário. A revisão humana e o Quality Gate precisam passar
+antes do merge. Para a próxima sprint, considerar revisão de vínculos OSM e
+melhorias de apresentação em grandes conjuntos; rotas acessíveis ficam para a
+Sprint 4.
