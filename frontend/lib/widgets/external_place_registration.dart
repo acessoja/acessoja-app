@@ -1,3 +1,5 @@
+import '../l10n/contribution_strings.dart';
+import '../services/app_http.dart';
 import 'package:flutter/material.dart';
 
 import '../services/places_service.dart';
@@ -64,34 +66,35 @@ class _RegistrationState extends State<ExternalPlaceRegistration> {
   Widget build(BuildContext context) => PopScope(
     canPop: !_saving,
     child: AlertDialog(
-      title: const Text('Contribuir com o AcessoJá'),
+      title: Text(context.contributionText('Contribuir com o AcessoJá', 'Contribute to AcessoJá')),
       content: SingleChildScrollView(
         child: Form(key: _form, child: Column(mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            const Text('Confirme os dados do OpenStreetMap. A acessibilidade '
-              'será informada no fluxo de avaliação do local, após iniciar uma rota.'),
+            Text(context.contributionText('Confirme os dados do OpenStreetMap. A acessibilidade será informada no fluxo de avaliação após confirmar o cadastro.',
+              'Confirm the OpenStreetMap information. Accessibility can be described in a review after registration.')),
             const SizedBox(height: 12),
             TextFormField(controller: _name, maxLength: 255,
               enabled: !_saving, validator: _required,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Nome do local')),
+              decoration: InputDecoration(labelText: context.contributionText('Nome do local', 'Place name'))),
             TextFormField(controller: _address, maxLength: 255,
               enabled: !_saving, validator: _required,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Endereço')),
-            TextFormField(controller: _password, obscureText: true,
+              decoration: InputDecoration(labelText: context.contributionText('Endereço', 'Address'))),
+            if (AppHttp.token == null) TextFormField(controller: _password, obscureText: true,
               enabled: !_saving, validator: _required,
               autocorrect: false, enableSuggestions: false,
-              decoration: const InputDecoration(labelText: 'Confirme sua senha'),
+              decoration: InputDecoration(labelText: context.contributionText('Confirme sua senha', 'Confirm your password')),
               onFieldSubmitted: (_) => _submit()),
             if (_error != null) Semantics(liveRegion: true, child: Text(_error!)),
           ])),
       ),
       actions: [
         TextButton(onPressed: _saving ? null : () => Navigator.pop(context),
-          child: const Text('Cancelar')),
+          child: Text(context.contributionText('Cancelar', 'Cancel'))),
         FilledButton(onPressed: _saving ? null : _submit,
-          child: Text(_saving ? 'Confirmando cadastro…' : 'Confirmar cadastro')),
+          child: Text(_saving ? context.contributionText('Confirmando cadastro…', 'Registering…') :
+            context.contributionText('Confirmar cadastro', 'Confirm registration'))),
       ],
     ),
   );

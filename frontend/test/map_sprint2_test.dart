@@ -1,3 +1,5 @@
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_application_1/screens/review_editor_screen.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -115,6 +117,10 @@ Future<void> pumpMap(WidgetTester tester, {LocationService? location}) async {
   await tester.pumpAndSettle();
   await tester.pump(const Duration(seconds: 5));
   await tester.pumpAndSettle();
+  final map = tester.widget<FlutterMap>(find.byType(FlutterMap));
+  map.mapController!.move(const LatLng(-16.3267, -48.9528), 19);
+  await tester.pump(const Duration(milliseconds: 150));
+  await tester.pumpAndSettle();
 }
 
 Future<void> openSearch(WidgetTester tester) async {
@@ -122,9 +128,40 @@ Future<void> openSearch(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+// The same name can also appear on a map marker behind the search sheet.
+Finder searchResult(String name) => find.descendant(
+  of: find.byType(MapSearchSheet),
+  matching: find.widgetWithText(ListTile, name),
+);
+
 void main() {
   setUp(() { requests = []; });
   tearDown(() => AppHttp.client.close());
+
+  testWidgets('avaliar externo confirma cadastro e abre editor com ID interno', (tester) async {
+    AppHttp.token = 'test-session';
+    addTearDown(AppHttp.clearSession);
+    mockApi(extra: (request) async {
+      if (request.url.path.endsWith('/cadastrar/')) {
+        expect(request.headers['authorization'], 'Token test-session');
+        return jsonResponse({...internal, 'id_local': 91, 'nome': external['nome'],
+          'endereco': external['endereco'], 'osm_id': external['external_id']}, 201);
+      }
+      return jsonResponse({}, 404);
+    });
+    await pumpMap(tester);
+    await tester.tap(find.byKey(const ValueKey('map-place-osm:way:7')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('preview-evaluate')));
+    await tester.pumpAndSettle();
+    expect(find.byType(ExternalPlaceRegistration), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Confirme sua senha'), findsNothing);
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirmar cadastro'));
+    await tester.pumpAndSettle();
+    final editor = tester.widget<ReviewEditorScreen>(find.byType(ReviewEditorScreen));
+    expect(editor.place['id_local'], 91);
+    expect(requests.where((r) => r.method == 'POST' && r.url.path.contains('visitas')), isEmpty);
+  });
 
   test('DTO preserva distancia legada e não inventa avaliações', () {
     final own = MapPlace.internal(internal);
@@ -189,9 +226,9 @@ void main() {
     final own = tester.widget<InkWell>(find.byKey(const ValueKey('map-place-7')));
     final osm = tester.widget<InkWell>(find.byKey(const ValueKey('map-place-osm:way:7')));
     expect(find.descendant(of: find.byWidget(own), matching: find.byIcon(Icons.location_on_rounded)), findsOneWidget);
-    expect(find.descendant(of: find.byWidget(osm), matching: find.byIcon(Icons.public)), findsOneWidget);
+    expect(find.descendant(of: find.byWidget(osm), matching: find.byIcon(Icons.public_outlined)), findsOneWidget);
     final semantics = tester.ensureSemantics();
-    expect(find.bySemanticsLabel(RegExp('OpenStreetMap, ainda não avaliado')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('OpenStreetMap.*Abrir local')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('map-place-osm:way:7')));
     await tester.pumpAndSettle();
     expect(find.byType(MapPlacePreview), findsOneWidget);
@@ -222,11 +259,16 @@ void main() {
     await openSearch(tester);
     await tester.enterText(find.byKey(const ValueKey('map-place-search')), 'cafe');
     await tester.pump(const Duration(milliseconds: 350));
-    expect(find.text('Café Externo'), findsOneWidget);
+    final result = searchResult('Café Externo');
+    expect(result, findsOneWidget);
+    expect(searchResult('Biblioteca Interna'), findsNothing);
     expect(requests.where((r) => r.url.path.contains('geocodificar')), isEmpty);
-    await tester.tap(find.text('Café Externo'));
+    await tester.tap(result);
     await tester.pumpAndSettle();
+    expect(find.byType(MapSearchSheet), findsNothing);
     expect(find.byType(MapPlacePreview), findsOneWidget);
+    expect(tester.widget<MapPlacePreview>(find.byType(MapPlacePreview)).place['id'],
+      external['id']);
     expect(tester.takeException(), isNull);
   });
 
@@ -268,8 +310,10 @@ void main() {
     await tester.ensureVisible(find.text('Filtrar'));
     await tester.tap(find.text('Filtrar'));
     await tester.pumpAndSettle();
-    expect(find.text('Café Externo'), findsOneWidget);
-    expect(find.text('Biblioteca Interna'), findsNothing);
+    expect(searchResult('Café Externo'), findsOneWidget);
+    expect(searchResult('Biblioteca Interna'), findsNothing);
+    expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsOneWidget);
+    expect(find.byKey(const ValueKey('map-place-7')), findsNothing);
   });
 
   testWidgets('filtro por categoria envia a categoria ao Django', (tester) async {
@@ -287,7 +331,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(requests.lastWhere((r) => r.url.path == '/api/locais/externos/')
       .url.queryParameters['categoria'], 'cafeteria');
-    expect(find.text('Biblioteca Interna'), findsNothing);
+    expect(searchResult('Biblioteca Interna'), findsNothing);
+    expect(find.byKey(const ValueKey('map-place-7')), findsNothing);
   });
 
   testWidgets('filtro de rampa mantém o local interno e exclui informação desconhecida', (tester) async {
@@ -302,8 +347,10 @@ void main() {
     await tester.ensureVisible(find.text('Filtrar'));
     await tester.tap(find.text('Filtrar'));
     await tester.pumpAndSettle();
-    expect(find.text('Biblioteca Interna'), findsOneWidget);
-    expect(find.text('Café Externo'), findsNothing);
+    expect(searchResult('Biblioteca Interna'), findsOneWidget);
+    expect(searchResult('Café Externo'), findsNothing);
+    expect(find.byKey(const ValueKey('map-place-7')), findsOneWidget);
+    expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsNothing);
   });
 
   testWidgets('estado vazio permite limpar filtros', (tester) async {
@@ -420,6 +467,7 @@ void main() {
     pending.complete(jsonResponse({'results': [external], 'truncated': false}));
     await tester.pumpAndSettle();
     expect(calls, 2);
-    expect(find.text('Café Externo'), findsNothing);
+    expect(searchResult('Café Externo'), findsNothing);
+    expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsNothing);
   });
 }

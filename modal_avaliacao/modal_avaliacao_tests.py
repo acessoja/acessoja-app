@@ -4,6 +4,7 @@ Cobre o modelo ModalAvaliacao e o endpoint /api/avaliacoes/modal-avaliacoes/,
 incluindo a regra de negocio que atualiza os flags de acessibilidade do
 Local (locais.models.Local) a partir das respostas do questionario.
 """
+
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
@@ -15,9 +16,7 @@ User = get_user_model()
 
 @pytest.fixture
 def usuario(db):
-    return User.objects.create_user(
-        nome="pedrolima", email="pedro@acessoja.com", password="senha@123"
-    )
+    return User.objects.create_user(nome="pedrolima", email="pedro@acessoja.com", password="senha@123")
 
 
 @pytest.fixture
@@ -46,8 +45,12 @@ class TestModalAvaliacaoModel:
 
     def test_str_retorna_descricao_legivel(self, local, usuario):
         avaliacao = ModalAvaliacao.objects.create(
-            local=local, user=usuario,
-            pergunta_1="Sim", pergunta_2="Sim", pergunta_3="Sim", pergunta_4="Sim",
+            local=local,
+            user=usuario,
+            pergunta_1="Sim",
+            pergunta_2="Sim",
+            pergunta_3="Sim",
+            pergunta_4="Sim",
         )
         assert str(avaliacao) == f"Avaliação de {local.nome} por {usuario.nome}"
 
@@ -67,15 +70,11 @@ class TestModalAvaliacaoAPI:
             "estrelas": 5,
             "comentario": "Fácil acesso",
         }
-        response = api_client.post(
-            "/api/avaliacoes/modal-avaliacoes/", payload, format="json"
-        )
+        response = api_client.post("/api/avaliacoes/modal-avaliacoes/", payload, format="json")
         assert response.status_code == 201
         assert ModalAvaliacao.objects.count() == 1
 
-    def test_respostas_sim_atualizam_flags_de_acessibilidade_do_local(
-        self, api_client, local, usuario
-    ):
+    def test_respostas_sim_atualizam_flags_de_acessibilidade_do_local(self, api_client, local, usuario):
         """Regra de negocio central do app: cada resposta 'Sim' liga um
         flag de acessibilidade correspondente no Local associado."""
         api_client.force_authenticate(user=usuario)
@@ -115,23 +114,27 @@ class TestModalAvaliacaoAPI:
     def test_filtrar_avaliacoes_por_local_id(self, api_client, local, usuario, db):
         outro_local = Local.objects.create(nome="Farmácia Sul", endereco="Rua C, 20", distancia=0.2)
         ModalAvaliacao.objects.create(
-            local=local, user=usuario,
-            pergunta_1="Sim", pergunta_2="Sim", pergunta_3="Sim", pergunta_4="Sim",
+            local=local,
+            user=usuario,
+            pergunta_1="Sim",
+            pergunta_2="Sim",
+            pergunta_3="Sim",
+            pergunta_4="Sim",
         )
         ModalAvaliacao.objects.create(
-            local=outro_local, user=usuario,
-            pergunta_1="Não", pergunta_2="Não", pergunta_3="Não", pergunta_4="Não",
+            local=outro_local,
+            user=usuario,
+            pergunta_1="Não",
+            pergunta_2="Não",
+            pergunta_3="Não",
+            pergunta_4="Não",
         )
-        response = api_client.get(
-            f"/api/avaliacoes/modal-avaliacoes/?local_id={local.id_local}"
-        )
+        response = api_client.get(f"/api/avaliacoes/modal-avaliacoes/?local_id={local.id_local}")
         assert response.status_code == 200
         assert len(response.data) == 1
         assert response.data[0]["local"] == local.id_local
 
-    def test_endpoint_e_publico_permite_acesso_anonimo(self, api_client, local, usuario):
-        """A view usa AllowAny — deve funcionar mesmo sem autenticação,
-        atribuindo a avaliação ao primeiro usuário cadastrado."""
+    def test_escrita_anonima_nao_atribui_avaliacao_a_usuario_existente(self, api_client, local, usuario):
         payload = {
             "local": local.id_local,
             "pergunta_1": "Sim",
@@ -140,7 +143,6 @@ class TestModalAvaliacaoAPI:
             "pergunta_4": "Não",
             "estrelas": 2,
         }
-        response = api_client.post(
-            "/api/avaliacoes/modal-avaliacoes/", payload, format="json"
-        )
-        assert response.status_code == 201
+        response = api_client.post("/api/avaliacoes/modal-avaliacoes/", payload, format="json")
+        assert response.status_code == 401
+        assert not ModalAvaliacao.objects.exists()

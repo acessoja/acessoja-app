@@ -25,25 +25,26 @@ class Local(models.Model):
         return self.nome
 
     class Meta:
-        db_table = 'local'
+        db_table = "local"
         managed = True
 
     @property
     def media_estrelas(self):
-        avaliacoes = self.avaliacoes.all()
+        avaliacoes = self.avaliacoes.filter(is_current=True, is_valid=True)
         if avaliacoes.exists():
-            return round(avaliacoes.aggregate(models.Avg('estrelas'))['estrelas__avg'], 1)
+            return round(avaliacoes.aggregate(models.Avg("estrelas"))["estrelas__avg"], 1)
         return 0.0
 
 
 class VisitaRecente(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='visitas')
-    local = models.ForeignKey(Local, on_delete=models.CASCADE, related_name='visitas')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="visitas")
+    local = models.ForeignKey(Local, on_delete=models.CASCADE, related_name="visitas")
     data_visita = models.DateTimeField(auto_now_add=True)
+    arrival_confirmed = models.BooleanField(default=False)
 
     class Meta:
-        db_table = 'visita_recente'
-        ordering = ['-data_visita']
+        db_table = "visita_recente"
+        ordering = ["-data_visita"]
         managed = True
 
     def __str__(self):

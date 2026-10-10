@@ -1,274 +1,63 @@
-ACESSOJÁ — ENTREGA DA SPRINT 2
-Integração de estabelecimentos externos, busca e geolocalização
+ACESSOJÁ — CORREÇÃO DOS TESTES DA SPRINT 2
 
-STATUS DA ENTREGA
-Código implementado e backend validado. Validação Flutter/Android pendente.
-Não considere o frontend aprovado antes de executar analyze, testes, build e
-conferência visual no seu ambiente. Nenhum commit, push, PR ou merge foi feito.
+Este ZIP complementa o desenvolvimento de mapa, navegação e avaliações
+entregue anteriormente. Ele contém somente o teste corrigido e este guia.
 
-1. RESUMO E AUDITORIA
-Base: acessoja-app-main (10).zip e os requisitos de Texto colado.txt.
-O ZIP de origem não contém .git; não foi possível consultar histórico local,
-verificar HEAD remoto ou confirmar alterações após o snapshot enviado. A consulta
-remota ao PR #16/commit também ficou indisponível. Compare o diff com main atual.
-O mapa Flutter Map, os tiles OSM, PlacesService, AppHttp, a prévia e a navegação
-OSRM foram reaproveitados. Não houve reconstrução do app ou remoção de arquivos.
+1. MOTIVO E CORREÇÃO
 
-Foram implementados:
-- Proxy Django para consultar Overpass por área/categoria, com validação, cache,
-  rate limiting, timeout, limites de tamanho/quantidade e tratamento de falhas.
-- Normalização de node, way e relation com identificadores compostos.
-- DTO MapPlace, combinação de fontes e deduplicação conservadora.
-- Marcadores distintos por forma/ícone, texto e semântica da origem.
-- Pesquisa local por nome, categoria, endereço e bairro, com debounce;
-  geocodificação de regiões/endereços por confirmação, usando provedor configurado.
-- Filtros de origem/categoria e preservação dos cinco filtros de acessibilidade.
-- Buscar nesta área, substituição da lista externa e descarte de respostas antigas.
-- Geolocalização com mensagens de permissão, timeout, baixa precisão e HTTPS.
-- Seleção, destaque, prévia e rotas OSRM também para estabelecimentos externos.
-- Contribuição com confirmação dos dados, autenticação e importação idempotente.
-- Testes automatizados, migration aditiva, configuração e documentação OpenAPI.
+Os nomes dos locais agora podem aparecer simultaneamente no rótulo de um
+marcador e na lista da busca. Os três testes que falharam usavam find.text
+em toda a árvore de widgets e esperavam encontrar somente um texto.
 
-2. ARQUIVOS NOVOS (12)
-- frontend/lib/models/map_place.dart
-- frontend/lib/services/location_service.dart
-- frontend/lib/widgets/external_place_registration.dart
-- frontend/test/map_sprint2_test.dart
-- locais/external_serializers.py
-- locais/external_views.py
-- locais/migrations/0006_local_categoria_local_osm_id.py
-- locais/services/__init__.py
-- locais/services/categories.py
-- locais/services/external_places_service.py
-- locais/services/matching.py
-- locais/test_external_places.py
+O seletor searchResult agora procura o ListTile do local somente dentro
+de MapSearchSheet. As verificações continuam exigindo um único resultado.
+O teste de busca toca nesse item, verifica que a busca fechou e confirma
+o ID do local na prévia. Os testes de filtro também verificam os marcadores.
+Os testes originais foram preservados, incluindo debounce, geocodificação,
+origem, categoria, acessibilidade e descarte de respostas antigas.
 
-3. ARQUIVOS MODIFICADOS (11)
-- .env.example
-- INSTRUCOES_APLICACAO.txt
-- README.md
-- acessoja/settings.py
-- backend/requirements.txt
-- frontend/lib/screens/main_screen.dart
-- frontend/lib/services/places_service.dart
-- frontend/lib/widgets/map_place_preview.dart
-- locais/models.py
-- locais/serializers.py
-- locais/urls.py
+2. APLICAÇÃO NO WINDOWS
 
-4. FINALIDADE DAS ALTERAÇÕES E ARQUITETURA
-Frontend -> API Django -> serviço Overpass -> dados OSM normalizados.
-locais/services centraliza categorias, transporte, cache e correspondência.
-external_serializers e external_views validam/documentam os novos contratos.
-models e migration 0006 adicionam categoria e osm_id opcionais, sem alterar flags
-ou apagar avaliações/visitas. Serializer expõe metadados de forma aditiva;
-osm_id é somente leitura no endpoint público. urls registra as novas views.
-MapPlace distingue origens e mantém distância dinâmica fora de distancia legado.
-MainScreen preserva o mapa e integra carregamento independente, filtros, busca,
-marcadores, estados, GPS, seleção e contribuição. PlacesService usa o backend
-para Overpass/geocodificação. MapPlacePreview mostra origem, dados disponíveis e
-contribuição, sem rating fictício. LocationService permite testar GPS sem plugin.
-ExternalPlaceRegistration autentica a escrita sem armazenar a senha.
-README e .env.example explicam configuração, limites, políticas e compatibilidade.
+Extraia o ZIP em uma pasta separada. Copie somente:
 
-5. DEPENDÊNCIAS E CONFIGURAÇÃO
-Adicionada dependência Python direta: requests>=2.32.3,<3.
-Nenhuma dependência Flutter adicionada.
-Use o Python 3.12 e o SDK Flutter fixado pelo projeto em frontend/.fvmrc.
+    frontend\test\map_sprint2_test.dart
 
-Instale requirements e aplique migrate. Preserve seu .env existente. Copie para
-ele apenas as variáveis novas de .env.example, conforme README:
-- OVERPASS_URL: padrão público para demonstrações pequenas e limitadas.
-- GEO_USER_AGENT: identifica o aplicativo.
-- EXTERNAL_PLACES_CACHE_SECONDS: padrão 300 s.
-- CACHE_URL: locmemcache para um processo; cache compartilhado para vários workers.
-- NOMINATIM_URL: vem vazio. Configure instância própria/provedor adequado para
-  pesquisar endereços/regiões que não estejam entre os locais carregados.
+para o mesmo caminho dentro de C:\Users\USER\acessoja-app, substituindo
+o arquivo anterior. Se você fez outras alterações nesse teste depois do
+pacote anterior, compare os arquivos antes de substituir.
 
-Para optar deliberadamente por Nominatim público, leia antes a política no README:
-limite para o app inteiro, cache, identificação, atribuição e sem autocomplete.
-A descoberta por mapa/Overpass não depende de NOMINATIM_URL.
-Em produção, use HTTPS e instância/provedor Overpass apropriado. O cache local
-não coordena vários workers. Redis é opcional e exige instalar o pacote redis.
+Leia este guia na pasta extraída. Preserve o INSTRUCOES_APLICACAO.txt do
+desenvolvimento anterior, que contém as instruções de backend e migrações.
 
-6. VALIDAÇÃO EFETIVAMENTE EXECUTADA
-Ambiente: Python 3.12, Django 5.1.3, SQLite isolado, sem dados do usuário.
+Esta atualização altera somente testes; não exige novas dependências,
+migrações ou mudanças no aplicativo.
 
-- pytest -v --cov=. --cov-report=term-missing --cov-fail-under=65:
-  145 testes passaram; cobertura total 88,91% (inclui branch coverage).
-  Desses, 97 testes são novos da integração e 48 são do snapshot original.
-- pytest locais/test_external_places.py -q: 97 testes passaram.
-- flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv
-  --statistics --count: 0 violações (incluindo plugin flake8-django-hhupd 1.4.1).
-- python manage.py check: sem problemas.
-- python manage.py makemigrations --check --dry-run: nenhuma alteração pendente.
-- python manage.py migrate: migrations aplicadas em banco limpo; nova 0006 OK.
-- python manage.py spectacular --fail-on-warn: schema gerado, sem avisos/erros.
-- Consulta real Overpass (Anápolis, raio 300 m, limite 5): respondeu com erro
-  tratado de timeout HTTP 504 neste ambiente. Integração real ainda precisa de
-  homologação no seu ambiente; os 145 testes de backend usam mocks externos.
-- Parsing sintático Dart: os 7 arquivos Dart novos/modificados foram inspecionados
-  com tree-sitter, sem erros de sintaxe. NÃO equivale a análise de tipos, execução
-  de widgets, Flutter analyze ou compilação.
+3. VALIDAÇÃO NO SEU COMPUTADOR
 
-NÃO VALIDADO LOCALMENTE:
-flutter analyze
-flutter test
-flutter build apk --debug
-Motivo: Flutter/Dart/Android SDK não disponíveis neste ambiente. Os comandos
-retornaram "flutter: command not found" e as tentativas de obter o SDK falharam.
-Os testes Flutter novos estão implementados, mas seu resultado ainda é pendente.
-Não foi removido ou desativado nenhum teste preexistente.
+No PowerShell, dentro da pasta frontend:
 
-7. LIMITAÇÕES E REGRAS PRESERVADAS
-- Homologação Flutter Web/Chrome, mobile, teclado, semântica, layout e APK deve
-  ser concluída na sua máquina; ainda não há prints/vídeo dessa implementação.
-- A suíte usa mocks HTTP e não depende da disponibilidade dos serviços OSM.
-- PostgreSQL e concorrência real entre workers não foram homologados aqui;
-  cenários de corrida foram testados por simulação e restrição única do modelo.
-- Deduplicação sem vínculo exige mesmo nome e endereço normalizados, até 25 m,
-  sem categoria conflitante e um único candidato. Ambiguidades ficam separadas.
-  Endereços abreviados podem deixar duplicatas para revisão futura.
-- Registros antigos sem categoria continuam com categoria não informada;
-  não foram classificados automaticamente ou alterados em massa.
-- Flags false legadas e tags OSM não são tratadas como indisponibilidade
-  verificada. Os filtros positivos mostram recursos informados no AcessoJá.
-- distancia não foi reutilizada como distância GPS: novos cadastros OSM recebem
-  zero como placeholder não medido exigido pelo contrato antigo. O DTO calcula
-  a distância do mapa separadamente e somente com localização válida.
-- Cadastro OSM exige senha válida do usuário em uma escrita HTTP Basic ou sessão.
-  Não há armazenamento de senha. Token de dados assinado expira em 15 minutos;
-  em caso de expiração, refaça a busca. IDs OSM não vão aos endpoints internos.
-- Ao concluir o cadastro, abre-se a tela existente de detalhes. A avaliação
-  preserva a regra atual de iniciar rota/registrar visita; o cadastro não simula
-  visita nem cria automaticamente avaliação.
-- As permissões públicas legadas de outros endpoints não foram ampliadas ou
-  redesenhadas nesta sprint. O novo endpoint de cadastro exige autenticação.
-- O centro inicial Anápolis não representa GPS real. Não se inventa ponto de
-  usuário, rating ou rota acessível; rotas acessíveis ficam para a Sprint 4.
-- Gate externo: uma consulta ativa por provedor e cooldown; 429/5xx/timeouts
-  geram feedback para tentar novamente. Não há retry automático em loop.
+    flutter analyze
+    flutter test test/map_sprint2_test.dart
+    flutter test
 
-8. APLICAÇÃO MANUAL NO WINDOWS / POWERSHELL
-Na raiz do seu repositório acessoja-app, verifique primeiro:
+Para conferir a compilação para navegador:
 
-git status
+    flutter build web
 
-Se houver alterações locais, preserve/revise antes de trocar de branch. Não
-sobrescreva trabalho não salvo. Com a árvore pronta para troca, execute:
+No log enviado, os 27 testes de map_navigation_contributions_test.dart
+passaram. As três falhas da Sprint 2 foram os seletores por texto duplicado.
+As mensagens places_load_failed_500 e ClientException: offline aparecem
+nos cenários que simulam falhas de rede. As mensagens de versões mais
+novas disponíveis não são a causa das três falhas de teste.
 
-git checkout main
-git pull --ff-only origin main
-git checkout -b feature/sprint-2-locais-externos
+Verificação feita nesta correção: sintaxe Dart válida, revisão dos seletores
+contra a estrutura real da busca e preservação dos testes originais.
+Flutter/Dart não estão instalados no ambiente de desenvolvimento usado
+para esta correção, portanto a execução dos comandos acima está pendente.
 
-Se essa branch já existir, confira seu conteúdo antes de escolher outro nome.
-Compare o snapshot recebido com main atual: não aplique cegamente sobre
-alterações mais recentes nos mesmos arquivos.
+Nenhum comando Git de commit, push, merge ou criação de PR foi executado.
 
-Baixe acessoja_sprint2_locais_externos.zip. Extraia diretamente na raiz de
-acessoja-app, substituindo os caminhos correspondentes, sem pasta extra.
-Exemplo PowerShell (ajuste o caminho do download quando necessário):
+4. ARQUIVOS NO ZIP
 
-$taskZip = Join-Path $env:USERPROFILE 'Downloads\acessoja_sprint2_locais_externos.zip'
-Expand-Archive -LiteralPath $taskZip -DestinationPath . -Force
-
-git status
-git diff --stat
-git diff
-
-O ZIP tem somente 23 arquivos necessários. Se aparecerem arquivos inesperados,
-pare e revise antes do commit. Nenhum arquivo deve ser excluído pela aplicação.
-A .env.example pode ser substituída; o seu .env não faz parte do ZIP.
-
-9. COMANDOS PARA VALIDAR NA SUA MÁQUINA
-Ative o venv existente do projeto. Exemplos (use apenas o caminho que existir):
-.\.venv\Scripts\Activate.ps1
-ou
-.\venv\Scripts\Activate.ps1
-
-python -m pip install -r backend/requirements.txt
-python -m pip install pytest pytest-django pytest-cov flake8 flake8-django-hhupd==1.4.1
-
-Configure .env/variáveis seguindo o README antes de rodar Django.
-python manage.py check
-python manage.py makemigrations --check --dry-run
-python manage.py migrate
-python manage.py spectacular --fail-on-warn
-pytest -v --cov=. --cov-report=term-missing --cov-fail-under=65
-flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv --statistics --count
-
-Set-Location frontend
-flutter pub get
-flutter analyze
-flutter test
-flutter build apk --debug
-Set-Location ..
-
-Se usa FVM, substitua flutter por fvm flutter e respeite .fvmrc.
-Faça a conferência visual no Chrome/dispositivo, registre prints/vídeo e teste:
-origens, busca por nome/endereço, filtros, Buscar nesta área, GPS/permissões,
-rota externa, falha parcial e contribuição com senha inválida/válida.
-Aguarde o cooldown ou utilize cache em consultas repetidas; não faça testes de
-carga nas instâncias públicas. Cadastros manuais de teste devem usar um banco
-local de desenvolvimento, sem criar estabelecimentos fictícios em produção.
-
-10. COMMIT SUGERIDO (EXECUÇÃO SOMENTE PELO USUÁRIO)
-feat(map): integra estabelecimentos externos e melhora busca
-
-Após revisar o diff e validar, selecione explicitamente os arquivos da lista
-acima para staging. Então faça manualmente commit e push da branch:
-
-git commit -m "feat(map): integra estabelecimentos externos e melhora busca"
-git push -u origin feature/sprint-2-locais-externos
-
-Nenhum desses comandos foi executado pela IA.
-
-11. PULL REQUEST SUGERIDO
-Destino obrigatório para esta entrega: main.
-Título: feat(map): integra locais externos, busca e contribuição
-
-Descrição sugerida:
-
-## O que este PR faz
-Integra estabelecimentos OpenStreetMap ao mapa existente, com proxy Django,
-cache, limites, origem identificada, deduplicação e filtros. Permite confirmar
-cadastro externo com autenticação antes de usar o fluxo interno de avaliações.
-Também melhora o tratamento de geolocalização e de falhas parciais.
-
-## Cartão / issue
-Preencher o link do cartão/issue da Sprint 2.
-
-## Como testar
-1. Instalar requirements, configurar provedores e executar migrate.
-2. Executar pytest, flake8, check e spectacular --fail-on-warn.
-3. No frontend, executar flutter analyze, flutter test e o build debug.
-4. Testar no mapa as origens, filtros, busca por área, GPS, rota e contribuição.
-
-## Prints / vídeo
-Adicionar evidências da interface após a validação local do Flutter.
-
-## Validação
-Backend local: 145 testes passaram, cobertura 88,91%, flake8 sem violações,
-Django/migrations/OpenAPI verificados. Flutter/Android pendentes no ambiente de
-entrega; atualizar esta seção após executá-los. Quality Gate remoto não executado.
-
-## Checklist
-- [ ] Branch saiu da main atualizada e o PR aponta para main
-- [ ] Quality Gate verde, incluindo flutter analyze/test/build
-- [x] Novos endpoints documentados no OpenAPI
-- [x] Migration aditiva e testada quanto à preservação dos dados
-- [ ] Prints/vídeo adicionados e interface conferida
-- [ ] Revisão humana concluída
-
-Abra o PR manualmente após o push. Não faça merge com verificações pendentes.
-
-12. PRÓXIMOS PASSOS PERTINENTES
-Depois de homologar esta entrega, planejar para a Sprint 3 revisão de vínculos
-ambíguos e apresentação de conjuntos maiores conforme necessidade real.
-Não foi implementada antecipadamente a navegação acessível da Sprint 4.
-
-13. CONTEÚDO DO PACOTE
-ZIP: acessoja_sprint2_locais_externos.zip, com caminhos relativos à raiz.
-Inclui apenas os 12 arquivos novos e 11 modificados listados, incluindo este
-INSTRUCOES_APLICACAO.txt. Não contém .git, .env, venv, caches, banco, builds,
-credenciais reais, tokens de sessão ou arquivos temporários.
+    frontend/test/map_sprint2_test.dart
+    INSTRUCOES_APLICACAO.txt

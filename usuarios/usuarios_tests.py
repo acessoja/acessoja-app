@@ -3,6 +3,7 @@ Testes automatizados — app: usuarios
 Cobre o modelo Usuario (autenticação customizada) e os endpoints de
 perfil, troca de senha e upload de foto.
 """
+
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
@@ -21,8 +22,10 @@ def usuario(db):
 
 
 @pytest.fixture
-def api_client():
-    return APIClient()
+def api_client(usuario):
+    client = APIClient()
+    client.force_authenticate(user=usuario)
+    return client
 
 
 class TestUsuarioModel:
@@ -30,9 +33,7 @@ class TestUsuarioModel:
 
     def test_criacao_usuario_basico(self, db):
         """Usuario deve ser criado com os campos obrigatórios."""
-        user = User.objects.create_user(
-            nome="joaosouza", email="joao@acessoja.com", password="123456"
-        )
+        user = User.objects.create_user(nome="joaosouza", email="joao@acessoja.com", password="123456")
         assert user.id_usuario is not None
         assert user.nome == "joaosouza"
         assert user.check_password("123456")
@@ -54,11 +55,10 @@ class TestUsuarioModel:
         assert usuario.permitir_sugestoes is True
         assert usuario.perfil_publico is True
 
-    def test_usuario_sempre_tem_permissoes_administrativas(self, usuario):
-        """Propriedades is_staff/is_superuser/is_active são fixas em True
-        nesta implementação (comportamento atual do modelo)."""
-        assert usuario.is_staff is True
-        assert usuario.is_superuser is True
+    def test_usuario_comum_nao_tem_permissoes_administrativas(self, usuario):
+        assert usuario.is_staff is False
+        assert usuario.is_superuser is False
+        assert usuario.has_perm("modal_avaliacao.change_modalavaliacao") is False
         assert usuario.is_active is True
 
     def test_str_retorna_nome(self, usuario):

@@ -104,7 +104,7 @@ bool sameEstablishment(MapPlace internal, MapPlace external) {
   if (internal.externalId != null) {
     return internal.externalId == external.externalId;
   }
-  if (!internal.hasCoordinates || !external.hasCoordinates) return false;
+  if (!internal.hasCoordinates || !external.hasCoordinates) { return false; }
   if (normalizePlaceText(internal.name).isEmpty ||
       normalizePlaceText(internal.name) != normalizePlaceText(external.name)) {
     return false;
@@ -129,7 +129,7 @@ List<MapPlace> mergeMapPlaces(
       continue;
     }
     final matches = internal.where((p) => sameEstablishment(p, place));
-    if (matches.length == 1) continue;
+    if (matches.length == 1) { continue; }
     result.putIfAbsent(place.id, () => place);
   }
   return result.values.toList(growable: false);
