@@ -2,13 +2,10 @@ import '../widgets/load_error.dart';
 import '../navigation.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import '../services/app_http.dart';
 
 import '../app_theme.dart';
-import '../config.dart';
 import '../services/api_service.dart';
 import '../widgets/evaluation_survey_dialog.dart';
 
@@ -35,7 +32,6 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
   int _selectedStars = 0;
   bool _isLoading = true;
   bool _loadFailed = false;
-  bool _hasVisited = false;
 
   @override
   void dispose() {
@@ -55,11 +51,8 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
       _loadFailed = false;
     });
 
-    await Future.wait([
-      _fetchEvaluations(),
-      _checkIfVisited(),
-    ]);
-    if (!mounted) return;
+    await _fetchEvaluations();
+    if (!mounted) { return; }
 
     setState(() => _isLoading = false);
   }
@@ -69,44 +62,14 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
       final data = await _apiService.fetchEvaluations(
         localId: widget.place['id_local'],
       );
-      if (!mounted) return;
+      if (!mounted) { return; }
 
       setState(() {
         comments = data;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) { return; }
       debugPrint("Error fetching evaluations: $e");
-      _loadFailed = true;
-    }
-  }
-
-  Future<void> _checkIfVisited() async {
-    try {
-      final response = await AppHttp.get(
-        Uri.parse(
-          '${Config.baseUrl}/api/visitas/?nome_usuario=${Uri.encodeComponent(widget.userName)}',
-        ),
-      );
-      if (!mounted) return;
-
-      if (response.statusCode == 200) {
-        final List data = json.decode(utf8.decode(response.bodyBytes));
-        final idLocal = widget.place['id_local'];
-        final visited = data.any((visit) {
-          final localDet = visit['local_detalhes'];
-          return localDet != null && localDet['id_local'] == idLocal;
-        });
-
-        setState(() {
-          _hasVisited = visited;
-        });
-      } else {
-        _loadFailed = true;
-      }
-    } catch (e) {
-      if (!mounted) return;
-      debugPrint("Error checking if visited: $e");
       _loadFailed = true;
     }
   }
@@ -125,11 +88,11 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
   String getLocalDisplayName(String name) {
     if (name == 'UniEVANGÉLICA') {
       return 'UniEVANGÉLICA \n Universidade Evangélica de Goiás';
-    } else if (name == 'Brasil Park Shopping') {
+    } else { if (name == 'Brasil Park Shopping') {
       return 'BRASIL PARK SHOPPING - Anápolis';
-    } else if (name == 'Correios - Anápolis') {
+    } else { if (name == 'Correios - Anápolis') {
       return 'CORREIOS - Anápolis';
-    }
+    } } }
 
     return name;
   }
@@ -150,7 +113,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
     String q3,
     String q4,
   ) async {
-    if (_isLoading) return;
+    if (_isLoading) { return; }
 
     setState(() {
       _isLoading = true;
@@ -167,13 +130,13 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
         estrelas: _selectedStars,
         comentario: _commentController.text.trim(),
       );
-      if (!mounted) return;
+      if (!mounted) { return; }
 
       if (result.success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              context.l10n.evaluationSent,
+              '${context.l10n.evaluationSent}${result.pointsDelta > 0 ? ' +${result.pointsDelta} pts' : ''}',
             ),
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(16),
@@ -210,7 +173,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
         });
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) { return; }
       debugPrint("Error sending evaluation: $e");
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -228,7 +191,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
         _isLoading = false;
       });
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) { setState(() => _isLoading = false); }
     }
   }
 
@@ -520,7 +483,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          if (_hasVisited) ...[
+          ...[
             const SizedBox(height: 18),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -640,36 +603,6 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
 
   Widget _buildEvaluationSection() {
     final colors = AppColors.of(context);
-
-    if (!_hasVisited) {
-      return Container(
-        margin: const EdgeInsets.only(top: 24, bottom: 24),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colors.warningSoft,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colors.warning.withValues(alpha: 0.55)),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.info_outline_rounded, color: colors.warning, size: 26),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                  'Você ainda não visitou este local recentemente. Para avaliá-lo, inicie uma rota clicando em "${context.l10n.startRoute}" acima.',                
-                  style: TextStyle(
-                  fontSize: 13,
-                  color: colors.warning,
-                  fontWeight: FontWeight.w500,
-                  height: 1.4,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
 
     return Container(
       margin: const EdgeInsets.only(top: 24, bottom: 24),

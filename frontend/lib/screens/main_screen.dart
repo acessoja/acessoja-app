@@ -1,3 +1,11 @@
+import '../widgets/adaptive_place_layer.dart';
+import '../widgets/navigation_panel.dart';
+import '../l10n/contribution_strings.dart';
+import '../services/navigation_controller.dart';
+import '../services/route_service.dart';
+import 'contributions_screen.dart';
+import 'review_editor_screen.dart';
+import 'place_reviews_screen.dart';
 import '../navigation.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -43,7 +51,7 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends SafeState<MainScreen> {
+class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final PlacesService _placesService = const PlacesService();
   late final LocationService _locationService =
@@ -60,12 +68,13 @@ class _MainScreenState extends SafeState<MainScreen> {
       final uri = Uri.parse(
           '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(widget.userName)}');
       final resp = await AppHttp.get(uri);
-      if (!mounted) return;
+      if (!mounted) { return; }
       if (resp.statusCode == 200) {
         final data = json.decode(utf8.decode(resp.bodyBytes));
         setState(() {
           _unidadeDistancia = data['unidade_distancia'] ?? 'KM';
           _allowSuggestions = data['permitir_sugestoes'] != false;
+          _historyConsent = data['historico_visivel'] == true && data['compartilhar_localizacao'] == true;
           _nomeCompleto = (data['nome_completo'] ?? '').toString().isNotEmpty
               ? data['nome_completo']
               : widget.userName;
@@ -73,7 +82,7 @@ class _MainScreenState extends SafeState<MainScreen> {
         });
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) { return; }
       debugPrint("Error loading user profile in MainScreen: $e");
     }
   }
@@ -106,10 +115,129 @@ class _MainScreenState extends SafeState<MainScreen> {
   String _currentAddress = 'Anápolis, Goiás, Brasil';
   String _destinationAddress = '';
   List<LatLng> _routePoints = [];
-  String _routeDistance = '';
-  String _routeDuration = '';
   bool _isLoadingRoute = false;
   bool _isRouting = false;
+  bool _historyConsent = false;
+  bool _arrivalRecorded = false;
+  int? _routeLocalId;
+  int _routeRequest = 0;
+  Timer? _viewportTimer;
+  Timer? _navigationTimer;
+  LatLng _viewportCenter = const LatLng(-16.3267, -48.9528);
+  double _viewportZoom = 14.5;
+  LatLng? _pendingViewportCenter;
+  double? _pendingViewportZoom;
+  bool _pendingViewportGesture = false;
+  NavigationFix? _lastFix;
+  late final NavigationController _navigation = NavigationController(
+      recalculate: const RouteService().calculate);
+
+  void _onNavigationChanged() {
+    if (!mounted) { return; }
+    setState(() {
+      _isRouting = _navigation.phase != NavigationPhase.ended;
+      _routePoints = _navigation.route?.points ?? [];
+    });
+    if (_navigation.phase == NavigationPhase.running && _navigation.follow && _mapReady && _hasLocation) {
+      _mapController.move(_currentLocation, 17);
+    }
+    if (_navigation.phase == NavigationPhase.arrived && !_arrivalRecorded) {
+      _arrivalRecorded = true;
+      if (_historyConsent && _routeLocalId != null) { _registraVisita(_routeLocalId!); }
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) { _navigation.interrupt('tab_inactive'); }
+  }
+
+  Future<void> _beginNavigation() async {
+    if (widget.trackLocation) {
+      try {
+        final position = await _locationService.currentPosition();
+        if (!mounted) { return; }
+        _updateLocation(position);
+      } catch (_) {
+        if (!mounted) { return; }
+        _navigation.interrupt();
+      }
+    }
+    if (!mounted) { return; }
+    if (!_navigation.start(_hasLocation ? _lastFix : null)) {
+      _showErrorSnackBar(context.contributionText(
+          'GPS preciso indisponível. Use Google Maps ou Waze.',
+          'Accurate GPS unavailable. Use Google Maps or Waze.'));
+    }
+  }
+
+  void _endNavigation() {
+    _routeRequest++;
+    _navigation.end();
+    setState(() { _routePoints = []; _destinationLocation = null; _isLoadingRoute = false; });
+  }
+
+  Future<void> _externalNavigation(LatLng point, ExternalNavigator provider) async {
+    final opened = await const ExternalNavigation().open(point, provider);
+    if (!mounted) { return; }
+    if (!opened) { _showErrorSnackBar(context.contributionText(
+        'Não foi possível abrir a navegação. Tente o outro aplicativo.',
+        'Unable to open navigation. Try the other application.')); }
+  }
+
+  void _externalOptions(LatLng point) {
+    showModalBottomSheet<void>(context: context, useSafeArea: true,
+      builder: (_) => Padding(padding: const EdgeInsets.all(20), child: Wrap(
+        spacing: 12, runSpacing: 12, children: [
+          Text(context.contributionText('Abrir rota para o destino selecionado', 'Open route to selected destination')),
+          Text(context.contributionText('Acessibilidade do trajeto não verificada.', 'Route accessibility has not been verified.')),
+          OutlinedButton(onPressed: () => _externalNavigation(point, ExternalNavigator.googleMaps),
+            child: const Text('Google Maps')),
+          OutlinedButton(onPressed: () => _externalNavigation(point, ExternalNavigator.waze),
+            child: const Text('Waze')),
+        ])));
+  }
+
+  void _openCluster(LatLng center, List<MapPlace> members) {
+    if (_viewportZoom < 18) {
+      _mapController.move(center, (_viewportZoom + 2).clamp(0.0, 18.0).toDouble());
+      return;
+    }
+    showModalBottomSheet<void>(context: context, useSafeArea: true,
+      builder: (sheetContext) => ListView.builder(itemCount: members.length,
+        itemBuilder: (_, index) => ListTile(title: Text(members[index].name),
+          subtitle: Text(members[index].address), onTap: () {
+            Navigator.pop(sheetContext);
+            _openLocalPreview(members[index].toMap());
+          })));
+  }
+
+  Future<void> _openContributions() async {
+    final result = await Navigator.push<Object?>(context, MaterialPageRoute(
+      builder: (_) => ContributionsScreen(userName: widget.userName,
+        location: _hasLocation ? _currentLocation : null, mapCenter: _viewportCenter, distanceUnit: _unidadeDistancia)));
+    if (!mounted) { return; }
+    await _fetchEstablishments();
+    if (!mounted) { return; }
+    if (result is Map<String, dynamic>) {
+      if (result['_action'] == 'route') {
+        await _startRoute(result);
+      } else {
+        await _openLocalPreview(result);
+      }
+    }
+  }
+
+  Future<void> _evaluatePlace(Map<String, dynamic> local) async {
+    if (local['source'] == 'openstreetmap') {
+      await _contributeExternal(local, evaluate: true);
+      return;
+    }
+    await Navigator.push<bool>(context, MaterialPageRoute(
+      builder: (_) => ReviewEditorScreen(place: local)));
+    if (mounted) { await _fetchEstablishments(); }
+  }
+
 
   // Accessibility filters
   bool _filterCaoGuia = false;
@@ -141,8 +269,8 @@ class _MainScreenState extends SafeState<MainScreen> {
 
   List<Map<String, dynamic>> get _matchingLocals =>
       mergeMapPlaces(_internalLocals, _externalLocals).where((place) {
-        if (_sourceFilter == 'internal' && place.isExternal) return false;
-        if (_sourceFilter == 'external' && !place.isExternal) return false;
+        if (_sourceFilter == 'internal' && place.isExternal) { return false; }
+        if (_sourceFilter == 'external' && !place.isExternal) { return false; }
         if (_categoryFilter != null && place.category != _categoryFilter) {
           return false;
         }
@@ -211,18 +339,35 @@ class _MainScreenState extends SafeState<MainScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _navigation.addListener(_onNavigationChanged);
+    _navigationTimer = Timer.periodic(const Duration(seconds: 10), (_) async {
+      if (_navigation.phase != NavigationPhase.running || !widget.trackLocation) { return; }
+      try {
+        final position = await _locationService.currentPosition();
+        if (mounted && _navigation.phase == NavigationPhase.running) { _updateLocation(position); }
+      } catch (_) {
+        if (mounted) { _navigation.interrupt(); }
+      }
+    });
     _loadUserProfile();
-    if (widget.trackLocation) _initLocationTracking();
+    if (widget.trackLocation) { _initLocationTracking(); }
     _fetchEstablishments(); // Preload all establishments
-    if (!widget.trackLocation) _fetchExternalPlaces(_externalCenter);
+    if (!widget.trackLocation) { _fetchExternalPlaces(_externalCenter); }
     _loadCategories();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _showWelcomeBanner();
+      if (mounted) { _showWelcomeBanner(); }
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _viewportTimer?.cancel();
+    _navigationTimer?.cancel();
+    _navigation.removeListener(_onNavigationChanged);
+    _navigation.dispose();
+    _routeRequest++;
     _internalRequest++;
     _externalRequest++;
     _searchRequest++;
@@ -245,13 +390,13 @@ class _MainScreenState extends SafeState<MainScreen> {
       // Merge before filtering so an internal local hidden by an accessibility
       // filter cannot reappear as an unreviewed OSM duplicate.
       final data = await _placesService.fetchPlaces();
-      if (!mounted || request != _internalRequest) return;
+      if (!mounted || request != _internalRequest) { return; }
 
       setState(() {
         _internalLocals = data.map(MapPlace.internal).toList(growable: false);
       });
     } catch (e) {
-      if (!mounted || request != _internalRequest) return;
+      if (!mounted || request != _internalRequest) { return; }
       debugPrint("Error connecting to locales: $e");
       setState(() {
         _localsLoadFailed = true;
@@ -270,7 +415,7 @@ class _MainScreenState extends SafeState<MainScreen> {
   Future<void> _loadCategories() async {
     try {
       final categories = await _placesService.fetchCategories();
-      if (mounted) setState(() => _categories = categories);
+      if (mounted) { setState(() => _categories = categories); }
     } catch (_) {
       // Category failure does not remove either source's valid places.
     }
@@ -298,13 +443,13 @@ class _MainScreenState extends SafeState<MainScreen> {
         latitude: center.latitude, longitude: center.longitude,
         radius: _externalRadius, category: _categoryFilter,
       );
-      if (!mounted || request != _externalRequest) return;
+      if (!mounted || request != _externalRequest) { return; }
       setState(() {
         _externalLocals = result.places;
         _externalTruncated = result.truncated;
       });
     } catch (error) {
-      if (!mounted || request != _externalRequest) return;
+      if (!mounted || request != _externalRequest) { return; }
       setState(() => _externalError = error is PlacesException
           ? error.message : 'Locais externos indisponíveis. Tente novamente.');
     } finally {
@@ -313,7 +458,7 @@ class _MainScreenState extends SafeState<MainScreen> {
         _placesRevision.value++;
         final pending = _pendingExternalCenter;
         _pendingExternalCenter = null;
-        if (pending != null) _fetchExternalPlaces(pending);
+        if (pending != null) { _fetchExternalPlaces(pending); }
       }
     }
   }
@@ -332,17 +477,18 @@ class _MainScreenState extends SafeState<MainScreen> {
   }
 
   Future<void> _initLocationTracking() async {
-    if (_locating) return;
+    if (_locating) { return; }
     _locating = true;
     try {
       final position = await _locationService.currentPosition();
-      if (!mounted) return;
+      if (!mounted) { return; }
       _updateLocation(position);
       await _positionStream?.cancel();
-      if (!mounted) return;
+      if (!mounted) { return; }
       _positionStream = _locationService.positions().listen(_updateLocation,
         onError: (_) {
-          if (!mounted) return;
+          if (!mounted) { return; }
+          _navigation.interrupt();
           setState(() {
             _hasLocation = false;
             _locationMessage = 'Sinal de localização indisponível. Tente novamente.';
@@ -350,23 +496,24 @@ class _MainScreenState extends SafeState<MainScreen> {
         },
       );
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted) { return; }
+      _navigation.interrupt();
       setState(() {
         _hasLocation = false;
         _locationMessage = error is LocationFailure ? error.message
             : 'Localização indisponível. Verifique as permissões e tente novamente.';
       });
-      if (_externalRequest == 0) _fetchExternalPlaces(_externalCenter);
+      if (_externalRequest == 0) { _fetchExternalPlaces(_externalCenter); }
     } finally {
       _locating = false;
     }
   }
 
   void _updateLocation(Position position) {
-    if (!mounted) return;
+    if (!mounted) { return; }
     final valid = routePlace({'latitude': position.latitude,
       'longitude': position.longitude});
-    if (valid == null) return;
+    if (valid == null) { return; }
     final firstFix = !_hasLocation;
     final point = LatLng(position.latitude, position.longitude);
     setState(() {
@@ -379,13 +526,15 @@ class _MainScreenState extends SafeState<MainScreen> {
             '${position.accuracy.toStringAsFixed(0)} m).'
           : null;
     });
-    if (firstFix && !_isRouting && _mapReady) _mapController.move(point, 14.5);
-    if (_externalRequest == 0) _fetchExternalPlaces(point);
+    if (firstFix && !_isRouting && _mapReady) { _mapController.move(point, 14.5); }
+    _lastFix = NavigationFix(point, position.accuracy, position.timestamp);
+    _navigation.update(_lastFix!);
+    if (_externalRequest == 0) { _fetchExternalPlaces(point); }
   }
 
   Future<void> _searchAndRoute(String destinationText) async {
     final text = destinationText.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) { return; }
     final matches = _matchingLocals.where((p) =>
         (p['source'] == 'openstreetmap' ? MapPlace.external(p)
             : MapPlace.internal(p)).matches(text)).toList();
@@ -397,72 +546,37 @@ class _MainScreenState extends SafeState<MainScreen> {
     try {
       // Explicit submission only; local filtering never calls Nominatim.
       final results = await _placesService.geocode(text);
-      if (!mounted || request != _searchRequest) return;
+      if (!mounted || request != _searchRequest) { return; }
       if (results.isEmpty) {
         _showErrorSnackBar(context.l10n.destinationNotFound(text));
         return;
       }
       final place = results.first;
       final point = _localPoint(place);
-      if (point == null) throw const FormatException('Coordenadas inválidas');
+      if (point == null) { throw const FormatException('Coordenadas inválidas'); }
       _mapController.move(point, 15);
       _externalRadius = 1500;
       await _fetchExternalPlaces(point);
-      if (mounted && request == _searchRequest) _openSearchBottomSheet(context);
+      if (mounted && request == _searchRequest) { _openSearchBottomSheet(context); }
     } catch (error) {
-      if (!mounted || request != _searchRequest) return;
+      if (!mounted || request != _searchRequest) { return; }
       _showErrorSnackBar(error is PlacesException
           ? error.message : context.l10n.destinationError);
     }
   }
 
   Future<void> _calculateRoute(LatLng start, LatLng end) async {
+    final request = ++_routeRequest;
     try {
-      final routeUrl = Uri.parse(
-          'https://router.project-osrm.org/route/v1/driving/'
-          '${start.longitude},${start.latitude};${end.longitude},${end.latitude}'
-          '?overview=full&geometries=geojson');
-
-      final response = await AppHttp.get(routeUrl);
-      if (!mounted) return;
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['code'] == 'Ok' &&
-            data['routes'] != null &&
-            data['routes'].isNotEmpty) {
-          final route = data['routes'][0];
-          final geometry = route['geometry'];
-          final coordinates = geometry['coordinates'] as List;
-
-          final List<LatLng> points = coordinates.map((coord) {
-            return LatLng(coord[1] as double, coord[0] as double);
-          }).toList();
-
-          final distanceMeters = route['distance'] as num;
-          final durationSeconds = route['duration'] as num;
-
-          final distanceKm = distanceMeters / 1000;
-          final durationMin = (durationSeconds / 60).toStringAsFixed(0);
-
-          setState(() {
-            _routePoints = points;
-            _routeDistance = _formatDistance(distanceKm);
-            _routeDuration = '$durationMin min';
-            _isRouting = true;
-          });
-
-          // Zoom and move map to fit route
-          _fitRouteBounds(start, end);
-        } else {
-          _showErrorSnackBar(context.l10n.noRoute);
-        }
-      } else {
-        _showErrorSnackBar(context.l10n.routeServerError);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      debugPrint("Error in OSRM routing: $e");
+      final route = await const RouteService().calculate(start, end);
+      if (!mounted || request != _routeRequest) { return; }
+      _arrivalRecorded = false;
+      _navigation.preview(route, end);
+      _fitRouteBounds(start, end);
+    } catch (_) {
+      if (!mounted || request != _routeRequest) { return; }
       _showErrorSnackBar(context.l10n.routeServiceError);
+      _externalOptions(end);
     }
   }
 
@@ -907,7 +1021,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                     if (_categories.isEmpty)
                       TextButton(onPressed: () async {
                         await _loadCategories();
-                        if (context.mounted) sheetSetState(() {});
+                        if (context.mounted) { sheetSetState(() {}); }
                       }, child: const Text('Carregar categorias')),
                     const SizedBox(height: 12),
                     const Text('Filtros de acessibilidade mostram apenas recursos informados no AcessoJá.'),
@@ -1016,7 +1130,7 @@ class _MainScreenState extends SafeState<MainScreen> {
 
                             (categoryChanged ? _fetchExternalPlaces(_externalCenter)
                                 : Future<void>.value()).then((_) {
-                              if (!context.mounted) return;
+                              if (!context.mounted) { return; }
                               sheetSetState(() {
                                 sheetView = 'route';
                               });
@@ -1042,64 +1156,55 @@ class _MainScreenState extends SafeState<MainScreen> {
   }
 
   Future<void> _startRoute(Map<String, dynamic> place) async {
-    if (_isLoadingRoute) return;
-
-    // Nunca calcula uma rota usando o ponto padrão de Anápolis como se fosse
-    // a posição real do usuário.
+    if (_isLoadingRoute) { return; }
+    final valid = routePlace(place);
+    if (valid == null) { _showErrorSnackBar(context.l10n.invalidLocation); return; }
+    final point = LatLng((valid['latitude'] as num).toDouble(), (valid['longitude'] as num).toDouble());
     if (!_hasLocation) {
-      if (widget.trackLocation) {
-        await _initLocationTracking();
-      }
-      if (!mounted) return;
+      if (widget.trackLocation) { await _initLocationTracking(); }
+      if (!mounted) { return; }
       if (!_hasLocation) {
         _showErrorSnackBar(context.l10n.locationUnavailable);
+        _externalOptions(point);
         return;
       }
     }
-
-    final valid = routePlace(place);
-    if (valid == null) {
-      _showErrorSnackBar(context.l10n.invalidLocation);
-      return;
-    }
-    final point = LatLng((valid['latitude'] as num).toDouble(),
-        (valid['longitude'] as num).toDouble());
+    _navigation.end();
     setState(() {
       _destinationLocation = point;
       _destinationAddress = valid['nome']?.toString() ?? '';
+      _routeLocalId = valid['source'] == 'openstreetmap' ? null : (valid['id_local'] as num?)?.toInt();
       _isLoadingRoute = true;
     });
     try {
-      final localId = valid['id_local'];
-      if (localId is num) await _registraVisita(localId.toInt());
-      if (!mounted) return;
       await _calculateRoute(_currentLocation, point);
     } finally {
-      if (mounted) setState(() => _isLoadingRoute = false);
+      if (mounted) { setState(() => _isLoadingRoute = false); }
     }
   }
 
   Future<void> _registraVisita(int localId) async {
+    final fix = _lastFix;
+    if (fix == null || !_historyConsent || _navigation.phase != NavigationPhase.arrived) { return; }
     try {
-      await _placesService.registerVisit(
-        localId: localId,
-        userName: widget.userName,
-      );
-    } catch (e) {
-      if (!mounted) return;
-      debugPrint("Error recording visit: $e");
+      await _placesService.registerVisit(localId: localId, userName: widget.userName,
+          latitude: fix.point.latitude, longitude: fix.point.longitude, accuracy: fix.accuracy);
+    } catch (_) {
+      if (mounted) { _showErrorSnackBar(context.contributionText(
+          'Chegada reconhecida. O histórico não pôde ser salvo.',
+          'Arrival recognized. History could not be saved.')); }
     }
   }
 
   double? _asDouble(dynamic value) {
-    if (value is num) return value.toDouble();
+    if (value is num) { return value.toDouble(); }
     return double.tryParse(value?.toString() ?? '');
   }
 
   LatLng? _localPoint(Map<String, dynamic> local) {
     final lat = _asDouble(local['latitude']);
     final lon = _asDouble(local['longitude']);
-    if (lat == null || lon == null) return null;
+    if (lat == null || lon == null) { return null; }
     if (!lat.isFinite || !lon.isFinite || lat.abs() > 90 || lon.abs() > 180) {
       return null;
     }
@@ -1127,8 +1232,10 @@ class _MainScreenState extends SafeState<MainScreen> {
       return;
     }
 
+    if (_navigation.phase != NavigationPhase.ended) { _endNavigation(); }
     setState(() {
-      _selectedPlaceId = local['id']?.toString();
+      _selectedPlaceId = local['id']?.toString() ?? (local['source'] == 'openstreetmap'
+          ? MapPlace.external(local).id : MapPlace.internal(local).id);
       _destinationLocation = point;
       _destinationAddress = (local['nome'] ?? '').toString();
     });
@@ -1149,18 +1256,24 @@ class _MainScreenState extends SafeState<MainScreen> {
         onDetailsPressed: () {
           Navigator.pop(sheetContext, 'details');
         },
-        onRoutePressed: () {
-          Navigator.pop(sheetContext, 'route');
-        },
+        onRoutePressed: () { Navigator.pop(sheetContext, 'route'); },
+        onEvaluatePressed: () { Navigator.pop(sheetContext, 'evaluate'); },
+        onReviewsPressed: () { Navigator.pop(sheetContext, 'reviews'); },
       ),
     );
-    if (!mounted) return;
+    if (!mounted) { return; }
 
     if (result == 'route') {
       await _startRoute(local);
       return;
     }
 
+    if (result == 'evaluate') { await _evaluatePlace(local); return; }
+    if (result == 'reviews') {
+      await Navigator.push<void>(context, MaterialPageRoute(
+        builder: (_) => PlaceReviewsScreen(place: local)));
+      return;
+    }
     if (result == 'details') {
       if (local['source'] == 'openstreetmap') {
         await _contributeExternal(local);
@@ -1175,7 +1288,7 @@ class _MainScreenState extends SafeState<MainScreen> {
           ),
         ),
       );
-      if (!mounted) return;
+      if (!mounted) { return; }
 
       // A tela de detalhes devolve o local quando o usuário escolhe iniciar
       // uma rota. Caso contrário, atualizamos a lista para refletir uma nova
@@ -1188,23 +1301,25 @@ class _MainScreenState extends SafeState<MainScreen> {
     }
   }
 
-  Future<void> _contributeExternal(Map<String, dynamic> external) async {
+  Future<void> _contributeExternal(Map<String, dynamic> external, {bool evaluate = false}) async {
     final local = await showDialog<Map<String, dynamic>>(
       context: context, barrierDismissible: false,
       builder: (_) => ExternalPlaceRegistration(place: external,
           userName: widget.userName),
     );
-    if (!mounted || local == null) return;
+    if (!mounted || local == null) { return; }
     // Update immediately using the confirmed INTERNAL ID before opening details.
     setState(() {
+      _selectedPlaceId = MapPlace.internal(local).id;
       _internalLocals = [..._internalLocals.where((p) =>
           p.internalId != local['id_local']), MapPlace.internal(local)];
     });
     final result = await Navigator.push(context, MaterialPageRoute(
-      builder: (_) => PlaceDetailScreen(place: local, userName: widget.userName),
+      builder: (_) => evaluate ? ReviewEditorScreen(place: local) :
+          PlaceDetailScreen(place: local, userName: widget.userName),
     ));
-    if (!mounted) return;
-    if (result is Map<String, dynamic>) await _startRoute(result);
+    if (!mounted) { return; }
+    if (result is Map<String, dynamic>) { await _startRoute(result); }
     await _fetchEstablishments();
   }
 
@@ -1356,12 +1471,29 @@ class _MainScreenState extends SafeState<MainScreen> {
                   options: MapOptions(
                     initialCenter: _currentLocation, // Anápolis, GO default
                     initialZoom: 14.5,
+                    interactionOptions: const InteractionOptions(
+                      flags: InteractiveFlag.all & ~InteractiveFlag.rotate),
                     onMapReady: () {
                       _mapReady = true;
-                      if (_hasLocation) _mapController.move(_currentLocation, 14.5);
+                      if (_hasLocation) { _mapController.move(_currentLocation, 14.5); }
                     },
                     onPositionChanged: (position, hasGesture) {
-                      if (hasGesture && !_areaMoved) setState(() => _areaMoved = true);
+                      if (hasGesture && _navigation.phase == NavigationPhase.running && _navigation.follow) {
+                        _navigation.setFollow(false);
+                      }
+                      _pendingViewportCenter = position.center;
+                      _pendingViewportZoom = position.zoom;
+                      _pendingViewportGesture = _pendingViewportGesture || hasGesture;
+                      if (_viewportTimer?.isActive == true) { return; }
+                      _viewportTimer = Timer(const Duration(milliseconds: 100), () {
+                        if (!mounted) { return; }
+                        setState(() {
+                          if (_pendingViewportCenter != null) { _viewportCenter = _pendingViewportCenter!; }
+                          if (_pendingViewportZoom != null) { _viewportZoom = _pendingViewportZoom!; }
+                          if (_pendingViewportGesture) { _areaMoved = true; }
+                          _pendingViewportGesture = false;
+                        });
+                      });
                     },
                   ),
                   children: [
@@ -1383,6 +1515,12 @@ class _MainScreenState extends SafeState<MainScreen> {
                           ),
                         ],
                       ),
+                    if (_navigation.phase != NavigationPhase.running)
+                      AdaptivePlaceLayer(
+                        places: _matchingLocals.map((p) => p['source'] == 'openstreetmap'
+                            ? MapPlace.external(p) : MapPlace.internal(p)).toList(),
+                        center: _viewportCenter, zoom: _viewportZoom, selectedId: _selectedPlaceId,
+                        onSelect: (place) => _openLocalPreview(place.toMap()), onCluster: _openCluster),
                     MarkerLayer(
                       markers: [
                         // Só mostra o ponto azul quando a localização real foi
@@ -1421,74 +1559,6 @@ class _MainScreenState extends SafeState<MainScreen> {
                               ),
                             ),
                           ),
-                        // Marcadores de estabelecimentos filtrados (visível apenas fora da navegação)
-                        if (!_isRouting)
-                          ..._matchingLocals
-                              .where((local) => _localPoint(local) != null)
-                              .map((local) {
-                            final point = _localPoint(local)!;
-                            final localId = local['id_local']?.toString() ??
-                                local['external_id']?.toString() ??
-                                'local';
-                            final name = (local['nome'] ?? '').toString();
-                            final external = local['source'] == 'openstreetmap';
-                            final selected = local['id'] == _selectedPlaceId;
-                            return Marker(
-                              point: point,
-                              width: 104,
-                              height: 84,
-                              child: Semantics(
-                                button: true,
-                                label: '${context.l10n.detailsOf(name)}. '
-                                    '${external ? 'OpenStreetMap, ainda não avaliado no AcessoJá' : 'AcessoJá'}',
-                                child: InkWell(
-                                  key: ValueKey('map-place-$localId'),
-                                  borderRadius: BorderRadius.circular(12),
-                                  onTap: () => _openLocalPreview(local),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        constraints:
-                                            const BoxConstraints(maxWidth: 100),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 7, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: colors.surface,
-                                          borderRadius:
-                                              BorderRadius.circular(external ? 2 : 8),
-                                          boxShadow: [
-                                            BoxShadow(
-                                                color: colors.shadow,
-                                                blurRadius: 4,
-                                                offset: const Offset(0, 2)),
-                                          ],
-                                          border: Border.all(
-                                              color: colors.primary,
-                                              width: selected ? 3 : 1.2),
-                                        ),
-                                        child: Text(
-                                          '$name\n${external ? 'OSM' : 'AcessoJá'}',
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.bold,
-                                            color: colors.primaryDark,
-                                          ),
-                                        ),
-                                      ),
-                                      Icon(
-                                        external ? Icons.public : Icons.location_on_rounded,
-                                        color: colors.primary,
-                                        size: 28,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
                         // Marcador de destino da rota calculada
                         if (_isRouting && _destinationLocation != null)
                           Marker(
@@ -1662,7 +1732,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                               SettingsScreen(userName: widget.userName),
                         ),
                       );
-                      if (!mounted) return;
+                      if (!mounted) { return; }
                       await _loadUserProfile();
                       if (mounted && result is Map<String, dynamic>) {
                         await _startRoute(result);
@@ -1724,7 +1794,7 @@ class _MainScreenState extends SafeState<MainScreen> {
                       if (widget.trackLocation) {
                         await _initLocationTracking();
                       }
-                      if (!context.mounted) return;
+                      if (!context.mounted) { return; }
                       if (_hasLocation) {
                         _mapController.move(_currentLocation, 14.5);
                       } else {
@@ -1734,131 +1804,16 @@ class _MainScreenState extends SafeState<MainScreen> {
                     child: const Icon(Icons.my_location),
                   ),
                 ),
-                // Painel de detalhes da rota ou Barra de busca flutuante
+                // Route preview and actual foreground navigation are distinct.
                 if (_isRouting)
-                  Positioned(
-                    bottom: 16,
-                    left: 16,
-                    right: 16,
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: colors.surface,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: colors.shadow,
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: colors.primarySoft,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Icon(
-                                  Icons.directions_car_rounded,
-                                  color: colors.primary,
-                                  size: 28,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _routeDuration,
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: colors.text,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      context.l10n
-                                          .distanceValue(_routeDistance),
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: colors.muted,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Text(context.l10n.drivingRoute,
-                                        style: TextStyle(
-                                            fontSize: 11, color: colors.muted)),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.close_rounded,
-                                    color: colors.muted, size: 28),
-                                tooltip: context.l10n.closeRoute,
-                                onPressed: () {
-                                  setState(() {
-                                    _isRouting = false;
-                                    _destinationLocation = null;
-                                    _routePoints = [];
-                                    _routeDistance = '';
-                                    _routeDuration = '';
-                                  });
-                                  _mapController.move(_currentLocation, 14.5);
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Divider(height: 1, color: colors.border),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Icon(Icons.my_location,
-                                  color: colors.primary, size: 18),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  _currentAddress,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      color: colors.muted, fontSize: 13),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          const Text('Rota comum do OSRM; acessibilidade do trajeto não verificada.',
-                            key: ValueKey('map-route-accessibility-notice'),
-                            style: TextStyle(fontSize: 11)),
-                          Row(
-                            children: [
-                              Icon(Icons.location_on,
-                                  color: colors.danger, size: 18),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  _destinationAddress,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      color: colors.muted, fontSize: 13),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
+                  Positioned(bottom: 16, left: 16, right: 16,
+                    child: NavigationPanel(controller: _navigation, destination: _destinationAddress,
+                      distanceLabel: _formatDistance(_navigation.remainingDistance / 1000),
+                      onStart: _beginNavigation, onEnd: _endNavigation,
+                      onGoogleMaps: () { if (_destinationLocation != null) {
+                        _externalNavigation(_destinationLocation!, ExternalNavigator.googleMaps); } },
+                      onWaze: () { if (_destinationLocation != null) {
+                        _externalNavigation(_destinationLocation!, ExternalNavigator.waze); } }))
                 else
                   // Campo de busca flutuante sobreposto ao mapa
                   Positioned(
@@ -1952,206 +1907,23 @@ class _MainScreenState extends SafeState<MainScreen> {
               ],
             ),
           ),
-          // Painel de controle inferior branco com os botões personalizados
-          Container(
-            padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
-              ),
-              border: Border(
-                top: BorderSide(color: colors.border),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: colors.shadow,
-                  blurRadius: 18,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              top: false,
-              child: Material(
-                color: Colors.transparent,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // Botão Explorar
-                    Expanded(
-                      child: Semantics(
-                        button: true,
-                        label: context.l10n.explorePlaces,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          splashColor: colors.primarySoft,
-                          onTap: () async {
-                            final selectedLocal = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ExplorarScreen(
-                                  userName: widget.userName,
-                                  currentLocation: _currentLocation,
-                                  unidadeDistancia: _unidadeDistancia,
-                                ),
-                              ),
-                            );
-                            if (mounted &&
-                                selectedLocal is Map<String, dynamic>) {
-                              await _startRoute(selectedLocal);
-                            }
-                          },
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.explore_rounded,
-                                size: 38,
-                                color: colors.primary,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                context.l10n.explore,
-                                style: TextStyle(
-                                  color: colors.primary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Divisor Vertical Azul
-                    Container(
-                      width: 1.5,
-                      height: 40,
-                      color: colors.primary.withValues(alpha: 0.2),
-                    ),
-                    // Botão Locais Salvos
-                    Expanded(
-                      child: Semantics(
-                        button: true,
-                        label: context.l10n.savedPlaces,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          splashColor: colors.primarySoft,
-                          onTap: () {
-                            _navigateToSavedPlaces();
-                          },
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        bottom: 2, right: 2),
-                                    child: Icon(
-                                      Icons.bookmark_outline_rounded,
-                                      size: 36,
-                                      color: colors.primary,
-                                    ),
-                                  ),
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Icon(
-                                      Icons.favorite_rounded,
-                                      size: 16,
-                                      color: colors.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                context.l10n.savedPlacesTitle,
-                                style: TextStyle(
-                                  color: colors.primary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Divisor Vertical Azul
-                    Container(
-                      width: 1.5,
-                      height: 40,
-                      color: colors.primary.withValues(alpha: 0.2),
-                    ),
-                    // Botão Sugestões
-                    Expanded(
-                      child: Semantics(
-                        button: true,
-                        label: context.l10n.placeSuggestions,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          splashColor: colors.primarySoft,
-                          onTap: () async {
-                            final selectedLocal = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SugestoesScreen(
-                                  allowSuggestions: _allowSuggestions,
-                                  userName: widget.userName,
-                                  unidadeDistancia: _unidadeDistancia,
-                                ),
-                              ),
-                            );
-                            if (mounted &&
-                                selectedLocal is Map<String, dynamic>) {
-                              await _startRoute(selectedLocal);
-                            }
-                          },
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.public_rounded,
-                                    size: 36,
-                                    color: colors.primary,
-                                  ),
-                                  Positioned(
-                                    bottom: 0,
-                                    child: Icon(
-                                      Icons.volunteer_activism_rounded,
-                                      size: 14,
-                                      color: colors.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                context.l10n.suggestions,
-                                style: TextStyle(
-                                  color: colors.primary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          NavigationBar(height: 80, selectedIndex: 0,
+            destinations: [
+              NavigationDestination(icon: const Icon(Icons.explore_rounded), label: context.l10n.explore),
+              NavigationDestination(icon: const Icon(Icons.rate_review_outlined),
+                label: context.contributionText('Avaliar', 'Review')),
+              NavigationDestination(icon: const Icon(Icons.bookmark_outline), label: context.l10n.savedPlacesTitle),
+              NavigationDestination(icon: const Icon(Icons.public_rounded), label: context.l10n.suggestions),
+            ], onDestinationSelected: (index) async {
+              if (index == 1) { await _openContributions(); return; }
+              if (index == 2) { await _navigateToSavedPlaces(); return; }
+              final selectedLocal = await Navigator.push<Object?>(context, MaterialPageRoute(
+                builder: (_) => index == 0 ? ExplorarScreen(userName: widget.userName,
+                    currentLocation: _currentLocation, unidadeDistancia: _unidadeDistancia) :
+                  SugestoesScreen(allowSuggestions: _allowSuggestions, userName: widget.userName,
+                    unidadeDistancia: _unidadeDistancia)));
+              if (mounted && selectedLocal is Map<String, dynamic>) { await _startRoute(selectedLocal); }
+            }),
         ],
       ),
     );

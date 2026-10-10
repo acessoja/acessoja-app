@@ -31,7 +31,7 @@ class _MapSearchSheetState extends State<MapSearchSheet> {
   void _scheduleSearch() {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      if (mounted) setState(() {});
+      if (mounted) { setState(() {}); }
     });
   }
 

@@ -9,6 +9,7 @@ from . import views
 from .views import LoginAPIView
 
 urlpatterns = [
+    path('api/contribuicoes/', include('contribuicoes.urls')),
     path('home/', views.home, name='home'),  # Página inicial
     path('admin/', admin.site.urls),
 

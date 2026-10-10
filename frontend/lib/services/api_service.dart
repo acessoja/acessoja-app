@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'app_http.dart';
 import '../config.dart';
+import 'contribution_service.dart';
 
 /// Resultado de uma tentativa de login.
 class LoginResult {
@@ -15,8 +16,9 @@ class LoginResult {
 class SubmitEvaluationResult {
   final bool success;
   final String? message;
+  final int pointsDelta;
 
-  const SubmitEvaluationResult({required this.success, this.message});
+  const SubmitEvaluationResult({required this.success, this.message, this.pointsDelta = 0});
 }
 
 /// Abstração das chamadas HTTP usadas pelas telas de login e de avaliação.
@@ -51,6 +53,7 @@ class HttpApiService implements ApiService {
     required String nome,
     required String password,
   }) async {
+    AppHttp.clearSession();
     final response = await AppHttp.post(
       Uri.parse('${Config.baseUrl}/api/login/'),
       headers: {'Content-Type': 'application/json'},
@@ -60,18 +63,20 @@ class HttpApiService implements ApiService {
     if (response.statusCode == 200) {
       final data = jsonDecode(utf8.decode(response.bodyBytes));
       if (data['status'] == 'success') {
+        AppHttp.token = data['token'] as String?;
+        AppHttp.userId = (data['user']['id_usuario'] as num?)?.toInt();
         return LoginResult(success: true, user: data['user']);
       }
       return const LoginResult(
         success: false,
         message: 'invalid_credentials',
       );
-    } else if (response.statusCode == 401) {
+    } else { if (response.statusCode == 401) {
       return const LoginResult(
         success: false,
         message: 'invalid_credentials',
       );
-    }
+    } }
     return const LoginResult(
       success: false,
       message: 'connection_error',
@@ -100,27 +105,23 @@ class HttpApiService implements ApiService {
     required int estrelas,
     required String comentario,
   }) async {
-    final response = await AppHttp.post(
-      Uri.parse('${Config.baseUrl}/api/avaliacoes/modal-avaliacoes/'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'local': localId,
-        'nome_usuario': userName,
-        'pergunta_1': pergunta1,
-        'pergunta_2': pergunta2,
-        'pergunta_3': pergunta3,
-        'pergunta_4': pergunta4,
-        'estrelas': estrelas,
-        'comentario': comentario,
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      return const SubmitEvaluationResult(success: true);
+    final payload = {
+      'local': localId, 'nome_usuario': userName,
+      'pergunta_1': pergunta1, 'pergunta_2': pergunta2,
+      'pergunta_3': pergunta3, 'pergunta_4': pergunta4,
+      'estrelas': estrelas, 'comentario': comentario,
+    };
+    try {
+      int? reviewId;
+      if (AppHttp.token != null && localId is num) {
+        final existing = await const ContributionService().ownReview(localId.toInt());
+        reviewId = (existing?['id'] as num?)?.toInt();
+      }
+      final result = await const ContributionService().saveReview(payload, id: reviewId);
+      return SubmitEvaluationResult(success: true,
+          pointsDelta: (result['points_delta'] as num?)?.toInt() ?? 0);
+    } on ContributionException {
+      return const SubmitEvaluationResult(success: false, message: 'evaluation_error');
     }
-    return const SubmitEvaluationResult(
-      success: false,
-      message: 'evaluation_error',
-    );
   }
 }

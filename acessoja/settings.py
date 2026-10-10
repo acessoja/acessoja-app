@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, False),
 )
-environ.Env.read_env(BASE_DIR / '.env')
+environ.Env.read_env(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -33,69 +33,70 @@ environ.Env.read_env(BASE_DIR / '.env')
 # Obrigatório vir do ambiente (.env local ou variável de ambiente no CI/deploy).
 # Sem valor padrão de propósito: se não for definido, a aplicação deve falhar
 # ao subir, em vez de rodar com uma chave insegura.
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env("DEBUG")
 
 # Sem '*' como padrão: em produção, ALLOWED_HOSTS deve ser definido
 # explicitamente via variável de ambiente.
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'acessoja',
-    'usuarios',
-    'rest_framework',
-    'locais',
-    'djoser',
-    'corsheaders',
-    'modal_avaliacao',
-    'avaliacao',
-
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "acessoja",
+    "usuarios",
+    "rest_framework",
+    "rest_framework.authtoken",
+    "contribuicoes.apps.ContribuicoesConfig",
+    "locais",
+    "djoser",
+    "corsheaders",
+    "modal_avaliacao",
+    "avaliacao",
     # Documentacao viva da API (OpenAPI 3 + Swagger UI)
-    'drf_spectacular',
-    'drf_spectacular_sidecar',
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'acessoja.urls'
+ROOT_URLCONF = "acessoja.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'acessoja.wsgi.application'
+WSGI_APPLICATION = "acessoja.wsgi.application"
 
 
 # Database
@@ -105,7 +106,7 @@ WSGI_APPLICATION = 'acessoja.wsgi.application'
 # Aceita tanto PostgreSQL (postgresql://...) quanto SQLite (sqlite:///./arquivo.sqlite3),
 # o que já cobre o caso do CI, que roda com DATABASE_URL=sqlite:///./db_ci.sqlite3.
 DATABASES = {
-    'default': env.db('DATABASE_URL'),
+    "default": env.db("DATABASE_URL"),
 }
 
 
@@ -114,16 +115,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -131,9 +132,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -143,35 +144,36 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "acessoja.authentication.ExpiringTokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
     ],
-    'DEFAULT_PERMISSION_CLASSES': [],
+    "DEFAULT_PERMISSION_CLASSES": [],
     # Gera o schema OpenAPI a partir do proprio codigo.
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 DJOSER = {
-    'USER_ID_FIELD': 'id_usuario',
+    "USER_ID_FIELD": "id_usuario",
 }
 
-AUTH_USER_MODEL = 'usuarios.Usuario'
+AUTH_USER_MODEL = "usuarios.Usuario"
 
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/usuarios/login/'
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/usuarios/login/"
 
 AUTHENTICATION_BACKENDS = [
-    'usuarios.backends.UsuarioBackend',  # Caminho para o seu backend personalizado
-    'django.contrib.auth.backends.ModelBackend',  # Mantém o backend padrão do Django
+    "usuarios.backends.UsuarioBackend",  # Caminho para o seu backend personalizado
+    "django.contrib.auth.backends.ModelBackend",  # Mantém o backend padrão do Django
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -181,57 +183,59 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Swagger UI: /api/docs/  |  ReDoc: /api/redoc/  |  OpenAPI 3: /api/schema/
 # ---------------------------------------------------------------------------
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'AcessoJá API',
-    'DESCRIPTION': (
-        'API REST do **AcessoJá** — plataforma para encontrar e avaliar a '
-        'acessibilidade de estabelecimentos e locais públicos.\n\n'
-        '## Como usar\n\n'
-        'O app Flutter identifica o usuário pelo campo `nome` (não pelo e-mail). '
-        'Faça `POST /api/login/` para validar as credenciais e, nas rotas que '
-        'pedem autoria, envie `nome` ou `nome_usuario` no corpo da requisição.\n\n'
-        '> **Atenção:** hoje as rotas de escrita usam `AllowAny` e a autoria vem '
-        'do corpo da requisição, não de um token. Isso está documentado como é, '
-        'não como deveria ser — fechar isso é o cartão de segurança da sprint.\n\n'
-        '## Convenções\n\n'
-        '- Respostas em JSON UTF-8.\n'
-        '- Datas em ISO-8601.\n'
-        '- Erros de validação retornam `400` com o mapa de campos inválidos.\n'
+    "TITLE": "AcessoJá API",
+    "DESCRIPTION": (
+        "API REST do **AcessoJá** — plataforma para encontrar e avaliar a "
+        "acessibilidade de estabelecimentos e locais públicos.\n\n"
+        "## Como usar\n\n"
+        "O app Flutter identifica o usuário pelo campo `nome` (não pelo e-mail). "
+        "Faça POST /api/login/ e envie Authorization: Token <token> nos endpoints privados.\n\n"
+        "Sessões expiram em 12 horas e são revogadas no logout ou troca de senha. "
+        "Avaliações são atribuídas à sessão; somente autores e administradores reais podem alterá-las.\n\n"
+        "## Convenções\n\n"
+        "- Respostas em JSON UTF-8.\n"
+        "- Datas em ISO-8601.\n"
+        "- Erros de validação retornam `400` com o mapa de campos inválidos.\n"
     ),
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'COMPONENT_SPLIT_REQUEST': True,
-    'SORT_OPERATIONS': False,
-    'ENUM_NAME_OVERRIDES': {
-        'RespostaAcessibilidadeEnum': 'modal_avaliacao.models.RESPOSTAS',
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SORT_OPERATIONS": False,
+    "ENUM_NAME_OVERRIDES": {
+        "RespostaAcessibilidadeEnum": "modal_avaliacao.models.RESPOSTAS",
     },
     # Assets servidos localmente: a doc abre sem depender de CDN.
-    'SWAGGER_UI_DIST': 'SIDECAR',
-    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
-    'REDOC_DIST': 'SIDECAR',
-    'SWAGGER_UI_SETTINGS': {
-        'deepLinking': True,
-        'persistAuthorization': True,
-        'filter': True,
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "filter": True,
     },
-    'TAGS': [
-        {'name': 'Autenticação', 'description': 'Login e rotas de conta do Djoser.'},
-        {'name': 'Locais', 'description': 'Locais e filtros de acessibilidade.'},
-        {'name': 'Visitas', 'description': 'Histórico de locais visitados pelo usuário.'},
-        {'name': 'Avaliações', 'description': 'Avaliações de acessibilidade dos locais.'},
-        {'name': 'Usuários', 'description': 'Perfil, senha e foto do usuário.'},
+    "TAGS": [
+        {"name": "Autenticação", "description": "Login e rotas de conta do Djoser."},
+        {"name": "Locais", "description": "Locais e filtros de acessibilidade."},
+        {"name": "Visitas", "description": "Histórico de locais visitados pelo usuário."},
+        {"name": "Avaliações", "description": "Avaliações de acessibilidade dos locais."},
+        {"name": "Usuários", "description": "Perfil, senha e foto do usuário."},
     ],
-    'CONTACT': {
-        'name': 'Equipe AcessoJá',
-        'url': 'https://github.com/acessoja/acessoja-app',
+    "CONTACT": {
+        "name": "Equipe AcessoJá",
+        "url": "https://github.com/acessoja/acessoja-app",
     },
-    'LICENSE': {'name': 'Projeto educacional'},
+    "LICENSE": {"name": "Projeto educacional"},
 }
 
 
 # Sprint 2: providers are controlled by deployment, never by query parameters.
-OVERPASS_URL = env('OVERPASS_URL', default='https://overpass-api.de/api/interpreter')
+OVERPASS_URL = env("OVERPASS_URL", default="https://overpass-api.de/api/interpreter")
 # Explicit opt-in: configure an instance/provider appropriate to this app.
-NOMINATIM_URL = env('NOMINATIM_URL', default='')
-GEO_USER_AGENT = env('GEO_USER_AGENT', default='AcessoJa/2.0 (https://github.com/acessoja/acessoja-app)')
-EXTERNAL_PLACES_CACHE_SECONDS = env.int('EXTERNAL_PLACES_CACHE_SECONDS', default=300)
-CACHES = {'default': env.cache('CACHE_URL', default='locmemcache://acessoja-geographic')}
+NOMINATIM_URL = env("NOMINATIM_URL", default="")
+GEO_USER_AGENT = env("GEO_USER_AGENT", default="AcessoJa/2.0 (https://github.com/acessoja/acessoja-app)")
+EXTERNAL_PLACES_CACHE_SECONDS = env.int("EXTERNAL_PLACES_CACHE_SECONDS", default=300)
+CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://acessoja-geographic")}
+
+# Pontos somente por ações verificáveis; comentários exigem moderação real.
+AUTH_TOKEN_TTL = 43200
+CONTRIBUTION_POINTS = {"review": 10, "survey": 5, "useful_comment": 5}
