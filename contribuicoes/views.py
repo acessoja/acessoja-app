@@ -80,7 +80,7 @@ class ActivityView(ContributionView):
 
     @extend_schema(tags=["Contribuições"], responses=ActivitySerializer(many=True))
     def get(self, request):
-        qs = PointActivity.objects.filter(event__user=request.user).select_related("event__local")
+        qs = PointActivity.objects.filter(event__user=request.user).select_related("event__local", "event__evaluation")
         rows = self.paginate_queryset(qs)
         return self.get_paginated_response(
             [
@@ -90,6 +90,18 @@ class ActivityView(ContributionView):
                     "action": row.event.action,
                     "created_at": row.created_at,
                     "evaluation_id": row.event.evaluation_id,
+                    "source_evaluation_id": row.source_evaluation_id,
+                    "operation": row.operation,
+                    "reason": row.reason,
+                    "status": (
+                        "active"
+                        if row.event.active
+                        else (
+                            "removed"
+                            if row.event.evaluation is None
+                            else "invalidated" if not row.event.evaluation.is_valid else "inactive"
+                        )
+                    ),
                     "local": {"id_local": row.event.local_id, "nome": row.event.local.nome},
                 }
                 for row in rows

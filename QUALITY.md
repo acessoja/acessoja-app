@@ -63,3 +63,19 @@ Em SQLite ele é explicitamente ignorado: SQLite não prova o bloqueio de linha
 usado em produção. Resultados desta entrega e comandos que não puderam ser
 executados estão em INSTRUCOES_APLICACAO.txt. A análise sintática de Dart não
 substitui flutter analyze, flutter test ou a compilação.
+
+## Cards 01–03 — contribuições e Central Avaliar
+
+As regressões de integridade, reconciliação e migração de histórico ficam em
+`contribuicoes/test_integrity.py` e `contribuicoes/test_activity_migration.py`.
+O job PostgreSQL agora seleciona todos os testes `postgresql_concurrent` em
+`contribuicoes`, incluindo criação duplicada, conclusão simultânea de pesquisa,
+exclusão versus processamento antigo e leitura coerente do resumo.
+
+`frontend/test/contributions_central_test.dart` inclui falhas parciais, paginação,
+respostas atrasadas, feedback confirmado, teclado, semântica, estados vazios e
+matriz de larguras 320/360/390/800/1280 com escalas 1/1,5/2 nos temas claro e escuro.
+Inclui as guidelines Flutter de alvos, rótulos e contraste. A suíte do frontend
+permanece exigida no CI; os comandos de cobertura e os limites não foram reduzidos.
+
+Resultados comprovados e pendências de execução estão em `INSTRUCOES_APLICACAO.txt`.

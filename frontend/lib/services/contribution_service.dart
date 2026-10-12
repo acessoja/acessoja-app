@@ -1,6 +1,7 @@
 import 'dart:convert';
 import '../config.dart';
 import 'app_http.dart';
+import '../models/contribution_mutation.dart';
 
 class ContributionException implements Exception {
   final int status;
@@ -13,11 +14,12 @@ class ContributionException implements Exception {
 class ContributionPage {
   final List<Map<String, dynamic>> items;
   final bool hasNext;
-  const ContributionPage(this.items, this.hasNext);
+  final int? total;
+  const ContributionPage(this.items, this.hasNext, {this.total});
   factory ContributionPage.fromJson(Map<String, dynamic> value) =>
       ContributionPage((value['results'] as List)
           .map((row) => Map<String, dynamic>.from(row as Map)).toList(),
-          value['next'] != null);
+          value['next'] != null, total: (value['count'] as num?)?.toInt());
 }
 
 class ContributionService {
@@ -27,7 +29,13 @@ class ContributionService {
 
   Future<Map<String, dynamic>> impact() async {
     final response = await AppHttp.get(_uri('contribuicoes/meu-impacto/'));
-    return _decode(response.statusCode, response.bodyBytes) as Map<String, dynamic>;
+    final value = _decode(response.statusCode, response.bodyBytes) as Map<String, dynamic>;
+    final numeric = ['points', 'level', 'progress', 'remaining_points', 'reviews', 'places', 'achievements_count'];
+    if (numeric.any((key) => value[key] is! num || !(value[key] as num).isFinite) ||
+        value['profile'] is! Map || value['achievements'] is! List || !value.containsKey('next_level_points')) {
+      throw const ContributionException(502, 'Resumo indisponível.');
+    }
+    return value;
   }
 
   Future<ContributionPage> page(String endpoint, {int page = 1,
@@ -66,6 +74,18 @@ class ContributionService {
   Future<void> deleteReview(int id) async {
     final response = await AppHttp.delete(_uri('avaliacoes/modal-avaliacoes/$id/'));
     if (response.statusCode != 204) { _decode(response.statusCode, response.bodyBytes); }
+  }
+
+  Future<ContributionMutation> deleteReviewResult(int id) async {
+    final response = await AppHttp.delete(
+        _uri('avaliacoes/modal-avaliacoes/$id/', {'feedback': '1'}));
+    // Preserve compatibility with servers that only implement DELETE 204.
+    if (response.statusCode == 204) {
+      return const ContributionMutation(operation: 'deleted');
+    }
+    return ContributionMutation.fromResponse(
+        _decode(response.statusCode, response.bodyBytes) as Map<String, dynamic>,
+        operation: 'deleted');
   }
 
   dynamic _decode(int status, List<int> bytes) {

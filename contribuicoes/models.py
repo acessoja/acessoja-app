@@ -25,6 +25,10 @@ class PointActivity(models.Model):
     delta = models.IntegerField()
     idempotency_key = models.CharField(max_length=150, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    # Defaults identify old entries honestly; their original cause is unknown.
+    operation = models.CharField(max_length=20, default="recorded")
+    reason = models.CharField(max_length=40, default="legacy")
+    source_evaluation_id = models.PositiveBigIntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.event_id}: {self.delta:+d}"
