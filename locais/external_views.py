@@ -2,6 +2,7 @@ from django.core import signing
 from django.db import IntegrityError, transaction
 from drf_spectacular.utils import extend_schema
 from rest_framework.authentication import BasicAuthentication, SessionAuthentication
+from acessoja.authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
@@ -90,7 +91,7 @@ class GeocodeAPIView(GeographicAPIView):
 
 class ExternalImportAPIView(GeographicAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [BasicAuthentication, SessionAuthentication]
+    authentication_classes = [ExpiringTokenAuthentication, BasicAuthentication, SessionAuthentication]
 
     @extend_schema(
         tags=["Locais"],

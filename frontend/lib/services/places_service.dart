@@ -59,9 +59,9 @@ class PlacesService {
   Future<List<Map<String, dynamic>>> fetchCategories() async {
     final response = await AppHttp.get(
         Uri.parse('${Config.baseUrl}/api/locais/externos/categorias/'));
-    if (response.statusCode != 200) throw StateError('categories_failed');
+    if (response.statusCode != 200) { throw StateError('categories_failed'); }
     final decoded = jsonDecode(utf8.decode(response.bodyBytes));
-    if (decoded is! List) throw const FormatException('Categorias inválidas.');
+    if (decoded is! List) { throw const FormatException('Categorias inválidas.'); }
     return decoded.whereType<Map>().map((p) => Map<String, dynamic>.from(p))
         .toList(growable: false);
   }
@@ -75,7 +75,7 @@ class PlacesService {
       throw PlacesException(_errorMessage(response.bodyBytes), response.statusCode);
     }
     final decoded = jsonDecode(utf8.decode(response.bodyBytes));
-    if (decoded is! List) throw const FormatException('Resposta geográfica inválida.');
+    if (decoded is! List) { throw const FormatException('Resposta geográfica inválida.'); }
     return decoded.whereType<Map>().map((p) => Map<String, dynamic>.from(p))
         .toList(growable: false);
   }
@@ -91,13 +91,13 @@ class PlacesService {
     final response = await AppHttp.post(
       Uri.parse('${Config.baseUrl}/api/locais/externos/cadastrar/'),
       headers: {'Content-Type': 'application/json',
-        'Authorization': 'Basic $credential'},
+        if (AppHttp.token == null || password.isNotEmpty) 'Authorization': 'Basic $credential'},
       body: jsonEncode({'registration_token': place['registration_token'],
         'nome': name.trim(), 'endereco': address.trim()}),
     );
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw PlacesException(response.statusCode == 401
-          ? 'Senha incorreta. Confirme sua senha para cadastrar.'
+          ? (password.isEmpty ? 'Sessão expirada. Entre novamente.' : 'Senha incorreta. Confirme sua senha para cadastrar.')
           : _errorMessage(response.bodyBytes), response.statusCode);
     }
     final decoded = jsonDecode(utf8.decode(response.bodyBytes));
@@ -110,7 +110,7 @@ class PlacesService {
   String _errorMessage(List<int> bytes) {
     try {
       final data = jsonDecode(utf8.decode(bytes));
-      if (data is Map && data['detail'] is String) return data['detail'];
+      if (data is Map && data['detail'] is String) { return data['detail']; }
     } catch (_) { /* Keep malformed/error pages out of the interface. */ }
     return 'Não foi possível concluir a consulta. Tente novamente.';
   }
@@ -123,11 +123,11 @@ class PlacesService {
     bool cardapioBraille = false,
   }) async {
     final queryParams = <String, String>{};
-    if (caoGuia) queryParams['cao_guia'] = 'true';
-    if (mesaAcessivel) queryParams['mesa_acessivel'] = 'true';
-    if (banheiroAcessivel) queryParams['banheiro_acessivel'] = 'true';
-    if (rampaAcesso) queryParams['rampa_acesso'] = 'true';
-    if (cardapioBraille) queryParams['cardapio_braille'] = 'true';
+    if (caoGuia) { queryParams['cao_guia'] = 'true'; }
+    if (mesaAcessivel) { queryParams['mesa_acessivel'] = 'true'; }
+    if (banheiroAcessivel) { queryParams['banheiro_acessivel'] = 'true'; }
+    if (rampaAcesso) { queryParams['rampa_acesso'] = 'true'; }
+    if (cardapioBraille) { queryParams['cardapio_braille'] = 'true'; }
 
     final uri = Uri.parse('${Config.baseUrl}/api/locais/')
         .replace(queryParameters: queryParams);
@@ -151,6 +151,7 @@ class PlacesService {
   Future<void> registerVisit({
     required int localId,
     required String userName,
+    double? latitude, double? longitude, double? accuracy,
   }) async {
     final response = await AppHttp.post(
       Uri.parse('${Config.baseUrl}/api/visitas/'),
@@ -158,6 +159,9 @@ class PlacesService {
       body: jsonEncode({
         'local': localId,
         'nome_usuario': userName,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
+        if (accuracy != null) 'accuracy': accuracy,
       }),
     );
 

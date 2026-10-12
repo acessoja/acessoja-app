@@ -14,11 +14,13 @@ class EvaluationSurveyDialog extends StatefulWidget {
 
   /// Chamado quando o usuário opta por não responder a pesquisa.
   final VoidCallback? onDismiss;
+  final Map<String, dynamic>? initialAnswers;
 
   const EvaluationSurveyDialog({
     super.key,
     required this.onSubmit,
     this.onDismiss,
+    this.initialAnswers,
   });
 
   @override
@@ -30,6 +32,16 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
   String q2 = '';
   String q3 = '';
   String q4 = '';
+
+  @override
+  void initState() {
+    super.initState();
+    final answers = widget.initialAnswers;
+    q1 = (answers?['pergunta_1'] ?? '').toString();
+    q2 = (answers?['pergunta_2'] ?? '').toString();
+    q3 = (answers?['pergunta_3'] ?? '').toString();
+    q4 = (answers?['pergunta_4'] ?? '').toString();
+  }
 
   Widget _buildQuestionCard(
     String questionText,

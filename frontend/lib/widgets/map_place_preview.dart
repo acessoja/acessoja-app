@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../l10n/strings.dart';
 import '../models/map_place.dart';
+import '../l10n/contribution_strings.dart';
 
 /// Resumo do estabelecimento exibido ao tocar em um marcador do mapa.
 class MapPlacePreview extends StatelessWidget {
@@ -10,6 +11,8 @@ class MapPlacePreview extends StatelessWidget {
   final String distanceLabel;
   final VoidCallback onDetailsPressed;
   final VoidCallback? onRoutePressed;
+  final VoidCallback? onEvaluatePressed;
+  final VoidCallback? onReviewsPressed;
 
   const MapPlacePreview({
     super.key,
@@ -17,6 +20,8 @@ class MapPlacePreview extends StatelessWidget {
     required this.distanceLabel,
     required this.onDetailsPressed,
     required this.onRoutePressed,
+    this.onEvaluatePressed,
+    this.onReviewsPressed,
   });
 
   bool _isEnabled(String key) => place[key] == true;
@@ -126,7 +131,7 @@ class MapPlacePreview extends StatelessWidget {
               Text('${model.sourceLabel} · ${model.categoryLabel}',
                 style: TextStyle(color: colors.muted, fontWeight: FontWeight.w600)),
               if (!model.hasCommunityReviews)
-                const Text('Ainda não avaliado no AcessoJá'),
+                Text(context.contributionText('Ainda não avaliado no AcessoJá', 'Not yet reviewed on AcessoJá')),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -173,7 +178,7 @@ class MapPlacePreview extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 10),
-              const Text('Recursos não informados: acessibilidade desconhecida.'),
+              Text(context.contributionText('Recursos não informados: acessibilidade desconhecida.', 'Unreported features: accessibility unknown.')),
               if (model.isExternal && place['additional_data'] is Map &&
                   (place['additional_data'] as Map)['opening_hours'] != null)
                 Text('Horário informado no OSM: '
@@ -183,13 +188,24 @@ class MapPlacePreview extends StatelessWidget {
                 Text('Informações do OSM (sem verificação AcessoJá): '
                   '${(place['accessibility_data'] as Map).entries.map((e) => '${e.key}: ${e.value}').join(', ')}'),
               const SizedBox(height: 18),
+              Wrap(spacing: 10, runSpacing: 8, children: [
+                FilledButton.icon(key: const ValueKey('preview-evaluate'),
+                  onPressed: onEvaluatePressed,
+                  icon: const Icon(Icons.rate_review_outlined),
+                  label: Text(context.contributionText('Avaliar', 'Review'))),
+                OutlinedButton.icon(key: const ValueKey('preview-reviews'),
+                  onPressed: onReviewsPressed,
+                  icon: const Icon(Icons.reviews_outlined),
+                  label: Text(context.contributionText('Ver avaliações', 'View reviews'))),
+              ]),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: onDetailsPressed,
                       icon: const Icon(Icons.info_outline_rounded, size: 18),
-                      label: Text(model.isExternal ? 'Contribuir' : context.l10n.details),
+                      label: Text(model.isExternal ? context.contributionText('Contribuir', 'Contribute') : context.l10n.details),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: colors.primaryDark,
                         side: BorderSide(color: colors.primary),

@@ -254,7 +254,7 @@ Os novos contratos estão documentados no Swagger pelas próprias views.
 ### Funcionamento
 
 - Locais AcessoJá usam o marcador de pino; locais OSM usam um globo com uma
-  caixa de nome diferente. A origem também aparece em texto e na semântica.
+  ícone distinto. Nomes laterais e agrupamentos variam com o zoom; a origem aparece na semântica.
 - A busca filtra nome, endereço, categoria e bairro dos resultados carregados,
   com debounce local. Consultas geográficas só ocorrem ao confirmar a pesquisa.
 - Os filtros de origem/categoria complementam os cinco filtros existentes.
@@ -265,19 +265,17 @@ Os novos contratos estão documentados no Swagger pelas próprias views.
   Se a região for maior, aproxime o mapa. Novas consultas substituem a lista
   externa anterior; falhas não removem resultados válidos da fonte interna.
 - Selecionar um resultado centraliza o mapa, destaca seu marcador e abre a
-  prévia. A ação **Rota** usa as coordenadas no OSRM e exige uma posição real.
-  Uma rota OSRM comum não representa um trajeto acessível verificado.
-- **Contribuir** abre confirmação de nome/endereço e exige a senha do usuário
-  autenticado por HTTP Basic nessa única escrita (ou sessão no backend).
-  Como o login legado não retorna token, a senha é solicitada nessa ação,
-  sem persistência no dispositivo. Use HTTPS fora do desenvolvimento local.
+  prévia. **Rota** calcula com uma posição real; sem GPS, oferece Google Maps/Waze.
+  Uma rota comum não representa um trajeto acessível verificado.
+- **Contribuir** confirma nome/endereço usando o token da sessão. Para clientes
+  legados, HTTP Basic permanece disponível nessa importação, sem guardar a senha.
+  Use HTTPS fora do desenvolvimento local.
 - O servidor recebe um token assinado dos resultados da busca, com validade
   de 15 minutos. Coordenadas, categoria e ID OSM são recuperados do token,
   sem confiar em IDs/coordenadas arbitrários enviados pelo cliente.
 - Após confirmar o cadastro (ou localizar um cadastro anterior), a tela
-  existente de detalhes é aberta com `id_local`. A avaliação segue a regra
-  atual: é necessário iniciar uma rota/registrar uma visita antes de avaliar.
-  O novo fluxo não cria nem altera avaliações de terceiros.
+  de detalhes ou avaliação é aberta com `id_local`. Avaliar não depende de rota
+  ou visita. O autor vem exclusivamente da sessão autenticada.
 
 ### Configuração e limites dos serviços
 
@@ -365,12 +363,95 @@ Os testes da Sprint 1 foram preservados.
 Resultados e limitações efetivamente verificados estão em
 `INSTRUCOES_APLICACAO.txt`. A validação Flutter/Android ainda deve ser executada
 com o SDK fixado pelo projeto; análise sintática isolada não substitui
-`flutter analyze`, `flutter test` ou o build. Esta entrega não altera as
-permissões públicas legadas do restante da aplicação.
+`flutter analyze`, `flutter test` ou o build. As permissões de avaliações,
+perfil e histórico foram revisadas na evolução descrita abaixo.
 
-Para esta entrega, siga a regra do prompt: branch
-`feature/sprint-2-locais-externos`, com PR para **main**. Commit, push e PR são
-operações manuais do usuário. A revisão humana e o Quality Gate precisam passar
-antes do merge. Para a próxima sprint, considerar revisão de vínculos OSM e
-melhorias de apresentação em grandes conjuntos; rotas acessíveis ficam para a
-Sprint 4.
+
+## Mapa inteligente, navegação e Avaliar
+
+A navegação principal oferece **Explorar / Avaliar / Salvos / Sugestões**.
+Avaliar reúne descoberta com filtros e paginação, minhas avaliações, comunidade,
+meu impacto, conquistas e histórico de pontos. Todos os dados vêm da API.
+
+Marcadores usam pino ou globo e área de toque de 44 px. Agrupamentos são estáveis
+em coordenadas projetadas; nomes medidos respeitam colisões, ícones e viewport.
+Há no máximo 300 grupos/ícones renderizados; os membros continuam disponíveis na
+busca, nos agrupamentos e nas listas. Rotação foi desativada para manter a
+projeção e os rótulos coerentes. A atribuição OpenStreetMap foi preservada.
+
+**Rota** mostra uma prévia. **Iniciar navegação** exige uma posição recente e
+precisa, acompanha o GPS em primeiro plano, apresenta manobras OSRM, atualiza
+estimativas, recalcula após desvios persistentes e permite encerrar. A chegada
+exige três leituras distintas, próximas ao destino e com precisão de até 25 m.
+Sair da aba interrompe a navegação; retomar exige uma nova posição. Google Maps
+e Waze recebem coordenadas exatas como alternativa. No desktop, esses links
+abrem suas páginas; a navegação por aplicativo depende do dispositivo.
+Nenhum percurso é certificado para cadeirantes. O provedor OSRM público é
+adequado a demonstrações; uma implantação contínua exige provedor apropriado.
+
+**Avaliar** e **Ver avaliações** aparecem diretamente na prévia. Um resultado
+externo é cadastrado primeiro, obtendo o ID interno. Avaliações são editáveis e
+excluíveis pelo autor; administradores reais podem moderar. Não há associação
+pelo nome informado no corpo e nenhuma rota calculada registra uma visita.
+Chegadas são registradas somente com as duas preferências de histórico e
+compartilhamento ativadas. São declarações do dispositivo, não provas de visita;
+coordenadas exatas e trilhas não são armazenadas no histórico.
+
+### Autenticação e pontos
+
+`POST /api/login/` retorna `token`; os pedidos privados usam
+`Authorization: Token <token>`. O Flutter mantém o token em memória e o envia
+somente à origem da API configurada. Validade: 12 horas. Logout e troca de senha
+revogam o token. Recarregar o navegador exige novo login.
+
+- Avaliação válida: **10 pontos**, uma contribuição ativa por autor/local.
+- Pesquisa respondida: **5 pontos** adicionais, inclusive respostas “Não sei”.
+- Comentário útil: **5 pontos**, somente após aprovação de administrador.
+- Cadastro externo: sem bônus; não existe aprovação de cadastros nesta base.
+- Correções: sem bônus; não existe um fluxo de correção aceita nesta base.
+
+Pontos não dependem da nota ou do tamanho do comentário. Eventos únicos e
+transações com bloqueio do autor impedem duplicação; edição não duplica pontos e ajusta elegibilidade,
+exclusão/invalidação estorna e restauração recupera somente os pontos elegíveis.
+PostgreSQL é necessário para validar o bloqueio entre requisições concorrentes.
+Conquistas guardam a primeira data de desbloqueio e podem ficar inativas após
+estorno. Os níveis começam em 0, 30, 100, 300 e 750 pontos. Participação não
+certifica a qualidade técnica das informações nem a acessibilidade do local.
+
+Na migração, avaliações antigas permanecem sem autoria verificada e sem
+pontuação automática. Duplicatas são arquivadas, preservando todos os registros;
+a mais recente fica ativa. Usuários antigos não ganham privilégios de admin.
+Crie um administrador autorizado com `python manage.py createsuperuser`.
+Moderação de validade e comentário ocorre em `/admin/`, no módulo de avaliações.
+A autoria histórica não pode ser promovida por esse formulário.
+
+### API e validação
+
+Os novos endpoints ficam em `/api/contribuicoes/`:
+`meu-impacto/`, `minhas-avaliacoes/`, `conquistas/`, `atividade/`,
+`comunidade/` e `locais-para-avaliar/`. Listas de contribuições têm páginas de 20,
+com máximo de 50; descoberta inspeciona até 500 candidatos internos e a consulta
+externa existente cobre até 3 km e 100 resultados. A busca interna por endereço
+permite filtrar região. **Perto de mim** depende de GPS, sem usar o centro do mapa
+como posição do usuário. **Buscar externos na área do mapa** funciona sem GPS.
+
+Confira os contratos em `/api/docs/` e as instruções e resultados comprovados
+em `INSTRUCOES_APLICACAO.txt`. Execute no frontend:
+
+```powershell
+flutter pub get
+flutter analyze
+flutter test
+flutter build web
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000
+```
+
+Referências técnicas oficiais:
+[manobras OSRM](https://github.com/Project-OSRM/osrm-backend/blob/master/docs/http.md),
+[Google Maps URLs](https://developers.google.com/maps/documentation/urls/get-started),
+[Waze Deep Links](https://developers.google.com/waze/deeplinks),
+[Flutter Map 6](https://docs.fleaflet.dev/v6/layers/marker-layer),
+[autenticação DRF](https://www.django-rest-framework.org/api-guide/authentication/).
+
+Publicação é manual pelo usuário. O destino desta tarefa é **main**;
+nenhum commit, push, branch, PR ou merge foi executado na preparação do pacote.

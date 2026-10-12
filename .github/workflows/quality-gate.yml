@@ -60,6 +60,9 @@ jobs:
         run: python manage.py makemigrations --check --dry-run
         # Falha se houver mudanças de model sem migration correspondente gerada.
 
+      - name: Validar OpenAPI sem avisos
+        run: python manage.py spectacular --fail-on-warn
+
       # ─── 7. Aplicar migrations em banco limpo (SQLite do CI) ────────────
       - name: 🗄️ Aplicar migrations em banco limpo
         run: python manage.py migrate
@@ -71,9 +74,9 @@ jobs:
             --cov=. \
             --cov-report=term-missing \
             --cov-report=xml:coverage.xml \
-            --cov-fail-under=65 \
+            --cov-fail-under=80 \
             -v
-        # --cov-fail-under=65 → o passo falha automaticamente se cobertura < 65%
+        # --cov-fail-under=80 → o passo falha automaticamente se cobertura < 80%
 
       # ─── 9. Publicar relatório de cobertura como artefato ───────────────
       - name: 📊 Publicar relatório de cobertura
@@ -131,22 +134,55 @@ jobs:
         # Nenhum teste depende do backend Django estar em execução:
         # o ApiService é mockado com mocktail.
 
+      - name: Compilar para navegador (flutter build web)
+        run: flutter build web
+
       # ─── 7. Build do APK debug — valida a cadeia Android completa ──────
       - name: 🤖 Compilar APK debug (flutter build apk --debug)
         run: flutter build apk --debug
+
+  backend-concurrency:
+    name: Backend — concorrência PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: acessoja_ci
+          POSTGRES_USER: acessoja_ci
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U acessoja_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://acessoja_ci:ci-only-password@localhost:5432/acessoja_ci
+      SECRET_KEY: ci-secret-key-not-for-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar e testar concorrência real
+        run: |
+          pip install -r backend/requirements.txt pytest pytest-django
+          pytest -q contribuicoes/test_contributions.py -k postgresql_concurrent
 
   # ─────────────────────────────────────────────────────────────────────────
   # Quality Gate — check final estável, usado como Required Status Check
   # ─────────────────────────────────────────────────────────────────────────
   quality-gate:
     name: Quality Gate
-    needs: [backend, frontend]
+    needs: [backend, frontend, backend-concurrency]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: ✅ Confirmar que backend e frontend passaram
         run: |
-          if [ "${{ needs.backend.result }}" != "success" ] || [ "${{ needs.frontend.result }}" != "success" ]; then
+          if [ "${{ needs.backend.result }}" != "success" ] || [ "${{ needs.frontend.result }}" != "success" ] || [ "${{ needs['backend-concurrency'].result }}" != "success" ]; then
             echo "❌ Um ou mais checks falharam (backend=${{ needs.backend.result }}, frontend=${{ needs.frontend.result }})."
             exit 1
           fi

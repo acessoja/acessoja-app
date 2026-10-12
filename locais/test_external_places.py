@@ -419,8 +419,8 @@ def test_import_validates_confirmed_fields(auth_client, payload, data):
 
 
 @pytest.mark.django_db
-def test_legacy_public_endpoint_cannot_set_osm_link(client):
-    result = client.post(
+def test_authenticated_endpoint_cannot_set_osm_link(auth_client):
+    result = auth_client.post(
         "/api/locais/", {"nome": "Legacy", "endereco": "Rua", "distancia": 4, "osm_id": "osm:node:99"}, format="json"
     )
     assert result.status_code == 201
@@ -586,15 +586,25 @@ def test_migration_preserves_previous_records_and_evaluations():
     executor = MigrationExecutor(connection)
     before = ("locais", "0005_alter_local_imagem")
     after = ("locais", "0006_local_categoria_local_osm_id")
-    executor.migrate([before])
-    old_apps = executor.loader.project_state([before]).apps
+    targets = [
+        before,
+        ("modal_avaliacao", "0003_alter_modalavaliacao_comentario"),
+        ("usuarios", "0002_usuario_compartilhar_localizacao_usuario_foto_perfil_and_more"),
+    ]
+    executor.migrate(targets)
+    old_apps = executor.loader.project_state(targets).apps
     old = old_apps.get_model("locais", "Local").objects.create(
         nome="Antes da Sprint 2", endereco="Rua antiga", distancia=4.2, rampa_acesso=True
     )
-    from modal_avaliacao.models import ModalAvaliacao
-    from locais.models import VisitaRecente
-
-    user = get_user_model().objects.create_user(nome="migration", email="migration@example.test", password="Senha123!")
+    ModalAvaliacao = old_apps.get_model("modal_avaliacao", "ModalAvaliacao")
+    VisitaRecente = old_apps.get_model("locais", "VisitaRecente")
+    HistoricalUser = old_apps.get_model("usuarios", "Usuario")
+    user = HistoricalUser.objects.create(
+        nome="migration",
+        email="migration@example.test",
+        password="unused",
+        data_criacao=__import__("django.utils.timezone", fromlist=["now"]).now(),
+    )
     review = ModalAvaliacao.objects.create(
         local_id=old.pk,
         user=user,
@@ -607,8 +617,9 @@ def test_migration_preserves_previous_records_and_evaluations():
     visit = VisitaRecente.objects.create(local_id=old.pk, user=user)
     try:
         executor = MigrationExecutor(connection)
-        executor.migrate([after])
-        apps = executor.loader.project_state([after]).apps
+        targets[0] = after
+        executor.migrate(targets)
+        apps = executor.loader.project_state(targets).apps
         saved = apps.get_model("locais", "Local").objects.get(pk=old.pk)
         assert saved.nome == "Antes da Sprint 2"
         assert saved.distancia == 4.2 and saved.rampa_acesso
@@ -616,4 +627,5 @@ def test_migration_preserves_previous_records_and_evaluations():
         assert ModalAvaliacao.objects.get(pk=review.pk).estrelas == 5
         assert VisitaRecente.objects.get(pk=visit.pk).local_id == old.pk
     finally:
-        MigrationExecutor(connection).migrate([after])
+        executor = MigrationExecutor(connection)
+        executor.migrate(executor.loader.graph.leaf_nodes())
