@@ -1,0 +1,41 @@
+AcessoJá — correção dos testes da Central de Contribuições
+
+Este pacote é uma atualização do pacote acessoja_contribuicoes_central.zip,
+que já deve estar aplicado no projeto.
+
+COMO APLICAR NO WINDOWS
+
+1. Extraia acessoja_correcao_testes_central.zip em uma pasta temporária.
+2. Copie o arquivo extraído frontend\test\contributions_central_test.dart
+   para C:\Users\USER\acessoja-app\frontend\test\contributions_central_test.dart,
+   substituindo a versão anterior desse arquivo.
+3. No PowerShell, execute:
+
+   Set-Location C:\Users\USER\acessoja-app\frontend
+   flutter analyze
+   flutter test test/contributions_central_test.dart
+   flutter test
+
+O QUE FOI CORRIGIDO
+
+As configurações de FakeContributions agora usam atribuições separadas,
+como service.onOwn e service.onSave. Nas expressões anteriores, a função
+com corpo => absorvia a cascata seguinte, que era aplicada ao valor
+retornado (ContributionException, Map ou null), causando os erros de
+compilação informados. As configurações semelhantes foram revisadas.
+
+O ContributionPage com dados constantes no teste de respostas atrasadas
+agora usa const, corrigindo também o aviso prefer_const_constructors.
+
+Os cenários e as verificações existentes dos testes foram preservados.
+
+VALIDAÇÃO REALIZADA
+
+Foi conferida a sintaxe do arquivo com um parser Dart, comparado o conteúdo
+com o pacote anterior e verificada a integridade do ZIP. Esse parser não
+substitui o analisador ou o compilador Flutter. O SDK Flutter não está
+instalado neste ambiente; os três comandos acima precisam ser executados
+no computador onde o projeto está instalado.
+
+Referência oficial sobre cascatas e atribuições equivalentes:
+https://dart.dev/language/operators#cascade-notation

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
-import '../l10n/strings.dart';
+import '../models/contribution_mutation.dart';
 import '../l10n/contribution_strings.dart';
 import '../services/contribution_service.dart';
 import '../widgets/evaluation_survey_dialog.dart';
@@ -21,11 +21,16 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
   int _stars = 0;
   bool _loading = true;
   bool _saving = false;
+  bool _saved = false;
+  bool _loadFailed = false;
+  bool _initialLoadStarted = false;
   String? _error;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialLoadStarted) { return; }
+    _initialLoadStarted = true;
     _load();
   }
   @override
@@ -33,27 +38,35 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
     _comment.dispose();
     super.dispose();
   }
-  Future<void> _load() async {
+  Future<void> _load({bool preserveDraft = false}) async {
     try {
       final id = widget.place['id_local'];
       if (id is! num || widget.place['source'] == 'openstreetmap') {
-        throw const ContributionException(400, 'Cadastre o local externo antes de avaliar.');
+        _error = context.contributionText('Cadastre o local externo antes de avaliar.',
+            'Register the external place before reviewing.');
+        _loadFailed = true;
+        return;
       }
       final review = widget.review ?? await widget.service.ownReview(id.toInt());
       if (!mounted) { return; }
       _review = review;
-      _stars = (review?['estrelas'] as num?)?.toInt() ?? 0;
-      _comment.text = (review?['comentario'] ?? '').toString();
+      _loadFailed = false;
+      if (!preserveDraft) {
+        _stars = (review?['estrelas'] as num?)?.toInt() ?? 0;
+        _comment.text = (review?['comentario'] ?? '').toString();
+      }
     } catch (error) {
       if (!mounted) { return; }
-      _error = '$error';
+      _loadFailed = true;
+      _error = context.contributionFailure(error,
+          section: context.contributionText('sua avaliação', 'your review'));
     } finally {
       if (mounted) { setState(() => _loading = false); }
     }
   }
 
   Future<void> _save(List<String> answers) async {
-    if (_saving) { return; }
+    if (_saving || _saved) { return; }
     setState(() { _saving = true; _error = null; });
     try {
       final result = await widget.service.saveReview({
@@ -62,16 +75,37 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
         for (var i = 0; i < answers.length; i++) 'pergunta_${i + 1}': answers[i],
       }, id: (_review?['id'] as num?)?.toInt());
       if (!mounted) { return; }
-      final delta = (result['points_delta'] as num?)?.toInt() ?? 0;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(
-          '${context.l10n.evaluationSent}${delta > 0 ? ' +$delta pts' : ''}')));
+      _saved = true;
+      final mutation = ContributionMutation.fromResponse(result,
+          operation: _review == null ? 'created' : 'updated');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.contributionFeedback(mutation))));
       Navigator.pop(context, true);
     } catch (error) {
       if (!mounted) { return; }
-      setState(() => _error = '$error');
       if (error is ContributionException && error.status == 409) {
-        // A concurrent/retried create becomes an edit of the persisted record.
-        _review = await widget.service.ownReview((widget.place['id_local'] as num).toInt());
+        setState(() => _error = context.contributionText(
+            'Essa contribuição já está registrada. Edite a avaliação existente.',
+            'This contribution is already recorded. Edit the existing review.'));
+        try {
+          final existing = await widget.service.ownReview((widget.place['id_local'] as num).toInt());
+          if (!mounted) { return; }
+          setState(() { _review = existing; _loadFailed = existing == null; });
+        } catch (_) {
+          if (!mounted) { return; }
+          setState(() {
+            _loadFailed = true;
+            _error = context.contributionText('Essa contribuição já está registrada. Não foi possível carregá-la agora.',
+                'This contribution is already recorded. It could not be loaded right now.');
+          });
+        }
+      } else {
+        setState(() => _error = error is ContributionException && [401, 403, 429].contains(error.status)
+            ? context.contributionFailure(error, section: context.contributionText('sua avaliação', 'your review'))
+            : error is ContributionException && error.status == 400
+            ? context.contributionText('Confira a nota e o comentário antes de tentar novamente.',
+                'Check the rating and comment before trying again.')
+            : context.contributionText('Não foi possível confirmar o salvamento. Suas informações continuam nesta tela.',
+                'Could not confirm saving. Your information is still on this screen.'));
       }
     } finally {
       if (mounted) { setState(() => _saving = false); }
@@ -94,9 +128,9 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(context.contributionText(
+      appBar: AppBar(toolbarHeight: 56 * MediaQuery.textScalerOf(context).scale(1), title: Text(context.contributionText(
           _review == null ? 'Avaliar estabelecimento' : 'Editar avaliação',
-          _review == null ? 'Review place' : 'Edit review'))),
+          _review == null ? 'Review place' : 'Edit review'), style: const TextStyle(fontSize: 18))),
       body: _loading ? const Center(child: CircularProgressIndicator()) :
         SingleChildScrollView(padding: const EdgeInsets.all(20), child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -124,11 +158,11 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
               Text(_error!, style: TextStyle(color: colors.danger)),
               TextButton(onPressed: _saving ? null : () {
                 setState(() { _error = null; _loading = true; });
-                _load();
+                _load(preserveDraft: true);
               }, child: Text(context.contributionText('Tentar novamente', 'Try again'))),
             ],
             FilledButton.icon(key: const ValueKey('review-open-survey'),
-              onPressed: _saving || _error != null ? null : _survey,
+              onPressed: _saving || _saved || _loadFailed ? null : _survey,
               icon: const Icon(Icons.accessibility_new),
               label: Text(_saving ? context.contributionText('Salvando…', 'Saving…') :
                   context.contributionText('Responder pesquisa e publicar', 'Complete survey and publish'))),

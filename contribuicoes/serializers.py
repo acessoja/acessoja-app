@@ -29,6 +29,8 @@ class ImpactSerializer(serializers.Serializer):
     progress = serializers.FloatField()
     reviews = serializers.IntegerField()
     places = serializers.IntegerField()
+    contributions_count = serializers.IntegerField()
+    history_count = serializers.IntegerField()
     achievements_count = serializers.IntegerField()
     achievements = AchievementSerializer(many=True)
     profile = serializers.DictField()
@@ -43,6 +45,10 @@ class ActivitySerializer(serializers.Serializer):
     created_at = serializers.DateTimeField()
     local = serializers.DictField()
     evaluation_id = serializers.IntegerField(allow_null=True)
+    source_evaluation_id = serializers.IntegerField(allow_null=True)
+    operation = serializers.CharField()
+    reason = serializers.CharField()
+    status = serializers.ChoiceField(choices=["active", "inactive", "removed", "invalidated"])
 
 
 class DiscoveryQuerySerializer(serializers.Serializer):
