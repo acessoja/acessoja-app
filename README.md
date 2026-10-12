@@ -455,3 +455,26 @@ Referências técnicas oficiais:
 
 Publicação é manual pelo usuário. O destino desta tarefa é **main**;
 nenhum commit, push, branch, PR ou merge foi executado na preparação do pacote.
+
+## Contribuições e Central Avaliar — revisão dos Cards 01–03
+
+As regras de 10/5/5 pontos permanecem. Gravação pelo ORM e auditoria são atômicas;
+processamento de instâncias antigas usa a origem atual no banco. Histórico recebe
+operação, motivo e referência da avaliação, preservando os registros anteriores.
+O resumo distingue ações pontuadas, avaliações válidas e operações no histórico.
+
+A Central mantém seus fluxos e apresenta “Avaliar um local”, “Ver histórico” e
+“Como contribuir”. Resumo e listas carregam de forma independente, com dados
+preservados durante atualizações e tratamento explícito de falhas parciais.
+
+Aplique a migration `contribuicoes/0002_activity_context`. A reconciliação **simula
+por padrão**; revise o relatório e use `--apply` no mesmo escopo para gravar:
+
+```powershell
+python manage.py reconcile_contributions --dry-run --user-id 7 --json
+python manage.py reconcile_contributions --apply --user-id 7 --json
+```
+
+Substitua `7` pelo usuário revisado. [Regras, contratos e operação](docs/CONTRIBUICOES.md)
+detalham os critérios e a compatibilidade. A aplicação em branch exclusiva,
+validação no Chrome e limitações do ambiente estão em `INSTRUCOES_APLICACAO.txt`.

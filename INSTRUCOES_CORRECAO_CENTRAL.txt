@@ -1,0 +1,70 @@
+AcessoJá — correção da Central de Contribuições (v2)
+
+COMO APLICAR
+
+Este pacote é uma atualização do desenvolvimento acessoja_contribuicoes_central.zip,
+que já deve estar aplicado. Ele inclui a correção anterior das cascatas nos testes.
+
+1. Extraia acessoja_correcao_central_v2.zip em uma pasta temporária.
+2. Copie os cinco arquivos da pasta frontend do ZIP para os mesmos caminhos
+   dentro de C:\Users\USER\acessoja-app, substituindo os arquivos anteriores:
+
+   frontend\lib\screens\contributions_screen.dart
+   frontend\lib\screens\review_editor_screen.dart
+   frontend\lib\widgets\contribution_summary.dart
+   frontend\test\contributions_central_test.dart
+   frontend\test\map_navigation_contributions_test.dart
+
+3. No PowerShell, execute:
+
+   Set-Location C:\Users\USER\acessoja-app\frontend
+   flutter analyze
+   flutter test test/contributions_central_test.dart test/map_navigation_contributions_test.dart
+   flutter test
+
+Não é necessário reinstalar dependências nem alterar o SDK para aplicar o pacote.
+
+CORREÇÕES
+
+- Conquistas: o ExpansionTile agora possui uma PageStorageKey própria.
+  Seu estado expandido (bool) fica separado da posição de rolagem (double),
+  evitando a falha de conversão exibida nos logs.
+- Acessibilidade: o título e o progresso do resumo possuem nós semânticos
+  próprios. O progresso não é mais agrupado com todos os textos do cartão.
+- Editor: o carregamento inicial ocorre em didChangeDependencies, uma única
+  vez, permitindo acessar traduções também ao recusar locais externos.
+- Testes: a rolagem seleciona explicitamente o Scrollable da lista principal,
+  aguarda o layout e confirma que o alvo recebe cliques antes de interagir.
+  Isso evita os cliques fora da tela e a seleção ambígua de Scrollables quando
+  o campo de busca está presente.
+- Testes de acessibilidade: os SemanticsHandles são liberados em finally
+  antes de encerrar cada teste, inclusive em caso de falha.
+
+REGRESSÕES COBERTAS NO CÓDIGO DOS TESTES
+
+- Abrir conquistas após rolar o histórico, sair da área visível e retornar
+  com a expansão preservada e sem exceções.
+- Progresso do nível separado dos demais textos, inclusive no último nível.
+- Trocar o idioma do editor sem repetir a busca da avaliação existente.
+- Recusar local externo sem buscar uma avaliação pelo identificador OSM
+  e sem acessar traduções prematuramente.
+- Manter as verificações existentes de paginação, falhas parciais, tamanhos
+  de tela, aumento de texto, temas, contraste e alvos de toque.
+
+VALIDAÇÃO NESTE AMBIENTE
+
+Foram revisadas as diferenças dos cinco arquivos, conferida a sintaxe dos
+73 arquivos Dart de lib/test com um parser e verificada a integridade do ZIP.
+Nenhum erro de sintaxe foi encontrado pelo parser.
+
+O SDK Flutter não está instalado neste ambiente. O parser não substitui
+flutter analyze nem flutter test; esses comandos não foram executados aqui.
+Os casos de teste adicionados/ajustados ainda precisam da execução local.
+
+REFERÊNCIAS OFICIAIS
+
+https://api.flutter.dev/flutter/material/ExpansionTile-class.html
+https://api.flutter.dev/flutter/widgets/Semantics/container.html
+https://api.flutter.dev/flutter/widgets/State/didChangeDependencies.html
+https://api.flutter.dev/flutter/flutter_test/WidgetController/scrollUntilVisible.html
+https://api.flutter.dev/flutter/widgets/Scrollable/ensureVisible.html

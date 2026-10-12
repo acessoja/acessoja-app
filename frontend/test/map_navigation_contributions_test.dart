@@ -327,21 +327,37 @@ void main() {
     AppHttp.client = MockClient((_) async => response({'detail': 'Offline'}, 503));
     await tester.pumpWidget(harness(const ContributionsScreen(userName: 'teste', mapCenter: LatLng(0, 0))));
     await tester.pumpAndSettle();
-    expect(find.text('Offline'), findsOneWidget);
-    expect(find.text('Tentar novamente'), findsOneWidget);
+    expect(find.text('Offline'), findsNothing);
+    expect(find.text('Não foi possível carregar seu resumo. Tente novamente.'), findsOneWidget);
+    expect(find.text('Não foi possível carregar esta lista. Tente novamente.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('central-retry-impact')), findsOneWidget);
+    expect(find.byKey(const ValueKey('central-retry-section')), findsOneWidget);
   });
   testWidgets('review editor preloads own review and never treats OSM as internal', (tester) async {
     final review = {'id': 9, 'can_edit': true, 'estrelas': 4, 'comentario': 'Observação',
       'pergunta_1': 'Sim', 'pergunta_2': 'Não', 'pergunta_3': 'Não sei', 'pergunta_4': 'Sim'};
-    AppHttp.client = MockClient((_) async => response([review]));
+    var ownRequests = 0;
+    AppHttp.client = MockClient((_) async {
+      ownRequests++;
+      return response([review]);
+    });
     await tester.pumpWidget(harness(ReviewEditorScreen(place: place(7, const LatLng(0, 0)).toMap())));
     await tester.pumpAndSettle();
     expect(find.text('Editar avaliação'), findsOneWidget);
     expect(find.text('Observação'), findsOneWidget);
+    expect(ownRequests, 1);
+    await tester.pumpWidget(harness(ReviewEditorScreen(
+        place: place(7, const LatLng(0, 0)).toMap()), locale: 'en'));
+    await tester.pumpAndSettle();
+    expect(find.text('Edit review'), findsOneWidget);
+    expect(find.text('Observação'), findsOneWidget);
+    expect(ownRequests, 1);
     await tester.pumpWidget(harness(ReviewEditorScreen(key: const ValueKey('external'),
         place: place(8, const LatLng(0, 0), external: true).toMap())));
     await tester.pumpAndSettle();
     expect(find.text('Cadastre o local externo antes de avaliar.'), findsOneWidget);
+    expect(ownRequests, 1);
+    expect(tester.takeException(), isNull);
   });
   testWidgets('navigation panel fits a small screen with large text', (tester) async {
     tester.view.physicalSize = const Size(320, 500);
@@ -367,6 +383,6 @@ void main() {
         userName: 'teste', mapCenter: LatLng(0, 0)), locale: 'en'));
     await tester.pumpAndSettle();
     expect(find.text('Review and contribute'), findsOneWidget);
-    expect(find.text('No results yet. Adjust filters or publish your first review.'), findsOneWidget);
+    expect(find.text('No places available yet'), findsOneWidget);
   });
 }

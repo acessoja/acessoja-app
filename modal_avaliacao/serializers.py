@@ -3,12 +3,25 @@ from locais.serializers import LocalSerializer
 from .models import ModalAvaliacao
 
 
+class ContributionResultSerializer(serializers.Serializer):
+    operation = serializers.ChoiceField(choices=["created", "updated", "deleted"])
+    outcome = serializers.ChoiceField(choices=["points_granted", "points_restored", "points_adjusted", "no_new_points"])
+    points_delta = serializers.IntegerField()
+    points = serializers.IntegerField()
+
+
+class ContributionFeedbackSerializer(serializers.Serializer):
+    points_delta = serializers.IntegerField()
+    contribution_result = ContributionResultSerializer()
+
+
 class ModalAvaliacaoSerializer(serializers.ModelSerializer):
     nome_usuario = serializers.SerializerMethodField()
     local_detalhes = LocalSerializer(source="local", read_only=True)
     can_edit = serializers.SerializerMethodField()
     user = serializers.SerializerMethodField()
     points_delta = serializers.IntegerField(read_only=True, required=False)
+    contribution_result = ContributionResultSerializer(read_only=True, required=False)
 
     class Meta:
         model = ModalAvaliacao
@@ -27,6 +40,7 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
             "local_detalhes",
             "can_edit",
             "points_delta",
+            "contribution_result",
             "survey_completed",
         ]
         read_only_fields = ["id", "user", "data_resposta", "can_edit", "survey_completed"]
