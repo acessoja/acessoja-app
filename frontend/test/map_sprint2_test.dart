@@ -54,9 +54,14 @@ class FakeLocation extends LocationService {
   final double accuracy;
   const FakeLocation({this.failure, this.accuracy = 10});
   @override
-  Future<Position> currentPosition() async {
+  Future<Position> currentPosition({bool requestPermission = true}) async {
     if (failure != null) {
-      throw LocationFailure(failure!);
+      throw LocationFailure(failure!, issue: switch (failure) {
+        'Permissão negada' => LocationIssue.denied,
+        'Localização bloqueada' => LocationIssue.blocked,
+        'Tempo de espera esgotado' => LocationIssue.timeout,
+        _ => LocationIssue.unavailable,
+      });
     }
     return Position(latitude: -16.3267, longitude: -48.9528,
       timestamp: DateTime(2026), accuracy: accuracy, altitude: 0,
@@ -114,10 +119,15 @@ void mockApi({bool internalError = false, bool externalError = false,
 Future<void> pumpMap(WidgetTester tester, {LocationService? location}) async {
   await tester.pumpWidget(harness(MainScreen(userName: 'teste',
     trackLocation: location != null, locationService: location,
+    clock: () => DateTime(2026),
     tileProvider: OfflineTiles())));
   await tester.pumpAndSettle();
   await tester.pump(const Duration(seconds: 5));
   await tester.pumpAndSettle();
+  if (location != null) {
+    await tester.tap(find.byKey(const ValueKey('map-location-refresh')));
+    await tester.pumpAndSettle();
+  }
   final map = tester.widget<FlutterMap>(find.byType(FlutterMap));
   map.mapController!.move(const LatLng(-16.3267, -48.9528), 19);
   await tester.pump(const Duration(milliseconds: 150));
@@ -372,7 +382,12 @@ void main() {
     testWidgets('localização: $failure mantém o mapa consultável', (tester) async {
       mockApi();
       await pumpMap(tester, location: FakeLocation(failure: failure));
-      expect(find.text(failure), findsOneWidget);
+      final message = switch (failure) {
+        'Permissão negada' => 'Permissão de localização negada. Você pode continuar consultando o mapa.',
+        'Localização bloqueada' => 'A localização está bloqueada nas permissões. Revise as configurações.',
+        _ => 'A localização demorou para responder. Tente novamente.',
+      };
+      expect(find.text(message), findsOneWidget);
       expect(find.byKey(const ValueKey('map-place-7')), findsOneWidget);
     });
   }
@@ -380,7 +395,7 @@ void main() {
   testWidgets('localização de baixa precisão é informada', (tester) async {
     mockApi();
     await pumpMap(tester, location: const FakeLocation(accuracy: 200));
-    expect(find.textContaining('Localização aproximada'), findsOneWidget);
+    expect(find.textContaining('A localização está pouco precisa'), findsOneWidget);
   });
 
   testWidgets('rota externa usa coordenadas e não registra visita por ID OSM', (tester) async {
@@ -399,7 +414,7 @@ void main() {
     final notice = find.byKey(const ValueKey('map-route-accessibility-notice'));
     expect(notice, findsOneWidget);
     expect(tester.widget<Text>(notice).data,
-      contains('acessibilidade do trajeto não verificada'));
+      contains('A acessibilidade deste trajeto não foi verificada.'));
   });
 
   testWidgets('contribuição abre detalhes apenas após confirmação com id_local', (tester) async {
