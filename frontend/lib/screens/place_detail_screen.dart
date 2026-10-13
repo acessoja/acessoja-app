@@ -2,6 +2,7 @@ import '../widgets/load_error.dart';
 import '../navigation.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
+import '../l10n/map_strings.dart';
 
 import 'package:flutter/material.dart';
 
@@ -74,14 +75,18 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
     }
   }
 
-  double get averageRating {
-    if (comments.isEmpty) {
-      return 0.0;
+  double? get _reportedAverage {
+    if (comments.isEmpty) { return null; }
+    var total = 0.0;
+    for (final comment in comments) {
+      if (comment is! Map) { return null; }
+      final stars = comment['estrelas'];
+      if (stars is! num || !stars.isFinite || stars < 1 || stars > 5) { return null; }
+      total += stars;
     }
-    final totalStars = comments.fold<num>(
-        0, (sum, comment) => sum + (comment['estrelas'] as num));
-    return totalStars / comments.length;
+    return total / comments.length;
   }
+  double get averageRating => _reportedAverage ?? 0;
 
   String getCommentsCountString() => context.l10n.reviewCount(comments.length);
 
@@ -236,7 +241,6 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
       (widget.place['nome'] ?? '').toString(),
     ).replaceAll('\n', ' ');
     final address = (widget.place['endereco'] ?? '').toString();
-    final isOpen = (widget.place['aberto'] ?? true) as bool;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -258,34 +262,11 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
           Semantics(
             image: true,
             label: context.l10n.placeImage(name),
-            child: Stack(
-              children: [
-                _buildPlaceImage(),
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isOpen ? colors.successSoft : colors.dangerSoft,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      isOpen ? context.l10n.open : context.l10n.closed,
-                      style: TextStyle(
-                        color: isOpen ? colors.success : colors.danger,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            child: _buildPlaceImage(),
           ),
+          const SizedBox(height: 8),
+          Text(context.mapText('Horário de funcionamento não informado', 'Opening hours not reported'),
+              style: TextStyle(color: colors.muted)),
           const SizedBox(height: 16),
           Text(
             name,
@@ -354,7 +335,8 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  getCommentsCountString(),
+                  comments.isEmpty ? context.mapText('Sem avaliações no AcessoJá', 'No reviews on AcessoJá')
+                      : getCommentsCountString(),
                   style: TextStyle(
                     color: colors.muted,
                     fontSize: 12,
@@ -363,7 +345,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
               ],
             ),
           ),
-          Column(
+          if (_reportedAverage != null) Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(

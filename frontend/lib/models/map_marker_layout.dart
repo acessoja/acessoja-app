@@ -9,7 +9,6 @@ Offset projectMapPoint(LatLng point, double zoom) {
   return Offset((point.longitude + 180) / 360 * scale,
       (0.5 - math.log((1 + sinLat) / (1 - sinLat)) / (4 * math.pi)) * scale);
 }
-
 LatLng unprojectMapPoint(Offset point, double zoom) {
   final scale = 256 * math.pow(2, zoom);
   final n = math.pi - 2 * math.pi * point.dy / scale;
@@ -22,9 +21,16 @@ class PlaceMarkerLayout {
   final LatLng point;
   final Offset screenPoint;
   final Rect? label;
-  const PlaceMarkerLayout(this.members, this.point, this.screenPoint, this.label);
+  final Size markerSize;
+  const PlaceMarkerLayout(this.members, this.point, this.screenPoint, this.label,
+      {this.markerSize = const Size(48, 48)});
   bool get isCluster => members.length > 1;
+  String get stableKey => isCluster
+      ? 'map-cluster-${members.map((p) => p.id).reduce((a, b) => a.compareTo(b) <= 0 ? a : b)}'
+      : 'map-place-${place.isExternal ? place.externalId ?? place.id : place.internalId ?? place.id}';
   MapPlace get place => members.first;
+  bool containsSelection(String? id) => id != null && members.any((place) => place.id == id);
+  Rect get hitBounds => Rect.fromCenter(center: screenPoint, width: markerSize.width, height: markerSize.height);
 }
 
 class _RectIndex {
@@ -37,89 +43,126 @@ class _RectIndex {
     }
   }
   void add(Rect rect) {
-    for (final key in _keys(rect)) {
-      (_cells[key] ??= []).add(rect);
-    }
+    for (final key in _keys(rect)) { (_cells[key] ??= []).add(rect); }
   }
-  bool overlaps(Rect rect) =>
-      _keys(rect).any((key) => (_cells[key] ?? []).any((other) => other.overlaps(rect)));
+  bool overlaps(Rect rect) => _keys(rect).any(
+      (key) => (_cells[key] ?? []).any((other) => other.overlaps(rect)));
 }
 
-/// World-aligned clustering keeps memberships stable during small pans. The
-/// spatial index compares measured label bounds with labels and icon bounds.
+/// World cells stabilize grouping on pan; collision passes merge neighbouring
+/// cells whose actual tap bounds overlap. Every member retains its coordinate.
+/// Selection stays in a coincident cluster, which is opened through its list.
 List<PlaceMarkerLayout> layoutPlaceMarkers({
   required List<MapPlace> places,
   required LatLng center,
   required double zoom,
   required Size size,
   required Size Function(String) measure,
+  Size Function(int)? measureCluster,
+  Offset Function(LatLng)? projectScreen,
+  List<Rect> reserved = const [],
   String? selectedId,
 }) {
-  if (size.isEmpty) { return []; }
+  if (size.isEmpty || !zoom.isFinite) { return []; }
   final origin = projectMapPoint(center, zoom) - Offset(size.width / 2, size.height / 2);
+  Offset screen(LatLng point) => projectScreen?.call(point) ?? projectMapPoint(point, zoom) - origin;
   final viewport = Offset.zero & size;
-  final candidates = places.where((place) => place.hasCoordinates &&
-      viewport.inflate(80).contains(projectMapPoint(
-          LatLng(place.latitude!, place.longitude!), zoom) - origin)).toList();
+  final candidates = places.where((place) => place.hasCoordinates).toList();
   int priority(MapPlace place) => place.id == selectedId ? 0 :
       !place.isExternal && place.hasCommunityReviews ? 1 : !place.isExternal ? 2 : 3;
-  candidates.sort((a, b) {
-    final comparison = priority(a).compareTo(priority(b));
-    return comparison == 0 ? a.id.compareTo(b.id) : comparison;
-  });
-  double cell = zoom <= 12 ? 88 : zoom < 14 ? 64 : zoom < 16 ? 36 : 22;
-  Map<String, List<MapPlace>> group(double width) {
+  int compare(MapPlace a, MapPlace b) {
+    final result = priority(a).compareTo(priority(b));
+    return result == 0 ? a.id.compareTo(b.id) : result;
+  }
+  candidates.sort(compare);
+  final world = <String, Offset>{
+    for (final place in candidates) place.id: projectMapPoint(LatLng(place.latitude!, place.longitude!), zoom),
+  };
+  var cell = zoom <= 12 ? 88.0 : zoom < 14 ? 72.0 : zoom < 16 ? 64.0 : 52.0;
+  List<List<MapPlace>> group(double width) {
     final groups = <String, List<MapPlace>>{};
     for (final place in candidates) {
-      final p = projectMapPoint(LatLng(place.latitude!, place.longitude!), zoom);
-      final key = place.id == selectedId ? 'selected' :
-          '${(p.dx / width).floor()}:${(p.dy / width).floor()}';
+      final point = world[place.id]!;
+      final key = '${(point.dx / width).floor()}:${(point.dy / width).floor()}';
       (groups[key] ??= []).add(place);
     }
-    return groups;
+    return groups.values.toList();
+  }
+  PlaceMarkerLayout position(List<MapPlace> members) {
+    var anchor = members.length == 1
+        ? LatLng(members.first.latitude!, members.first.longitude!)
+        : unprojectMapPoint(members.map((p) => world[p.id]!).reduce((a, b) => a + b) / members.length.toDouble(), zoom);
+    if (!viewport.contains(screen(anchor))) {
+      final visible = members.where((p) => viewport.contains(screen(LatLng(p.latitude!, p.longitude!))));
+      if (visible.isNotEmpty) { anchor = LatLng(visible.first.latitude!, visible.first.longitude!); }
+    }
+    final measured = members.length == 1 ? const Size(48, 48)
+        : measureCluster?.call(members.length) ?? const Size(48, 48);
+    return PlaceMarkerLayout(List.unmodifiable(members), anchor, screen(anchor), null,
+        markerSize: Size(math.max(48.0, measured.width), math.max(48.0, measured.height)));
   }
   var groups = group(cell);
-  while (groups.length > 300) {
-    cell *= 1.5;
-    groups = group(cell);
+  while (groups.length > 300 && cell < 1024) { cell *= 1.5; groups = group(cell); }
+  // Spatial hash and union-find avoid pairwise work for dense input.
+  while (groups.length > 1) {
+    final positioned = groups.map(position).toList();
+    final parents = List.generate(groups.length, (i) => i);
+    int root(int i) {
+      while (parents[i] != i) { parents[i] = parents[parents[i]]; i = parents[i]; }
+      return i;
+    }
+    final cells = <String, List<int>>{};
+    var changed = false;
+    for (var i = 0; i < positioned.length; i++) {
+      final rect = positioned[i].hitBounds.inflate(2);
+      final neighbours = <int>{};
+      for (var x = (rect.left / 64).floor(); x <= (rect.right / 64).floor(); x++) {
+        for (var y = (rect.top / 64).floor(); y <= (rect.bottom / 64).floor(); y++) {
+          final key = '$x:$y';
+          neighbours.addAll(cells[key] ?? const <int>[]);
+          (cells[key] ??= []).add(i);
+        }
+      }
+      for (final j in neighbours) {
+        if (rect.overlaps(positioned[j].hitBounds.inflate(2))) {
+          final a = root(i), b = root(j);
+          if (a != b) { parents[b] = a; changed = true; }
+        }
+      }
+    }
+    if (!changed) { break; }
+    final merged = <int, List<MapPlace>>{};
+    for (var i = 0; i < groups.length; i++) { (merged[root(i)] ??= []).addAll(groups[i]); }
+    groups = merged.values.map((members) => members..sort(compare)).toList();
   }
-  final icons = _RectIndex();
-  final layouts = <PlaceMarkerLayout>[];
-  for (final members in groups.values) {
-    final world = members.map((p) => projectMapPoint(LatLng(p.latitude!, p.longitude!), zoom))
-        .reduce((a, b) => a + b) / members.length.toDouble();
-    final screen = world - origin;
-    layouts.add(PlaceMarkerLayout(members, unprojectMapPoint(world, zoom), screen, null));
-    icons.add(Rect.fromCenter(center: screen, width: 30, height: 30));
-  }
-  final labels = _RectIndex();
+  final layouts = groups.map(position).where((item) =>
+      viewport.inflate(80).overlaps(item.hitBounds)).toList()
+    ..sort((a, b) => compare(a.place, b.place));
+  final occupied = _RectIndex();
+  for (final item in layouts) { occupied.add(item.hitBounds.inflate(2)); }
+  for (final rect in reserved) { occupied.add(rect); }
   final labelLimit = zoom <= 12 ? 0 : zoom < 14 ? 6 : zoom <= 16 ? 20 : 60;
   var count = 0;
-  return layouts.map((layout) {
-    final selected = layout.place.id == selectedId;
-    if (layout.isCluster || (!selected && count >= labelLimit)) { return layout; }
-    final measured = measure(layout.place.name);
-    final width = measured.width.clamp(24.0, math.max(24.0, math.min(180.0, size.width - 60))).toDouble();
-    final height = math.max(24.0, measured.height + 4);
-    final right = Rect.fromLTWH(layout.screenPoint.dx + 19,
-        layout.screenPoint.dy - height / 2, width, height);
-    final left = Rect.fromLTWH(layout.screenPoint.dx - 19 - width,
-        layout.screenPoint.dy - height / 2, width, height);
+  return layouts.map((item) {
+    final selected = item.containsSelection(selectedId);
+    if ((!selected && item.isCluster) || (!selected && count >= labelLimit)) { return item; }
+    final measured = measure(item.place.name);
+    final width = (measured.width + 16).clamp(48.0, math.max(48.0, math.min(200.0, size.width - 16))).toDouble();
+    final height = math.max(48.0, measured.height + 12);
+    final gap = item.markerSize.width / 2 + 6;
     Rect? chosen;
-    for (final rect in [right, left]) {
-      if (viewport.deflate(4).contains(rect.topLeft) &&
-          viewport.deflate(4).contains(rect.bottomRight) &&
-          !icons.overlaps(rect.inflate(2)) && !labels.overlaps(rect.inflate(4))) {
+    for (final rect in [
+      Rect.fromLTWH(item.screenPoint.dx + gap, item.screenPoint.dy - height / 2, width, height),
+      Rect.fromLTWH(item.screenPoint.dx - gap - width, item.screenPoint.dy - height / 2, width, height),
+    ]) {
+      if (viewport.deflate(4).contains(rect.topLeft) && viewport.deflate(4).contains(rect.bottomRight)
+          && !occupied.overlaps(rect.inflate(3))) {
         chosen = rect;
+        occupied.add(rect.inflate(3));
+        count++;
         break;
       }
     }
-    // Always keep the selected icon. A cramped selection is also named in
-    // its preview; never force its text over another icon.
-    if (chosen != null) {
-      labels.add(chosen.inflate(4));
-      count++;
-    }
-    return PlaceMarkerLayout(layout.members, layout.point, layout.screenPoint, chosen);
+    return PlaceMarkerLayout(item.members, item.point, item.screenPoint, chosen, markerSize: item.markerSize);
   }).toList(growable: false);
 }

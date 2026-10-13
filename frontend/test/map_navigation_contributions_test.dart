@@ -82,7 +82,7 @@ void main() {
       expect(markers.fold<int>(0, (sum, m) => sum + m.members.length), places.length);
     });
     test('near zoom reveals more names and distinct sources', () {
-      expect(layout(17).where((m) => m.label != null).length,
+      expect(layout(18).where((m) => m.label != null).length,
           greaterThan(layout(13).where((m) => m.label != null).length));
       expect(layout(17).expand((m) => m.members).any((p) => p.isExternal), isTrue);
     });
@@ -94,14 +94,19 @@ void main() {
           expect(labels[i].overlaps(labels[j]), isFalse);
         }
         for (final marker in markers) {
-          expect(labels[i].overlaps(Rect.fromCenter(center: marker.screenPoint, width: 30, height: 30)), isFalse);
+          expect(labels[i].overlaps(marker.hitBounds), isFalse);
         }
       }
     });
-    test('selected place survives clustering and has priority', () {
+    test('selected place survives clustering and has priority without overlapping targets', () {
       final selected = places.last.id;
       final markers = layout(12, selected: selected);
-      expect(markers.singleWhere((m) => m.place.id == selected).members.length, 1);
+      final selectedMarker = markers.singleWhere((m) => m.containsSelection(selected));
+      expect(selectedMarker.place.id, selected);
+      expect(selectedMarker.members.where((p) => p.id == selected), hasLength(1));
+      for (final other in markers.where((m) => m != selectedMarker)) {
+        expect(selectedMarker.hitBounds.overlaps(other.hitBounds), isFalse);
+      }
     });
     test('viewport changes cull off-screen points and exclude absent coordinates', () {
       final bad = MapPlace.internal({'id_local': 100, 'nome': 'Sem coordenadas'});
@@ -303,7 +308,11 @@ void main() {
       place: place(1, const LatLng(0, 0)).toMap(), distanceLabel: '10 m',
       onDetailsPressed: () {}, onRoutePressed: () {},
       onEvaluatePressed: () => evaluated = true, onReviewsPressed: () => viewed = true))));
+    await tester.ensureVisible(find.byKey(const ValueKey('preview-evaluate')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('preview-evaluate')));
+    await tester.ensureVisible(find.byKey(const ValueKey('preview-reviews')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('preview-reviews')));
     expect(evaluated && viewed, isTrue);
     expect(tester.takeException(), isNull);
