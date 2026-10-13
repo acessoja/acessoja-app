@@ -1,0 +1,325 @@
+ACESSOJÁ — CARDS 07 E 08: ROTAS, NAVEGAÇÃO E TRANSPARÊNCIA
+Entrega: acessoja_rotas_cards_07_08.zip
+Data: 13/10/2026
+
+1. BASE E ESCOPO
+
+Base utilizada: acessoja-app-main (2).zip, com o desenvolvimento dos Cards
+04–06 e acessoja_correcao_mapa_cards_04_06.zip aplicados, nessa ordem.
+A cópia de implementação está isolada da base. Este pacote é incremental:
+aplique sobre o projeto que já contém os Cards 04–06 corrigidos.
+
+Foram lidos requisitos, contratos de modelos/serviços, tela principal, tema,
+traduções, testes, Config, README, QUALITY, CI e documentação dos provedores.
+Os documentos de visão e arquitetura do projeto fornecem contexto acadêmico;
+a implementação continua usando o backend Django/DRF existente.
+
+Versões confirmadas nos arquivos recebidos:
+- Flutter 3.47.4 fixado em frontend/.fvmrc e no Quality Gate.
+- Dart >=3.4.0 e <4.0.0 declarado no pubspec.
+- flutter_map 6.2.1, latlong2 0.9.1, Geolocator 13.0.2.
+- url_launcher 6.3.2 e http 1.2.2.
+
+Não foram executados commit, push, merge, criação de branch ou PR.
+As branches main e develop não foram modificadas. Você fará o Git manualmente.
+Backend, autenticação, contribuições, filtros, tema, dependências e CI não
+receberam alterações.
+
+2. CARD 07 — DIAGNÓSTICO E ALTERAÇÕES
+
+Diagnóstico:
+- A origem ficava implícita e a posição podia estar antiga ou pouco precisa.
+- Sem GPS, não havia um fluxo consistente de planejamento por ponto no mapa.
+- Cálculo inicial e recálculo tinham controles de concorrência distintos.
+- A tela bloqueava o mapa durante o cálculo e enquadrava apenas os extremos.
+- O recálculo malsucedido podia deixar o acompanhamento usando o trajeto antigo.
+- Encerrar não limpava completamente o estado de geometria do controlador.
+- Permissão era solicitada ao entrar na tela; leituras periódicas podiam repetir
+  pedidos. O comportamento de interrupção/retomada precisava ser explícito.
+- Alguns tipos desconhecidos de manobra recebiam orientação genérica.
+
+Implementado:
+- Um único NavigationController controla escolha de origem, cálculo, prévia,
+  acompanhamento, recálculo, interrupção, chegada, falha e encerramento.
+- Destino preservado para locais internos e OSM, com validação de coordenadas
+  finitas e limites. Latitude/longitude zero continuam válidas.
+- Nenhum cadastro externo ou visita é criado simplesmente para calcular uma rota.
+- Origem explícita como Minha localização ou Ponto escolhido no mapa.
+  O centro só é usado como origem após o comando específico do usuário.
+- Destino com nome/endereço, modo Percurso de carro, distância do trajeto na
+  unidade configurada e duração identificada como estimativa sem trânsito.
+- Prévia manual não inicia acompanhamento de uma localização fictícia.
+  Recalcule a partir do GPS real antes de iniciar.
+- OSRM mantém /route/v1/driving, longitude antes da latitude, GeoJSON e steps.
+  Não houve mudança simulada para pedestre ou cadeira de rodas.
+- Resposta valida geometria, métricas e instruções. Sem instruções completas,
+  a geometria pode ser consultada, mas a orientação interna fica desabilitada.
+- Erros de conexão, timeout, HTTP, resposta inválida, NoRoute e NoSegment têm
+  causas separadas. O timeout específico de rota é 15 segundos.
+- Cálculo e recálculo são coordenados; envios são espaçados em pelo menos um
+  segundo na sessão. Isso não fornece controle global entre vários usuários.
+- Cancelamento lógico por geração: respostas tardias são descartadas após
+  cancelar, mudar origem/destino, interromper ou descartar a tela.
+  A conexão HTTP já enviada não é fisicamente abortada.
+- Um recálculo substitui a rota somente após resposta válida. Se falhar, o
+  percurso anterior permanece identificado como não atualizado e o
+  acompanhamento ativo é interrompido. É preciso recalcular com sucesso.
+- Posições repetidas/fora de ordem não contam como novas leituras. Chegada e
+  desvio exigem leituras distintas, com intervalo e precisão adequados.
+- Ao mover o mapa, pode-se explorar e depois Voltar a acompanhar.
+- Origem O e destino D têm símbolos, letras e rótulos semânticos.
+- A linha usa cores do tema e contorno de superfície. O enquadramento considera
+  todos os pontos da geometria no espaço real do mapa, separado do painel.
+- O painel tem rolagem e limite de altura que considera teclado e orientação.
+  Busca, GPS, atribuição e navegação principal continuam disponíveis.
+- Cancelar funciona durante escolha/cálculo/prévia; Encerrar limpa rota,
+  origem/destino, acompanhamento e recursos exclusivos da navegação.
+  Busca, filtros, locais e localização da exploração são preservados.
+- Segundo plano interrompe operações e acompanhamento. Voltar não retoma
+  silenciosamente nem solicita permissão; use Atualizar/Retomar.
+- Timer exclusivo só existe durante acompanhamento; assinaturas, callbacks e
+  solicitações pendentes são protegidos contra atualização após descarte.
+- Google Maps tem ações distintas Consultar e Navegar. Apenas a consulta pode
+  encaminhar origem escolhida. Navegar usa a localização real do provedor.
+- Waze recebe destino e navigate=yes, sem inventar origem manual.
+- Abertura parte do toque, antes do primeiro await, sem canLaunch/network probe
+  que retire ativação do usuário no Chrome. Falha retorna feedback recuperável.
+  Abrir URL não é apresentado como confirmação de navegação externa iniciada.
+
+Critérios operacionais, preservados/revisados no controlador:
+- GPS para navegação: coordenadas válidas, idade de 0 a 30 segundos, precisão
+  maior que zero e até 50 m. Timestamps futuros são rejeitados.
+- Início/retomada: posição próxima da geometria, com tolerância máxima entre
+  65 m e duas vezes a precisão. Origem manual exige recálculo pelo GPS.
+- Chegada: três posições precisas, até 25 m de precisão, dentro de 30 m do
+  destino, separadas por pelo menos dois segundos (ao menos quatro segundos).
+- Desvio: três leituras distintas separadas por pelo menos dois segundos,
+  fora da tolerância; recálculo automático com intervalo mínimo de 30 segundos.
+- Leituras imprecisas não declaram chegada nem provocam recálculo.
+- Watchdog de acompanhamento verifica idade do GPS a cada dez segundos.
+- O registro legado de visita interna mantém chegada e preferências de
+  compartilhamento/histórico existentes. Não foi ampliado neste trabalho.
+
+3. CARD 08 — DIAGNÓSTICO E ALTERAÇÕES
+
+Diagnóstico:
+- Feedback genérico relacionava qualquer falha ao GPS.
+- Aviso de limitação usava texto pequeno.
+- Não havia estudo de rede, dados, cobertura e homologação futura.
+
+Implementado:
+- Estados de localização: ainda não solicitada, obtendo, negada, bloqueada,
+  serviço desligado, antiga, imprecisa, inválida, timeout, indisponível e
+  contexto inseguro no navegador.
+- A permissão é solicitada em uma ação explícita da funcionalidade; leituras
+  passivas não a solicitam. Não há repetição automática após recusa.
+- Configurações do dispositivo aparecem apenas em plataformas suportadas.
+  No web, a interface orienta sobre a permissão do site e HTTPS/localhost.
+- Mensagens de rota e recálculo correspondem à causa conhecida, sem texto
+  técnico de exceções ou conteúdo do servidor.
+- Aviso legível na prévia e acompanhamento:
+  A acessibilidade deste trajeto não foi verificada.
+- Explicação complementar sob demanda, sem confirmação repetitiva.
+- Traduções PT/EN seguem o padrão existente de extensões por locale.
+- Semântica anuncia mudanças de estado, problema e manobra; métricas e
+  obtenção passiva de GPS não produzem anúncios a cada polling.
+- Botões com área mínima de 48 pixels, texto não reduzido, rolagem e comandos
+  com labels/tooltip. Os dois temas são preservados.
+- docs/ROTAS_ACESSIVEIS.md contém matriz de dez grupos de dados, proveniência,
+  datas, conexões, atualização, conflitos, alternativas, custos, licenças,
+  proposta de piloto e critérios para não recomendar um percurso.
+- Fontes oficiais municipais foram consultadas, mas cobertura física/OSM
+  de Anápolis não foi aferida. Nenhum levantamento ou homologação foi realizado.
+- Nenhum motor acessível, histórico de deslocamento, nova dependência ou SDK
+  foi adicionado. Tokens continuam restritos ao backend pelo AppHttp.
+
+4. ARQUIVOS DO ZIP — 13 ARQUIVOS COMPLETOS
+
+- INSTRUCOES_APLICACAO.txt: este guia.
+- docs/ROTAS_ACESSIVEIS.md: estudo de viabilidade e fontes.
+- frontend/lib/l10n/route_strings.dart: mensagens PT/EN de rota e localização.
+- frontend/lib/models/route_failure.dart: causas tipadas de falha.
+- frontend/lib/models/navigation_route.dart: validação de resposta/instruções.
+- frontend/lib/screens/main_screen.dart: integração de ações, GPS, ciclo e layout.
+- frontend/lib/services/location_service.dart: permissões e recursos por plataforma.
+- frontend/lib/services/navigation_controller.dart: estado único e concorrência.
+- frontend/lib/services/route_service.dart: OSRM, timeout e URLs oficiais.
+- frontend/lib/widgets/navigation_panel.dart: painel responsivo e semântica.
+- frontend/test/map_cards_04_06_test.dart: adaptação ao pedido explícito de GPS.
+- frontend/test/map_sprint2_test.dart: fake com relógio/estados e ação explícita.
+- frontend/test/route_cards_07_08_test.dart: novos testes unitários e de widgets.
+
+Não há pasta adicional envolvendo os arquivos. Não há .git, .env, bancos,
+caches, ambientes virtuais, builds, temporários ou arquivos gerados de plugins.
+Os testes existentes não foram removidos; as expectativas de mensagem refletem
+os estados novos, preservando a verificação de mapa consultável após falha.
+
+5. APLICAÇÃO EM BRANCH EXCLUSIVA — EXECUÇÃO MANUAL POR VOCÊ
+
+Na raiz da cópia que já contém os Cards 04–06 corrigidos:
+
+  git status
+  git branch --show-current
+  git switch -c feature/cards-07-08-rotas
+
+Use a base pretendida e preserve alterações locais que já tenha feito.
+Extraia acessoja_rotas_cards_07_08.zip na raiz acessoja-app, que contém frontend
+e manage.py, substituindo os arquivos correspondentes.
+Não extraia dentro de frontend, para não criar frontend/frontend.
+
+Confira:
+
+  git diff --stat
+  git diff --check
+  git diff
+
+Após aplicar e validar, você fará commit, push e PR na base adequada.
+Nenhuma dessas ações foi realizada durante o desenvolvimento.
+
+6. CONFIGURAÇÃO E EXECUÇÃO PELO NAVEGADOR
+
+Não há novas variáveis de ambiente, migrations ou instalações de dependências.
+Mantenha a configuração do backend descrita no README. Caso já esteja preparado,
+execute na raiz, em outro terminal:
+
+  python manage.py runserver 0.0.0.0:8000
+
+Na pasta frontend, com o SDK compatível com .fvmrc:
+
+  flutter pub get
+  flutter analyze
+  flutter test test/route_cards_07_08_test.dart test/map_navigation_contributions_test.dart test/map_sprint2_test.dart test/map_cards_04_06_test.dart
+  flutter test
+  flutter build web
+  flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000
+
+Se utiliza FVM, use fvm flutter no lugar de flutter.
+Esses comandos de teste e web não exigem Android SDK.
+O Config mantém localhost:8000 como padrão no navegador. Acesso via outra
+máquina/produção requer API_BASE_URL apropriado e HTTPS conforme o ambiente.
+
+Para gerar web apontando a outra API:
+
+  flutter build web --dart-define=API_BASE_URL=https://SUA_API
+
+Como alternativa de inspeção do build, na pasta frontend/build/web:
+
+  python -m http.server 8080
+
+Abra http://localhost:8080. Mantenha backend/API acessível e as permissões do site.
+Essa alternativa também depende de o build web ter sido executado com sucesso.
+
+Quando houver Android SDK, para cobrir a cadeia exigida pelo CI:
+
+  flutter build apk --debug
+
+Android não é necessário para usar o app no navegador.
+
+7. VERIFICAÇÃO REALIZADA NESTA ENTREGA
+
+Comandos tentados nesta versão, todos com resultado:
+  /bin/bash: line 1: flutter: command not found
+  código de saída 127
+
+- flutter analyze
+- flutter test test/route_cards_07_08_test.dart test/map_navigation_contributions_test.dart test/map_sprint2_test.dart test/map_cards_04_06_test.dart
+- flutter test
+- flutter build web
+- flutter build apk --debug
+
+Portanto, análise Flutter, compilação, execução dos testes, builds e inspeção
+visual no Chrome NÃO foram concluídos aqui. Não foram reutilizados resultados
+de versões anteriores. A ausência do SDK impede confirmar a suíte desta versão.
+
+Verificado por inspeção e scripts locais:
+- Delimitadores lexicais (incluindo strings, comentários e interpolação) dos
+  82 arquivos Dart de lib/test, sem erro encontrado.
+- Resolução dos imports locais, sem destino ausente.
+- Hashes de dependências, CI, AppHttp, tema e modelos/componentes de locais:
+  conteúdos preservados.
+- Preservação das declarações dos testes existentes relacionados.
+- Relação exata de arquivos novos/alterados, sem arquivos removidos.
+- Integridade e caminhos do ZIP e aplicação sobre uma segunda cópia da base.
+
+A verificação lexical não é um parser/analisador Dart, não verifica tipos,
+não compila widgets e não substitui flutter analyze ou flutter test.
+Os testes adicionados estão preparados, mas sua aprovação permanece pendente.
+Backend não foi modificado e seus testes não foram reexecutados neste card.
+
+Testes preparados incluem:
+- OSRM/GeoJSON/zero/ordem de coordenadas e ausência de token externo.
+- Timeout, HTTP, conexão, resposta inválida, NoRoute e NoSegment.
+- Permissões, contexto seguro, configurações e baixa precisão.
+- Origem manual, GPS recente, prévia sem instruções e recálculo.
+- Cancelamento, troca de destino, respostas atrasadas, descarte e concorrência.
+- Chegada/desvio com leituras distintas, GPS antigo e retomada explícita.
+- URLs de consulta/navegação e falha do launcher.
+- Fluxos integrados de local interno/OSM, consulta sem permissão inicial,
+  cancelamento com GPS pendente, mudança de destino e descarte.
+- Painel em 36 combinações: larguras 320, 360, 390, 800 e 1280, mais
+  640x320 horizontal; escalas 1,0/1,5/2,0; temas claro/escuro.
+- Teclado em tela horizontal pequena, foco/Enter, notice e guidelines de
+  tamanho Android/iOS, rótulos e contraste nos dois temas.
+
+HTTP, GPS, relógio, tiles e launcher são simulados nos testes. Eles não dependem
+de GPS real, backend em execução ou consultas públicas ao OSRM.
+
+8. ROTEIRO MANUAL — CELULAR E CHROME
+
+1. Entrar no mapa e conferir que a permissão não é pedida automaticamente.
+   Anápolis deve aparecer como referência, não como posição atual do aparelho.
+2. Pesquisar e escolher um local interno e depois um OSM. Confirmar nome,
+   endereço, coordenadas e ausência de cadastro automático.
+3. Sem GPS, abrir Rota; escolher o centro do mapa como origem e calcular.
+   Conferir O/D, geometria, distância do trajeto, duração estimada e modo carro.
+4. Confirmar que uma prévia manual não acompanha uma posição fictícia.
+   Recalcular a partir do GPS e só então iniciar.
+5. Permitir GPS pelo comando Atualizar localização. Conferir obtenção, posição
+   recente e precisão. Negar/bloquear permissão e conferir mensagem adequada.
+6. No Chrome, conferir orientação de permissão do site e ausência de botão
+   de configurações nativas. Conferir HTTPS ou localhost.
+7. Cancelar durante cálculo, durante GPS pendente e na prévia; aguardar respostas.
+   O painel/rota não devem reaparecer. Busca, filtros e atribuição devem funcionar.
+8. Trocar destino com consulta pendente; a resposta antiga não deve sobrescrever
+   nome, coordenadas, painel ou geometria do novo destino.
+9. Iniciar com GPS real recente; mover o mapa e Voltar a acompanhar. Não
+   simular navegação em campo sem o suporte necessário ao teste.
+10. Recalcular; desligar conexão e conferir indicação de trajeto anterior não
+    atualizado, interrupção e nova tentativa. Verificar que duplo toque não
+    gera recálculos concorrentes.
+11. Sair da aba/ir para segundo plano e voltar. A navegação deve permanecer
+    interrompida até atualização/retomada explícitas.
+12. Consultar no Google Maps e navegar no Google Maps/Waze. Conferir destino,
+    distinção da origem manual e feedback ao bloquear a abertura.
+    Não presumir percurso idêntico nem início externo só porque abriu a URL.
+13. Conferir aviso de acessibilidade na prévia e acompanhamento e explicação
+    complementar sem necessidade de confirmação repetida.
+14. Conferir celular/Chrome em 320, 360 e 390; tablet; horizontal; texto em
+    1,5 e 2,0; claro/escuro; conteúdo longo; teclado aberto e rolagem.
+15. Usar Tab/Shift+Tab/Enter e leitor de tela. Conferir foco visível, labels,
+    anúncio dos estados e ausência de repetição a cada leitura de GPS.
+16. Encerrar e verificar limpeza da rota, preservação de busca/filtros/locais,
+    ausência de nova visita apenas por calcular e contratos de contribuições.
+
+9. REFERÊNCIAS E PADRÕES ADAPTADOS
+
+- OSRM HTTP/GeoJSON/steps/códigos e perfis preparados:
+  https://github.com/Project-OSRM/osrm-backend/blob/master/docs/http.md
+  https://github.com/Project-OSRM/osrm-backend/blob/master/docs/profiles.md
+- Limites e privacidade do serviço de demonstração:
+  https://routing.openstreetmap.de/about.html
+- Google Maps URLs: api=1, consulta e ação navigate:
+  https://developers.google.com/maps/documentation/urls/get-started
+- Waze: ll e navigate=yes:
+  https://developers.google.com/waze/deeplinks/
+- Geolocator 13.0.2: permissões, timeout e limites no web:
+  https://pub.dev/packages/geolocator/versions/13.0.2
+- flutter_map 6.2.1: câmera e espaço real para enquadramento:
+  https://pub.dev/documentation/flutter_map/6.2.1/flutter_map/MapCamera/nonRotatedSize.html
+- Flutter: guidelines e inspeção de semântica web:
+  https://docs.flutter.dev/ui/accessibility/accessibility-testing
+
+A hierarquia origem/destino, prévia, estimativa e ações de navegação foi adaptada
+às cores, componentes e idioma existentes do AcessoJá. Não foi copiada uma
+tela externa nem criado tema paralelo. Fontes e limites do estudo futuro
+estão detalhados em docs/ROTAS_ACESSIVEIS.md.

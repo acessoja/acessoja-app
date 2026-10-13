@@ -1,6 +1,10 @@
 import 'package:latlong2/latlong.dart';
 import 'map_place.dart';
 
+bool validRoutePoint(LatLng point) =>
+    point.latitude.isFinite && point.longitude.isFinite &&
+    point.latitude.abs() <= 90 && point.longitude.abs() <= 180;
+
 class RouteStep {
   final String type;
   final String modifier;
@@ -9,8 +13,23 @@ class RouteStep {
   final double duration;
   final double startDistance;
   final LatLng location;
-  const RouteStep({required this.type, required this.modifier, required this.street,
-    required this.distance, required this.duration, required this.startDistance, required this.location});
+  final int? exit;
+  const RouteStep({required this.type, required this.modifier,
+    required this.street, required this.distance, required this.duration,
+    required this.startDistance, required this.location, this.exit});
+
+  bool get hasInstruction {
+    if (!{'depart', 'arrive', 'turn', 'end of road', 'continue', 'new name',
+      'notification', 'merge', 'on ramp', 'off ramp', 'fork', 'roundabout',
+      'rotary', 'roundabout turn', 'exit roundabout', 'exit rotary'}.contains(type)) {
+      return false;
+    }
+    if ({'turn', 'end of road', 'fork', 'merge', 'roundabout turn'}.contains(type)) {
+      return {'straight', 'left', 'right', 'slight left', 'slight right',
+        'sharp left', 'sharp right', 'uturn'}.contains(modifier);
+    }
+    return true;
+  }
 }
 
 class NavigationRoute {
@@ -18,56 +37,85 @@ class NavigationRoute {
   final List<RouteStep> steps;
   final double distance;
   final double duration;
-  late final List<double> cumulative = _cumulative();
-  NavigationRoute({required this.points, required this.steps, required this.distance, required this.duration});
+  late final List<double> cumulative = List.unmodifiable(_cumulative());
+  NavigationRoute({required List<LatLng> points, required List<RouteStep> steps,
+    required this.distance, required this.duration})
+      : points = List.unmodifiable(points), steps = List.unmodifiable(steps) {
+    if (points.length < 2 || points.any((p) => !validRoutePoint(p)) ||
+        !distance.isFinite || distance < 0 || !duration.isFinite || duration < 0) {
+      throw const FormatException('invalid_route');
+    }
+  }
+
+  bool get canGuide => steps.isNotEmpty && steps.every((step) => step.hasInstruction);
 
   factory NavigationRoute.fromOsrm(Map<String, dynamic> json) {
-    if (json['code'] != 'Ok' || json['routes'] is! List || (json['routes'] as List).isEmpty) {
+    final routes = json['routes'];
+    if (json['code'] != 'Ok' || routes is! List || routes.isEmpty || routes.first is! Map) {
       throw const FormatException('route_unavailable');
     }
-    final route = json['routes'][0] as Map;
-    LatLng coordinate(dynamic raw) {
-      if (raw is! List || raw.length < 2 || raw[0] is! num || raw[1] is! num) {
-        throw const FormatException('invalid_route_coordinate');
+    final raw = routes.first as Map;
+    final geometry = raw['geometry'];
+    if (geometry is! Map || geometry['coordinates'] is! List ||
+        (geometry['type'] != null && geometry['type'] != 'LineString')) {
+      throw const FormatException('invalid_geometry');
+    }
+    LatLng coordinate(dynamic value) {
+      if (value is! List || value.length < 2 || value[0] is! num || value[1] is! num) {
+        throw const FormatException('invalid_coordinate');
       }
-      final lon = (raw[0] as num).toDouble();
-      final lat = (raw[1] as num).toDouble();
+      final lon = (value[0] as num).toDouble();
+      final lat = (value[1] as num).toDouble();
       if (!lat.isFinite || !lon.isFinite || lat.abs() > 90 || lon.abs() > 180) {
-        throw const FormatException('invalid_route_coordinate');
+        throw const FormatException('invalid_coordinate');
       }
       return LatLng(lat, lon);
     }
-    final points = (route['geometry']['coordinates'] as List).map(coordinate).toList();
-    if (points.length < 2) { throw const FormatException('empty_route'); }
-    var cumulative = 0.0;
+    double metric(dynamic value) {
+      if (value is! num || !value.isFinite || value < 0) {
+        throw const FormatException('invalid_metric');
+      }
+      return value.toDouble();
+    }
+    final points = (geometry['coordinates'] as List).map(coordinate).toList();
     final steps = <RouteStep>[];
-    for (final leg in route['legs'] as List? ?? []) {
-      for (final step in leg['steps'] as List? ?? []) {
-        final maneuver = step['maneuver'] as Map;
-        final distance = (step['distance'] as num).toDouble();
-        final duration = (step['duration'] as num).toDouble();
-        if (!distance.isFinite || distance < 0 || !duration.isFinite || duration < 0) {
-          throw const FormatException('invalid_route_step');
+    var traveled = 0.0;
+    final legs = raw['legs'];
+    if (legs != null && legs is! List) { throw const FormatException('invalid_legs'); }
+    for (final leg in (legs as List? ?? const [])) {
+      if (leg is! Map) { throw const FormatException('invalid_leg'); }
+      final instructions = leg['steps'];
+      if (instructions != null && instructions is! List) {
+        throw const FormatException('invalid_steps');
+      }
+      for (final step in (instructions as List? ?? const [])) {
+        if (step is! Map || step['maneuver'] is! Map) {
+          throw const FormatException('invalid_step');
         }
-        steps.add(RouteStep(type: maneuver['type'].toString(),
-          modifier: (maneuver['modifier'] ?? '').toString(),
-          street: (step['name'] ?? '').toString(), distance: distance,
-          duration: duration, startDistance: cumulative, location: coordinate(maneuver['location'])));
-        cumulative += distance;
+        final maneuver = step['maneuver'] as Map;
+        if (maneuver['type'] is! String ||
+            (maneuver['modifier'] != null && maneuver['modifier'] is! String) ||
+            (step['name'] != null && step['name'] is! String) ||
+            (maneuver['exit'] != null && (maneuver['exit'] is! int || maneuver['exit'] < 1))) {
+          throw const FormatException('invalid_instruction');
+        }
+        final distance = metric(step['distance']);
+        steps.add(RouteStep(type: maneuver['type'] as String,
+          modifier: maneuver['modifier'] as String? ?? '',
+          street: step['name'] as String? ?? '', distance: distance,
+          duration: metric(step['duration']), startDistance: traveled,
+          location: coordinate(maneuver['location']), exit: maneuver['exit'] as int?));
+        traveled += distance;
       }
     }
-    final distance = (route['distance'] as num).toDouble();
-    final duration = (route['duration'] as num).toDouble();
-    if (!distance.isFinite || distance < 0 || !duration.isFinite || duration < 0) {
-      throw const FormatException('invalid_route_totals');
-    }
-    return NavigationRoute(points: points, steps: steps, distance: distance, duration: duration);
+    return NavigationRoute(points: points, steps: steps,
+      distance: metric(raw['distance']), duration: metric(raw['duration']));
   }
 
   List<double> _cumulative() {
-    var distance = 0.0;
+    var meters = 0.0;
     return [0, for (var i = 1; i < points.length; i++)
-      distance += mapDistanceMeters(points[i - 1].latitude, points[i - 1].longitude,
-          points[i].latitude, points[i].longitude)];
+      meters += mapDistanceMeters(points[i - 1].latitude, points[i - 1].longitude,
+        points[i].latitude, points[i].longitude)];
   }
 }
