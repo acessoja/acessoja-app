@@ -9,6 +9,7 @@ RESPOSTAS = [
     ("Sim", "Sim"),
     ("Não", "Não"),
     ("Não sei", "Não sei"),
+    ("Não se aplica", "Não se aplica"),
 ]
 
 
@@ -19,10 +20,13 @@ class ModalAvaliacao(models.Model):
         related_name="avaliacoes",
     )
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    pergunta_1 = models.CharField(max_length=10, choices=RESPOSTAS)
-    pergunta_2 = models.CharField(max_length=10, choices=RESPOSTAS)
-    pergunta_3 = models.CharField(max_length=10, choices=RESPOSTAS)
-    pergunta_4 = models.CharField(max_length=10, choices=RESPOSTAS)
+    pergunta_1 = models.CharField(max_length=20, choices=RESPOSTAS, blank=True)
+    pergunta_2 = models.CharField(max_length=20, choices=RESPOSTAS, blank=True)
+    pergunta_3 = models.CharField(max_length=20, choices=RESPOSTAS, blank=True)
+    pergunta_4 = models.CharField(max_length=20, choices=RESPOSTAS, blank=True)
+    questionnaire_version = models.PositiveSmallIntegerField(default=1, choices=[(1, "Legado"), (2, "Recursos")])
+    answers = models.JSONField(default=dict, blank=True)
+    answer_dates = models.JSONField(default=dict, blank=True)
     estrelas = models.PositiveIntegerField(default=0)  # De 1 a 5 estrelas
     comentario = models.TextField(blank=True)
     data_resposta = models.DateTimeField(auto_now_add=True)

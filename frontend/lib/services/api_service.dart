@@ -85,13 +85,8 @@ class HttpApiService implements ApiService {
 
   @override
   Future<List<dynamic>> fetchEvaluations({required dynamic localId}) async {
-    final response = await AppHttp.get(Uri.parse(
-      '${Config.baseUrl}/api/avaliacoes/modal-avaliacoes/?local_id=$localId',
-    ));
-    if (response.statusCode == 200) {
-      return json.decode(utf8.decode(response.bodyBytes)) as List<dynamic>;
-    }
-    throw StateError('evaluation_load_failed');
+    if (localId is! num) { throw const FormatException('invalid_local_id'); }
+    return const ContributionService().placeReviews(localId.toInt());
   }
 
   @override

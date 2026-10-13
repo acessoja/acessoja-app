@@ -25,6 +25,7 @@ import 'package:flutter_application_1/screens/informacoes_pessoais_screen.dart';
 import 'package:flutter_application_1/screens/ajuda_screen.dart';
 import 'package:flutter_application_1/screens/place_detail_screen.dart';
 import 'package:flutter_application_1/widgets/evaluation_survey_dialog.dart';
+import 'package:flutter_application_1/models/accessibility_survey.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_application_1/screens/main_screen.dart';
@@ -72,8 +73,17 @@ http.Response fixtureResponse(http.Request request) {
         ])),
         200);
   }
+  if (request.url.path.contains('modal-avaliacoes/recursos/')) {
+    return http.Response(jsonEncode({'version': 2, 'people': 0, 'legacy_not_comparable': 0,
+      'features': [for (final q in SurveyContract.questions) {
+        'id': q.id, 'counts': {for (final code in surveyCodes) code: 0},
+        'state': 'not_evaluated', 'unanswered': 0, 'legacy_not_comparable': 0,
+        'latest_at': null, 'respondents': 0, 'few_reviews': false,
+      }]}), 200);
+  }
   if (request.url.path.contains('modal-avaliacoes')) {
-    return http.Response(request.method == 'POST' ? '{}' : '[]',
+    return http.Response(request.method == 'POST'
+      ? jsonEncode({'id': 9, ...jsonDecode(request.body) as Map<String, dynamic>}) : '[]',
         request.method == 'POST' ? 201 : 200);
   }
   return http.Response.bytes(utf8.encode(jsonEncode([place])), 200);
@@ -189,23 +199,23 @@ void main() {
     });
   });
 
-  testWidgets(
-      'English survey displays translations but returns original values',
-      (tester) async {
-    List<String>? answers;
-    await tester.pumpWidget(harness(
-        Scaffold(
-            body: EvaluationSurveyDialog(
-                onSubmit: (a, b, c, d) => answers = [a, b, c, d])),
-        language: 'en'));
-    await tester.pumpAndSettle();
-    for (var i = 0; i < 4; i++) {
-      await tapVisible(
-          tester, find.widgetWithText(ElevatedButton, 'Yes').at(i));
+  testWidgets('English survey returns stable codes after review', (tester) async {
+    Map<String, dynamic>? answers;
+    await tester.pumpWidget(harness(Scaffold(body: Builder(builder: (context) =>
+      FilledButton(onPressed: () => showDialog<bool>(context: context, builder: (_) =>
+        EvaluationSurveyDialog(onSubmit: (body) async { answers = body; })), child: const Text('Open')))),
+      language: 'en'));
+    await tester.tap(find.text('Open')); await tester.pumpAndSettle();
+    for (var group = 0; group < 4; group++) {
+      for (final q in SurveyContract.questions.where((q) => q.group == SurveyContract.groups[group])) {
+        await tapVisible(tester, find.byKey(ValueKey('survey-${q.id}-yes')));
+      }
+      await tapVisible(tester, find.byKey(const ValueKey('survey-next')));
     }
-    await tapVisible(
-        tester, find.widgetWithText(ElevatedButton, 'Send review'));
-    expect(answers, ['Sim', 'Sim', 'Sim', 'Sim']);
+    expect(answers, isNull);
+    await tapVisible(tester, find.byKey(const ValueKey('survey-submit')));
+    expect(answers!['questionnaire_version'], 2);
+    expect(answers!['answers'], {for (final q in SurveyContract.questions) q.id: 'yes'});
   });
 
   testWidgets('HTTP errors end loading and retry recovers', (tester) async {
@@ -220,24 +230,31 @@ void main() {
     expect(find.text('Biblioteca Municipal'), findsOneWidget);
   });
 
-  testWidgets(
-      'successful review restores detail content instead of spinning forever',
-      (tester) async {
-    await tester.pumpWidget(
-        harness(PlaceDetailScreen(place: place, userName: 'teste')));
+  testWidgets('successful review refreshes detail content instead of spinning forever', (tester) async {
+    await tester.pumpWidget(harness(PlaceDetailScreen(place: place, userName: 'teste')));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.text('Qual sua nota?'), 250,
-        scrollable: find.byType(Scrollable).first);
-    await tapVisible(tester, find.bySemanticsLabel('Dar 4 estrelas'));
-    await tapVisible(tester, find.widgetWithText(ElevatedButton, 'Confirmar'));
-    for (var i = 0; i < 4; i++) {
-      await tapVisible(
-          tester, find.widgetWithText(ElevatedButton, 'Sim').at(i));
+    // The questionnaire results increase the height of the lazy ListView.
+    // Scroll first so the review button is built before ensureVisible/tap.
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('detail-review')), 250);
+    await tapVisible(tester, find.byKey(const ValueKey('detail-review')));
+    await tapVisible(tester, find.byKey(const ValueKey('review-star-4')));
+    await tapVisible(tester, find.byKey(const ValueKey('review-open-survey')));
+    for (var group = 0; group < 4; group++) {
+      for (final q in SurveyContract.questions.where((q) => q.group == SurveyContract.groups[group])) {
+        await tapVisible(tester, find.byKey(ValueKey('survey-${q.id}-yes')));
+      }
+      await tapVisible(tester, find.byKey(const ValueKey('survey-next')));
     }
-    await tapVisible(
-        tester, find.widgetWithText(ElevatedButton, 'Enviar Avaliação'));
+    await tapVisible(tester, find.byKey(const ValueKey('survey-submit')));
+    // After save, the detail page rebuilds and the button can remain below
+    // the visible part of its scrolling content. Scroll before asserting.
+    expect(find.byType(PlaceDetailScreen), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
-    expect(find.text('Compartilhe sua experiência'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('detail-review')), 250,
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('detail-review')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

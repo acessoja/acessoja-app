@@ -74,24 +74,24 @@ class TestModalAvaliacaoAPI:
         assert response.status_code == 201
         assert ModalAvaliacao.objects.count() == 1
 
-    def test_respostas_sim_atualizam_flags_de_acessibilidade_do_local(self, api_client, local, usuario):
-        """Regra de negocio central do app: cada resposta 'Sim' liga um
-        flag de acessibilidade correspondente no Local associado."""
+    def test_respostas_legadas_nao_reinterpretam_flags_de_acessibilidade(self, api_client, local, usuario):
+        """Preserva o relato antigo sem transformar estacionamento em mesa ou obstáculos em cão-guia."""
         api_client.force_authenticate(user=usuario)
         payload = {
             "local": local.id_local,
-            "pergunta_1": "Sim",  # -> rampa_acesso
-            "pergunta_2": "Sim",  # -> banheiro_acessivel
-            "pergunta_3": "Sim",  # -> mesa_acessivel
-            "pergunta_4": "Sim",  # -> cao_guia
+            "pergunta_1": "Sim",
+            "pergunta_2": "Sim",
+            "pergunta_3": "Sim",
+            "pergunta_4": "Sim",
             "estrelas": 5,
         }
         api_client.post("/api/avaliacoes/modal-avaliacoes/", payload, format="json")
         local.refresh_from_db()
-        assert local.rampa_acesso is True
-        assert local.banheiro_acessivel is True
-        assert local.mesa_acessivel is True
-        assert local.cao_guia is True
+        assert local.rampa_acesso is False
+        assert local.banheiro_acessivel is False
+        assert local.mesa_acessivel is False
+        assert local.cao_guia is False
+        assert ModalAvaliacao.objects.get().pergunta_3 == "Sim"
 
     def test_respostas_nao_nao_alteram_flags(self, api_client, local, usuario):
         """Respostas diferentes de 'Sim' não devem ligar nenhum flag."""

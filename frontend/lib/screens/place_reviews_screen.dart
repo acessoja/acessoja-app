@@ -3,6 +3,9 @@ import '../l10n/strings.dart';
 import '../l10n/map_strings.dart';
 import '../models/map_place.dart';
 import '../services/contribution_service.dart';
+import '../widgets/survey_answers_view.dart';
+import '../widgets/accessibility_results_card.dart';
+import 'review_editor_screen.dart';
 
 class PlaceReviewsScreen extends StatefulWidget {
   final Map<String, dynamic> place;
@@ -17,6 +20,9 @@ class _PlaceReviewsScreenState extends State<PlaceReviewsScreen> {
   bool _failed = false;
   String _ordering = 'recent';
   int _generation = 0;
+  int _resourceRevision = 0;
+  @override
+  void dispose() { _generation++; super.dispose(); }
   MapPlace get _place => widget.place['source'] == 'openstreetmap'
       ? MapPlace.external(widget.place) : MapPlace.internal(widget.place);
   @override
@@ -37,7 +43,8 @@ class _PlaceReviewsScreenState extends State<PlaceReviewsScreen> {
       final id = _place.internalId;
       if (id == null) { _rows = []; }
       else {
-        final rows = await widget.service.placeReviews(id, ordering: _ordering);
+        final rows = _ordering == 'history' ? await widget.service.historicalReviews(id) :
+          await widget.service.placeReviews(id, ordering: _ordering);
         if (!mounted || generation != _generation) { return; }
         _rows = rows;
       }
@@ -49,15 +56,17 @@ class _PlaceReviewsScreenState extends State<PlaceReviewsScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    final stars = _rows.map((row) => row['estrelas']).whereType<num>()
+    final current = _rows.where((row) => row['is_current'] != false && row['is_valid'] != false).toList();
+    final stars = current.map((row) => row['estrelas']).whereType<num>()
         .where((value) => value.isFinite && value >= 1 && value <= 5).toList();
-    final average = stars.isNotEmpty && stars.length == _rows.length
+    final average = _ordering != 'history' && stars.isNotEmpty && stars.length == current.length
         ? stars.fold<double>(0, (sum, value) => sum + value) / stars.length : null;
-    final summary = _loading && _rows.isEmpty ? context.mapText('Carregando avaliações…', 'Loading reviews…')
+    final summary = _loading ? context.mapText('Carregando avaliações…', 'Loading reviews…')
         : _failed && _rows.isEmpty ? context.mapText('Consulta de avaliações indisponível', 'Review lookup unavailable')
         : _place.internalId == null ? context.mapText('Nenhum registro associado no AcessoJá', 'No linked AcessoJá record')
         : _rows.isEmpty ? context.mapText('Sem avaliações no AcessoJá', 'No reviews on AcessoJá')
-        : '${context.l10n.reviewCount(_rows.length)}${average == null ? '' : ' · ${context.number(average)} / 5'}';
+        : _ordering == 'history' ? context.mapText('${_rows.length} registros no histórico', '${_rows.length} history records')
+        : '${context.l10n.reviewCount(current.length)}${average == null ? '' : ' · ${context.number(average)} / 5'}';
     return Scaffold(appBar: AppBar(toolbarHeight: 56 * MediaQuery.textScalerOf(context).scale(1),
         title: Text(context.mapText('Avaliações do local', 'Place reviews'))),
       body: CustomScrollView(slivers: [
@@ -68,7 +77,13 @@ class _PlaceReviewsScreenState extends State<PlaceReviewsScreen> {
               items: [
                 DropdownMenuItem(value: 'recent', child: Text(context.mapText('Recentes', 'Recent'))),
                 DropdownMenuItem(value: 'oldest', child: Text(context.mapText('Antigas', 'Oldest'))),
+                DropdownMenuItem(value: 'history', child: Text(context.mapText('Com histórico', 'Include history'))),
               ], onChanged: (value) { if (value != null) { _ordering = value; _load(); } }),
+          if (_ordering == 'history') Text(context.mapText(
+            'O histórico inclui arquivadas. Os indicadores usam uma avaliação atual por pessoa.',
+            'History includes archives. Indicators use one current review per person.')),
+          if (_place.internalId != null) AccessibilityResultsCard(localId: _place.internalId!,
+            revision: _resourceRevision, registeredData: widget.place, service: widget.service),
         ]))),
         if (_failed) SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(
             crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -93,9 +108,15 @@ class _PlaceReviewsScreenState extends State<PlaceReviewsScreen> {
                     Text((row['data_resposta'] ?? '').toString().split('T').first),
                     if ((row['comentario'] ?? '').toString().isNotEmpty) Text(row['comentario'].toString()),
                     const SizedBox(height: 8),
-                    for (var i = 1; i <= 4; i++) Text('${[context.l10n.questionOne, context.l10n.questionTwo,
-                      context.l10n.questionThree, context.l10n.questionFour][i - 1]} '
-                      '${context.surveyAnswer((row['pergunta_$i'] ?? 'Não sei').toString())}'),
+                    SurveyAnswersView(review: row),
+                    if (row['can_edit'] == true) OutlinedButton(onPressed: () async {
+                      final changed = await Navigator.push<bool>(context, MaterialPageRoute(builder: (_) =>
+                        ReviewEditorScreen(place: {'id_local': _place.internalId, 'nome': _place.name,
+                          'endereco': _place.address}, review: row, service: widget.service)));
+                      if (mounted && changed == true) {
+                        _resourceRevision++; await _load();
+                      }
+                    }, child: Text(context.mapText('Editar minha avaliação', 'Edit my review'))),
                   ])));
             }, childCount: _rows.length)),
       ]));
