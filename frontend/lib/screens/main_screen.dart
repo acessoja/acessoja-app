@@ -1,5 +1,7 @@
 import '../widgets/adaptive_place_layer.dart';
 import '../widgets/navigation_panel.dart';
+import '../l10n/route_strings.dart';
+import '../models/navigation_route.dart';
 import '../l10n/contribution_strings.dart';
 import '../services/navigation_controller.dart';
 import '../services/route_service.dart';
@@ -43,12 +45,18 @@ class MainScreen extends StatefulWidget {
   final bool trackLocation;
   final TileProvider? tileProvider;
   final LocationService? locationService;
+  final RouteService? routeService;
+  final ExternalNavigation? externalNavigation;
+  final DateTime Function()? clock;
 
   const MainScreen(
       {super.key,
       required this.userName,
       this.trackLocation = true,
       this.locationService,
+      this.routeService,
+      this.externalNavigation,
+      this.clock,
       this.tileProvider});
 
   @override
@@ -120,8 +128,15 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   LatLng? _destinationLocation;
   String _currentAddress = 'Anápolis, Goiás, Brasil';
   String _destinationAddress = '';
+  String _destinationStreet = '';
   List<LatLng> _routePoints = [];
-  bool _isLoadingRoute = false;
+  NavigationRoute? _displayedRoute;
+  bool _routeFitPending = false;
+  bool _foreground = true;
+  int _locationRequest = 0;
+  int _streamGeneration = 0;
+  LocationIssue _locationIssue = LocationIssue.notRequested;
+  bool _permissionRequested = false;
   bool _isRouting = false;
   bool _historyConsent = false;
   bool _arrivalRecorded = false;
@@ -134,16 +149,41 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   bool _pendingViewportGesture = false;
   NavigationFix? _lastFix;
   late final NavigationController _navigation = NavigationController(
-      recalculate: const RouteService().calculate);
+      recalculate: (widget.routeService ?? const RouteService()).calculate, clock: widget.clock);
+
+  bool get _freshLocation => _hasLocation && _lastFix != null &&
+      _lastFix!.problem(_navigation.now()) == null;
 
   void _onNavigationChanged() {
     if (!mounted) { return; }
+    final currentRoute = _navigation.route;
+    final changedRoute = !identical(_displayedRoute, currentRoute);
+    _displayedRoute = currentRoute;
     setState(() {
       _isRouting = _navigation.phase != NavigationPhase.ended;
-      _routePoints = _navigation.route?.points ?? [];
+      _routePoints = currentRoute?.points ?? [];
+      _destinationLocation = _navigation.destination;
     });
-    if (_navigation.phase == NavigationPhase.running && _navigation.follow && _mapReady && _hasLocation) {
-      _mapController.move(_currentLocation, 17);
+    if (_navigation.phase == NavigationPhase.running && _foreground) {
+      _navigationTimer ??= Timer.periodic(const Duration(seconds: 10), (_) {
+        if (!mounted || !_foreground) { return; }
+        _navigation.checkFreshness();
+        if (_navigation.phase == NavigationPhase.running && widget.trackLocation) {
+          unawaited(_initLocationTracking(requestPermission: false));
+        }
+      });
+      if (_navigation.follow && _mapReady && _freshLocation) {
+        _mapController.move(_currentLocation, 17);
+      }
+    } else {
+      _navigationTimer?.cancel();
+      _navigationTimer = null;
+    }
+    if (changedRoute && currentRoute != null && _navigation.phase != NavigationPhase.running) {
+      _routeFitPending = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && identical(currentRoute, _navigation.route)) { _fitRouteBounds(); }
+      });
     }
     if (_navigation.phase == NavigationPhase.arrived && !_arrivalRecorded) {
       _arrivalRecorded = true;
@@ -153,53 +193,108 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state != AppLifecycleState.resumed) { _navigation.interrupt('tab_inactive'); }
+    _foreground = state == AppLifecycleState.resumed;
+    if (!_foreground) {
+      _routeRequest++;
+      _locationRequest++;
+      _streamGeneration++;
+      _positionStream?.cancel();
+      _positionStream = null;
+      _locating = false;
+      _lastFix = null;
+      _navigation.interrupt('tab_inactive');
+      if (mounted) {
+        setState(() {
+          _hasLocation = false;
+          _locationIssue = LocationIssue.stale;
+          _locationMessage = context.locationIssue(_locationIssue);
+        });
+      }
+    }
+    // Returning never resumes guidance or requests permission automatically.
   }
 
   Future<void> _beginNavigation() async {
-    if (widget.trackLocation) {
-      try {
-        final position = await _locationService.currentPosition();
-        if (!mounted) { return; }
-        _updateLocation(position);
-      } catch (_) {
-        if (!mounted) { return; }
-        _navigation.interrupt();
-      }
-    }
-    if (!mounted) { return; }
-    if (!_navigation.start(_hasLocation ? _lastFix : null)) {
-      _showErrorSnackBar(context.contributionText(
-          'GPS preciso indisponível. Use Google Maps ou Waze.',
-          'Accurate GPS unavailable. Use Google Maps or Waze.'));
-    }
+    final request = ++_routeRequest;
+    if (!_freshLocation && widget.trackLocation) { await _initLocationTracking(); }
+    if (!mounted || !_foreground || request != _routeRequest) { return; }
+    _navigation.start(_freshLocation ? _lastFix : null);
   }
 
   void _endNavigation() {
     _routeRequest++;
     _navigation.end();
-    setState(() { _routePoints = []; _destinationLocation = null; _isLoadingRoute = false; });
+    setState(() {
+      _routePoints = [];
+      _destinationLocation = null;
+      _destinationAddress = '';
+      _destinationStreet = '';
+      _routeLocalId = null;
+      _arrivalRecorded = false;
+      _displayedRoute = null;
+      _routeFitPending = false;
+    });
   }
 
-  Future<void> _externalNavigation(LatLng point, ExternalNavigator provider) async {
-    final opened = await const ExternalNavigation().open(point, provider);
-    if (!mounted) { return; }
-    if (!opened) { _showErrorSnackBar(context.contributionText(
-        'Não foi possível abrir a navegação. Tente o outro aplicativo.',
-        'Unable to open navigation. Try the other application.')); }
+  void _reviewRouteOrigin() {
+    _routeRequest++;
+    _navigation.reviewOrigin();
   }
 
-  void _externalOptions(LatLng point) {
-    showModalBottomSheet<void>(context: context, useSafeArea: true,
-      builder: (_) => Padding(padding: const EdgeInsets.all(20), child: Wrap(
-        spacing: 12, runSpacing: 12, children: [
-          Text(context.contributionText('Abrir rota para o destino selecionado', 'Open route to selected destination')),
-          Text(context.contributionText('Acessibilidade do trajeto não verificada.', 'Route accessibility has not been verified.')),
-          OutlinedButton(onPressed: () => _externalNavigation(point, ExternalNavigator.googleMaps),
-            child: const Text('Google Maps')),
-          OutlinedButton(onPressed: () => _externalNavigation(point, ExternalNavigator.waze),
-            child: const Text('Waze')),
-        ])));
+  void _chooseMapOrigin() {
+    if (!_mapReady || _navigation.destination == null) { return; }
+    _routeRequest++;
+    _navigation.chooseOrigin(_mapController.camera.center);
+  }
+
+  Future<void> _calculateChosenOrigin() async {
+    final request = ++_routeRequest;
+    if (_navigation.manualOrigin) { await _navigation.calculateOrigin(); return; }
+    if (!_freshLocation && widget.trackLocation) { await _initLocationTracking(); }
+    if (!mounted || !_foreground || request != _routeRequest) { return; }
+    await _navigation.calculateFromFix(_freshLocation ? _lastFix : null);
+  }
+
+  Future<void> _refreshRouteOrigin() async {
+    final request = ++_routeRequest;
+    if (widget.trackLocation) { await _initLocationTracking(); }
+    if (!mounted || !_foreground || request != _routeRequest || !_freshLocation) { return; }
+    if (_navigation.phase == NavigationPhase.choosingOrigin ||
+        _navigation.phase == NavigationPhase.failed) {
+      _navigation.chooseOrigin(_lastFix!.point, manual: false);
+      _navigation.update(_lastFix!);
+    }
+  }
+
+  Future<void> _recalculateRoute() async {
+    if (_navigation.busy) { return; }
+    final request = ++_routeRequest;
+    if (!_freshLocation && widget.trackLocation) { await _initLocationTracking(); }
+    if (!mounted || !_foreground || request != _routeRequest) { return; }
+    await _navigation.reroute(_freshLocation ? _lastFix : null);
+  }
+
+  Future<void> _openLocationSettings() async {
+    final opened = await _locationService.openSettings(location: _locationIssue == LocationIssue.disabled);
+    if (mounted && !opened) {
+      _showErrorSnackBar(context.routeText('Não foi possível abrir as configurações. Revise as permissões do dispositivo.',
+        'Unable to open settings. Review your device permissions.'));
+    }
+  }
+
+  Future<void> _externalNavigation(LatLng point, ExternalNavigator provider,
+      {ExternalRouteAction action = ExternalRouteAction.navigate}) async {
+    final request = ++_routeRequest;
+    // Launch before the first await: the browser still has the tap activation.
+    final opening = (widget.externalNavigation ?? const ExternalNavigation()).open(
+      point, provider, origin: _navigation.origin, action: action);
+    _navigation.interrupt('screen_changed');
+    final opened = await opening;
+    if (!mounted || request != _routeRequest) { return; }
+    if (!opened) {
+      _showErrorSnackBar(context.routeText('Não foi possível abrir o aplicativo externo. Continue no AcessoJá ou tente novamente.',
+        'Unable to open the external app. Continue in AcessoJá or try again.'));
+    }
   }
 
   Future<void> _openCluster(LatLng center, List<MapPlace> members) async {
@@ -221,6 +316,8 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   }
 
   Future<void> _openContributions() async {
+    _routeRequest++;
+    _navigation.interrupt('screen_changed');
     final result = await Navigator.push<Object?>(context, MaterialPageRoute(
       builder: (_) => ContributionsScreen(userName: widget.userName,
         location: _hasLocation ? _currentLocation : null,
@@ -354,19 +451,10 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _navigation.addListener(_onNavigationChanged);
-    _navigationTimer = Timer.periodic(const Duration(seconds: 10), (_) async {
-      if (_navigation.phase != NavigationPhase.running || !widget.trackLocation) { return; }
-      try {
-        final position = await _locationService.currentPosition();
-        if (mounted && _navigation.phase == NavigationPhase.running) { _updateLocation(position); }
-      } catch (_) {
-        if (mounted) { _navigation.interrupt(); }
-      }
-    });
     _loadUserProfile();
-    if (widget.trackLocation) { _initLocationTracking(); }
+
     _fetchEstablishments(); // Preload all establishments
-    if (!widget.trackLocation) { _fetchExternalPlaces(_externalCenter); }
+    _fetchExternalPlaces(_externalCenter);
     _loadCategories();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) { _showWelcomeBanner(); }
@@ -384,7 +472,11 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     _internalRequest++;
     _externalRequest++;
     _searchRequest++;
+    _locationRequest++;
+    _streamGeneration++;
     _positionStream?.cancel();
+    _lastFix = null;
+    _displayedRoute = null;
     _mapController.dispose();
     _preview.dispose();
     _placesRevision.dispose();
@@ -490,60 +582,87 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     await _fetchExternalPlaces(camera.center);
   }
 
-  Future<void> _initLocationTracking() async {
-    if (_locating) { return; }
-    _locating = true;
+  Future<void> _initLocationTracking({bool requestPermission = true}) async {
+    if (!mounted || !widget.trackLocation || !_foreground || _locating) { return; }
+    final request = ++_locationRequest;
+    setState(() {
+      _locating = true;
+      if (requestPermission) {
+        _permissionRequested = true;
+        _locationIssue = LocationIssue.obtaining;
+        _locationMessage = context.locationIssue(_locationIssue);
+      }
+    });
     try {
-      final position = await _locationService.currentPosition();
-      if (!mounted) { return; }
+      final position = await _locationService.currentPosition(requestPermission: requestPermission);
+      if (!mounted || !_foreground || request != _locationRequest) { return; }
       _updateLocation(position);
-      await _positionStream?.cancel();
-      if (!mounted) { return; }
-      _positionStream = _locationService.positions().listen(_updateLocation,
-        onError: (_) {
-          if (!mounted) { return; }
-          _navigation.interrupt();
-          setState(() {
-            _hasLocation = false;
-            _locationMessage = 'Sinal de localização indisponível. Tente novamente.';
-          });
-        },
-      );
+      if (_positionStream == null) { _watchPositions(); }
     } catch (error) {
-      if (!mounted) { return; }
-      _navigation.interrupt();
-      setState(() {
-        _hasLocation = false;
-        _locationMessage = error is LocationFailure ? error.message
-            : 'Localização indisponível. Verifique as permissões e tente novamente.';
-      });
-      if (_externalRequest == 0) { _fetchExternalPlaces(_externalCenter); }
+      if (!mounted || !_foreground || request != _locationRequest) { return; }
+      var issue = error is LocationFailure ? error.issue : LocationIssue.unavailable;
+      if (issue == LocationIssue.notRequested && _permissionRequested) { issue = LocationIssue.denied; }
+      _locationFailed(issue);
     } finally {
-      _locating = false;
+      if (mounted && request == _locationRequest) {
+        setState(() {
+          _locating = false;
+          if (_locationIssue == LocationIssue.obtaining) {
+            _locationIssue = LocationIssue.stale;
+            _locationMessage = context.locationIssue(_locationIssue);
+          }
+        });
+      }
     }
   }
 
-  void _updateLocation(Position position) {
-    if (!mounted) { return; }
-    final valid = routePlace({'latitude': position.latitude,
-      'longitude': position.longitude});
-    if (valid == null) { return; }
-    final firstFix = !_hasLocation;
-    final point = LatLng(position.latitude, position.longitude);
-    setState(() {
-      _currentLocation = point;
-      _hasLocation = true;
-      _currentAddress = '${position.latitude.toStringAsFixed(5)}, '
-          '${position.longitude.toStringAsFixed(5)}';
-      _locationMessage = position.accuracy > 100
-          ? 'Localização aproximada (precisão de '
-            '${position.accuracy.toStringAsFixed(0)} m).'
-          : null;
+  void _watchPositions() {
+    final generation = ++_streamGeneration;
+    _positionStream = _locationService.positions().listen((position) {
+      if (mounted && _foreground && generation == _streamGeneration) { _updateLocation(position); }
+    }, onError: (_) {
+      if (mounted && _foreground && generation == _streamGeneration) {
+        _locationFailed(LocationIssue.unavailable);
+      }
+    }, onDone: () {
+      if (generation == _streamGeneration) { _positionStream = null; }
     });
-    if (firstFix && !_isRouting && _mapReady) { _mapController.move(point, 14.5); }
-    _lastFix = NavigationFix(point, position.accuracy, position.timestamp);
-    _navigation.update(_lastFix!);
-    if (_externalRequest == 0) { _fetchExternalPlaces(point); }
+  }
+
+  void _locationFailed(LocationIssue issue) {
+    _lastFix = null;
+    _navigation.interrupt('location_${issue.name}');
+    setState(() {
+      _hasLocation = false;
+      _locationIssue = issue;
+      _locationMessage = context.locationIssue(issue);
+    });
+  }
+
+  void _updateLocation(Position position) {
+    if (!mounted || !_foreground) { return; }
+    final valid = routePlace({'latitude': position.latitude, 'longitude': position.longitude});
+    if (valid == null) { _locationFailed(LocationIssue.invalid); return; }
+    if (_lastFix != null && position.timestamp.isBefore(_lastFix!.timestamp)) { return; }
+    final point = LatLng(position.latitude, position.longitude);
+    final fix = NavigationFix(point, position.accuracy, position.timestamp);
+    final issue = fix.problem(_navigation.now());
+    final firstFix = !_hasLocation;
+    setState(() {
+      _lastFix = fix;
+      _currentLocation = point;
+      _hasLocation = issue == null || issue == 'gps_imprecise';
+      _currentAddress = '${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)}';
+      _locationIssue = switch (issue) {
+        'gps_stale' => LocationIssue.stale,
+        'gps_imprecise' => LocationIssue.imprecise,
+        'gps_invalid' => LocationIssue.invalid,
+        _ => LocationIssue.notRequested,
+      };
+      _locationMessage = issue == null ? null : context.locationIssue(_locationIssue);
+    });
+    if (firstFix && issue == null && !_isRouting && _mapReady) { _mapController.move(point, 14.5); }
+    _navigation.update(fix);
   }
 
   Future<void> _searchAndRoute(String destinationText) async {
@@ -579,29 +698,25 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     }
   }
 
-  Future<void> _calculateRoute(LatLng start, LatLng end) async {
-    final request = ++_routeRequest;
-    try {
-      final route = await const RouteService().calculate(start, end);
-      if (!mounted || request != _routeRequest) { return; }
-      _arrivalRecorded = false;
-      _navigation.preview(route, end);
-      _fitRouteBounds(start, end);
-    } catch (_) {
-      if (!mounted || request != _routeRequest) { return; }
-      _showErrorSnackBar(context.l10n.routeServiceError);
-      _externalOptions(end);
-    }
+  double _routePanelMaxHeight(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final available = (media.size.height - media.viewInsets.bottom - media.padding.vertical - 88)
+        .clamp(0.0, 10000.0).toDouble();
+    return (available * .45).clamp(0.0, 480.0).toDouble();
   }
 
-  void _fitRouteBounds(LatLng start, LatLng end) {
-    final bounds = LatLngBounds(start, end);
-    _mapController.fitCamera(
-      CameraFit.bounds(
-        bounds: bounds,
-        padding: const EdgeInsets.all(60.0),
-      ),
-    );
+  void _fitRouteBounds() {
+    if (!_mapReady || _navigation.route == null || !_routeFitPending) { return; }
+    final size = _mapController.camera.nonRotatedSize;
+    if (size.x < 96 || size.y < 64) { return; }
+    _routeFitPending = false;
+    _mapController.fitCamera(CameraFit.coordinates(
+      coordinates: [if (_navigation.origin != null) _navigation.origin!,
+        ..._navigation.route!.points, if (_navigation.destination != null) _navigation.destination!],
+      padding: EdgeInsets.fromLTRB((size.x * .2).clamp(24.0, 96.0).toDouble(),
+        (size.y * .3).clamp(8.0, 80.0).toDouble(),
+        (size.x * .2).clamp(24.0, 96.0).toDouble(),
+        (size.y * .25).clamp(8.0, 64.0).toDouble()), maxZoom: 18));
   }
 
   void _showErrorSnackBar(String message) {
@@ -616,6 +731,8 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   }
 
   void _openSearchBottomSheet(BuildContext context) {
+    _routeRequest++;
+    _navigation.interrupt('screen_changed');
     final colors = AppColors.of(context);
     String sheetView = 'route'; // 'route' ou 'filters'
     String filterSearchQuery = '';
@@ -1170,41 +1287,33 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   }
 
   Future<void> _startRoute(Map<String, dynamic> place) async {
-    if (_isLoadingRoute) { return; }
     final valid = routePlace(place);
-    if (valid == null) { _showErrorSnackBar(context.l10n.invalidLocation); return; }
+    if (valid == null) {
+      _showErrorSnackBar(context.routeProblem('route_invalidDestination'));
+      return;
+    }
+    _routeRequest++;
     final point = LatLng((valid['latitude'] as num).toDouble(), (valid['longitude'] as num).toDouble());
-    if (!_hasLocation) {
-      if (widget.trackLocation) { await _initLocationTracking(); }
-      if (!mounted) { return; }
-      if (!_hasLocation) {
-        _showErrorSnackBar(context.l10n.locationUnavailable);
-        _externalOptions(point);
-        return;
-      }
-    }
-    _navigation.end();
+    final model = valid['source'] == 'openstreetmap' ? MapPlace.external(valid) : MapPlace.internal(valid);
     setState(() {
-      _destinationLocation = point;
-      _destinationAddress = valid['nome']?.toString() ?? '';
-      _routeLocalId = valid['source'] == 'openstreetmap' ? null : (valid['id_local'] as num?)?.toInt();
-      _isLoadingRoute = true;
+      _destinationAddress = valid['nome'] is String ? valid['nome'] as String : '';
+      _destinationStreet = valid['endereco'] is String ? valid['endereco'] as String : '';
+      _routeLocalId = model.isExternal ? null : model.internalId;
+      _arrivalRecorded = false;
     });
-    try {
-      await _calculateRoute(_currentLocation, point);
-    } finally {
-      if (mounted) { setState(() => _isLoadingRoute = false); }
-    }
+    _navigation.selectDestination(point);
+    if (_freshLocation) { await _navigation.calculateFromFix(_lastFix); }
   }
 
   Future<void> _registraVisita(int localId) async {
     final fix = _lastFix;
+    final request = _routeRequest;
     if (fix == null || !_historyConsent || _navigation.phase != NavigationPhase.arrived) { return; }
     try {
       await _placesService.registerVisit(localId: localId, userName: widget.userName,
           latitude: fix.point.latitude, longitude: fix.point.longitude, accuracy: fix.accuracy);
     } catch (_) {
-      if (mounted) { _showErrorSnackBar(context.contributionText(
+      if (mounted && request == _routeRequest) { _showErrorSnackBar(context.contributionText(
           'Chegada reconhecida. O histórico não pôde ser salvo.',
           'Arrival recognized. History could not be saved.')); }
     }
@@ -1226,7 +1335,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   }
 
   String _distanceLabelForLocal(Map<String, dynamic> local) {
-    if (!_hasLocation) { return ''; }
+    if (!_freshLocation) { return ''; }
     final model = local['source'] == 'openstreetmap' ? MapPlace.external(local) : MapPlace.internal(local);
     final meters = model.distanceMetersFrom(_currentLocation.latitude, _currentLocation.longitude);
     if (meters == null) { return ''; }
@@ -1323,6 +1432,8 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   }
 
   Future<void> _navigateToSavedPlaces() async {
+    _routeRequest++;
+    _navigation.interrupt('screen_changed');
     final selectedLocal = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -1342,6 +1453,9 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     final colors = AppColors.of(context);
 
     return Scaffold(
+      onDrawerChanged: (opened) {
+        if (opened) { _routeRequest++; _navigation.interrupt('screen_changed'); }
+      },
       key: _scaffoldKey,
       backgroundColor: colors.pageBackground,
       drawer: Drawer(
@@ -1474,9 +1588,15 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                       flags: InteractiveFlag.all & ~InteractiveFlag.rotate),
                     onMapReady: () {
                       _mapReady = true;
+                      if (_routeFitPending) { WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) { _fitRouteBounds(); }
+                      }); }
                       if (_hasLocation) { _mapController.move(_currentLocation, 14.5); }
                     },
                     onPositionChanged: (position, hasGesture) {
+                      if (_routeFitPending) { WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) { _fitRouteBounds(); }
+                      }); }
                       if (hasGesture && _navigation.phase == NavigationPhase.running && _navigation.follow) {
                         _navigation.setFollow(false);
                       }
@@ -1506,7 +1626,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                             strokeWidth: 5.0,
                             color: colors.primary,
                             borderStrokeWidth: 2.0,
-                            borderColor: colors.primaryDark,
+                            borderColor: colors.surface,
                           ),
                         ],
                       ),
@@ -1516,10 +1636,19 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                             ? MapPlace.external(p) : MapPlace.internal(p)).toList(),
                         selectedId: _selectedPlaceId,
                         reservedInsets: EdgeInsets.only(top: 96 + 40 * MediaQuery.textScalerOf(context).scale(1),
-                            bottom: _isRouting ? 320 : 120 + 24 * MediaQuery.textScalerOf(context).scale(1), right: 64),
+                            bottom: _isRouting ? 72 : 120 + 24 * MediaQuery.textScalerOf(context).scale(1), right: 64),
                         onSelect: (place) => _openLocalPreview(place.toMap()), onCluster: _openCluster),
                     IgnorePointer(child: MarkerLayer(
                       markers: [
+                        if (_isRouting && _navigation.origin != null)
+                          Marker(point: _navigation.origin!, width: 56, height: 80,
+                            child: Semantics(label: context.routeText('Origem da rota', 'Route origin'),
+                              excludeSemantics: true,
+                              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                                Icon(Icons.trip_origin, color: colors.primary, size: 30),
+                                Text('O', style: TextStyle(color: colors.text, backgroundColor: colors.surface,
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
+                              ]))),
                         // Só mostra o ponto azul quando a localização real foi
                         // obtida. Antes disso, Anápolis é apenas o centro de
                         // referência do mapa e não deve parecer a posição do usuário.
@@ -1556,31 +1685,15 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                               ),
                             ),
                           ),
-                        // Marcador de destino da rota calculada
                         if (_isRouting && _destinationLocation != null)
-                          Marker(
-                            point: _destinationLocation!,
-                            width: 60,
-                            height: 60,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    color: colors.danger.withValues(alpha: 0.2),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.location_on_rounded,
-                                  color: colors.danger,
-                                  size: 38,
-                                ),
-                              ],
-                            ),
-                          ),
+                          Marker(point: _destinationLocation!, width: 56, height: 80,
+                            child: Semantics(label: context.routeText('Destino: ', 'Destination: ') + _destinationAddress,
+                              excludeSemantics: true,
+                              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                                Icon(Icons.location_on_rounded, color: colors.danger, size: 30),
+                                Text('D', style: TextStyle(color: colors.text, backgroundColor: colors.surface,
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
+                              ]))),
                       ],
                     )),
                   ],
@@ -1714,7 +1827,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                           constraints: BoxConstraints(maxWidth: 680, maxHeight: MediaQuery.sizeOf(context).height * .85),
                           builder: (_) => const MapLegendSheet())))),
                 Positioned(
-                  bottom: _isRouting ? 240 : 78,
+                  bottom: _isRouting ? 8 : 78,
                   left: 12,
                   child: Material(
                     color: colors.surface,
@@ -1735,6 +1848,8 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                   left: 16,
                   child: InkWell(
                     onTap: () async {
+                      _routeRequest++;
+                      _navigation.interrupt('screen_changed');
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -1788,16 +1903,18 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                 ),
                 // Floating Action Button para recentralizar o mapa
                 Positioned(
-                  bottom: _isRouting ? 190 : 88,
+                  bottom: _isRouting ? 8 : 88,
                   right: 16,
                   child: FloatingActionButton(
+                    key: const ValueKey('map-location-refresh'),
                     mini: false,
                     backgroundColor: colors.surface,
                     foregroundColor: colors.primary,
                     tooltip: context.l10n.centerLocation,
                     elevation: 3,
                     onPressed: () async {
-                      if (_hasLocation) {
+                      if (_freshLocation) {
+                        if (_navigation.phase == NavigationPhase.running) { _navigation.setFollow(true); }
                         _mapController.move(_currentLocation, 14.5);
                         return;
                       }
@@ -1805,26 +1922,26 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                         await _initLocationTracking();
                       }
                       if (!context.mounted) { return; }
-                      if (_hasLocation) {
+                      if (_freshLocation) {
+                        if (_navigation.phase == NavigationPhase.running) { _navigation.setFollow(true); }
                         _mapController.move(_currentLocation, 14.5);
-                      } else {
+                      } else if (_locationMessage == null) {
                         _showErrorSnackBar(context.l10n.locationUnavailable);
                       }
                     },
                     child: const Icon(Icons.my_location),
                   ),
                 ),
-                // Route preview and actual foreground navigation are distinct.
+                if (_isRouting && _navigation.phase == NavigationPhase.choosingOrigin)
+                  const IgnorePointer(child: Center(child: Icon(Icons.add, size: 28))),
                 if (_isRouting)
-                  Positioned(bottom: 16, left: 16, right: 16,
-                    child: NavigationPanel(controller: _navigation, destination: _destinationAddress,
-                      distanceLabel: _formatDistance(_navigation.remainingDistance / 1000),
-                      onStart: _beginNavigation, onEnd: _endNavigation,
-                      onGoogleMaps: () { if (_destinationLocation != null) {
-                        _externalNavigation(_destinationLocation!, ExternalNavigator.googleMaps); } },
-                      onWaze: () { if (_destinationLocation != null) {
-                        _externalNavigation(_destinationLocation!, ExternalNavigator.waze); } }))
-                else
+                  Positioned(top: MediaQuery.of(context).padding.top + 16, right: 16,
+                    child: Material(color: colors.surface, borderRadius: BorderRadius.circular(16),
+                      child: IconButton(key: const ValueKey('map-open-search'),
+                        tooltip: context.l10n.searchDestination,
+                        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                        onPressed: () => _openSearchBottomSheet(context), icon: const Icon(Icons.search)))),
+                if (!_isRouting)
                   // Campo de busca flutuante sobreposto ao mapa
                   Positioned(
                     bottom: 16,
@@ -1880,45 +1997,28 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                       ),
                     ),
                   ),
-                // Overlay de carregamento ao calcular rota
-                if (_isLoadingRoute)
-                  Container(
-                    color: colors.shadow,
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 16),
-                        decoration: BoxDecoration(
-                          color: colors.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(color: colors.shadow, blurRadius: 10),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircularProgressIndicator(
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(colors.primary),
-                            ),
-                            const SizedBox(width: 16),
-                            Text(
-                              context.l10n.calculatingRoute,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: colors.text,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
+          if (_isRouting)
+            Padding(padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+              child: NavigationPanel(controller: _navigation, destination: _destinationAddress,
+                destinationAddress: _destinationStreet,
+                maxHeight: _routePanelMaxHeight(context), distanceUnit: _unidadeDistancia,
+                distanceLabel: _formatDistance(_navigation.remainingDistance / 1000),
+                onStart: _beginNavigation, onEnd: _endNavigation,
+                onCalculate: _calculateChosenOrigin, onMapOrigin: _chooseMapOrigin,
+                onReviewOrigin: _reviewRouteOrigin, onUpdateLocation: _refreshRouteOrigin,
+                onRecalculate: _recalculateRoute, locating: _locating,
+                locationIssue: _locationIssue,
+                onSettings: _locationService.canOpenSettings ? _openLocationSettings : null,
+                onGoogleMaps: () { if (_destinationLocation != null) {
+                  _externalNavigation(_destinationLocation!, ExternalNavigator.googleMaps,
+                    action: ExternalRouteAction.preview); } },
+                onGoogleNavigate: () { if (_destinationLocation != null) {
+                  _externalNavigation(_destinationLocation!, ExternalNavigator.googleMaps); } },
+                onWaze: () { if (_destinationLocation != null) {
+                  _externalNavigation(_destinationLocation!, ExternalNavigator.waze); } })),
           NavigationBar(height: 80, selectedIndex: 0,
             destinations: [
               NavigationDestination(icon: const Icon(Icons.explore_rounded), label: context.l10n.explore),
@@ -1927,6 +2027,8 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
               NavigationDestination(icon: const Icon(Icons.bookmark_outline), label: context.l10n.savedPlacesTitle),
               NavigationDestination(icon: const Icon(Icons.public_rounded), label: context.l10n.suggestions),
             ], onDestinationSelected: (index) async {
+              _routeRequest++;
+              _navigation.interrupt('screen_changed');
               if (index == 1) { await _openContributions(); return; }
               if (index == 2) { await _navigateToSavedPlaces(); return; }
               final selectedLocal = await Navigator.push<Object?>(context, MaterialPageRoute(
@@ -1954,7 +2056,8 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
             if (_externalError != null) Text(_externalError!),
             if (_locationMessage != null) Text(_locationMessage!),
             if (!_hasLocation && _locationMessage == null)
-              const Text('Anápolis é o centro de referência; sua localização ainda não foi obtida.'),
+              Text(context.routeText('Anápolis é o centro de referência. Sua localização ainda não foi solicitada.',
+                'Anápolis is the reference center. Your location has not been requested yet.')),
             if (_externalTruncated)
               const Text('Resultados limitados. Aproxime o mapa ou escolha uma categoria.'),
             if (!_isLoadingLocals && !_isLoadingExternal && _matchingLocals.isEmpty)

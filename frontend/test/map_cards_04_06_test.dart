@@ -68,7 +68,7 @@ class OfflineMapTiles extends TileProvider {
 class FixedGps extends LocationService {
   const FixedGps();
   @override
-  Future<Position> currentPosition() async => Position(latitude: -16.3267, longitude: -48.9528,
+  Future<Position> currentPosition({bool requestPermission = true}) async => Position(latitude: -16.3267, longitude: -48.9528,
       timestamp: DateTime.now(), accuracy: 5, altitude: 0, altitudeAccuracy: 0,
       heading: 0, headingAccuracy: 0, speed: 0, speedAccuracy: 0);
   @override
@@ -415,6 +415,8 @@ void main() {
         locationService: const FixedGps(), tileProvider: OfflineMapTiles())));
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('map-location-refresh')));
     await tester.pumpAndSettle();
     final map = tester.widget<FlutterMap>(find.byType(FlutterMap)).mapController!;
     map.move(const LatLng(-16.3267, -48.9528), 19);
