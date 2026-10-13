@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from locais.serializers import LocalSerializer
 from .models import ModalAvaliacao
+from .questionnaire_fields import (
+    AnswerMapField, CommentField, LegacyAnswerField, QuestionnaireVersionField, RatingField,
+    prepare_write, validate_payload,
+)
 
 
 class ContributionResultSerializer(serializers.Serializer):
@@ -16,6 +20,14 @@ class ContributionFeedbackSerializer(serializers.Serializer):
 
 
 class ModalAvaliacaoSerializer(serializers.ModelSerializer):
+    estrelas = RatingField()
+    comentario = CommentField()
+    questionnaire_version = QuestionnaireVersionField()
+    answers = AnswerMapField(required=False)
+    pergunta_1 = LegacyAnswerField()
+    pergunta_2 = LegacyAnswerField()
+    pergunta_3 = LegacyAnswerField()
+    pergunta_4 = LegacyAnswerField()
     nome_usuario = serializers.SerializerMethodField()
     local_detalhes = LocalSerializer(source="local", read_only=True)
     can_edit = serializers.SerializerMethodField()
@@ -42,8 +54,15 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
             "points_delta",
             "contribution_result",
             "survey_completed",
+            "questionnaire_version",
+            "answers",
+            "answer_dates",
+            "is_current",
+            "is_valid",
         ]
-        read_only_fields = ["id", "user", "data_resposta", "can_edit", "survey_completed"]
+        read_only_fields = [
+            "id", "user", "data_resposta", "can_edit", "survey_completed", "answer_dates", "is_current", "is_valid",
+        ]
         extra_kwargs = {
             "estrelas": {"min_value": 1, "max_value": 5},
             "comentario": {"max_length": 3000},
@@ -78,10 +97,15 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
             "is_current",
             "comment_verified",
             "survey_completed",
+            "answer_dates",
         }
+        protected.update({"points_delta", "contribution_result", "data_resposta", "can_edit", "id", "local_detalhes"})
         if protected.intersection(self.initial_data):
             raise serializers.ValidationError("Autoria, moderação e pontos são controlados pelo servidor.")
-        supplied = [f"pergunta_{i}" in attrs for i in range(1, 5)]
-        if not self.instance and any(supplied) and not all(supplied):
-            raise serializers.ValidationError("Responda todas as perguntas ou envie apenas estrelas e comentário.")
-        return attrs
+        return validate_payload(self, attrs)
+
+    def create(self, validated_data):
+        return super().create(prepare_write(None, validated_data))
+
+    def update(self, instance, validated_data):
+        return super().update(instance, prepare_write(instance, validated_data))

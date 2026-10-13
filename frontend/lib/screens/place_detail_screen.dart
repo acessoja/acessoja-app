@@ -8,7 +8,10 @@ import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
 import '../services/api_service.dart';
-import '../widgets/evaluation_survey_dialog.dart';
+import 'review_editor_screen.dart';
+import 'place_reviews_screen.dart';
+import '../widgets/accessibility_results_card.dart';
+import '../widgets/survey_answers_view.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> place;
@@ -29,14 +32,14 @@ class PlaceDetailScreen extends StatefulWidget {
 class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
   late final ApiService _apiService = widget.apiService ?? HttpApiService();
   List<dynamic> comments = [];
-  final TextEditingController _commentController = TextEditingController();
-  int _selectedStars = 0;
+  int _loadGeneration = 0;
+  int _resourceRevision = 0;
   bool _isLoading = true;
   bool _loadFailed = false;
 
   @override
   void dispose() {
-    _commentController.dispose();
+    _loadGeneration++;
     super.dispose();
   }
 
@@ -46,49 +49,48 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
     _loadAllData();
   }
 
-  Future<void> _loadAllData() async {
-    setState(() {
-      _isLoading = true;
-      _loadFailed = false;
-    });
-
-    await _fetchEvaluations();
-    if (!mounted) { return; }
-
-    setState(() => _isLoading = false);
+  @override
+  void didUpdateWidget(covariant PlaceDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.place['id_local'] != widget.place['id_local']) {
+      comments = [];
+      _loadAllData();
+    }
   }
 
-  Future<void> _fetchEvaluations() async {
+  Future<void> _loadAllData() async {
+    final generation = ++_loadGeneration;
+    setState(() { _isLoading = true; _loadFailed = false; });
     try {
-      final data = await _apiService.fetchEvaluations(
-        localId: widget.place['id_local'],
-      );
-      if (!mounted) { return; }
-
-      setState(() {
-        comments = data;
-      });
-    } catch (e) {
-      if (!mounted) { return; }
-      debugPrint("Error fetching evaluations: $e");
-      _loadFailed = true;
+      final data = await _apiService.fetchEvaluations(localId: widget.place['id_local']);
+      if (!mounted || generation != _loadGeneration) { return; }
+      setState(() => comments = data);
+    } catch (_) {
+      if (!mounted || generation != _loadGeneration) { return; }
+      setState(() => _loadFailed = true);
+    } finally {
+      if (mounted && generation == _loadGeneration) {
+        setState(() { _isLoading = false; _resourceRevision++; });
+      }
     }
   }
 
   double? get _reportedAverage {
-    if (comments.isEmpty) { return null; }
+    final current = comments.where((row) => row is Map && row['is_current'] != false && row['is_valid'] != false).toList();
+    if (current.isEmpty) { return null; }
     var total = 0.0;
-    for (final comment in comments) {
+    for (final comment in current) {
       if (comment is! Map) { return null; }
       final stars = comment['estrelas'];
       if (stars is! num || !stars.isFinite || stars < 1 || stars > 5) { return null; }
       total += stars;
     }
-    return total / comments.length;
+    return total / current.length;
   }
   double get averageRating => _reportedAverage ?? 0;
 
-  String getCommentsCountString() => context.l10n.reviewCount(comments.length);
+  String getCommentsCountString() => context.l10n.reviewCount(comments.where((row) =>
+      row is Map && row['is_current'] != false && row['is_valid'] != false).length);
 
   String getLocalDisplayName(String name) {
     if (name == 'UniEVANGÉLICA') {
@@ -102,102 +104,10 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
     return name;
   }
 
-  void _showAccessibilitySurveyDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => EvaluationSurveyDialog(
-        onSubmit: (q1, q2, q3, q4) => _submitEvaluation(q1, q2, q3, q4),
-      ),
-    );
-  }
-
-  Future<void> _submitEvaluation(
-    String q1,
-    String q2,
-    String q3,
-    String q4,
-  ) async {
-    if (_isLoading) { return; }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final result = await _apiService.submitEvaluation(
-        localId: widget.place['id_local'],
-        userName: widget.userName,
-        pergunta1: q1,
-        pergunta2: q2,
-        pergunta3: q3,
-        pergunta4: q4,
-        estrelas: _selectedStars,
-        comentario: _commentController.text.trim(),
-      );
-      if (!mounted) { return; }
-
-      if (result.success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${context.l10n.evaluationSent}${result.pointsDelta > 0 ? ' +${result.pointsDelta} pts' : ''}',
-            ),
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-
-        _commentController.clear();
-
-        setState(() {
-          _selectedStars = 0;
-        });
-
-        await _fetchEvaluations();
-      } else {
-        debugPrint("Error sending evaluation: ${result.message}");
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.apiMessage(result.message,
-                fallback: context.l10n.evaluationError)),
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (!mounted) { return; }
-      debugPrint("Error sending evaluation: $e");
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.connectionError),
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
-    } finally {
-      if (mounted) { setState(() => _isLoading = false); }
-    }
+  Future<void> _openReviewEditor() async {
+    final changed = await Navigator.push<bool>(context, MaterialPageRoute(
+      builder: (_) => ReviewEditorScreen(place: widget.place)));
+    if (mounted && changed == true) { await _loadAllData(); }
   }
 
   Widget _buildPlaceImage() {
@@ -484,7 +394,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(
-                      context.l10n.chooseStars,
+                      context.mapText('Use Avaliar para compartilhar sua experiência.', 'Use Review to share your experience.'),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -503,7 +413,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
 
   Widget _buildCommentCard(dynamic comment) {
     final colors = AppColors.of(context);
-    final stars = (comment['estrelas'] ?? 0) as int;
+    final stars = (comment['estrelas'] as num?)?.toInt() ?? 0;
     final text = (comment['comentario'] ?? '').toString();
     final nomeUsuario =
         (comment['nome_usuario'] ?? context.l10n.anonymousUser).toString();
@@ -554,6 +464,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
               ),
             ),
           ],
+          if (comment is Map) SurveyAnswersView(review: Map<String, dynamic>.from(comment)),
         ],
       ),
     );
@@ -566,6 +477,13 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 26),
+        if (widget.place['id_local'] is num) AccessibilityResultsCard(
+          localId: (widget.place['id_local'] as num).toInt(), revision: _resourceRevision,
+          registeredData: widget.place, onViewReviews: () async {
+            await Navigator.push<void>(context, MaterialPageRoute(
+              builder: (_) => PlaceReviewsScreen(place: widget.place)));
+            if (mounted) { await _loadAllData(); }
+          }),
         Text(
           context.l10n.commentsHistory,
           style: TextStyle(
@@ -584,157 +502,10 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
   }
 
   Widget _buildEvaluationSection() {
-    final colors = AppColors.of(context);
-
-    return Container(
-      margin: const EdgeInsets.only(top: 24, bottom: 24),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            context.l10n.shareExperience,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: colors.text,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            context.l10n.reviewHint,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: colors.muted,
-              fontSize: 12,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            context.l10n.yourRating,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: colors.primaryDark,
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(5, (index) {
-              return Semantics(
-                button: true,
-                label: context.l10n.giveStars(index + 1),
-                child: InkWell(
-                  onTap: () {
-                    setState(() {
-                      _selectedStars = index + 1;
-                    });
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(6),
-                    child: Icon(
-                      index < _selectedStars
-                          ? Icons.star
-                          : Icons.star_border_rounded,
-                      size: 36,
-                      color: Colors.amber,
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
-          const SizedBox(height: 16),
-          Semantics(
-            textField: true,
-            label: context.l10n.reviewComment,
-            child: TextField(
-              controller: _commentController,
-              decoration: InputDecoration(
-                hintText: context.l10n.commentHint,
-                hintStyle: TextStyle(
-                  color: colors.muted,
-                  fontSize: 14,
-                ),
-                filled: true,
-                fillColor: colors.fieldBackground,
-                prefixIcon: Icon(
-                  Icons.edit_note_rounded,
-                  color: colors.primaryDark,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 15,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: colors.border),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: colors.border),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(
-                    color: colors.primary,
-                    width: 1.6,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Semantics(
-            button: true,
-            label: context.l10n.confirmReview,
-            child: SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primary,
-                  foregroundColor: colors.onPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  elevation: 0,
-                ),
-                onPressed: () {
-                  if (_selectedStars == 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          context.l10n.starsRequired,
-                        ),
-                      ),
-                    );
-                    return;
-                  }
-
-                  _showAccessibilitySurveyDialog();
-                },
-                child: Text(
-                  context.l10n.confirm,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    return Padding(padding: const EdgeInsets.symmetric(vertical: 16),
+      child: FilledButton.icon(key: const ValueKey('detail-review'),
+        onPressed: _openReviewEditor, icon: const Icon(Icons.rate_review_outlined),
+        label: Text(context.mapText('Avaliar ou editar minha avaliação', 'Review or edit my review'))));
   }
 
   Widget _buildLoadingState() {

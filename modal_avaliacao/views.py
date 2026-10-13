@@ -1,8 +1,9 @@
 from django.db import transaction
 from django.db.models import Q
-from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
-from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
+from rest_framework.decorators import action
+from rest_framework.exceptions import APIException, NotAuthenticated, PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.response import Response
@@ -11,6 +12,8 @@ from locais.models import Local
 from locais.serializers import LocalSerializer
 from .models import ModalAvaliacao
 from .serializers import ContributionFeedbackSerializer, ModalAvaliacaoSerializer
+from .questionnaire import QUESTION_IDS, catalog, summarize
+from .result_serializers import QuestionnaireCatalogSerializer, AccessibilitySummarySerializer
 
 
 class ReviewThrottle(UserRateThrottle):
@@ -23,7 +26,20 @@ class DuplicateReview(APIException):
 
 
 @extend_schema_view(
-    list=extend_schema(parameters=[OpenApiParameter("local_id", int), OpenApiParameter("ordering", str)])
+    create=extend_schema(examples=[OpenApiExample(
+        "Questionário de recursos v2", request_only=True,
+        value={"local": 7, "estrelas": 4, "comentario": "", "questionnaire_version": 2,
+               "answers": dict.fromkeys(QUESTION_IDS, "unknown")},
+    )]),
+    partial_update=extend_schema(examples=[OpenApiExample(
+        "Atualizar e limpar um recurso", request_only=True,
+        value={"answers": {"mesa_acessivel": "yes", "rampa_acesso": None}},
+    )]),
+    list=extend_schema(parameters=[
+        OpenApiParameter("local_id", int), OpenApiParameter("ordering", str),
+        OpenApiParameter("mine", str, description="1: apenas a avaliação do usuário autenticado."),
+        OpenApiParameter("include_history", str, description="1: incluir arquivadas; não entram nos indicadores."),
+    ])
 )
 @extend_schema(tags=["Avaliações"])
 class ModalAvaliacaoViewSet(viewsets.ModelViewSet):
@@ -36,7 +52,13 @@ class ModalAvaliacaoViewSet(viewsets.ModelViewSet):
         return super().get_throttles() if self.action in ["create", "update", "partial_update", "destroy"] else []
 
     def get_queryset(self):
-        qs = self.queryset.filter(is_current=True)
+        qs = self.queryset
+        if self.request.query_params.get("mine") == "1":
+            if not self.request.user.is_authenticated:
+                raise NotAuthenticated("Entre para consultar sua avaliação.")
+            qs = qs.filter(user=self.request.user)
+        if self.request.query_params.get("include_history") != "1":
+            qs = qs.filter(is_current=True)
         if self.action in ["list", "retrieve"]:
             public = Q(is_valid=True, user__mostrar_avaliacoes=True)
             if self.request.user.is_authenticated:
@@ -62,11 +84,8 @@ class ModalAvaliacaoViewSet(viewsets.ModelViewSet):
         local = serializer.validated_data["local"]
         if ModalAvaliacao.objects.filter(user=user, local=local, is_current=True).exists():
             raise DuplicateReview()
-        complete = all(f"pergunta_{i}" in serializer.validated_data for i in range(1, 5))
-        answers = {f"pergunta_{i}": serializer.validated_data.get(f"pergunta_{i}", "Não sei") for i in range(1, 5)}
-        evaluation = serializer.save(user=user, verified_author=True, survey_completed=complete, **answers)
+        evaluation = serializer.save(user=user, verified_author=True)
         self._last_evaluation = evaluation
-        self._update_flags(evaluation)
 
     @transaction.atomic
     def perform_update(self, serializer):
@@ -75,12 +94,10 @@ class ModalAvaliacaoViewSet(viewsets.ModelViewSet):
         locked = ModalAvaliacao.objects.select_for_update().get(pk=serializer.instance.pk)
         serializer.instance = locked
         changed_comment = serializer.validated_data.get("comentario", locked.comentario) != locked.comentario
-        complete = locked.survey_completed or all(f"pergunta_{i}" in serializer.validated_data for i in range(1, 5))
         evaluation = serializer.save(
-            comment_verified=False if changed_comment else locked.comment_verified, survey_completed=complete
+            comment_verified=False if changed_comment else locked.comment_verified
         )
         self._last_evaluation = evaluation
-        self._update_flags(evaluation)
 
     @transaction.atomic
     def perform_destroy(self, instance):
@@ -88,11 +105,34 @@ class ModalAvaliacaoViewSet(viewsets.ModelViewSet):
         Usuario.objects.select_for_update().get(pk=instance.user_id)
         instance.delete()
 
-    def _update_flags(self, evaluation):
-        flags = ["rampa_acesso", "banheiro_acessivel", "mesa_acessivel", "cao_guia"]
-        updates = {flag: True for i, flag in enumerate(flags, 1) if getattr(evaluation, f"pergunta_{i}") == "Sim"}
-        if updates:
-            Local.objects.filter(pk=evaluation.local_id).update(**updates)
+    @extend_schema(responses=QuestionnaireCatalogSerializer)
+    @action(detail=False, methods=["get"], url_path="questionario")
+    def questionnaire(self, request):
+        return Response(catalog())
+
+    @extend_schema(
+        parameters=[OpenApiParameter("local_id", int, required=True)],
+        responses=AccessibilitySummarySerializer,
+    )
+    @action(detail=False, methods=["get"], url_path="recursos")
+    def accessibility(self, request):
+        try:
+            local_id = int(request.query_params.get("local_id", ""))
+            if local_id < 1:
+                raise ValueError
+        except (ValueError, TypeError):
+            raise ValidationError({"local_id": "Informe um ID interno válido."})
+        if not Local.objects.filter(pk=local_id).exists():
+            from rest_framework.exceptions import NotFound
+
+            raise NotFound("Local não encontrado.")
+        visible = Q(is_valid=True, user__mostrar_avaliacoes=True)
+        if request.user.is_authenticated:
+            visible |= Q(user=request.user)
+        rows = ModalAvaliacao.objects.filter(local_id=local_id, is_current=True).filter(visible).order_by(
+            "-data_resposta", "-pk"
+        ).values("user_id", "is_current", "is_valid", "questionnaire_version", "answers", "answer_dates")
+        return Response(summarize(rows.iterator()))
 
     def _contribution_result(self, evaluation, operation, before, after):
         delta = after - before
