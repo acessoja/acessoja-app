@@ -3,7 +3,8 @@ from django.db import transaction
 from django.db.models import Sum
 
 from usuarios.models import Usuario
-from modal_avaliacao.models import ModalAvaliacao, RESPOSTAS
+from modal_avaliacao.models import ModalAvaliacao
+from modal_avaliacao.questionnaire import complete
 from .models import ContributionPointEvent, PointActivity, UserAchievement
 
 LEVELS = [
@@ -31,10 +32,9 @@ def eligible_reviews(user):
 
 def _achievement_counts(user):
     reviews = eligible_reviews(user)
-    answers = [value for value, _ in RESPOSTAS]
     return {
         "reviews": reviews.count(),
-        "surveys": reviews.filter(survey_completed=True, **{f"pergunta_{i}__in": answers for i in range(1, 5)}).count(),
+        "surveys": sum(_survey_complete(review) for review in reviews),
         "categories": reviews.exclude(local__categoria="").values("local__categoria").distinct().count(),
     }
 
@@ -65,16 +65,19 @@ def achievement_data(user, persist=False):
     ]
 
 
+def _survey_complete(review):
+    return review.survey_completed and complete(
+        review.questionnaire_version, review.answers, [getattr(review, f"pergunta_{i}") for i in range(1, 5)]
+    )
+
+
 def _criteria(review):
     eligible = bool(
         review and review.verified_author and review.is_current and review.is_valid and 1 <= review.estrelas <= 5
     )
-    answers = [value for value, _ in RESPOSTAS]
     return {
         "review": eligible,
-        "survey": eligible
-        and review.survey_completed
-        and all(getattr(review, f"pergunta_{i}") in answers for i in range(1, 5)),
+        "survey": eligible and _survey_complete(review),
         "useful_comment": eligible and review.comment_verified and bool(review.comentario.strip()),
     }
 

@@ -1,0 +1,313 @@
+ACESSOJÁ — CARDS 13, 14 E 15
+Questionário versionado, preenchimento em etapas e resultados por recurso
+Entrega: acessoja_questionario_cards_13_14_15.zip
+Data da revisão: 13/10/2026 UTC
+
+1. BASE E DIAGNÓSTICO
+
+Base técnica: acessoja-app-main (3).zip anexado nesta solicitação.
+A implementação foi feita em cópia isolada, usando os requisitos e documentos
+de visão/arquitetura fornecidos. O backend real é Django/DRF; propostas anteriores
+como Flask não substituíram a stack recebida.
+
+Versões do projeto: Django 5.1.3; Flutter 3.47.4 fixado em .fvmrc e CI.
+Não há nova dependência, serviço pago, alteração de tema, filtros, autenticação,
+mapa, rotas ou valor de pontuação. O Quality Gate continua exigindo cobertura
+de backend >=80%, análise Flutter, testes e builds.
+
+Card 13 — problema confirmado:
+- pergunta_3 da interface tratava de vagas de estacionamento, mas atualizava
+  mesa_acessivel. pergunta_4 tratava de ausência de obstáculos, mas atualizava
+  cao_guia. Essa associação foi removida.
+- O formato antigo não tinha versão; não se pode afirmar qual interface originou
+  cada resposta pela data. max_length=10 não comportava Não se aplica.
+- O servidor preenchia perguntas não enviadas com Não sei.
+- Flags do local não representavam agregação de relatos ou divergências.
+
+Card 14 — problema confirmado:
+- Quatro perguntas apareciam juntas, sem revisão em etapas.
+- O diálogo fechava antes da confirmação do backend.
+- Existiam dois caminhos de publicação, no detalhe e no editor.
+- Edição/erro precisavam preservar respostas e não gerar outro envio.
+
+Card 15 — problema confirmado:
+- Respostas textuais podiam receber significado errado na apresentação.
+- Faltavam contagens por recurso e tratamento explícito de divergência.
+- A listagem assumia resposta em uma lista simples, sem percorrer paginação.
+- Estatísticas do local eram consultadas repetidamente na serialização.
+
+2. ALTERAÇÕES ENTREGUES
+
+CARD 13:
+- Oito perguntas objetivas, em quatro grupos de duas, com IDs estáveis,
+  descrição, exemplos de Não se aplica, obrigatoriedade e PT/EN.
+- Códigos yes/no/unknown/not_applicable, distintos de pergunta sem resposta.
+- Versão 2 usa JSON answers e answer_dates; versão 1 mantém campos textuais.
+- Migração aditiva 0006, sem alterar migrations já aplicadas, com max_length=20.
+- Nenhum registro, comentário, estrela, autor, data original ou flag histórica
+  foi apagado/reinterpretado pela migração.
+- Registros legados permanecem consultáveis e não alimentam os indicadores novos.
+- Omisso em PATCH preserva; null por recurso limpa explicitamente. Não sei/NA
+  nunca viram false ou voto negativo.
+- Validação de versões, IDs, códigos, tipos, autoria e campos controlados.
+- OpenAPI recebeu campos, respostas, filtros de consulta e exemplos.
+- Elegibilidade de pesquisa usa a versão correta e o ledger existente.
+- Uma edição de comentário não completa pesquisas legadas cujo flag era falso,
+  mesmo quando um servidor anterior havia preenchido respostas padrão.
+- Vocabulário provisório documentado, pois a especificação do Card 09 não foi
+  anexada. Snapshot Flutter comparado com o catálogo central no Python.
+
+CARD 14:
+- Editor existente integrado ao detalhe; fluxo único de publicação.
+- Nota geral e comentário opcional vêm antes da pesquisa.
+- Etapas 1–4: grupos de perguntas; etapa 5: revisão e confirmação.
+- Seleção única, símbolo/contorno, quatro opções em ordem fixa e sem avanço
+  automático ou seleção padrão.
+- Voltar, redimensionar e erro preservam respostas em memória.
+- Responder depois leva à revisão de nota/comentário; não envia a pesquisa
+  como se tivesse sido preenchida.
+- Edição antiga permite manter o questionário anterior sem novas respostas.
+- Envio único com bloqueio de repetição; diálogo fecha apenas após confirmação.
+- Falha permite retry sem perder dados. Cancelamento com alterações oferece
+  continuar ou descartar. Não há rascunho persistente.
+- Foco de etapa/pergunta, labels, semântica e controles de pelo menos 48 pixels.
+  Texto ampliado mantém sua escala.
+
+CARD 15:
+- Agregação do conjunto completo no backend, uma avaliação atual por pessoa.
+- Contagens de Sim/Não/Não sei/Não se aplica, ausência, legado, data de
+  recebimento e aviso de pouca amostra.
+- Estados determinísticos, incluindo relatos divergentes; não há maioria
+  apagando respostas negativas ou desconhecidas.
+- Informação do cadastro é separada e tem origem histórica não verificada.
+  False legado não comprova ausência; as flags não foram corrigidas em massa.
+- Componente reutilizável nos detalhes e na consulta de avaliações.
+- Histórico de arquivadas é explícito e não entra nos indicadores.
+- Paginação completa, filtros mantidos, URLs externas/ciclos rejeitados e
+  IDs repetidos deduplicados no cliente.
+- Consulta própria usa mine=1. Estatísticas do local são compartilhadas no
+  contexto de serialização, evitando consultas por avaliação do mesmo local.
+- Sem cache persistente; reload após confirmação e descarte de respostas
+  antigas ao trocar de local/fechar a tela.
+- Falha de consulta é distinta de ausência de avaliações.
+- Estrelas, pontos e relatos não certificam acessibilidade.
+
+3. DOCUMENTAÇÃO E ARQUIVOS
+
+Leia antes de aplicar:
+- docs/QUESTIONARIO_ACESSIBILIDADE.md: contrato, versões, respostas, exemplos,
+  API, vocabulário provisório e compatibilidade.
+- docs/AGREGACAO_ACESSIBILIDADE.md: seleção, estados, contagens, datas, duplicatas,
+  fontes e limites históricos.
+
+Arquivos do pacote:
+- INSTRUCOES_APLICACAO.txt.
+- Os dois documentos acima.
+- modal_avaliacao/models.py: evolução mínima do modelo.
+- modal_avaliacao/migrations/0006_versioned_questionnaire.py: migração aditiva.
+- modal_avaliacao/questionnaire.py: catálogo e regras de agregação/completude.
+- modal_avaliacao/questionnaire_fields.py: campos estritos e preparação de escrita.
+- modal_avaliacao/result_serializers.py: contratos de catálogo e indicadores.
+- modal_avaliacao/serializers.py: contrato de avaliação compatível/versionado.
+- modal_avaliacao/views.py: consulta, histórico, agregação e escrita atômica.
+- modal_avaliacao/modal_avaliacao_tests.py: substitui a expectativa do mapeamento
+  errado por preservação do relato sem alteração de flags.
+- modal_avaliacao/test_questionnaire_core.py: testes executáveis sem Django.
+- modal_avaliacao/test_versioned_questionnaire.py: testes de integração e migração.
+- locais/serializers.py: contagem/média visíveis e cache por local na resposta.
+- contribuicoes/services.py: elegibilidade por versão, preservando o ledger.
+- frontend/lib/models/accessibility_survey.dart: snapshot do catálogo/modelos.
+- frontend/lib/services/contribution_service.dart: integração, resultados,
+  paginação, consulta própria e validação da confirmação v2.
+- frontend/lib/services/api_service.dart: consulta completa; adaptador antigo mantido.
+- frontend/lib/screens/review_editor_screen.dart: edição, revisão e envio único.
+- frontend/lib/screens/place_detail_screen.dart: editor e indicadores integrados.
+- frontend/lib/screens/place_reviews_screen.dart: respostas, histórico e edição.
+- frontend/lib/widgets/evaluation_survey_dialog.dart: questionário em etapas.
+- frontend/lib/widgets/survey_answers_view.dart: leitura atual/legada.
+- frontend/lib/widgets/accessibility_results_card.dart: resultados reutilizáveis.
+- frontend/test/evaluation_modal_test.dart: testes adaptados às etapas/códigos.
+- frontend/test/contributions_central_test.dart: revisão/confirmar no fluxo novo.
+- frontend/test/frontend_regression_test.dart: fluxo integrado e idiomas.
+- frontend/test/questionnaire_cards_13_15_test.dart: cobertura nova do contrato/UI.
+
+São 28 arquivos completos, com caminhos relativos à raiz, sem pasta envolvente.
+Não há .git, .env, banco, ambiente virtual, cache, build ou temporário no ZIP.
+Não foram feitos commit, push, merge, branch ou PR; main/develop não foram alteradas.
+
+4. BRANCH, BACKUP E ORDEM DE ATUALIZAÇÃO
+
+Você realizará o Git manualmente. Confira a cópia local e preserve alterações
+não enviadas antes de criar a branch exclusiva:
+
+  git status
+  git fetch origin
+  git switch -c feature/cards-13-15-avaliacoes origin/develop
+
+A base anexada foi usada para o desenvolvimento. Se origin/develop tiver
+alterações adicionais nos mesmos arquivos, revise/integre as diferenças antes
+da substituição. Não foi sincronizado um repositório remoto nesta entrega.
+
+Antes de migrar:
+- Faça backup consistente do banco e teste o procedimento de restauração.
+- Pare escritas na cópia local durante aplicação/backup.
+- Preserve também a versão anterior do código para uma recuperação coordenada.
+- Em SQLite, identifique o arquivo definido em DATABASE_URL. Com os processos
+  que escrevem no banco parados, copie o arquivo para um local de backup.
+  Exemplo PowerShell, apenas se DATABASE_URL apontar para ./db.sqlite3:
+
+    New-Item -ItemType Directory -Force backup
+    Copy-Item db.sqlite3 backup/db_antes_cards_13_15.sqlite3
+
+- Em PostgreSQL, use o backup do ambiente (por exemplo pg_dump em formato
+  customizado, com configuração própria) e confira sua restauração em cópia.
+  Não coloque credenciais ou backups no Git.
+
+Ordem obrigatória:
+1. Backend parado/sem escritas, backup feito, arquivos aplicados na branch.
+2. Dependências existentes instaladas e configuração do backend confirmada.
+3. Django check e migração 0006 aplicada.
+4. Testar contrato/backend e conferir registros antigos.
+5. Reiniciar backend atualizado.
+6. Atualizar/compilar frontend e testar fluxo completo.
+
+O frontend v2 deve ser usado com o backend atualizado. Não publique primeiro
+um frontend enviando answers para um servidor antigo: o cliente verifica a
+confirmação de versão/respostas no retorno de um envio v2.
+
+Reversão:
+- Reverter o esquema para 0005 remove os campos JSON e a versão, perdendo
+  respostas novas. Retornar max_length=10 também pode ser incompatível com NA.
+- Não trate downgrade como reversão segura de dados.
+- Prefira recuperação coordenada do código e backup anterior quando necessário.
+  Se houver escritas novas, exporte/preserve esses dados antes de qualquer
+  recuperação; avalie sua reintegração. Não execute limpeza automática de flags.
+
+5. EXECUÇÃO E COMANDOS DE VALIDAÇÃO
+
+Na raiz, com seu ambiente Python ativado:
+
+  python -m pip install -r backend/requirements.txt
+  python -m pip install pytest pytest-django pytest-cov flake8
+  python manage.py check
+  python manage.py makemigrations --check --dry-run
+  python manage.py migrate
+  python manage.py spectacular --validate --file schema_cards_13_15.yaml
+  python -m unittest discover -s modal_avaliacao -p test_questionnaire_core.py -v
+  python -m pytest modal_avaliacao contribuicoes locais -q
+  python -m flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv --statistics --count
+  python -m pytest --cov=. --cov-report=term-missing --cov-fail-under=80 -q
+
+O CI possui também o job de concorrência PostgreSQL; mantenha-o e valide-o
+na infraestrutura correspondente. Não foi enfraquecido nesta entrega.
+Não adicione o YAML gerado ou bancos de teste ao pacote de código sem necessidade.
+
+Para usar pelo navegador, backend configurado em outro terminal:
+
+  python manage.py runserver 0.0.0.0:8000
+
+Na pasta frontend, usando a versão fixada pelo projeto:
+
+  flutter pub get
+  flutter analyze
+  flutter test test/evaluation_modal_test.dart test/questionnaire_cards_13_15_test.dart test/contributions_central_test.dart test/frontend_regression_test.dart
+  flutter test
+  flutter build web
+  flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000
+
+Com FVM, use fvm flutter no lugar de flutter.
+Teste e web não exigem Android SDK. Se o SDK Android estiver disponível:
+
+  flutter build apk --debug
+
+Também é possível servir um build web concluído por:
+  cd build/web
+  python -m http.server 8080
+
+6. RESULTADOS OBTIDOS NESTA VERSÃO
+
+EXECUTADO E APROVADO:
+- python3 -m unittest discover -s modal_avaliacao -p test_questionnaire_core.py -v
+  Resultado final: 13 testes, OK.
+- Esses testes executam catálogo, respostas, completude e agregação diretamente.
+  A preparação de escrita é extraída da função real por AST, com relógio
+  simulado; não é cópia da implementação e não acessa ORM/banco.
+- Compilação/AST de Python: sem erro de sintaxe encontrado.
+- Snapshot JSON do catálogo Flutter: idêntico ao catálogo Python.
+- Verificação lexical de delimitadores e imports locais em 86 arquivos Dart:
+  sem erro encontrado.
+- Dependências, tema, AppHttp/auth e CI preservados por comparação de hashes.
+- Relação de novos/alterados, integridade do ZIP e aplicação em segunda cópia
+  da base conferidas.
+
+TENTADO, BLOQUEADO PELO AMBIENTE:
+- Instalação de dependências do backend em ambiente isolado: falhou com
+  No matching distribution found for pytest; dependências não ficaram disponíveis.
+- manage.py check, makemigrations --check, migrate e spectacular --validate:
+  ModuleNotFoundError: No module named django, saída 1.
+- pytest direcionado/suíte com cobertura: No module named pytest, saída 1.
+- flake8: No module named flake8, saída 1.
+- flutter analyze, testes direcionados/suíte, build web e build APK:
+  flutter: command not found, saída 127.
+
+PORTANTO:
+- Migração real, testes ORM/API, concorrência, lint, cobertura, análise/compilação
+  Flutter e builds continuam pendentes.
+- Os 13 testes não equivalem à aprovação da suíte do backend.
+- A verificação lexical Dart não é parser/analisador, não verifica tipos e não
+  substitui flutter analyze ou execução dos widgets.
+- Nenhum resultado de versões anteriores foi reutilizado.
+- Capturas, conferência visual real em Chrome e leitor de tela não foram
+  realizados por ausência do runtime Flutter. Não há capturas nesta entrega.
+- Só marque aceite/Quality Gate aprovado após executar os comandos no ambiente
+  do projeto e verificar os resultados.
+
+Os testes preparados cobrem API/migração/autoria/atomicidade/ledger, versões e
+consultas; Flutter cobre quatro opções, etapas, memória/revisão, edição antiga/
+atual, loading/sucesso/erro/retry, cancelar/duplicidade, estados dos resultados,
+histórico, paginação, descarte e semântica. Há matriz de 36 combinações de tela/
+escala/tema, incluindo 320/360/390, tablet, desktop e horizontal.
+
+7. ROTEIRO MANUAL — CRIAÇÃO, EDIÇÃO, CONSULTA E CHROME
+
+1. Conferir quantidade e conteúdo de avaliações antigas antes/depois da migração:
+   comentários, estrelas, autor, data, perguntas e arquivadas preservados.
+2. Abrir detalhe e usar Avaliar/editar; aguardar consulta própria antes de alterar.
+3. Criar avaliação com nota 1–5, comentário vazio e as quatro opções em recursos
+   diferentes. Conferir grupos, etapas, Voltar e revisão antes de enviar.
+4. Confirmar que selecionar uma opção não avança nem preenche outras.
+5. Testar pergunta faltante: mensagem e foco devem permitir alcançá-la.
+6. Responder depois e conferir a revisão explícita de nota/comentário; nenhum
+   código unknown é criado automaticamente para perguntas puladas.
+7. Enviar e conferir um único POST/PATCH, sucesso confirmado e atualização de
+   detalhe, lista, recursos e contribuições.
+8. Simular falha de rede/resposta; manter formulário e dados, tentar novamente
+   e conferir trava contra duplo toque.
+9. Editar registro antigo só no comentário e manter o questionário anterior.
+   Não deve exigir novas respostas nem completar pesquisa não confirmada.
+10. Optar por responder v2 em um legado; preencher oito recursos e conferir
+    campos antigos ainda consultáveis, data original preservada e pontos sem
+    duplicação indevida.
+11. Editar v2: seleção existente carregada, voltar/revisar sem perda, cancelar
+    com opção de continuar/descartar e registro original intacto.
+12. Conferir Sim/Não divergentes, Não sei/NA coexistindo, poucas respostas e
+    recurso ainda não avaliado. Nenhum resultado deve certificar acessibilidade.
+13. Ver respostas/histórico; arquivadas não entram nas contagens. Conferir
+    privacidade ao consultar com/sem autenticação.
+14. Editar/excluir pelos fluxos existentes e recarregar indicadores; conferir
+    ausência de cache antigo e manutenção das regras do ledger.
+15. Trocar local durante consulta e fechar tela: resposta antiga não deve
+    atualizar o novo local ou gerar erro após descarte.
+16. Conferir 320/360/390, tablet, desktop e horizontal, textos longos, escalas
+    1,0/1,5/2,0 e os dois temas; usar teclado aberto onde pertinente.
+17. Usar Tab/Shift+Tab/Enter e leitor de tela. Conferir associação pergunta/opções,
+    seleção, etapa, erros, revisão, sucesso e retorno de foco.
+18. Confirmar filtros/mapa/rotas/perfil continuam usando seus contratos anteriores;
+    este pacote não implementa o Card 09 nem filtro por novo recurso.
+
+8. REFERÊNCIAS
+
+As fontes oficiais consultadas e os padrões adaptados estão nos dois documentos.
+Foram usados atributos por recurso (Google Maps), desconhecimento explícito
+(Wheelmap), etapas/agrupamentos/progresso (W3C/WAI) e contratos/validação
+(DRF/Django). A identidade visual continua sendo a do AcessoJá.

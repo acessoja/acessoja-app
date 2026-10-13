@@ -8,7 +8,6 @@ import 'package:http/testing.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_application_1/app_theme.dart';
 import 'package:flutter_application_1/l10n/generated/app_localizations.dart';
-import 'package:flutter_application_1/l10n/strings.dart';
 import 'package:flutter_application_1/models/contribution_mutation.dart';
 import 'package:flutter_application_1/screens/contributions_screen.dart';
 import 'package:flutter_application_1/screens/review_editor_screen.dart';
@@ -18,7 +17,6 @@ import 'package:flutter_application_1/services/contribution_service.dart';
 import 'package:flutter_application_1/widgets/contribution_help_sheet.dart';
 import 'package:flutter_application_1/widgets/contribution_history_card.dart';
 import 'package:flutter_application_1/widgets/contribution_summary.dart';
-import 'package:flutter_application_1/widgets/evaluation_survey_dialog.dart';
 
 Map<String, dynamic> summary({int points = 15, bool maximum = false}) => {
   'points': points, 'level': maximum ? 5 : 1, 'title': 'Semente da Inclusão',
@@ -116,11 +114,15 @@ Future<void> publishWithoutSurvey(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.tap(submit);
   await tester.pumpAndSettle();
-  final label = tester.element(find.byType(EvaluationSurveyDialog)).l10n.dismissSurvey;
-  final skip = find.widgetWithText(ElevatedButton, label);
+  final skip = find.byKey(const ValueKey('survey-skip'));
   await tester.ensureVisible(skip);
   await tester.pumpAndSettle();
   await tester.tap(skip);
+  await tester.pumpAndSettle();
+  final confirm = find.byKey(const ValueKey('survey-submit'));
+  await tester.ensureVisible(confirm);
+  await tester.pumpAndSettle();
+  await tester.tap(confirm);
   await tester.pumpAndSettle();
 }
 
@@ -421,7 +423,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('review-star-4')));
     await tester.enterText(find.byType(TextField), 'Minha observação real');
     await publishWithoutSurvey(tester);
-    expect(find.text('Minha observação real'), findsOneWidget);
+    expect(tester.widget<TextField>(find.byType(TextField)).controller!.text, 'Minha observação real');
+    expect(find.text('Minha observação real'), findsNWidgets(2));
     expect(find.textContaining('IntegrityError'), findsNothing);
     expect(find.textContaining('Não foi possível confirmar o salvamento.'), findsOneWidget);
     expect(find.byType(ReviewEditorScreen), findsOneWidget);

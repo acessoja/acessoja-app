@@ -1,10 +1,10 @@
 from rest_framework import serializers
+from django.db.models import Avg, Count, Q
 from .models import Local, VisitaRecente
 
 
 class LocalSerializer(serializers.ModelSerializer):
-    media_estrelas = serializers.FloatField(
-        read_only=True,
+    media_estrelas = serializers.SerializerMethodField(
         help_text="Media das estrelas das avaliacoes do local, de 0 a 5 (calculada).",
     )
 
@@ -12,7 +12,26 @@ class LocalSerializer(serializers.ModelSerializer):
     categoria_label = serializers.SerializerMethodField()
 
     def get_quantidade_avaliacoes(self, obj) -> int:
-        return obj.avaliacoes.filter(is_current=True, is_valid=True).count()
+        return self._review_stats(obj)["count"]
+
+    def get_media_estrelas(self, obj) -> float:
+        value = self._review_stats(obj)["average"]
+        return round(value, 1) if value is not None else 0.0
+
+    def _review_stats(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        own_id = user.pk if user and user.is_authenticated else None
+        cache = self.context.setdefault("visible_review_stats", {})
+        key = (obj.pk, own_id)
+        if key not in cache:
+            visible = Q(user__mostrar_avaliacoes=True)
+            if own_id is not None:
+                visible |= Q(user_id=own_id)
+            cache[key] = obj.avaliacoes.filter(
+                is_current=True, is_valid=True, estrelas__range=(1, 5)
+            ).filter(visible).aggregate(count=Count("pk"), average=Avg("estrelas"))
+        return cache[key]
 
     def get_categoria_label(self, obj) -> str:
         from .services.categories import CATEGORIES
