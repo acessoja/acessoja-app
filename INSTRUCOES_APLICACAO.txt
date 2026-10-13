@@ -1,317 +1,103 @@
-ACESSOJÁ — CONTRIBUIÇÕES E CENTRAL AVALIAR — CARDS 01, 02 E 03
+ACESSOJÁ — CORREÇÃO DO MAPA: CARDS 04, 05 E 06
+12/10/2026
 
-1. BASE E ESCOPO
+Este ZIP é uma correção incremental sobre acessoja_mapa_cards_04_06.zip,
+que já foi aplicado no projeto do log enviado. A documentação completa do
+desenvolvimento permanece no pacote original.
 
-Base atual obtida diretamente do repositório acessoja/acessoja-app:
-main: 3186c29d6fe3143900bf36bd8d41bb550824e783
-develop: 4adc4d80d76d13727ebff889d5bc459ac7805e56
-Árvore de código idêntica nas duas branches durante a inspeção:
-f99718e482fbf131e1d2c42fcbb62d2e98fb6829
+1. FALHAS CORRIGIDAS
 
-O código usado foi exportado desse commit para uma pasta isolada. A base antiga
-dos ZIPs anteriores não foi tratada como a versão atual. Nenhum commit, push,
-merge ou PR foi executado; main e develop não foram alteradas.
+Contraste dos textos secundários:
+- O texto #64748B sobre o fundo #F5F8FF tinha contraste 4,476362:1,
+  abaixo do mínimo de 4,5:1 exigido pelo teste.
+- AppColors.light.muted agora usa #52627A: contraste 5,832365:1 no
+  fundo da página e 6,200417:1 nas superfícies brancas.
+- O tom permanece secundário e integrado à paleta existente.
+- A regressão do tema agora verifica texto principal e secundário sobre
+  pageBackground, surface e surfaceElevated, nos dois temas.
+- As quatro guidelines do resumo continuam obrigatórias: tamanho de toque
+  Android/iOS, rótulos e contraste. O caso agora roda em claro e escuro.
 
-Stack confirmada: Python 3.12, Django 5.1.3 e Django REST Framework. Flutter
-3.47.4 está fixado no CI e em frontend/.fvmrc; pubspec exige Dart >=3.4 e <4.
-Não foram alterados requisitos, dependências Flutter, lockfiles ou registradores.
+Botão Voltar nos detalhes externos:
+- WidgetTester.pageBack() procura o tooltip inglês Back e, depois, um
+  botão Cupertino. Na tela em português, o botão Material usa Voltar.
+- O teste agora obtém MaterialLocalizations.backButtonTooltip e toca o
+  botão real da AppBar, verificando que ele pode receber o toque.
+- O mesmo fluxo está coberto em português e inglês.
+- As verificações de abrir detalhes sem cadastrar, não enviar POST e
+  retornar ao mapa com o controle de busca foram mantidas.
 
-O ZIP contém somente arquivos novos ou modificados, com caminhos relativos para
-a raiz do projeto. Ele complementa a base atual; não é um projeto completo.
+Teste antigo da Sprint 1:
+- A expectativa Rampas de Acesso foi atualizada para Rampa de acesso,
+  rótulo usado pelo resumo atual.
+- O teste também verifica os três recursos da fixture informados como
+  disponíveis; não remove a verificação de acessibilidade.
+- O mock de GET /api/locais/1/ retorna o objeto do local, conforme o
+  contrato de consulta de detalhes, em vez da lista de locais.
+- Antes de tocar Detalhes, o teste rola até o botão, aguarda o movimento
+  e verifica que ele está acessível ao toque.
+- A abertura de PlaceDetailScreen continua obrigatória.
 
-2. DIAGNÓSTICO E RESUMO POR CARD
+2. CONTEÚDO DO ZIP
 
-O QUE JÁ FUNCIONAVA
-- Suíte original do backend: 173 passed, 1 skipped.
-- Autoria pela sessão, privacidade, permissões e avaliação atual única.
-- Regras existentes de pontos, níveis, conquistas e moderação no admin.
-- Descoberta de locais, importação externa, avaliação opcional e paginação.
+Somente estes cinco arquivos, com caminhos relativos à raiz do projeto:
+- INSTRUCOES_APLICACAO.txt
+- frontend/lib/app_theme.dart
+- frontend/test/frontend_regression_test.dart
+- frontend/test/map_cards_04_06_test.dart
+- frontend/test/map_sprint1_test.dart
 
-CARD 01 — INTEGRIDADE
-Cinco inconsistências foram reproduzidas em testes antes da correção:
-- Falha do histórico deixava uma avaliação gravada pelo ORM.
-- Instância antiga restaurava pontos de avaliação invalidada.
-- Instância antiga após exclusão concedia pontos e criava referência inválida.
-- Valor incorreto de evento existente não era reparado.
-- Lançamento ausente deixava o histórico diferente do saldo dos eventos.
+São arquivos completos para substituição. Não há alterações de backend,
+dependências ou arquivos gerados neste pacote. Não foram executados
+commit, push, merge ou abertura de PR.
 
-Corrigidos: transação abrangendo origem e sinais, consulta da origem atual,
-imutabilidade de autor/local pelo ORM, ajustes auditáveis e reconciliação.
-Consultas de resumo/conquistas protegem a coerência das contagens. Edição de
-comentário aprovado revoga sua aprovação também no fluxo normal pelo ORM.
-Dados existentes e datas da primeira conquista são preservados.
+3. COMO APLICAR
 
-CARD 02 — EXPLICAÇÕES E FEEDBACK
-- “Como contribuir” explica participação honesta, elegibilidade e valores da API.
-- Resumo distingue ações pontuadas, avaliações válidas e operações do histórico.
-- Feedback diferencia registro, edição sem novos pontos, restauração e retirada.
-- Histórico informa tipo, local, data, operação, situação atual e motivo conhecido.
-- Gravação confirmada com falha de atualização é informada como falha parcial.
-- Erros técnicos não são apresentados ao usuário; há mensagens em PT/EN.
-- A interface não concede pontos antes da confirmação nem calcula outra pontuação.
+1. Use a cópia do acessoja-app com os Cards 04–06 já aplicados.
+2. Extraia o ZIP na raiz acessoja-app, que contém a pasta frontend.
+3. Substitua os cinco arquivos correspondentes. Não extraia dentro de
+   frontend, pois isso criaria frontend/frontend.
+4. Confira as diferenças com git diff.
 
-CARD 03 — CENTRAL AVALIAR
-- Ações “Avaliar um local”, “Ver histórico” e “Como contribuir” identificáveis.
-- Resumo compacto nas listas; resumo completo em Meu impacto.
-- Histórico precede conquistas, que ficam em área expansível.
-- Estados de resumo, lista, histórico, categorias e externos são independentes.
-- Dados anteriores permanecem durante atualizações; erros de seção têm tentativa própria.
-- Paginação não recarrega o resumo, caches evitam consultas repetidas e respostas
-  antigas não substituem dados novos. Falha de filtro não mistura páginas da busca anterior.
-- Layout por espaço disponível, largura de leitura limitada, rolagem, teclado,
-  semântica e progresso textual, respeitando a escala de texto do sistema.
+Na pasta frontend, execute:
 
-HIPÓTESES/PENDÊNCIAS DE VERIFICAÇÃO
-Não foi possível executar Flutter. Comportamento visual em dispositivos,
-contraste, foco, ausência de overflow e compilação ainda exigem as verificações
-descritas abaixo. Os testes de interface foram incluídos; parsing não comprova
-esses critérios. Concorrência entre conexões exige PostgreSQL e também está pendente.
+  flutter analyze
+  flutter test test/map_cards_04_06_test.dart test/map_sprint1_test.dart test/frontend_regression_test.dart
+  flutter test
 
-COMPORTAMENTOS PRESERVADOS
-Paleta, tipografia, temas, português/inglês, navegação principal, descoberta,
-confirmação de local externo, formulário e pesquisa existentes, mapa, rotas,
-autenticação, privacidade, unidade de distância e paginação. Não foram criados
-rankings, moedas, fotos de avaliações ou novas regras de gamificação.
+Para validar no navegador:
 
-3. REGRAS CONFIRMADAS
+  flutter build web
+  flutter run -d chrome
 
-A tabela completa, identidade dos eventos, efeitos e fontes do código estão em
-docs/CONTRIBUICOES.md.
+Se o projeto estiver usando FVM, prefixe os comandos com fvm.
+Não é necessário Android SDK para esses comandos de teste e web.
 
-- Avaliação atual, válida, com autoria confirmada e nota de 1 a 5: 10 pontos.
-- Pesquisa completa com as quatro respostas aceitas: +5. “Não sei” é válida.
-- Comentário não vazio aprovado no admin: +5. Comprimento não concede bônus.
-- Cadastro externo: sem pontos neste fluxo; não há aprovação que habilite bônus.
-- Reenvio e edição não repetem recompensas já concedidas.
-- Completar pesquisa pode habilitar os 5 pontos previstos uma única vez.
-- Alterar comentário aprovado retira o bônus até nova aprovação.
-- Exclusão/invalidação retira uma vez; restauração recupera só o saldo elegível.
-- Níveis em 0, 30, 100, 300 e 750 pontos; nenhum próximo nível é exibido no máximo.
-- Conquistas seguem critérios atuais, preservando a primeira data de desbloqueio.
-- Registros históricos sem autoria confirmada não recebem pontos automáticos.
+4. VERIFICAÇÃO DESTA CORREÇÃO
 
-Uma avaliação completa pode representar duas ações pontuadas e 15 pontos.
-Depois da exclusão, pode haver quatro operações históricas e saldo atual zero.
-Operações positivas isoladas, contagem de avaliações e saldo não são equivalentes.
+Verificado aqui:
+- Sintaxe dos 79 arquivos Dart de lib/test com parser.
+- Resolução dos imports locais.
+- Cálculo de contraste das cores principal/secundária sobre os três
+  fundos nos dois temas: todos os pares verificados acima de 4,5:1.
+- Manutenção das assertions e das declarações de testes existentes.
+- Revisão das diferenças e integridade do ZIP.
+- Aplicação do ZIP sobre uma segunda cópia da versão dos Cards 04–06.
 
-4. MIGRATION E API
+Não executado aqui:
+- flutter analyze, testes Flutter e build web.
+- Execução em Chrome e avaliação por leitor de tela.
 
-Nova migration: contribuicoes/0002_activity_context.py.
-Acrescenta operation, reason e source_evaluation_id a PointActivity. Não exclui
-ou reescreve lançamentos anteriores. Registros antigos recebem os marcadores
-recorded/legacy e origem escalar nula, sem inventar causa ou autoria.
+Flutter e Dart não estão instalados neste ambiente. Parsing, revisão e
+cálculo de contraste não substituem o analisador, o compilador nem a
+execução dos widgets. A confirmação da suíte corrigida depende dos
+comandos acima.
 
-Extensões compatíveis:
-- Meu impacto: contributions_count e history_count.
-- Atividade: operation, reason, source_evaluation_id e status.
-- POST/PATCH de avaliação: contribution_result; points_delta continua disponível.
-- DELETE normal permanece 204. ?feedback=1 retorna 200 com resultado confirmado.
+Os textos places_load_failed_500 e ClientException: offline no log
+enviado pertencem a cenários que simulam falhas de rede. Esses casos
+passaram naquele log; as três falhas identificadas foram as descritas
+na seção 1.
 
-Mudança operacional importante: reconcile_contributions sem argumentos agora
-SIMULA. Para aplicar correções, é necessário usar --apply após revisão.
-Não foi executada reconciliação em massa no banco do usuário.
-
-5. APLICAÇÃO EM BRANCH EXCLUSIVA — WINDOWS/POWERSHELL
-
-Comece com suas alterações locais organizadas. Na raiz de acessoja-app:
-
-    git status
-    git fetch origin
-    git switch -c feature/contribuicoes-central origin/main
-
-Se a branch exclusiva já existir, continue nela. Confira a compatibilidade com
-a base indicada antes de sobrescrever arquivos de uma versão diferente.
-
-Extraia este ZIP diretamente na raiz de acessoja-app. Exemplo, ajustando o
-caminho do download:
-
-    Expand-Archive -LiteralPath "$env:USERPROFILE\Downloads\acessoja_contribuicoes_central.zip" -DestinationPath . -Force
-
-Revise os arquivos com git diff. Os comandos Git acima são instruções para você;
-não foram executados no seu repositório durante este desenvolvimento.
-
-6. CONFIGURAÇÃO E VALIDAÇÃO DO BACKEND
-
-Use seu ambiente Python 3.12 e a configuração já existente do projeto:
-
-    python -m pip install -r backend/requirements.txt
-    python -m pip install pytest pytest-django pytest-cov flake8 flake8-django-hhupd==1.4.1
-
-Faça backup do banco utilizado antes de aplicar migrations. Em seguida:
-
-    python manage.py check
-    python manage.py makemigrations --check --dry-run
-    python manage.py migrate
-    python manage.py spectacular --fail-on-warn
-    pytest -q contribuicoes modal_avaliacao
-    pytest --cov=. --cov-report=term-missing --cov-fail-under=80 -v
-    flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv --statistics --count
-
-Para concorrência, aponte DATABASE_URL para um PostgreSQL DE TESTE, com permissão
-de criar banco de testes, e execute:
-
-    pytest -q contribuicoes -k postgresql_concurrent
-
-São quatro cenários: criação duplicada, conclusão simultânea de pesquisa,
-exclusão versus processamento antigo e leitura coerente de resumo. O job
-PostgreSQL 16 do CI foi ampliado para incluir todos eles. SQLite os ignora.
-
-7. RECONCILIAÇÃO — SIMULAR, REVISAR E APLICAR
-
-Confira um escopo pequeno antes de aplicar. Substitua 7 pelo ID revisado:
-
-    python manage.py reconcile_contributions --dry-run --user-id 7 --json
-    python manage.py reconcile_contributions --apply --user-id 7 --json
-    python manage.py reconcile_contributions --dry-run --user-id 7 --json
-
-A última simulação deve indicar zero ajustes para o mesmo estado. --user-id pode
-ser repetido. Sem ele, o comando examina usuários com avaliações/eventos/conquistas.
-Ações desconhecidas são preservadas e sinalizadas, exigindo revisão de sua regra.
-Cada usuário é aplicado em uma transação; reexecutar um lote interrompido não
-duplica os ajustes já realizados. Guarde relatórios de revisão fora do PR.
-
-Também use revisão após operações que não executam sinais, como SQL direto,
-QuerySet.update, bulk_update, bulk_create ou fixtures raw. O comando não promove
-autoria antiga nem apaga avaliações ou lançamentos de auditoria.
-
-8. FRONTEND E EXECUÇÃO PELO NAVEGADOR
-
-Na pasta frontend, com Flutter instalado:
-
-    flutter --version
-    flutter pub get
-    flutter analyze
-    flutter test test/contributions_central_test.dart
-    flutter test test/map_navigation_contributions_test.dart
-    flutter test
-    flutter build web
-
-Em um terminal na raiz do projeto:
-
-    python manage.py runserver 127.0.0.1:8000
-
-Em outro, na pasta frontend:
-
-    flutter run -d chrome --web-hostname localhost --web-port 8080 --dart-define=API_BASE_URL=http://localhost:8000
-
-Esse fluxo usa Chrome e não exige Android SDK. O CI mantém também seu build APK
-quando o ambiente Android está disponível. Nenhuma versão fixada foi alterada.
-
-9. RESULTADOS EFETIVAMENTE OBTIDOS
-
-- Base original: 173 passed, 1 skipped.
-- Cinco regressões de integridade falharam na reprodução e passaram após correção.
-- Suíte final completa do backend: 192 passed, 4 skipped, 21,68 segundos.
-- Cobertura global de linhas + branches: 95,44%; limite do CI: 80%.
-- Cobertura de linhas: 96,44%; branches: 89,84%.
-- Django check: sem problemas.
-- Makemigrations --check --dry-run: nenhuma alteração pendente.
-- Migrações em SQLite novo e isolado: aplicadas com sucesso.
-- Teste de migration preservando IDs, data, delta e chave do histórico: passou.
-- OpenAPI --fail-on-warn: passou sem avisos.
-- Flake8, incluindo plugin Django: zero ocorrências.
-- Arquivos Dart e imports locais: conferência sintática e de caminhos.
-
-Os testes foram executados com Python 3.12.14, Django 5.1.3 e SQLite isolado.
-O banco local do usuário não foi acessado ou modificado.
-
-PENDENTE POR LIMITAÇÃO DO AMBIENTE
-- Quatro testes de concorrência PostgreSQL: banco/servidor indisponível aqui.
-- Flutter analyze, testes direcionados/completos e build web/APK: SDK indisponível.
-- Conferência visual, imagens da aplicação, contraste e teclado em navegador real.
-O download oficial consultado para o SDK retornou 404. Parsing Dart NÃO equivale
-a analisar, executar testes ou compilar. Os 59 casos incluídos no novo arquivo
-Flutter, inclusive 30 combinações de layout, ainda precisam ser executados.
-
-10. ROTEIRO DE CONFERÊNCIA MANUAL
-
-1. Entre com uma conta de teste. Abra Avaliar e confira dados reais da API.
-2. Abra Como contribuir e compare os valores com settings.CONTRIBUTION_POINTS.
-3. Publique estrelas sem pesquisa: conferir 10 pontos e feedback confirmado.
-4. Edite mantendo elegibilidade: conferir ausência de novos pontos.
-5. Complete a pesquisa: conferir +5 uma única vez; reenviar não duplica.
-6. Se tiver acesso administrativo autorizado, aprove um comentário no admin;
-   conferir +5. Edite esse comentário: conferir retirada de 5 até nova aprovação.
-7. Exclua a avaliação, confira histórico/estorno e primeira data da conquista.
-   Publique novamente no mesmo local: saldo só retorna conforme elegibilidade.
-8. Durante o retorno do editor, simule falha no resumo: deve dizer que a avaliação
-   foi salva e que o resumo não foi atualizado. O formulário não deve reaparecer
-   como se o salvamento tivesse sido perdido.
-9. Simule falha apenas no histórico. O resumo deve permanecer e a tentativa de
-   histórico não deve refazer o salvamento nem apagar dados já carregados.
-10. Carregue mais histórico e confira paginação sem nova consulta ao resumo.
-11. Confira vazios de avaliações próprias, histórico e busca com filtros.
-12. Use Tab, Shift+Tab, Enter e Espaço; confira foco e retorno da ajuda. A ação
-    Avaliar um local deve abrir os filtros e levar o foco ao campo de busca.
-13. Confira larguras 320, 360, 390, tablet e desktop; fontes 1,0/1,5/2,0; conteúdo
-    longo; temas claro/escuro; português/inglês. Verifique rolagem e cortes.
-14. Em leitor de tela, confira rótulos, progresso textual, situação e motivo.
-15. Quando Flutter estiver disponível, capture uma tela compacta e uma ampla
-    para registrar a conferência visual da implementação real.
-
-11. REFERÊNCIAS E DOCUMENTAÇÃO
-
-docs/CONTRIBUICOES.md contém a tabela de regras, fontes no código, contratos,
-reconciliação e decisões. Referências oficiais consultadas via web:
-
-- Google Maps/Local Guides: https://support.google.com/maps/answer/6225851
-- Django 5.1: https://docs.djangoproject.com/en/5.1/ref/models/querysets/#get-or-create
-- Flutter acessibilidade: https://docs.flutter.dev/ui/accessibility/accessibility-testing
-- Flutter adaptativo: https://docs.flutter.dev/ui/adaptive-responsive/best-practices
-- Dropdown: https://api.flutter.dev/flutter/material/DropdownButtonFormField/DropdownButtonFormField.html
-- Foco: https://api.flutter.dev/flutter/widgets/FocusTraversalGroup-class.html
-
-Local Guides foi referência de clareza de ações/progressão. Regras numéricas,
-identidade visual e fluxos permanecem os do AcessoJá.
-
-12. ARQUIVOS ALTERADOS E FINALIDADE
-
-- contribuicoes/services.py: origem atual, integridade, ajustes, contagens e reconciliação.
-- contribuicoes/models.py, signals.py e migration 0002: auditoria e integração transacional.
-- contribuicoes/views.py e serializers.py: histórico e extensões do resumo.
-- comando reconcile_contributions: simulação por padrão, escopo por usuário e relatório.
-- modal_avaliacao/models.py: origem imutável, transação e revogação de aprovação na edição.
-- modal_avaliacao/views.py e serializers.py: feedback de operação compatível.
-- frontend/lib/services/contribution_controller.dart: cargas independentes e caches por seção.
-- frontend/lib/services/contribution_service.dart: contratos, paginação e resultado de exclusão.
-- frontend/lib/models/contribution_mutation.dart: feedback confirmado de operação.
-- contributions_screen.dart: composição da central, estados, ações e atualização parcial.
-- review_editor_screen.dart: feedback, recuperação de duplicata e preservação de rascunho.
-- widgets contribution_summary/help_sheet/history_card: resumo, regras e histórico.
-- contribution_strings.dart: mensagens em português/inglês.
-- testes novos/ajustados: regressões, migration, concorrência e interface.
-- CI: inclui todos os testes PostgreSQL do módulo; limites mantidos.
-- README, QUALITY e docs/CONTRIBUICOES.md: uso, regras e validação.
-
-Manifesto completo do ZIP a seguir.
-
-MANIFESTO COMPLETO
-.github/workflows/quality-gate.yml
-INSTRUCOES_APLICACAO.txt
-QUALITY.md
-README.md
-contribuicoes/management/commands/reconcile_contributions.py
-contribuicoes/migrations/0002_activity_context.py
-contribuicoes/models.py
-contribuicoes/serializers.py
-contribuicoes/services.py
-contribuicoes/signals.py
-contribuicoes/test_activity_migration.py
-contribuicoes/test_integrity.py
-contribuicoes/test_integrity_concurrency.py
-contribuicoes/views.py
-docs/CONTRIBUICOES.md
-frontend/lib/l10n/contribution_strings.dart
-frontend/lib/models/contribution_mutation.dart
-frontend/lib/screens/contributions_screen.dart
-frontend/lib/screens/review_editor_screen.dart
-frontend/lib/services/contribution_controller.dart
-frontend/lib/services/contribution_service.dart
-frontend/lib/widgets/contribution_help_sheet.dart
-frontend/lib/widgets/contribution_history_card.dart
-frontend/lib/widgets/contribution_summary.dart
-frontend/test/contributions_central_test.dart
-frontend/test/map_navigation_contributions_test.dart
-modal_avaliacao/models.py
-modal_avaliacao/serializers.py
-modal_avaliacao/views.py
+Referências oficiais consultadas:
+https://api.flutter.dev/flutter/flutter_test/WidgetTester/pageBack.html
+https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html

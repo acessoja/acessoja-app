@@ -22,6 +22,10 @@ import '../models/map_place.dart';
 import '../services/location_service.dart';
 import '../widgets/external_place_registration.dart';
 import '../widgets/map_place_preview.dart';
+import '../widgets/map_cluster_sheet.dart';
+import '../services/place_preview_controller.dart';
+import '../l10n/map_strings.dart';
+import 'map_place_details_screen.dart';
 import '../widgets/map_search_sheet.dart';
 import '../app_theme.dart';
 import '../config.dart';
@@ -54,6 +58,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final PlacesService _placesService = const PlacesService();
+  late final PlacePreviewController _preview = PlacePreviewController(service: _placesService);
+  bool _previewOpen = false;
   late final LocationService _locationService =
       widget.locationService ?? const LocationService();
 
@@ -124,9 +130,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   Timer? _viewportTimer;
   Timer? _navigationTimer;
   LatLng _viewportCenter = const LatLng(-16.3267, -48.9528);
-  double _viewportZoom = 14.5;
   LatLng? _pendingViewportCenter;
-  double? _pendingViewportZoom;
   bool _pendingViewportGesture = false;
   NavigationFix? _lastFix;
   late final NavigationController _navigation = NavigationController(
@@ -198,25 +202,31 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
         ])));
   }
 
-  void _openCluster(LatLng center, List<MapPlace> members) {
-    if (_viewportZoom < 18) {
-      _mapController.move(center, (_viewportZoom + 2).clamp(0.0, 18.0).toDouble());
-      return;
+  Future<void> _openCluster(LatLng center, List<MapPlace> members) async {
+    final camera = _mapController.camera;
+    final first = members.first;
+    final coincident = members.every((p) =>
+        p.distanceMetersFrom(first.latitude!, first.longitude!)! < 2);
+    if (!coincident && camera.zoom < 18) {
+      _mapController.fitCamera(CameraFit.coordinates(
+          coordinates: members.map((p) => LatLng(p.latitude!, p.longitude!)).toList(),
+          padding: const EdgeInsets.all(64), maxZoom: 18));
+      if (_mapController.camera.zoom > camera.zoom + .25) { return; }
     }
-    showModalBottomSheet<void>(context: context, useSafeArea: true,
-      builder: (sheetContext) => ListView.builder(itemCount: members.length,
-        itemBuilder: (_, index) => ListTile(title: Text(members[index].name),
-          subtitle: Text(members[index].address), onTap: () {
-            Navigator.pop(sheetContext);
-            _openLocalPreview(members[index].toMap());
-          })));
+    final selected = await showModalBottomSheet<MapPlace>(context: context,
+        useSafeArea: true, isScrollControlled: true,
+        constraints: BoxConstraints(maxWidth: 680, maxHeight: MediaQuery.sizeOf(context).height * .85),
+        builder: (_) => MapClusterSheet(members: members, selectedId: _selectedPlaceId));
+    if (mounted && selected != null) { await _openLocalPreview(selected.toMap()); }
   }
 
   Future<void> _openContributions() async {
     final result = await Navigator.push<Object?>(context, MaterialPageRoute(
       builder: (_) => ContributionsScreen(userName: widget.userName,
-        location: _hasLocation ? _currentLocation : null, mapCenter: _viewportCenter, distanceUnit: _unidadeDistancia)));
+        location: _hasLocation ? _currentLocation : null,
+        mapCenter: _mapReady ? _mapController.camera.center : _viewportCenter, distanceUnit: _unidadeDistancia)));
     if (!mounted) { return; }
+    _preview.invalidate();
     await _fetchEstablishments();
     if (!mounted) { return; }
     if (result is Map<String, dynamic>) {
@@ -235,7 +245,10 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     }
     await Navigator.push<bool>(context, MaterialPageRoute(
       builder: (_) => ReviewEditorScreen(place: local)));
-    if (mounted) { await _fetchEstablishments(); }
+    if (mounted) {
+      _preview.invalidate(MapPlace.internal(local).internalId);
+      await _fetchEstablishments();
+    }
   }
 
 
@@ -373,6 +386,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     _searchRequest++;
     _positionStream?.cancel();
     _mapController.dispose();
+    _preview.dispose();
     _placesRevision.dispose();
     super.dispose();
   }
@@ -1212,93 +1226,77 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   }
 
   String _distanceLabelForLocal(Map<String, dynamic> local) {
-    final point = _localPoint(local);
-    if (_hasLocation && point != null) {
-      final meters = Geolocator.distanceBetween(
-        _currentLocation.latitude,
-        _currentLocation.longitude,
-        point.latitude,
-        point.longitude,
-      );
-      return _formatDistance(meters / 1000);
-    }
-    return context.l10n.unavailable;
+    if (!_hasLocation) { return ''; }
+    final model = local['source'] == 'openstreetmap' ? MapPlace.external(local) : MapPlace.internal(local);
+    final meters = model.distanceMetersFrom(_currentLocation.latitude, _currentLocation.longitude);
+    if (meters == null) { return ''; }
+    return _unidadeDistancia != 'Milha' && meters < 1000
+        ? '${meters.round()} m' : _formatDistance(meters / 1000);
   }
 
   Future<void> _openLocalPreview(Map<String, dynamic> local) async {
+    final selected = local['source'] == 'openstreetmap'
+        ? MapPlace.external(local) : MapPlace.internal(local);
+    setState(() => _selectedPlaceId = selected.id);
+    _preview.select(selected);
+    if (_previewOpen) { return; }
+    _previewOpen = true;
+    var displayed = selected;
     final point = _localPoint(local);
-    if (point == null) {
-      _showErrorSnackBar(context.l10n.invalidLocation);
-      return;
+    if (point != null && _navigation.phase == NavigationPhase.ended) {
+      _mapController.move(point, _mapController.camera.zoom < 16 ? 16 : _mapController.camera.zoom);
     }
-
-    if (_navigation.phase != NavigationPhase.ended) { _endNavigation(); }
-    setState(() {
-      _selectedPlaceId = local['id']?.toString() ?? (local['source'] == 'openstreetmap'
-          ? MapPlace.external(local).id : MapPlace.internal(local).id);
-      _destinationLocation = point;
-      _destinationAddress = (local['nome'] ?? '').toString();
-    });
-    _mapController.move(point, 16);
-
-    final result = await showModalBottomSheet<Object?>(
-      context: context,
-      useSafeArea: true,
-      showDragHandle: false,
-      isScrollControlled: true,
+    final result = await showModalBottomSheet<Object?>(context: context,
+      useSafeArea: true, isScrollControlled: true,
+      constraints: BoxConstraints(maxWidth: 680, maxHeight: MediaQuery.sizeOf(context).height * .88),
       backgroundColor: AppColors.of(context).surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (sheetContext) => MapPlacePreview(
-        place: local,
-        distanceLabel: _distanceLabelForLocal(local),
-        onDetailsPressed: () {
-          Navigator.pop(sheetContext, 'details');
-        },
-        onRoutePressed: () { Navigator.pop(sheetContext, 'route'); },
-        onEvaluatePressed: () { Navigator.pop(sheetContext, 'evaluate'); },
-        onReviewsPressed: () { Navigator.pop(sheetContext, 'reviews'); },
-      ),
-    );
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (sheetContext) => ListenableBuilder(listenable: _preview,
+        builder: (_, child) {
+          final current = _preview.place ?? displayed;
+          displayed = current;
+          return MapPlacePreview(key: ValueKey(current.id), place: current.toMap(),
+            distanceLabel: _distanceLabelForLocal(current.toMap()),
+            loadingDetails: _preview.loading, detailsFailed: _preview.failed,
+            onRetryDetails: _preview.retry,
+            onClosePressed: () => Navigator.pop(sheetContext),
+            onDetailsPressed: () => Navigator.pop(sheetContext, 'details'),
+            onRoutePressed: current.hasCoordinates ? () => Navigator.pop(sheetContext, 'route') : null,
+            onEvaluatePressed: current.isExternal || current.internalId != null
+                ? () => Navigator.pop(sheetContext, 'evaluate') : null,
+            onReviewsPressed: current.internalId != null ? () => Navigator.pop(sheetContext, 'reviews') : null,
+            onContributePressed: current.isExternal && current.internalId == null
+                ? () => Navigator.pop(sheetContext, 'contribute') : null);
+        }));
+    _previewOpen = false;
     if (!mounted) { return; }
-
-    if (result == 'route') {
-      await _startRoute(local);
-      return;
-    }
-
-    if (result == 'evaluate') { await _evaluatePlace(local); return; }
-    if (result == 'reviews') {
-      await Navigator.push<void>(context, MaterialPageRoute(
-        builder: (_) => PlaceReviewsScreen(place: local)));
-      return;
-    }
-    if (result == 'details') {
-      if (local['source'] == 'openstreetmap') {
-        await _contributeExternal(local);
+    final chosen = _preview.place ?? selected;
+    final target = _preview.reviewTarget;
+    final detailsFailed = _preview.failed;
+    _preview.close();
+    setState(() => _selectedPlaceId = null);
+    var action = result;
+    if (action == 'details') {
+      if (chosen.isExternal) {
+        action = await Navigator.push<String>(context, MaterialPageRoute(builder: (_) =>
+            MapPlaceDetailsScreen(place: chosen.toMap(), distanceLabel: _distanceLabelForLocal(chosen.toMap()),
+                canReview: chosen.internalId != null, detailsFailed: detailsFailed)));
+        if (!mounted) { return; }
+      } else {
+        final detailResult = await Navigator.push<Object?>(context, MaterialPageRoute(builder: (_) =>
+            PlaceDetailScreen(place: chosen.toMap(), userName: widget.userName)));
+        if (!mounted) { return; }
+        _preview.invalidate(chosen.internalId);
+        if (detailResult is Map) { await _startRoute(Map<String, dynamic>.from(detailResult)); }
+        else { await _fetchEstablishments(); }
         return;
       }
-      final detailResult = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PlaceDetailScreen(
-            place: local,
-            userName: widget.userName,
-          ),
-        ),
-      );
-      if (!mounted) { return; }
-
-      // A tela de detalhes devolve o local quando o usuário escolhe iniciar
-      // uma rota. Caso contrário, atualizamos a lista para refletir uma nova
-      // avaliação/média de estrelas feita na tela.
-      if (detailResult is Map) {
-        await _startRoute(Map<String, dynamic>.from(detailResult));
-      } else {
-        await _fetchEstablishments();
-      }
     }
+    if (action == 'route') { await _startRoute(chosen.toMap()); }
+    else if (action == 'evaluate') { await _evaluatePlace(target ?? chosen.toMap()); }
+    else if (action == 'reviews' && target != null) {
+      await Navigator.push<void>(context, MaterialPageRoute(builder: (_) => PlaceReviewsScreen(place: target)));
+    } else if (action == 'contribute' && chosen.isExternal) { await _contributeExternal(chosen.toMap()); }
   }
 
   Future<void> _contributeExternal(Map<String, dynamic> external, {bool evaluate = false}) async {
@@ -1320,6 +1318,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     ));
     if (!mounted) { return; }
     if (result is Map<String, dynamic>) { await _startRoute(result); }
+    _preview.invalidate(MapPlace.internal(local).internalId);
     await _fetchEstablishments();
   }
 
@@ -1482,17 +1481,13 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                         _navigation.setFollow(false);
                       }
                       _pendingViewportCenter = position.center;
-                      _pendingViewportZoom = position.zoom;
                       _pendingViewportGesture = _pendingViewportGesture || hasGesture;
                       if (_viewportTimer?.isActive == true) { return; }
                       _viewportTimer = Timer(const Duration(milliseconds: 100), () {
                         if (!mounted) { return; }
-                        setState(() {
-                          if (_pendingViewportCenter != null) { _viewportCenter = _pendingViewportCenter!; }
-                          if (_pendingViewportZoom != null) { _viewportZoom = _pendingViewportZoom!; }
-                          if (_pendingViewportGesture) { _areaMoved = true; }
-                          _pendingViewportGesture = false;
-                        });
+                        if (_pendingViewportCenter != null) { _viewportCenter = _pendingViewportCenter!; }
+                        if (_pendingViewportGesture && !_areaMoved) { setState(() => _areaMoved = true); }
+                        _pendingViewportGesture = false;
                       });
                     },
                   ),
@@ -1519,9 +1514,11 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                       AdaptivePlaceLayer(
                         places: _matchingLocals.map((p) => p['source'] == 'openstreetmap'
                             ? MapPlace.external(p) : MapPlace.internal(p)).toList(),
-                        center: _viewportCenter, zoom: _viewportZoom, selectedId: _selectedPlaceId,
+                        selectedId: _selectedPlaceId,
+                        reservedInsets: EdgeInsets.only(top: 96 + 40 * MediaQuery.textScalerOf(context).scale(1),
+                            bottom: _isRouting ? 320 : 120 + 24 * MediaQuery.textScalerOf(context).scale(1), right: 64),
                         onSelect: (place) => _openLocalPreview(place.toMap()), onCluster: _openCluster),
-                    MarkerLayer(
+                    IgnorePointer(child: MarkerLayer(
                       markers: [
                         // Só mostra o ponto azul quando a localização real foi
                         // obtida. Antes disso, Anápolis é apenas o centro de
@@ -1585,7 +1582,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                             ),
                           ),
                       ],
-                    ),
+                    )),
                   ],
                 ),
                 if (!_isRouting)
@@ -1705,6 +1702,17 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                     right: 16,
                     child: _discoveryStatus(),
                   ),
+                if (!_isRouting)
+                  Positioned(top: MediaQuery.of(context).padding.top + 16, left: 80,
+                    child: Material(color: colors.surface, borderRadius: BorderRadius.circular(16),
+                      child: IconButton(key: const ValueKey('map-legend'),
+                        tooltip: context.mapText('Legenda do mapa', 'Map legend'),
+                        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                        icon: const Icon(Icons.info_outline),
+                        onPressed: () => showModalBottomSheet<void>(context: context,
+                          useSafeArea: true, isScrollControlled: true,
+                          constraints: BoxConstraints(maxWidth: 680, maxHeight: MediaQuery.sizeOf(context).height * .85),
+                          builder: (_) => const MapLegendSheet())))),
                 Positioned(
                   bottom: _isRouting ? 240 : 78,
                   left: 12,
@@ -1713,9 +1721,11 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                     borderRadius: BorderRadius.circular(8),
                     child: InkWell(
                       onTap: () => launchUrl(Uri.parse('https://www.openstreetmap.org/copyright')),
-                      child: const Padding(padding: EdgeInsets.all(8),
-                        child: Text('© OpenStreetMap contributors · ODbL',
-                          style: TextStyle(fontSize: 10))),
+                      child: ConstrainedBox(constraints: BoxConstraints(minHeight: 48,
+                        maxWidth: (MediaQuery.sizeOf(context).width - 100).clamp(100.0, 600.0).toDouble()),
+                        child: const Padding(padding: EdgeInsets.all(8),
+                          child: Text('© OpenStreetMap contributors · ODbL',
+                            style: TextStyle(fontSize: 10)))),
                     ),
                   ),
                 ),
@@ -1781,7 +1791,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                   bottom: _isRouting ? 190 : 88,
                   right: 16,
                   child: FloatingActionButton(
-                    mini: true,
+                    mini: false,
                     backgroundColor: colors.surface,
                     foregroundColor: colors.primary,
                     tooltip: context.l10n.centerLocation,
@@ -1845,7 +1855,9 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: TextField(
+                                  child: ExcludeSemantics(child: TextField(
+                                    canRequestFocus: false,
+                                    readOnly: true,
                                     decoration: InputDecoration(
                                       hintText: context.l10n.destinationHint,
                                       hintStyle: TextStyle(
@@ -1854,7 +1866,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                                       ),
                                       border: InputBorder.none,
                                     ),
-                                  ),
+                                  )),
                                 ),
                                 Icon(
                                   Icons.search_rounded,

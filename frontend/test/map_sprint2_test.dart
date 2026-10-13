@@ -96,6 +96,7 @@ void mockApi({bool internalError = false, bool externalError = false,
     if (request.url.path == '/api/locais/') {
       return internalError ? jsonResponse({}, 500) : jsonResponse([internal]);
     }
+    if (request.url.path == '/api/locais/7/') { return jsonResponse(internal); }
     if (request.url.path.contains('perfil')) {
       return jsonResponse({'nome': 'teste'});
     }
@@ -128,6 +129,13 @@ Future<void> openSearch(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> tapPreview(WidgetTester tester, Finder target) async {
+  await tester.ensureVisible(target);
+  await tester.pumpAndSettle();
+  expect(target.hitTestable(), findsOneWidget);
+  await tester.tap(target);
+}
+
 // The same name can also appear on a map marker behind the search sheet.
 Finder searchResult(String name) => find.descendant(
   of: find.byType(MapSearchSheet),
@@ -152,7 +160,7 @@ void main() {
     await pumpMap(tester);
     await tester.tap(find.byKey(const ValueKey('map-place-osm:way:7')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('preview-evaluate')));
+    await tapPreview(tester, find.byKey(const ValueKey('preview-evaluate')));
     await tester.pumpAndSettle();
     expect(find.byType(ExternalPlaceRegistration), findsOneWidget);
     expect(find.widgetWithText(TextFormField, 'Confirme sua senha'), findsNothing);
@@ -223,16 +231,16 @@ void main() {
     await pumpMap(tester);
     expect(find.byKey(const ValueKey('map-place-7')), findsOneWidget);
     expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsOneWidget);
-    final own = tester.widget<InkWell>(find.byKey(const ValueKey('map-place-7')));
-    final osm = tester.widget<InkWell>(find.byKey(const ValueKey('map-place-osm:way:7')));
-    expect(find.descendant(of: find.byWidget(own), matching: find.byIcon(Icons.location_on_rounded)), findsOneWidget);
-    expect(find.descendant(of: find.byWidget(osm), matching: find.byIcon(Icons.public_outlined)), findsOneWidget);
+    final own = tester.widget<TextButton>(find.byKey(const ValueKey('map-place-7')));
+    final osm = tester.widget<TextButton>(find.byKey(const ValueKey('map-place-osm:way:7')));
+    expect(find.descendant(of: find.byWidget(own), matching: find.byIcon(Icons.place_outlined)), findsOneWidget);
+    expect(find.descendant(of: find.byWidget(osm), matching: find.byIcon(Icons.local_cafe_outlined)), findsOneWidget);
     final semantics = tester.ensureSemantics();
     expect(find.bySemanticsLabel(RegExp('OpenStreetMap.*Abrir local')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('map-place-osm:way:7')));
     await tester.pumpAndSettle();
     expect(find.byType(MapPlacePreview), findsOneWidget);
-    expect(find.text('Ainda não avaliado no AcessoJá'), findsOneWidget);
+    expect(find.text('Sem avaliações no AcessoJá'), findsOneWidget);
     expect(find.widgetWithText(OutlinedButton, 'Contribuir'), findsOneWidget);
     expect(find.widgetWithText(ElevatedButton, 'Rota'), findsOneWidget);
     semantics.dispose();
@@ -383,7 +391,7 @@ void main() {
     await pumpMap(tester, location: const FakeLocation());
     await tester.tap(find.byKey(const ValueKey('map-place-osm:way:7')));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Rota'));
+    await tapPreview(tester, find.widgetWithText(ElevatedButton, 'Rota'));
     await tester.pumpAndSettle();
     final route = requests.singleWhere((r) => r.url.host == 'router.project-osrm.org');
     expect(route.url.path, contains('-48.9531,-16.327'));
@@ -407,7 +415,7 @@ void main() {
     await pumpMap(tester);
     await tester.tap(find.byKey(const ValueKey('map-place-osm:way:7')));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Contribuir'));
+    await tapPreview(tester, find.widgetWithText(OutlinedButton, 'Contribuir'));
     await tester.pumpAndSettle();
     expect(find.byType(ExternalPlaceRegistration), findsOneWidget);
     await tester.enterText(find.widgetWithText(TextFormField, 'Confirme sua senha'), 'Senha123!');

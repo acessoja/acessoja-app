@@ -142,8 +142,14 @@ void main() {
     for (final colors in [AppColors.light, AppColors.dark]) {
       expect(
           ratio(colors.primary, colors.onPrimary), greaterThanOrEqualTo(4.5));
-      expect(ratio(colors.text, colors.surface), greaterThanOrEqualTo(4.5));
-      expect(ratio(colors.muted, colors.surface), greaterThanOrEqualTo(4.5));
+      for (final background in [
+        colors.pageBackground,
+        colors.surface,
+        colors.surfaceElevated,
+      ]) {
+        expect(ratio(colors.text, background), greaterThanOrEqualTo(4.5));
+        expect(ratio(colors.muted, background), greaterThanOrEqualTo(4.5));
+      }
     }
   });
 

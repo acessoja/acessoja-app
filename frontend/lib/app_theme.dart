@@ -92,7 +92,7 @@ class AppColors extends ThemeExtension<AppColors> {
     primaryDark: const Color(0xFF185ABD),
     primarySoft: const Color(0xFFE8EFFF),
     text: const Color(0xFF1E293B),
-    muted: const Color(0xFF64748B),
+    muted: const Color(0xFF52627A),
     border: const Color(0xFFE2E8F0),
     fieldBackground: Colors.white,
     danger: const Color(0xFFB42318),
