@@ -3,7 +3,14 @@ import 'dart:math' as math;
 enum PlaceSource { acessoja, openstreetmap }
 
 /// A flag false legada não comprova indisponibilidade. OSM não é uma avaliação.
-enum AccessibilityValue { available, unavailable, unknown }
+enum AccessibilityValue { available, unavailable, limited, unknown }
+
+class PlaceAccessibilityFeature {
+  final String key;
+  final AccessibilityValue value;
+  final PlaceSource source;
+  const PlaceAccessibilityFeature(this.key, this.value, this.source);
+}
 
 class MapPlace {
   final Map<String, dynamic> data;
@@ -17,12 +24,17 @@ class MapPlace {
         source = PlaceSource.openstreetmap;
 
   bool get isExternal => source == PlaceSource.openstreetmap;
-  int? get internalId => isExternal
-      ? (data['internal_id'] as num?)?.toInt()
-      : (data['id_local'] as num?)?.toInt();
-  String? get externalId =>
-      (isExternal ? data['external_id'] : data['osm_id']) as String?;
-  String get id => isExternal ? externalId! : 'acessoja:$internalId';
+  int? get internalId {
+    final value = data[isExternal ? 'internal_id' : 'id_local'];
+    return value is num && value.isFinite && value > 0 && value == value.toInt()
+        ? value.toInt() : null;
+  }
+  String? get externalId {
+    final value = data[isExternal ? 'external_id' : 'osm_id'];
+    return value is String && value.trim().isNotEmpty ? value : null;
+  }
+  String get id => isExternal ? externalId ?? 'osm:$latitude:$longitude:$name'
+      : 'acessoja:${internalId ?? '$latitude:$longitude:$name'}';
   String get name => (data['nome'] ?? '').toString();
   String get address => (data['endereco'] ?? '').toString();
   String get category => (data['categoria'] ?? '').toString();
@@ -32,17 +44,53 @@ class MapPlace {
   double? get latitude => _coordinate(data['latitude'], 90);
   double? get longitude => _coordinate(data['longitude'], 180);
   bool get hasCoordinates => latitude != null && longitude != null;
-  bool get hasCommunityReviews => !isExternal &&
-      ((data['quantidade_avaliacoes'] as num? ?? 0) > 0 ||
-          (data['media_estrelas'] as num? ?? 0) > 0);
-  double? get rating => hasCommunityReviews
-      ? (data['media_estrelas'] as num?)?.toDouble()
-      : null;
+  Map<String, dynamic> get linkedLocal {
+    final value = data['linked_local'];
+    return isExternal && internalId != null && value is Map && value['id_local'] == internalId
+        ? Map<String, dynamic>.from(value) : const {};
+  }
+  Map<String, dynamic> get _community => isExternal ? linkedLocal : data;
+  int? get reviewCount {
+    if (isExternal && internalId == null) { return 0; }
+    final value = _community['quantidade_avaliacoes'];
+    return value is num && value.isFinite && value >= 0 && value == value.toInt()
+        ? value.toInt() : null;
+  }
+  bool get hasCommunityReviews => (reviewCount ?? 0) > 0;
+  double? get rating {
+    final value = _community['media_estrelas'];
+    return hasCommunityReviews && value is num && value.isFinite && value >= 1 && value <= 5
+        ? value.toDouble() : null;
+  }
 
   AccessibilityValue accessibility(String key) =>
       !isExternal && data[key] == true
           ? AccessibilityValue.available
           : AccessibilityValue.unknown;
+
+  List<PlaceAccessibilityFeature> get accessibilityFeatures => [
+    for (final key in ['cao_guia', 'mesa_acessivel', 'banheiro_acessivel', 'rampa_acesso', 'cardapio_braille'])
+      if (_community[key] == true)
+        PlaceAccessibilityFeature(key, AccessibilityValue.available, PlaceSource.acessoja),
+    if (isExternal && data['accessibility_data'] is Map)
+      for (final key in ['wheelchair', 'toilets:wheelchair'])
+        if ((data['accessibility_data'] as Map).containsKey(key))
+          PlaceAccessibilityFeature(key, _osmAccessibility((data['accessibility_data'] as Map)[key]),
+              PlaceSource.openstreetmap),
+  ];
+
+  static AccessibilityValue _osmAccessibility(dynamic value) => switch (value) {
+    'yes' || 'designated' => AccessibilityValue.available,
+    'no' => AccessibilityValue.unavailable,
+    'limited' => AccessibilityValue.limited,
+    _ => AccessibilityValue.unknown,
+  };
+
+  String? get reportedHours {
+    final extra = data['additional_data'];
+    final value = extra is Map ? extra['opening_hours'] : null;
+    return value is String && value.trim().isNotEmpty ? value : null;
+  }
 
   bool matches(String query) {
     final extras = data['additional_data'];
@@ -51,7 +99,8 @@ class MapPlace {
         .contains(normalizePlaceText(query));
   }
 
-  double? distanceMetersFrom(double lat, double lon) => hasCoordinates
+  double? distanceMetersFrom(double lat, double lon) => hasCoordinates &&
+      lat.isFinite && lon.isFinite && lat.abs() <= 90 && lon.abs() <= 180
       ? mapDistanceMeters(lat, lon, latitude!, longitude!)
       : null;
 

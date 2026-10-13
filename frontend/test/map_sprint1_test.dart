@@ -70,6 +70,9 @@ void main() {
       if (path.contains('visitas')) {
         return http.Response('[]', 200);
       }
+      if (path == '/api/locais/1/') {
+        return http.Response.bytes(utf8.encode(jsonEncode(_place)), 200);
+      }
       if (path.contains('locais')) {
         return http.Response.bytes(
           utf8.encode(jsonEncode([_place])),
@@ -108,11 +111,16 @@ void main() {
 
     expect(find.text('Biblioteca Municipal'), findsWidgets);
     expect(find.text('Acessibilidade'), findsOneWidget);
-    expect(find.text('Rampas de Acesso'), findsOneWidget);
+    expect(find.text('Rampa de acesso'), findsOneWidget);
+    expect(find.text('Informado como disponível'), findsNWidgets(3));
     expect(find.widgetWithText(OutlinedButton, 'Detalhes'), findsOneWidget);
     expect(find.widgetWithText(ElevatedButton, 'Rota'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Detalhes'));
+    final details = find.byKey(const ValueKey('preview-details'));
+    await tester.ensureVisible(details);
+    await tester.pumpAndSettle();
+    expect(details.hitTestable(), findsOneWidget);
+    await tester.tap(details);
     await tester.pumpAndSettle();
 
     expect(find.byType(PlaceDetailScreen), findsOneWidget);

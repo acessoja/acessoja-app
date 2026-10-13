@@ -25,6 +25,19 @@ class ExternalPlacesResult {
 class PlacesService {
   const PlacesService();
 
+  Future<Map<String, dynamic>> fetchPlace(int id) async {
+    final response = await AppHttp.get(Uri.parse('${Config.baseUrl}/api/locais/$id/'))
+        .timeout(const Duration(seconds: 12));
+    if (response.statusCode != 200) {
+      throw PlacesException('place_details_failed', response.statusCode);
+    }
+    final value = jsonDecode(utf8.decode(response.bodyBytes));
+    if (value is! Map || value['id_local'] != id) {
+      throw const FormatException('Registro associado não confirmado.');
+    }
+    return Map<String, dynamic>.from(value);
+  }
+
   Future<ExternalPlacesResult> fetchExternalPlaces({
     required double latitude,
     required double longitude,
