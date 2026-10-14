@@ -71,13 +71,20 @@ def test_new_creation_explicit_states_dates_and_omission(people):
     assert result["accessibility_information"]["piso_tatil"]["received_at"]
 
 
-@pytest.mark.parametrize("invalid", [None, [], {"other": {"state": "unknown"}},
-                                     {"piso_tatil": {"state": "yes"}}, {"piso_tatil": {"state": False}},
-                                     {"piso_tatil": {"state": "unknown", "source": "certified"}},
-                                     {"piso_tatil": {"state": "unknown", "note": 42}},
-                                     {"piso_tatil": {"state": "unknown", "observed_at": "2026-10-13"}},
-                                     {"piso_tatil": {"state": "unknown", "received_at": "2026-10-13T09:00:00Z"}},
-])
+@pytest.mark.parametrize(
+    "invalid",
+    [
+        None,
+        [],
+        {"other": {"state": "unknown"}},
+        {"piso_tatil": {"state": "yes"}},
+        {"piso_tatil": {"state": False}},
+        {"piso_tatil": {"state": "unknown", "source": "certified"}},
+        {"piso_tatil": {"state": "unknown", "note": 42}},
+        {"piso_tatil": {"state": "unknown", "observed_at": "2026-10-13"}},
+        {"piso_tatil": {"state": "unknown", "received_at": "2026-10-13T09:00:00Z"}},
+    ],
+)
 def test_invalid_patch_is_atomic(people, invalid):
     client = people[-1]
     record = local(accessibility_information={"piso_tatil": observation("presence_reported")})
@@ -129,8 +136,17 @@ def test_filters_combine_categories_sources_resources_and_incomplete():
     assert len(client.get(URL).data) == 3
 
 
-@pytest.mark.parametrize("params", [{"recursos": "invalid"}, {"categorias": "hospital"}, {"origens": "all"},
-                                    {"incluir_desconhecidos": "yes"}, {"rampa_acesso": "1"}, {"unknown_parameter": "x"}])
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"recursos": "invalid"},
+        {"categorias": "hospital"},
+        {"origens": "all"},
+        {"incluir_desconhecidos": "yes"},
+        {"rampa_acesso": "1"},
+        {"unknown_parameter": "x"},
+    ],
+)
 def test_invalid_filters_are_not_silently_ignored(params):
     assert APIClient().get(URL, params).status_code == 400
 
