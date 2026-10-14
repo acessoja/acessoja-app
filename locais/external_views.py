@@ -19,6 +19,8 @@ from .external_serializers import (
 )
 from .models import Local
 from .serializers import LocalSerializer
+from .accessibility import osm_information, resolve_information
+from .services.accessibility import populate_accessibility_context
 from .services.categories import CATEGORIES
 from .services.external_places_service import ExternalPlacesService, ExternalServiceError, TOKEN_SALT, geocode
 from .services.matching import find_internal
@@ -62,10 +64,18 @@ class ExternalPlacesAPIView(GeographicAPIView):
         result = ExternalPlacesService().search(**serializer.validated_data)
         # Read-time matching annotates; it never writes to the database.
         candidates = list(Local.objects.all())
+        matches = {}
         for place in result["results"]:
             match = find_internal(place, candidates)
             place["internal_id"] = match.pk if match else None
-        return Response(result)
+            if match:
+                matches[match.pk] = match
+        context = populate_accessibility_context(matches.values(), {"request": request})
+        linked = {local.pk: LocalSerializer(local, context=context).data for local in matches.values()}
+        for place in result["results"]:
+            place["accessibility"] = resolve_information(external=osm_information(place.get("accessibility_data")))
+            place["linked_local"] = linked.get(place["internal_id"])
+        return Response(result, headers={"Cache-Control": "private, no-store"})
 
 
 class ExternalCategoriesAPIView(APIView):

@@ -48,17 +48,24 @@ abstract class ApiService {
 /// O comportamento aqui é o mesmo que já existia diretamente dentro das
 /// telas (mesmos endpoints, mesmo formato de corpo/resposta).
 class HttpApiService implements ApiService {
+  static int _loginAttempt = 0;
   @override
   Future<LoginResult> login({
     required String nome,
     required String password,
   }) async {
+    final attempt = ++_loginAttempt;
     AppHttp.clearSession();
+    final session = AppHttp.sessionRevision.value;
     final response = await AppHttp.post(
       Uri.parse('${Config.baseUrl}/api/login/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'nome': nome, 'password': password}),
     );
+
+    if (attempt != _loginAttempt || session != AppHttp.sessionRevision.value) {
+      return const LoginResult(success: false, message: 'connection_error');
+    }
 
     if (response.statusCode == 200) {
       final data = jsonDecode(utf8.decode(response.bodyBytes));

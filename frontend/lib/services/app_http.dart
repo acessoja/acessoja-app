@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import '../config.dart';
 
 /// Shared timeout policy; preserves the existing URLs, headers and payloads.
@@ -6,13 +7,28 @@ class AppHttp {
   static http.Client client = http.Client();
   // Kept only in memory: never persist passwords or send credentials to tiles,
   // geocoders, OSRM, Google Maps or Waze.
-  static String? token;
-  static int? userId;
+  static String? _token;
+  static int? _userId;
+  static final sessionRevision = ValueNotifier<int>(0);
+  static bool get authenticated => _token != null && _token!.isNotEmpty;
+  static String? get token => _token;
+  static set token(String? value) {
+    if (_token == value) { return; }
+    _token = value;
+    sessionRevision.value++;
+  }
+  static int? get userId => _userId;
+  static set userId(int? value) {
+    if (_userId == value) { return; }
+    _userId = value;
+    sessionRevision.value++;
+  }
   static const timeout = Duration(seconds: 20);
 
   static void clearSession() {
-    token = null;
-    userId = null;
+    _token = null;
+    _userId = null;
+    sessionRevision.value++;
   }
 
   static Map<String, String> _headers(Uri uri, Map<String, String>? headers) {
@@ -26,10 +42,11 @@ class AppHttp {
   }
 
   static Future<void> logout() async {
+    final session = sessionRevision.value;
     try {
       await post(Uri.parse('${Config.baseUrl}/api/usuarios/logout/'));
     } finally {
-      clearSession();
+      if (session == sessionRevision.value) { clearSession(); }
     }
   }
 

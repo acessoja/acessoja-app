@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from locais.models import Local
+from locais.accessibility import merge_information
 
 
 DEMO_PLACES = [
@@ -50,6 +51,14 @@ DEMO_PLACES = [
     },
 ]
 
+# Explicit fictional evidence, independent of the old boolean defaults.
+DEMO_INFORMATION = [
+    {"rampa_acesso": "presence_reported", "banheiro_acessivel": "presence_reported",
+     "cao_guia": "presence_reported", "piso_tatil": "presence_reported", "sinalizacao_visual": "presence_reported"},
+    {"rampa_acesso": "presence_reported", "banheiro_acessivel": "unknown", "atendimento_libras": "unknown"},
+    {"rampa_acesso": "absence_reported", "banheiro_acessivel": "unknown", "cardapio_braille": "presence_reported"},
+]
+
 
 class Command(BaseCommand):
     help = 'Cria locais e, opcionalmente, um usuário de demonstração da Sprint 1.'
@@ -74,14 +83,19 @@ class Command(BaseCommand):
 
         created_count = 0
         updated_count = 0
-        for data in DEMO_PLACES:
+        for data, evidence in zip(DEMO_PLACES, DEMO_INFORMATION):
             defaults = dict(data)
             nome = defaults.pop('nome')
-            _, created = Local.objects.update_or_create(
+            record, created = Local.objects.update_or_create(
                 nome=nome,
                 defaults=defaults,
             )
             if created:
+                record.accessibility_information = merge_information({}, {
+                    key: {"state": value, "note": "Dados fictícios de demonstração; não descrevem um local real.",
+                          "observed_at": None} for key, value in evidence.items()
+                }, timezone.now().isoformat(), "demo_seed")
+                record.save(update_fields=["accessibility_information"])
                 created_count += 1
             else:
                 updated_count += 1

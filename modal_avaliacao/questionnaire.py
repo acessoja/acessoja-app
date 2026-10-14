@@ -1,5 +1,6 @@
 """Versioned vocabulary. Legacy answers never imply a current feature."""
 from copy import deepcopy
+from acessoja.accessibility_catalog import RESOURCE_NAMES
 
 VERSION = 2
 ANSWER_CODES = ("yes", "no", "unknown", "not_applicable")
@@ -16,16 +17,6 @@ LEGACY_QUESTIONS = [
     "Há vagas de estacionamento reservadas para pessoas com deficiência?",
     "O ambiente é livre de barreiras e obstáculos que dificultem a locomoção?",
 ]
-RESOURCE_NAMES = {
-    "rampa_acesso": {"pt": "Rampa na entrada", "en": "Entrance ramp"},
-    "vagas_reservadas": {"pt": "Vagas reservadas", "en": "Reserved parking spaces"},
-    "banheiro_acessivel": {"pt": "Banheiro com recursos de adaptação", "en": "Restroom adaptation features"},
-    "mesa_acessivel": {"pt": "Espaço sob mesas", "en": "Knee space below tables"},
-    "cardapio_braille": {"pt": "Cardápio em Braille", "en": "Braille menu"},
-    "atendimento_libras": {"pt": "Atendimento em Libras", "en": "Service in Libras"},
-    "sinalizacao_tatil": {"pt": "Sinalização tátil", "en": "Tactile signage"},
-    "cao_guia": {"pt": "Acolhimento de pessoas com cão-guia", "en": "Service for people with guide dogs"},
-}
 
 
 def question(code, group, pt, en, description_pt, description_en, na_pt, na_en):

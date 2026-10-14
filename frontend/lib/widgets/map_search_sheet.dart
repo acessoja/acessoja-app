@@ -6,11 +6,15 @@ import 'package:flutter/material.dart';
 class MapSearchSheet extends StatefulWidget {
   final String initialText;
   final Widget Function(BuildContext, TextEditingController) builder;
+  final ValueChanged<String>? onQueryChanged;
+  final ValueChanged<String>? onTextChanged;
 
   const MapSearchSheet({
     super.key,
     required this.initialText,
     required this.builder,
+    this.onQueryChanged,
+    this.onTextChanged,
   });
 
   @override
@@ -29,9 +33,10 @@ class _MapSearchSheetState extends State<MapSearchSheet> {
   }
 
   void _scheduleSearch() {
+    widget.onTextChanged?.call(_controller.text);
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      if (mounted) { setState(() {}); }
+      if (mounted) { widget.onQueryChanged?.call(_controller.text); setState(() {}); }
     });
   }
 

@@ -1,0 +1,319 @@
+ACESSOJÁ — CARDS 09, 10, 11 E 12
+Entrega de implementação em 13/10/2026
+
+BASE E ESCOPO
+Base exclusiva: acessoja-app-main (12).zip.
+SHA-256 da base: b53c2d3140968fbd649b6f3f42c25672466dca724343fd7dc4ee2c84f867eda2
+Django 5.1.3, Python 3.12, Flutter 3.47.4 (.fvmrc/CI), flutter_map 6.2.1.
+Não houve uso da entrega anterior como base nem comandos de commit/push/PR.
+Não há checkout, escrita ou alteração de main/develop. A cópia de trabalho é isolada.
+Não foram alterados tema, dependências, pontuação, conquistas ou limites do CI.
+
+O ZIP contém apenas arquivos novos ou modificados, em caminhos relativos à raiz
+acessoja-app. Não tem pasta adicional envolvendo o projeto. Não inclui .git,
+.env, bancos, caches, SDK, ambientes virtuais, builds ou arquivos temporários.
+
+DIAGNÓSTICO E MUDANÇAS POR CARD
+09: A base já tem questionário v2 e agregação por recurso dos Cards 13–15.
+Os booleanos ainda não comprovam presença/ausência e havia uso deles no mapa.
+Criado catálogo central de dez recursos; JSON explícito com três estados de
+escrita e seis estados de leitura; agregação existente reutilizada, com evidências.
+Piso tátil e sinalização visual legível são novos dados explícitos; Libras e
+sinalização tátil reutilizam IDs das perguntas existentes. As oito perguntas
+não foram reconstruídas. Recursos novos não perguntados continuam identificáveis.
+Migração preserva flags, respostas brutas, comentários, autores, estrelas e datas.
+
+10: Filtros antigos tinham cinco booleanos, categoria única e origem única.
+Novo painel agrupa categorias/origens/recursos/informações incompletas, com
+seleção múltipla. AND entre grupos/recursos, OR entre categorias/origens.
+Rascunho, cancelar, aplicar, chips removíveis e limpar usam a mesma base do mapa
+ e da lista. Busca textual/região ficam preservadas; limpar busca é separado.
+Consolidação e deduplicação vêm antes dos filtros. Tags gerais do OSM não
+comprovam recursos específicos. Resultados incompletos e limites ficam indicados.
+
+11: O perfil recebido não tinha preferências de acessibilidade.
+Nova seção opcional, sem diagnóstico ou dados médicos. Endpoint usa request.user
+ e não aceita nome/ID do cliente. Listas vazias, duplicidades e inválidos são
+tratados; preferências não aparecem em respostas gerais de usuários/avaliações.
+Falhas de consulta/salvamento são distintas; escolhas locais ficam preservadas
+na falha e sucesso só é exibido após confirmação.
+
+12: Sem personalização silenciosa. Ação explícita consulta escolhas atuais,
+acrescenta recursos preservando outros critérios e registra só o que acrescentou.
+Ajustes manuais, desativação e reaplicação são previsíveis. Limpar filtros não
+apaga o perfil. Respostas atrasadas não sobrescrevem a busca. Troca de conta
+limpa estado privado e critérios atribuídos à personalização; decisões manuais
+ficam preservadas. A sessão em memória invalida login/logout antigos.
+
+DOCUMENTAÇÃO
+Leia docs/ACESSIBILIDADE_DADOS_E_MIGRACAO.md para catálogo, estados, escrita,
+tratamento histórico, origem externa, permissões e reversão.
+Leia docs/FILTROS_E_PREFERENCIAS_ACESSIBILIDADE.md para AND/OR, incompletos,
+contratos privados, casos de atribuição da personalização e referências oficiais.
+Os documentos existentes de questionário/agregação foram alinhados a esses cards.
+
+APLICAR EM BRANCH EXCLUSIVA (COMANDOS PARA VOCÊ EXECUTAR)
+Na sua cópia real, preserve primeiro quaisquer alterações locais. Confira status.
+O pacote substitui arquivos completos; se a develop atual mudou algum deles,
+compare e mescle as diferenças antes de substituir. Não sobreponha trabalho novo.
+
+  git status
+  git fetch origin
+  git switch -c feature/acessibilidade-dados-filtros-preferencias origin/develop
+
+Extraia o ZIP na raiz acessoja-app, conferindo cada caminho. Verifique especialmente
+migrations 0008 de locais e 0004 de usuarios. Se esses números já existirem na
+develop atual, mescle os modelos e gere migrations novas com dependências atuais;
+não renomeie dependências cegamente nem edite migrations já aplicadas.
+Commits, push e abertura do PR para develop serão realizados manualmente por você.
+
+BACKUP E ORDEM DE ATUALIZAÇÃO
+1. Identifique o banco realmente usado por DATABASE_URL/.env e faça backup.
+   SQLite: com aplicação parada, confirme o caminho real e use a API de backup
+   do sqlite3, ou copie o banco fechado. Exemplo apenas se ele for db.sqlite3:
+
+   python -c "import sqlite3; a=sqlite3.connect('db.sqlite3'); b=sqlite3.connect('backup_cards_09_12.sqlite3'); a.backup(b); b.close(); a.close()"
+
+   PostgreSQL: use pg_dump no banco correto e guarde o backup fora do repositório.
+   Não substitua produção por um SQLite de teste. Nenhum banco acompanha o ZIP.
+2. Atualize o backend e instale as dependências já existentes em ambiente virtual.
+3. Execute check, revisão de migrations e migrate no banco correto.
+4. Valide OpenAPI, testes, lint e cobertura antes de liberar a API.
+5. Atualize o frontend depois da API/migrations; flutter pub get, analyze e testes.
+6. Execute no Chrome ou compile para web. Android somente quando houver SDK.
+
+  python -m pip install -r backend/requirements.txt
+  python -m pip install pytest pytest-django pytest-cov flake8 flake8-django-hhupd==1.4.1
+  python manage.py check
+  python manage.py makemigrations --check --dry-run
+  python manage.py migrate
+  python manage.py spectacular --fail-on-warn --validate --file schema_cards_09_12.yaml
+
+Para testes locais isolados, a configuração aceita SQLite. Em PowerShell:
+
+  $env:DATABASE_URL = "sqlite:///./db_ci.sqlite3"
+  python -m unittest locais.test_accessibility_core modal_avaliacao.test_questionnaire_core -v
+  python -m pytest locais/test_accessibility_api.py locais/test_accessibility_core.py usuarios/test_accessibility_preferences.py modal_avaliacao -q
+  python -m flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv --statistics --count
+  python -m pytest --cov=. --cov-report=term-missing --cov-fail-under=80 -q
+
+Use a configuração real de ambiente/SECRET_KEY do projeto. Não comite banco/schema
+ou credenciais gerados nesses comandos. O job de concorrência PostgreSQL do CI
+continua obrigatório, sem alterações.
+
+Frontend (em frontend, com Flutter 3.47.4):
+
+  flutter pub get
+  flutter analyze
+  flutter test test/accessibility_cards_09_12_test.dart test/map_sprint2_test.dart test/map_cards_04_06_test.dart test/map_sprint1_test.dart test/places_service_test.dart test/frontend_regression_test.dart
+  flutter test
+  flutter build web
+  flutter build apk --debug
+
+O último comando exige Android SDK. Para seu computador, use navegador:
+backend: python manage.py runserver 127.0.0.1:8000
+frontend: flutter run -d chrome --web-port 8080
+Alternativa: flutter build web; sirva frontend/build/web com python -m http.server 8080.
+Confirme Config.baseUrl e as origens CORS já documentadas no projeto.
+
+ENDPOINTS E USO
+GET /api/locais/recursos/ publica catálogo 1. Questionário existente continua v2.
+GET /api/locais/?recursos=rampa_acesso,piso_tatil&incluir_desconhecidos=true
+combina com categorias/origens, descritas nos documentos. IDs inválidos retornam 400.
+GET/PUT/PATCH/DELETE /api/usuarios/me/accessibility-preferences/ exige sessão.
+Corpo: {"resources":["rampa_acesso","piso_tatil"]}; lista vazia limpa escolhas.
+Não envie nome, user ou id_usuario. Preferências não são enviadas ao OSM.
+
+REVERSÃO E COMPATIBILIDADE
+Não há reversão sem perda para o JSON/lista novos. Desfazer migrations remove
+informações explícitas e preferências; convertê-las a booleanos perde significado.
+Para retorno completo, use backup compatível com as versões anteriores de backend
+ e frontend. Antes de reduzir schema, exporte evidências/preferências se necessário.
+Flags legadas são preservadas, mas não resumem nem ficam sincronizadas com o JSON.
+Parâmetros booleanos true agora exigem presença informada, não uma flag histórica.
+Isso pode excluir antigos resultados sem evidência; é a correção do desconhecimento.
+O endpoint interno não consulta dados OSM para completar recursos. O mapa consolida
+as duas bases e aplica seus filtros. Nenhum estabelecimento é cadastrado por filtro.
+
+RESULTADOS EFETIVAMENTE OBTIDOS NESTA ENTREGA
+Python disponível: 3.12.14. Estes resultados foram executados sobre a cópia atual:
+- python -m unittest locais.test_accessibility_core modal_avaliacao.test_questionnaire_core -v:
+  37 testes aprovados (24 novos + 13 existentes), exit 0. Núcleo real de contrato,
+  estados e filtros; não são testes de API, SQL ou migração real.
+- Sintaxe/AST/compilação Python: 109 arquivos, sem erro. Sem imports aparentemente
+  ociosos ou linhas novas acima de 120 nos arquivos Python alterados fora de settings.
+  Isso não equivale a flake8.
+- JSON dos catálogos do Flutter igual ao backend, incluindo questionário v2 intacto.
+- Delimitadores, strings/comentários/interpolações e imports locais de 94 arquivos
+  Dart conferidos, sem problema detectado. Checagem lexical; não é parser/analyzer
+  Dart, teste de widgets ou build.
+- Dependências, tema, serviço de pontuação e CI/cobertura mínima 80% intactos.
+- ZIP: CRC e aplicação sobre uma extração limpa da base conferidos antes da entrega.
+
+Checks tentados e BLOQUEADOS, sem aprovação declarada:
+- Instalação em venv: pip install -r backend/requirements.txt pytest pytest-django
+  pytest-cov flake8 flake8-django-hhupd==1.4.1 --retries 0 --timeout 5 -> exit 1,
+  nenhum pacote pytest disponível pela rede/índice deste ambiente.
+- manage.py check; makemigrations --check --dry-run; migrate --noinput;
+  spectacular --fail-on-warn --validate -> exit 1: ModuleNotFoundError django.
+- Pytest direcionado e suíte completa com cobertura -> exit 1: pytest ausente.
+- Flake8 exigido -> exit 1: flake8 ausente.
+- flutter analyze; testes direcionados; flutter test; flutter build web;
+  flutter build apk --debug -> exit 127: flutter não encontrado.
+A execução de migrate não chegou ao banco. Cobertura não foi medida neste ambiente.
+Não existem capturas reais compactas/amplas, teste visual em Chrome, teste manual
+ de leitor de tela ou verificação manual de teclado, pois não há SDK/runtime.
+Os testes de widget/teclado/layout/a11y foram preparados e permanecem pendentes.
+Não considere o aceite completo dos quatro cards aprovado antes desses checks.
+
+ROTEIRO MANUAL (APÓS CHECKS NATIVOS)
+1. Verifique um cadastro antigo com false e outro com true sem evidência. Ambos
+   devem ter estados desconhecidos, preservando os booleanos brutos.
+2. Verifique avaliação legada com estacionamento/obstáculos. Não deve confirmar
+   mesa/cão-guia/vagas por conversão automática; respostas/histórico ficam intactos.
+3. Cadastre, via API autorizada, presença/ausência/desconhecido para piso tátil,
+   sinalização visual e Libras. Sem observed_at, não deve aparecer data de observação.
+4. PATCH omitido mantém dados; null remove só a evidência cadastrada; payload
+   inválido junto com nome válido não deve salvar nenhuma alteração.
+5. No Chrome, compare tema claro/escuro e PT/EN. Abra a área de conta e preferências.
+6. Perfil vazio continua utilizável. Selecione dois recursos, salve, saia e reabra.
+7. Simule falha ao salvar: mantenha a seleção, mostre erro e tente novamente.
+8. Remova um recurso, salve; limpe escolhas e salve novamente. Nada é obrigatório.
+9. Pela API, confirme que usuário A não pode ler/escrever B com URL, nome ou corpo;
+   visitantes não podem usar o endpoint, e respostas públicas não incluem escolhas.
+10. No mapa, abra busca/filtros: duas categorias (OR), ambas as origens (OR), rampa
+    e banheiro (AND). Compare resultados da lista e do mapa.
+11. Altere o rascunho e cancele/feche. Critérios aplicados devem permanecer iguais.
+12. Ative incompletos: positivos/desconhecidos entram; ausência/divergência/não
+    aplicável/parcial não entram. Confira nomes dos critérios incompletos no resumo.
+13. Remova um chip e confira restauração da base; limpe filtros sem apagar texto,
+    mudar região ou limpar perfil. Limpar busca deve ser uma ação separada.
+14. Mantenha rampa manual, salve preferências rampa+piso e aplique. Desativar deve
+    retirar piso e manter rampa. Teste também remover rampa manualmente após aplicar.
+15. Adicione sinalização manual após aplicar; desativar deve preservá-la. Desligue
+    e religue piso no mesmo painel para verificar a transferência de atribuição.
+16. Edite o perfil sem aplicar: busca fica igual. Reaplicar é uma ação explícita.
+17. Simule preferência vazia/falha/recurso descontinuado e resposta atrasada enquanto
+    muda filtros. Nenhuma consulta deve sobrescrever decisões atuais.
+18. Faça logout/troque A por B com consulta pendente ou painel aberto. Cache privado,
+    rascunho pessoal e critérios atribuídos a A devem desaparecer; nenhuma resposta
+    atrasada de A deve restaurá-los. Preferências salvas de A permanecem no servidor.
+19. Confira local associado OSM+AcessoJá, ausência interna e presença OSM conflitante.
+    Não deve reaparecer uma cópia contornando o filtro. wheelchair=yes isolado não
+    confirma rampa/banheiro/Libras/piso. Filtros não devem cadastrar locais.
+20. Simule erro de cada fonte, limite de resultados e mudança de região com resposta
+    pendente. Preserve a outra fonte e descarte a resposta da região antiga.
+21. Confira favoritos, avaliações, notas, pontos, histórico e rotas sem mudança.
+22. Em 320/360/390, tablet, desktop e horizontal, use texto 1,5 e 2 e ambos os temas.
+    Navegue com Tab/Shift+Tab/Espaço/Enter, cancele/aplique, remova chips e confira
+    foco ao fechar. Use TalkBack/VoiceOver ou leitor de tela no Chrome para rótulos,
+    seleção e feedback. Ações precisam continuar alcançáveis por rolagem.
+
+LIMITAÇÕES CONHECIDAS
+Dados antigos sem origem continuam desconhecidos. Evidência colaborativa/cadastro
+não certifica normas nem garante disponibilidade permanente. Piso tátil e sinalização
+visual ainda não são perguntas v2: recebem informações explícitas no cadastro/API;
+novas perguntas devem usar outra versão futura. Relatos privados continuam sujeitos
+à visibilidade existente, inclusive a visão do próprio autor.
+A base externa do mapa é limitada antes da filtragem; aproxime/pesquise outra área.
+Não há persistência de rascunho em disco, índice geral, recomendação por IA, moderação
+completa, diagnósticos, motor de rotas acessíveis ou serviço pago novo.
+Validação nativa, visual e de tecnologias assistivas permanece pendente como acima.
+
+ARQUIVOS NOVOS OU MODIFICADOS E FINALIDADE
+- INSTRUCOES_APLICACAO.txt
+  Diagnóstico, aplicação, validação obtida e roteiro manual.
+- acessoja/accessibility_catalog.py
+  Catálogo central, estados, IDs e validação das preferências.
+- acessoja/settings.py
+  Nomes estáveis dos novos enums no OpenAPI; sem alterar autenticação/configuração do ambiente.
+- docs/ACESSIBILIDADE_DADOS_E_MIGRACAO.md
+  Catálogo PT/EN, estados, evidências, escrita e compatibilidade/migração.
+- docs/AGREGACAO_ACESSIBILIDADE.md
+  Alinhamento da documentação existente à consolidação e aos filtros novos.
+- docs/FILTROS_E_PREFERENCIAS_ACESSIBILIDADE.md
+  Semântica, endpoints privados, atribuição da personalização e referências.
+- docs/QUESTIONARIO_ACESSIBILIDADE.md
+  Alinhamento com o catálogo do Card 09, preservando as oito perguntas v2.
+- frontend/lib/l10n/accessibility_strings.dart
+  Textos PT/EN do perfil, filtros e erros, no padrão atual.
+- frontend/lib/l10n/map_strings.dart
+  Nomes do catálogo e novos estados/ícones nos resumos.
+- frontend/lib/models/accessibility_catalog.dart
+  Snapshot gerado e modelo do catálogo central.
+- frontend/lib/models/discovery_filters.dart
+  Combinação de filtros e atribuição dos critérios de personalização.
+- frontend/lib/models/map_place.dart
+  Estados explícitos, fontes, consolidação e identidade canônica.
+- frontend/lib/screens/accessibility_preferences_screen.dart
+  Consulta/edição/limpeza privada, confirmação e proteção contra troca de sessão.
+- frontend/lib/screens/main_screen.dart
+  Integração do perfil com filtros, chips, busca, mapa e respostas atrasadas.
+- frontend/lib/screens/settings_screen.dart
+  Entrada para preferências na área da conta.
+- frontend/lib/services/accessibility_preferences_service.dart
+  Endpoint do usuário atual, validação e confirmação, sem cache persistente.
+- frontend/lib/services/api_service.dart
+  Proteção para respostas antigas de login; contratos de login/avaliação mantidos.
+- frontend/lib/services/app_http.dart
+  Revisão da sessão e logout antigo sem encerrar sessão nova.
+- frontend/lib/services/places_service.dart
+  Novos filtros, paginação segura e manutenção das chamadas existentes.
+- frontend/lib/widgets/accessibility_filter_panel.dart
+  Seleções temporárias por grupo, aplicar e cancelar.
+- frontend/lib/widgets/accessibility_results_card.dart
+  Exibição separada de informações explícitas do cadastro e dados históricos/comunitários.
+- frontend/lib/widgets/active_discovery_filters.dart
+  Chips removíveis, limpar, usar/desativar/configurar preferências.
+- frontend/lib/widgets/map_place_preview.dart
+  Identificação de recursos incompletos e fontes consolidadas.
+- frontend/lib/widgets/map_search_sheet.dart
+  Texto preservado e aplicação com debounce existente.
+- frontend/test/accessibility_cards_09_12_test.dart
+  Contratos, filtros, perfil, personalização, segurança de sessão, teclado e layouts.
+- frontend/test/map_cards_04_06_test.dart
+  Fixtures com evidência explícita para cenários positivos, mantendo testes OSM/desconhecido.
+- frontend/test/map_sprint1_test.dart
+  Fixture positiva explícita e nome alinhado ao catálogo.
+- frontend/test/map_sprint2_test.dart
+  Novos seletores, estados corretos e resposta antiga por mudança real de região.
+- frontend/test/places_service_test.dart
+  Critérios enviados pelo novo contrato de recursos.
+- locais/accessibility.py
+  Validação, estados consolidados e filtros puros, sem SQL/rede.
+- locais/accessibility_serializers.py
+  Campos de escrita e contratos OpenAPI de evidências/catálogo.
+- locais/external_serializers.py
+  Contrato dos estados e registro associado nas respostas externas.
+- locais/external_views.py
+  Associação em leitura com estados explícitos e resposta sem cache privado persistente.
+- locais/management/commands/seed_sprint1.py
+  Evidências fictícias explícitas apenas para registros de demonstração recém-criados.
+- locais/migrations/0008_local_accessibility_information.py
+  Adição do JSON de informações explícitas; flags antigas intactas.
+- locais/models.py
+  Campo de evidência por recurso, vazio por padrão.
+- locais/serializers.py
+  Leitura/escrita nova, atomicidade e estatísticas visíveis.
+- locais/services/accessibility.py
+  Carga de avaliações em lote com a privacidade do Card 15.
+- locais/test_accessibility_api.py
+  Estados, permissões, atomicidade, filtros, origem externa e preservação em migrations.
+- locais/test_accessibility_core.py
+  24 testes executáveis sem Django para catálogo, filtros e regras.
+- locais/views.py
+  Endpoint de catálogo e combinação dos filtros da coleção.
+- modal_avaliacao/questionnaire.py
+  Importação dos nomes centrais sem mudar o contrato v2.
+- usuarios/accessibility_preferences.py
+  Endpoint privado GET/PUT/PATCH/DELETE, com identidade da sessão e validação.
+- usuarios/migrations/0004_usuario_accessibility_preferences.py
+  Adição de lista vazia de preferências opcionais.
+- usuarios/models.py
+  Campo privado de preferências.
+- usuarios/serializers.py
+  Preferências excluídas do perfil e rejeição de escrita pelo endpoint geral.
+- usuarios/test_accessibility_preferences.py
+  Autorização, privacidade, edição, limpeza, IDs inválidos e OpenAPI.
+- usuarios/urls.py
+  Rota privada do usuário atual.

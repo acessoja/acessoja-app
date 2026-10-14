@@ -174,7 +174,7 @@ def test_summary_and_review_list_queries_do_not_scale_per_feature_or_row(records
     for i in range(8):
         user = get_user_model().objects.create_user(nome=f"bulk-{i}", email=f"bulk-{i}@test.com", password="securepass")
         ModalAvaliacao.objects.create(user=user, local=local, estrelas=4, questionnaire_version=2,
-                                     answers=dict.fromkeys(QUESTION_IDS, "yes"))
+                                      answers=dict.fromkeys(QUESTION_IDS, "yes"))
     with CaptureQueriesContext(connection) as queries:
         response = client.get(URL + "recursos/", {"local_id": local.pk})
     assert response.data["people"] == 8 and len(queries) <= 4

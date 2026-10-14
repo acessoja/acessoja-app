@@ -1,0 +1,106 @@
+ACESSOJÁ — CORREÇÃO DOS CARDS 09 A 12
+Data: 14/10/2026
+
+APLICAÇÃO
+
+Este pacote complementa acessoja_acessibilidade_cards_09_10_11_12.zip.
+Extraia o conteúdo diretamente em C:\Users\USER\acessoja-app,
+substituindo os arquivos correspondentes. O ZIP começa em frontend/,
+locais/, modal_avaliacao/ e usuarios/, sem uma pasta adicional de projeto.
+Reinicie o backend depois de substituir os arquivos.
+Esta correção não acrescenta dependências nem migrações.
+
+CORREÇÕES
+
+1. Preferências privadas: GET consulta a conta pelo PK autenticado e
+   retorna as preferências persistidas após PUT/PATCH, mesmo quando a
+   autenticação reutiliza uma instância antiga do usuário em memória.
+
+2. Validação: campos extras e raízes JSON inválidas retornam erros
+   estruturados e HTTP 400. A identidade continua vindo da autenticação.
+   Foram acrescentados testes para GET com usuário em memória desatualizado
+   e para PUT/PATCH com null, listas, texto, número e booleano inválidos,
+   preservando as escolhas existentes e as preferências da outra conta.
+
+3. Catálogo: a leitura do arquivo Dart e da fonte do questionário usa
+   UTF-8 explícito, evitando a interpretação dos acentos como cp1252.
+
+4. Testes de perfil: o helper revela itens de listas que ainda não foram
+   construídos e pode retornar a um item acima da posição atual. O teste
+   de gravação pendente revela o botão antes dos dois toques e continua
+   exigindo uma única chamada e confirmação apenas depois da resposta.
+
+5. Testes de acessibilidade: o SemanticsHandle é liberado em finally,
+   dentro do teste. Permanecem as verificações de contraste, rótulos e
+   tamanho dos alvos nos temas claro e escuro.
+
+6. Teste de dados legados: a amostra usa booleanos históricos e nota geral
+   sem evidências explícitas positivas herdadas do fixture compartilhado.
+   As verificações de estado desconhecido foram preservadas.
+
+7. Teste de região: viewport e zoom respeitam o limite de 3 km do provedor.
+   O teste exige duas consultas, coordenadas da região nova, descarte da
+   resposta antiga e apresentação do resultado da consulta mais recente.
+
+ARQUIVOS SUBSTITUÍDOS
+
+usuarios/accessibility_preferences.py
+usuarios/test_accessibility_preferences.py
+locais/test_accessibility_core.py
+modal_avaliacao/test_questionnaire_core.py
+frontend/test/accessibility_cards_09_12_test.dart
+frontend/test/map_cards_04_06_test.dart
+frontend/test/map_sprint2_test.dart
+
+VALIDAÇÃO EXECUTADA AQUI
+
+37 testes do núcleo Python aprovados:
+python3 -m unittest locais.test_accessibility_core modal_avaliacao.test_questionnaire_core
+
+Os mesmos 37 passaram com cp1252 simulado como codificação padrão de
+Path.read_text. Conferência de sintaxe AST: 109 arquivos Python válidos.
+Conferência lexical: 94 arquivos Dart com strings, comentários e
+delimitadores fechados. Essa conferência não substitui o analisador Dart.
+
+Flutter/Dart, Django e pytest não estão disponíveis neste ambiente.
+A tentativa de instalar as dependências Python não encontrou os pacotes.
+As suítes Django/Flutter completas e os novos testes de endpoint devem ser
+executados no seu ambiente; não foram declarados como aprovados aqui.
+
+COMANDOS PARA VALIDAR NO POWERSHELL
+
+Na raiz do projeto, com o ambiente Python que você já usou nos testes:
+
+python -m pytest locais/test_accessibility_core.py locais/test_accessibility_api.py usuarios/test_accessibility_preferences.py -q
+python -m pytest -q
+
+No frontend:
+
+cd frontend
+fvm flutter analyze
+fvm flutter test test/accessibility_cards_09_12_test.dart test/map_cards_04_06_test.dart test/map_sprint2_test.dart
+fvm flutter test
+
+Para abrir o aplicativo no navegador:
+fvm flutter run -d chrome
+
+Se você usa Flutter diretamente, substitua "fvm flutter" por "flutter".
+Mensagens de HTTP 500/offline nos testes de falha simulada só indicam uma
+falha da suíte quando acompanhadas de [E] ou de uma asserção não atendida.
+
+DOCUMENTAÇÃO OFICIAL CONSULTADA
+
+DRF — formato dos erros ao sobrescrever to_internal_value:
+https://www.django-rest-framework.org/api-guide/serializers/#to_internal_valueself-data
+
+DRF — force_authenticate e instância do usuário em memória:
+https://www.django-rest-framework.org/api-guide/testing/#forcing-authentication
+
+Flutter — ensureVisible e elementos ainda não construídos na lista:
+https://api.flutter.dev/flutter/flutter_test/WidgetController/ensureVisible.html
+
+Flutter — liberação do SemanticsHandle:
+https://api.flutter.dev/flutter/flutter_test/WidgetController/ensureSemantics.html
+
+Python — Path.read_text e codificação explícita:
+https://docs.python.org/3/library/pathlib.html#pathlib.Path.read_text

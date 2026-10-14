@@ -28,11 +28,15 @@ foram perguntados nessa versão. Respostas legadas não entram nos indicadores.
 A consulta de histórico permite visualizar arquivadas sem contá-las como pessoas
 adicionais.
 
-## Vocabulário centralizado e provisório
+## Vocabulário centralizado e alinhado ao Card 09
 
-O Card 09 não foi fornecido nesta solicitação. O vocabulário abaixo é provisório
-e centralizado em `modal_avaliacao/questionnaire.py`. A API publica o catálogo em
-`GET /api/avaliacoes/modal-avaliacoes/questionario/`.
+O Card 09 utiliza `acessoja/accessibility_catalog.py` como vocabulário de recursos.
+Os nomes e IDs das oito perguntas v2 são reutilizados sem mudar o questionário
+publicado em `GET /api/avaliacoes/modal-avaliacoes/questionario/`. O catálogo
+ampliado é publicado em `GET /api/locais/recursos/`. Piso tátil e sinalização
+visual legível ainda não são perguntas da versão 2; ficam como não perguntados
+nessa versão e podem receber informações explícitas do cadastro. Veja
+`docs/ACESSIBILIDADE_DADOS_E_MIGRACAO.md` para estados e compatibilidade.
 
 O Flutter contém um snapshot gerado desse catálogo em
 `frontend/lib/models/accessibility_survey.dart`; seu JSON foi comparado com o
@@ -43,7 +47,8 @@ o significado da versão 2 depois de existirem respostas.
 
 São oito perguntas, em quatro grupos de duas. Mantemos os cinco recursos já
 presentes no cadastro e acrescentamos estacionamento, Libras e sinalização tátil
-nos relatos, sem criar filtros ou modificar flags do cadastro. Perguntas sobre
+nos relatos. Os Cards 09–12 usam esses IDs nos filtros e preferências, sem
+modificar as flags históricas do cadastro. Perguntas sobre
 degraus/circulação e medições técnicas ficam fora deste conjunto para manter
 oito perguntas objetivas e evitar misturar presença de recurso com barreiras.
 

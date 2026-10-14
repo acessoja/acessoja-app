@@ -1,10 +1,16 @@
 import math
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 from .models import Local, VisitaRecente
 from .serializers import ArrivalRequestSerializer, LocalSerializer, VisitaRecenteSerializer
+from acessoja.accessibility_catalog import catalog
+from .accessibility import matching_resources, parse_filters
+from .accessibility_serializers import ResourceCatalogSerializer
+from .services.accessibility import local_accessibility, populate_accessibility_context
 
 
 class LocalWritePermission(BasePermission):
@@ -22,11 +28,62 @@ class LocalViewSet(viewsets.ModelViewSet):
     permission_classes = [LocalWritePermission]
 
     def get_queryset(self):
-        qs = self.queryset
-        for field in ["cao_guia", "mesa_acessivel", "banheiro_acessivel", "rampa_acesso", "cardapio_braille"]:
-            if self.request.query_params.get(field) == "true":
-                qs = qs.filter(**{field: True})
-        return qs
+        return self.queryset.order_by("id_local")
+
+    @extend_schema(
+        summary="Consultar locais com estados explícitos e filtros AND",
+        description="Categorias e origens combinam por OR; todos os recursos são exigidos (AND). "
+                    "Desconhecimento é opcional; ausência, divergência, não aplicabilidade "
+                    "e acesso parcial são excluídos. "
+                    "Booleanos legados continuam na resposta, sem comprovar presença ou ausência.",
+        parameters=[
+            OpenApiParameter("recursos", str, description="IDs do catálogo separados por vírgula (AND)."),
+            OpenApiParameter("categorias", str, description="Categorias separadas por vírgula (OR)."),
+            OpenApiParameter("origens", str,
+                             description="acessoja,openstreetmap (OR); este endpoint só lista cadastrados."),
+            OpenApiParameter("incluir_desconhecidos", bool,
+                             description="Padrão false. Só admite unknown adicionalmente."),
+            OpenApiParameter("search", str, description="Nome ou endereço; máximo 180 caracteres."),
+        ],
+        examples=[OpenApiExample("Recursos informados", response_only=True, value={
+            "accessibility_information": {}, "accessibility": {
+                "rampa_acesso": {"state": "unknown", "evidence": [], "community_state": "not_evaluated",
+                                 "legacy_not_comparable": 0}}, "missing_resources": [],
+        })],
+    )
+    def list(self, request, *args, **kwargs):
+        try:
+            filters = parse_filters(request.query_params)
+        except ValueError as exc:
+            raise ValidationError({"filters": str(exc)}) from None
+        # Reject repeated parameters rather than silently accepting the last value.
+        if any(len(request.query_params.getlist(key)) != 1 for key in request.query_params):
+            raise ValidationError({"filters": "Envie cada parâmetro uma vez; listas usam vírgula."})
+        qs = self.get_queryset()
+        if filters["categories"]:
+            qs = qs.filter(categoria__in=filters["categories"])
+        if filters["search"]:
+            from django.db.models import Q
+            qs = qs.filter(Q(nome__icontains=filters["search"]) | Q(endereco__icontains=filters["search"]))
+        if filters["sources"] == ["openstreetmap"]:
+            qs = qs.exclude(osm_id__isnull=True).exclude(osm_id="")
+        locals_ = list(qs)
+        context = populate_accessibility_context(locals_, self.get_serializer_context())
+        context["missing_resources"] = {}
+        matched = []
+        for local in locals_:
+            accepted, missing = matching_resources(
+                local_accessibility(local, context), filters["resources"], filters["include_unknown"]
+            )
+            if accepted:
+                matched.append(local)
+                context["missing_resources"][local.pk] = missing
+        return Response(self.get_serializer(matched, many=True, context=context).data)
+
+    @extend_schema(summary="Catálogo compartilhado de recursos", responses=ResourceCatalogSerializer)
+    @action(detail=False, methods=["get"], url_path="recursos")
+    def resources(self, request):
+        return Response(catalog())
 
 
 @extend_schema(

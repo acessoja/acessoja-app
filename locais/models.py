@@ -19,6 +19,7 @@ class Local(models.Model):
     # Metadados opcionais: não modificam os campos da Sprint 1.
     categoria = models.CharField(max_length=32, blank=True)
     osm_id = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    accessibility_information = models.JSONField(default=dict, blank=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

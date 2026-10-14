@@ -72,8 +72,11 @@ limpeza ou correção em massa.
 
 A interface separa esses dados em “Informações do cadastro (origem histórica
 não verificada)” e “Relatos da comunidade”. Flags do cadastro não contam como
-votos. Os filtros legados continuam utilizando seu contrato anterior; estes
-cards não implementam o Card 09 nem mudam filtros.
+votos. Na integração dos Cards 09–12, os novos filtros usam estados explícitos
+e a mesma agregação comunitária. Parâmetros booleanos antigos com `true` exigem
+presença informada no contrato novo; o booleano histórico continua recuperável
+na resposta e não alimenta confirmação. Consulte
+`docs/FILTROS_E_PREFERENCIAS_ACESSIBILIDADE.md`.
 
 Um recurso relatado não comprova medidas, funcionamento contínuo, conformidade
 técnica nem adequação a todas as necessidades. Reputação e pontos não alteram

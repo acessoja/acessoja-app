@@ -35,6 +35,8 @@ class ExternalPlaceSerializer(serializers.Serializer):
     has_community_reviews = serializers.BooleanField()
     media_estrelas = serializers.FloatField(allow_null=True)
     accessibility_data = serializers.DictField()
+    accessibility = serializers.DictField()
+    linked_local = serializers.DictField(allow_null=True)
     additional_data = serializers.DictField()
     registration_token = serializers.CharField()
 

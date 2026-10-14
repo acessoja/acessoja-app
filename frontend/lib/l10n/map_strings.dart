@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/map_place.dart';
 import '../models/place_category.dart';
+import '../models/accessibility_catalog.dart';
 
 /// Follows the existing locale-driven contribution strings pattern.
 extension MapStrings on BuildContext {
@@ -16,12 +17,7 @@ extension MapStrings on BuildContext {
     return mapText(visual.portuguese, visual.english);
   }
 
-  String featureLabel(String key) => switch (key) {
-    'cao_guia' => mapText('Aceita cão-guia', 'Guide dogs welcome'),
-    'mesa_acessivel' => mapText('Mesa acessível', 'Accessible table'),
-    'banheiro_acessivel' => mapText('Banheiro adaptado', 'Accessible restroom'),
-    'rampa_acesso' => mapText('Rampa de acesso', 'Access ramp'),
-    'cardapio_braille' => mapText('Cardápio em braille', 'Braille menu'),
+  String featureLabel(String key) => AccessibilityCatalog.find(key)?.name(this) ?? switch (key) {
     'wheelchair' => mapText('Acesso com cadeira de rodas', 'Wheelchair access'),
     'toilets:wheelchair' => mapText('Banheiro para cadeira de rodas', 'Wheelchair restroom'),
     _ => mapText('Recurso de acessibilidade', 'Accessibility feature'),
@@ -31,6 +27,8 @@ extension MapStrings on BuildContext {
     AccessibilityValue.unavailable => mapText('Informado como indisponível', 'Reported unavailable'),
     AccessibilityValue.limited => mapText('Acesso parcial informado', 'Partial access reported'),
     AccessibilityValue.unknown => mapText('Informação desconhecida', 'Unknown information'),
+    AccessibilityValue.divergent => mapText('Relatos divergentes', 'Conflicting reports'),
+    AccessibilityValue.notApplicable => mapText('Informado como não aplicável', 'Reported not applicable'),
   };
 }
 
@@ -39,5 +37,8 @@ IconData accessibilityIcon(String key) => switch (key) {
   'mesa_acessivel' => Icons.table_restaurant_outlined,
   'cardapio_braille' => Icons.menu_book_outlined,
   'rampa_acesso' => Icons.trending_flat,
+  'atendimento_libras' => Icons.sign_language_outlined,
+  'piso_tatil' => Icons.linear_scale,
+  'sinalizacao_tatil' || 'sinalizacao_visual' => Icons.signpost_outlined,
   _ => Icons.accessible_forward_rounded,
 };

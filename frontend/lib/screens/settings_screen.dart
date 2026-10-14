@@ -15,6 +15,8 @@ import 'informacoes_pessoais_screen.dart';
 import 'privacidade_screen.dart';
 import 'saved_places_screen.dart';
 import 'rights_screen.dart';
+import 'accessibility_preferences_screen.dart';
+import '../l10n/accessibility_strings.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String userName;
@@ -428,6 +430,13 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 12),
+                                _menuTile(
+                                  icon: Icons.accessibility_new,
+                                  label: context.preferencesTitle,
+                                  description: context.accessibilityText('Recursos importantes para minha busca',
+                                    'Features important to my search'),
+                                  onTap: () => _navigateTo(const AccessibilityPreferencesScreen()),
+                                ),
                                 _menuTile(
                                   icon: Icons.settings_outlined,
                                   label: context.l10n.generalSettings,
