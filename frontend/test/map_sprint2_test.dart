@@ -27,6 +27,7 @@ final internal = <String, dynamic>{
   'categoria': 'outros', 'categoria_label': 'Outros estabelecimentos',
   'media_estrelas': 4.5, 'quantidade_avaliacoes': 2, 'rampa_acesso': true,
   'aberto': true, 'imagem': '',
+  'accessibility': {'rampa_acesso': {'state': 'presence_reported'}},
 };
 final external = <String, dynamic>{
   'id': 'osm:way:7', 'external_id': 'osm:way:7', 'source': 'openstreetmap',
@@ -321,9 +322,8 @@ void main() {
     await openSearch(tester);
     await tester.tap(find.text('Filtros'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('map-source-filter')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Somente OpenStreetMap').last);
+    await tester.ensureVisible(find.byKey(const ValueKey('filter-source-openstreetmap')));
+    await tester.tap(find.byKey(const ValueKey('filter-source-openstreetmap')));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Filtrar'));
     await tester.tap(find.text('Filtrar'));
@@ -334,21 +334,20 @@ void main() {
     expect(find.byKey(const ValueKey('map-place-7')), findsNothing);
   });
 
-  testWidgets('filtro por categoria envia a categoria ao Django', (tester) async {
+  testWidgets('filtro por categoria usa a base consolidada sem enviar critérios pessoais à fonte externa', (tester) async {
     mockApi();
     await pumpMap(tester);
     await openSearch(tester);
     await tester.tap(find.text('Filtros'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('map-category-filter')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Cafeterias').last);
+    await tester.ensureVisible(find.byKey(const ValueKey('filter-category-cafeteria')));
+    await tester.tap(find.byKey(const ValueKey('filter-category-cafeteria')));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Filtrar'));
     await tester.tap(find.text('Filtrar'));
     await tester.pumpAndSettle();
     expect(requests.lastWhere((r) => r.url.path == '/api/locais/externos/')
-      .url.queryParameters['categoria'], 'cafeteria');
+      .url.queryParameters.containsKey('categoria'), isFalse);
     expect(searchResult('Biblioteca Interna'), findsNothing);
     expect(find.byKey(const ValueKey('map-place-7')), findsNothing);
   });
@@ -359,7 +358,7 @@ void main() {
     await openSearch(tester);
     await tester.tap(find.text('Filtros'));
     await tester.pumpAndSettle();
-    final ramp = find.byType(Checkbox).at(3);
+    final ramp = find.byKey(const ValueKey('filter-resource-rampa_acesso'));
     await tester.ensureVisible(ramp);
     await tester.tap(ramp);
     await tester.ensureVisible(find.text('Filtrar'));
@@ -374,7 +373,7 @@ void main() {
   testWidgets('estado vazio permite limpar filtros', (tester) async {
     mockApi(internalError: true, externals: []);
     await pumpMap(tester);
-    expect(find.textContaining('Nenhum local com os filtros atuais'), findsOneWidget);
+    expect(find.textContaining('Nenhum local corresponde aos dados e filtros atuais'), findsOneWidget);
     expect(find.text('Limpar filtros'), findsOneWidget);
   });
 
@@ -454,15 +453,22 @@ void main() {
   });
 
   testWidgets('resposta externa antiga não restaura a lista após mudar a região', (tester) async {
+    tester.view.physicalSize = const Size(360, 740);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final pending = Completer<http.Response>();
+    final latest = Completer<http.Response>();
+    final areaRequests = <http.Request>[];
     var calls = 0;
     AppHttp.client = MockClient((request) async {
       if (request.url.path == '/api/locais/externos/') {
+        areaRequests.add(request);
         calls++;
         if (calls == 1) {
           return pending.future;
         }
-        return jsonResponse({'results': [], 'truncated': false});
+        return latest.future;
       }
       if (request.url.path == '/api/locais/externos/categorias/') {
         return jsonResponse(categories);
@@ -475,21 +481,37 @@ void main() {
     await tester.pumpWidget(harness(MainScreen(userName: 'teste',
       trackLocation: false, tileProvider: OfflineTiles())));
     await tester.pump();
-    // A category submission invalidates the in-flight response and queues
-    // only the most recent request rather than starting parallel HTTP calls.
-    await openSearch(tester);
-    await tester.tap(find.text('Filtros'));
+    final map = tester.widget<FlutterMap>(find.byType(FlutterMap));
+    // The visible area must be within the provider's 3 km search limit.
+    map.mapController!.move(const LatLng(-16.3267, -48.9528), 17);
+    await tester.pump(const Duration(milliseconds: 150));
+    await tester.drag(find.byType(FlutterMap), const Offset(100, 0));
+    await tester.pump(const Duration(milliseconds: 450));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('map-category-filter')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Cafeterias').last);
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Filtrar'));
-    await tester.tap(find.text('Filtrar'));
+    final requestedCenter = map.mapController!.camera.center;
+    final searchArea = find.byKey(const ValueKey('map-search-area'));
+    await tester.ensureVisible(searchArea);
     await tester.pump();
+    expect(searchArea.hitTestable(), findsOneWidget);
+    await tester.tap(searchArea);
+    await tester.pump();
+    expect(calls, 1); // The latest area waits for the running request to finish.
     pending.complete(jsonResponse({'results': [external], 'truncated': false}));
     await tester.pumpAndSettle();
     expect(calls, 2);
+    final query = areaRequests.last.url.queryParameters;
+    expect(double.parse(query['latitude']!), closeTo(requestedCenter.latitude, 0.000001));
+    expect(double.parse(query['longitude']!), closeTo(requestedCenter.longitude, 0.000001));
+    expect(query['longitude'], isNot(areaRequests.first.url.queryParameters['longitude']));
+    expect(int.parse(query['raio']!), inInclusiveRange(100, 3000));
+    await openSearch(tester);
+    expect(searchResult('Café Externo'), findsNothing);
+    latest.complete(jsonResponse({'results': [{
+      ...external, 'id': 'osm:way:8', 'external_id': 'osm:way:8', 'nome': 'Novo Café',
+      'latitude': requestedCenter.latitude, 'longitude': requestedCenter.longitude,
+    }], 'truncated': false}));
+    await tester.pumpAndSettle();
+    expect(searchResult('Novo Café'), findsOneWidget);
     expect(searchResult('Café Externo'), findsNothing);
     expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsNothing);
   });

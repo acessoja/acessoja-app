@@ -203,6 +203,8 @@ SPECTACULAR_SETTINGS = {
     "SORT_OPERATIONS": False,
     "ENUM_NAME_OVERRIDES": {
         "RespostaAcessibilidadeEnum": "modal_avaliacao.models.RESPOSTAS",
+        "ResourceInformationStateEnum": "acessoja.accessibility_catalog.WRITE_STATES",
+        "ResourceResolvedStateEnum": "acessoja.accessibility_catalog.RESOURCE_STATES",
     },
     # Assets servidos localmente: a doc abre sem depender de CDN.
     "SWAGGER_UI_DIST": "SIDECAR",

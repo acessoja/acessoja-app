@@ -9,7 +9,7 @@ import unittest
 spec = importlib.util.spec_from_file_location("survey_contract", Path(__file__).with_name("questionnaire.py"))
 contract = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(contract)
-source = ast.parse(Path(__file__).with_name("questionnaire_fields.py").read_text())
+source = ast.parse(Path(__file__).with_name("questionnaire_fields.py").read_text(encoding="utf-8"))
 write_node = next(node for node in source.body if isinstance(node, ast.FunctionDef) and node.name == "prepare_write")
 write_module = ast.Module(body=[write_node], type_ignores=[])
 namespace = {"VERSION": contract.VERSION, "complete": contract.complete,

@@ -1,3 +1,9 @@
+import '../models/discovery_filters.dart';
+import '../services/accessibility_preferences_service.dart';
+import '../l10n/accessibility_strings.dart';
+import '../widgets/accessibility_filter_panel.dart';
+import '../widgets/active_discovery_filters.dart';
+import 'accessibility_preferences_screen.dart';
 import '../widgets/adaptive_place_layer.dart';
 import '../widgets/navigation_panel.dart';
 import '../l10n/route_strings.dart';
@@ -48,6 +54,7 @@ class MainScreen extends StatefulWidget {
   final RouteService? routeService;
   final ExternalNavigation? externalNavigation;
   final DateTime Function()? clock;
+  final AccessibilityPreferencesService preferencesService;
 
   const MainScreen(
       {super.key,
@@ -57,6 +64,7 @@ class MainScreen extends StatefulWidget {
       this.routeService,
       this.externalNavigation,
       this.clock,
+      this.preferencesService = const AccessibilityPreferencesService(),
       this.tileProvider});
 
   @override
@@ -77,12 +85,15 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   String _nomeCompleto = '';
   String _fotoPerfil = '';
 
+  int _profileRequest = 0;
   Future<void> _loadUserProfile() async {
+    final request = ++_profileRequest;
+    final session = AppHttp.sessionRevision.value;
     try {
       final uri = Uri.parse(
           '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(widget.userName)}');
       final resp = await AppHttp.get(uri);
-      if (!mounted) { return; }
+      if (!mounted || request != _profileRequest || session != AppHttp.sessionRevision.value) { return; }
       if (resp.statusCode == 200) {
         final data = json.decode(utf8.decode(resp.bodyBytes));
         setState(() {
@@ -349,19 +360,137 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   }
 
 
-  // Accessibility filters
-  bool _filterCaoGuia = false;
-  bool _filterMesaAcessivel = false;
-  bool _filterBanheiroAcessivel = false;
-  bool _filterRampaAcesso = false;
-  bool _filterCardapioBraille = false;
+  DiscoveryFilterState _filterState = DiscoveryFilterState();
+  int _filterRevision = 0, _preferencesRequest = 0;
+  bool _personalizationLoading = false;
+  String? _preferencesMessage;
+  String _searchText = '';
+
+  void _manualFilters(DiscoveryFilters filters, [Set<String> touched = const {}]) {
+    _filterRevision++;
+    setState(() {
+      _filterState = _filterState.commitDraft(filters, touched);
+      _preferencesMessage = null;
+    });
+    _placesRevision.value++;
+  }
+
+  void _clearFilters() {
+    _filterRevision++;
+    setState(() { _filterState = _filterState.clear(); _preferencesMessage = null; });
+    _placesRevision.value++;
+  }
+
+  void _deactivatePreferences() {
+    _filterRevision++;
+    setState(() { _filterState = _filterState.deactivate(); _preferencesMessage = null; });
+    _placesRevision.value++;
+  }
+
+  Future<void> _usePreferences() async {
+    if (_personalizationLoading) { return; }
+    if (!AppHttp.authenticated) {
+      setState(() => _preferencesMessage = context.accessibilityText(
+        'Entre para usar preferências. A busca e os filtros manuais continuam disponíveis.',
+        'Sign in to use preferences. Search and manual filters remain available.'));
+      _placesRevision.value++;
+      return;
+    }
+    final request = ++_preferencesRequest;
+    final revision = _filterRevision;
+    final session = AppHttp.sessionRevision.value;
+    setState(() { _personalizationLoading = true; _preferencesMessage = null; });
+    _placesRevision.value++;
+    try {
+      final preferences = await widget.preferencesService.load();
+      if (!mounted || request != _preferencesRequest || session != AppHttp.sessionRevision.value) { return; }
+      if (revision != _filterRevision) {
+        setState(() => _preferencesMessage = context.accessibilityText(
+          'Os filtros mudaram durante a consulta. Use a ação novamente para aplicar as preferências.',
+          'Filters changed during the request. Use the action again to apply preferences.'));
+        return;
+      }
+      if (preferences.unavailable.isNotEmpty) { throw const PreferencesException(400, 'unavailable_resources'); }
+      if (preferences.resources.isEmpty) {
+        setState(() => _preferencesMessage = context.accessibilityText(
+          'Sem preferências cadastradas. Você pode configurá-las; os filtros atuais foram preservados.',
+          'No saved preferences. You can configure them; current filters were preserved.'));
+        return;
+      }
+      _filterRevision++;
+      setState(() => _filterState = _filterState.applyPreferences(preferences.resources));
+    } catch (error) {
+      if (mounted && request == _preferencesRequest) {
+        setState(() => _preferencesMessage = context.preferenceFailure(error));
+      }
+    } finally {
+      if (mounted && request == _preferencesRequest) {
+        setState(() => _personalizationLoading = false);
+        _placesRevision.value++;
+      }
+    }
+  }
+
+  Future<void> _configurePreferences() async {
+    if (!AppHttp.authenticated) {
+      await _usePreferences();
+      return;
+    }
+    _preferencesRequest++;
+    setState(() => _personalizationLoading = false);
+    // Editing the profile never applies its choices to this search.
+    await Navigator.push<void>(context, MaterialPageRoute(builder: (_) =>
+      AccessibilityPreferencesScreen(service: widget.preferencesService)));
+    if (mounted) {
+      setState(() => _preferencesMessage = null);
+      _placesRevision.value++;
+    }
+  }
+
+  Widget _activeFilters() => ActiveDiscoveryFilters(state: _filterState,
+    onChange: _manualFilters, onClear: _clearFilters, onUsePreferences: _usePreferences,
+    onDeactivate: _deactivatePreferences, onConfigure: _configurePreferences,
+    loading: _personalizationLoading, message: _preferencesMessage);
+
+  void _beginFilters() {
+    _preferencesRequest++;
+    setState(() => _personalizationLoading = false);
+  }
+
+  void _sessionChanged() {
+    if (!mounted) { return; }
+    _preferencesRequest++; _profileRequest++; _filterRevision++;
+    _internalRequest++; _externalRequest++;
+    _preview.invalidate(); _preview.close();
+    setState(() {
+      _filterState = _filterState.deactivate();
+      _preferencesMessage = !AppHttp.authenticated ? context.accessibilityText(
+        'Sessão encerrada. Entre novamente para usar suas preferências. Os filtros manuais continuam disponíveis.',
+        'Session ended. Sign in again to use preferences. Manual filters remain available.') : null;
+      _personalizationLoading = false; _nomeCompleto = ''; _fotoPerfil = '';
+      _historyConsent = false; _internalLocals = []; _externalLocals = [];
+      _selectedPlaceId = null;
+    });
+    _placesRevision.value++;
+    _fetchEstablishments(); _fetchExternalPlaces(_externalCenter);
+  }
+
+  @override
+  void didUpdateWidget(covariant MainScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.userName != widget.userName) {
+      _preferencesRequest++; _profileRequest++;
+      _filterState = _filterState.deactivate();
+      _internalLocals = []; _externalLocals = []; _nomeCompleto = ''; _fotoPerfil = '';
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) { _sessionChanged(); _loadUserProfile(); }
+      });
+    }
+  }
 
   // List of filtered establishments from backend
   List<MapPlace> _internalLocals = [];
   List<MapPlace> _externalLocals = [];
-  List<Map<String, dynamic>> _categories = [];
-  String _sourceFilter = 'all';
-  String? _categoryFilter;
   String? _externalError;
   String? _locationMessage;
   String? _selectedPlaceId;
@@ -378,25 +507,10 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   int _externalRadius = 1500;
 
   List<Map<String, dynamic>> get _matchingLocals =>
-      mergeMapPlaces(_internalLocals, _externalLocals).where((place) {
-        if (_sourceFilter == 'internal' && place.isExternal) { return false; }
-        if (_sourceFilter == 'external' && !place.isExternal) { return false; }
-        if (_categoryFilter != null && place.category != _categoryFilter) {
-          return false;
-        }
-        for (final entry in {
-          'cao_guia': _filterCaoGuia, 'mesa_acessivel': _filterMesaAcessivel,
-          'banheiro_acessivel': _filterBanheiroAcessivel,
-          'rampa_acesso': _filterRampaAcesso,
-          'cardapio_braille': _filterCardapioBraille,
-        }.entries) {
-          if (entry.value &&
-              place.accessibility(entry.key) != AccessibilityValue.available) {
-            return false;
-          }
-        }
-        return true;
-      }).map((p) => p.toMap()).toList(growable: false);
+      mergeMapPlaces(_internalLocals, _externalLocals)
+        .where((place) => _filterState.filters.matches(place) && place.matches(_searchText))
+        .map((place) => {...place.toMap(), 'missing_resources': _filterState.filters.missing(place)})
+        .toList(growable: false);
   bool _localsLoadFailed = false;
   bool _isLoadingLocals = false;
 
@@ -450,12 +564,12 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    AppHttp.sessionRevision.addListener(_sessionChanged);
     _navigation.addListener(_onNavigationChanged);
     _loadUserProfile();
 
     _fetchEstablishments(); // Preload all establishments
     _fetchExternalPlaces(_externalCenter);
-    _loadCategories();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) { _showWelcomeBanner(); }
     });
@@ -464,6 +578,8 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    AppHttp.sessionRevision.removeListener(_sessionChanged);
+    _preferencesRequest++; _profileRequest++;
     _viewportTimer?.cancel();
     _navigationTimer?.cancel();
     _navigation.removeListener(_onNavigationChanged);
@@ -518,21 +634,13 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     }
   }
 
-  Future<void> _loadCategories() async {
-    try {
-      final categories = await _placesService.fetchCategories();
-      if (mounted) { setState(() => _categories = categories); }
-    } catch (_) {
-      // Category failure does not remove either source's valid places.
-    }
-  }
-
   Future<void> _fetchExternalPlaces(LatLng center) async {
     if (_isLoadingExternal) {
       // Queue only the latest area and logically invalidate the previous one.
       _externalRequest++;
       _pendingExternalCenter = center;
       setState(() => _externalLocals = []);
+      _placesRevision.value++;
       return;
     }
     final request = ++_externalRequest;
@@ -547,7 +655,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     try {
       final result = await _placesService.fetchExternalPlaces(
         latitude: center.latitude, longitude: center.longitude,
-        radius: _externalRadius, category: _categoryFilter,
+        radius: _externalRadius,
       );
       if (!mounted || request != _externalRequest) { return; }
       setState(() {
@@ -735,16 +843,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     _navigation.interrupt('screen_changed');
     final colors = AppColors.of(context);
     String sheetView = 'route'; // 'route' ou 'filters'
-    String filterSearchQuery = '';
-    String tempSource = _sourceFilter;
-    String? tempCategory = _categoryFilter;
-
-    // Temporary filter values in bottom sheet to support confirmation or cancellation
-    bool tempCaoGuia = _filterCaoGuia;
-    bool tempMesaAcessivel = _filterMesaAcessivel;
-    bool tempBanheiroAcessivel = _filterBanheiroAcessivel;
-    bool tempRampaAcesso = _filterRampaAcesso;
-    bool tempCardapioBraille = _filterCardapioBraille;
+    final previousFocus = FocusManager.instance.primaryFocus;
 
     showModalBottomSheet(
       context: context,
@@ -761,7 +860,13 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
       ),
       builder: (context) {
         return MapSearchSheet(
-          initialText: _destinationAddress,
+          initialText: _searchText,
+          onTextChanged: (value) { _searchText = value; },
+          onQueryChanged: (value) {
+            if (!mounted) { return; }
+            setState(() => _searchText = value);
+            _placesRevision.value++;
+          },
           builder: (context, destinationController) => ValueListenableBuilder<int>(
           valueListenable: _placesRevision,
           builder: (context, revision, child) => StatefulBuilder(
@@ -846,6 +951,8 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                       },
                     ),
                     const SizedBox(height: 12),
+                    _activeFilters(),
+                    const SizedBox(height: 12),
                     // Dropdown/Lista de sugestões de estabelecimentos por perto
                     if (_isLoadingLocals)
                       const Center(
@@ -908,9 +1015,10 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                                     ),
                                     subtitle: Text(
                                       '${local['source'] == 'openstreetmap' ? 'OpenStreetMap' : 'AcessoJá'}'
-                                      ' · ${local['categoria_label']} · ${local['endereco']}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                      ' · ${local['categoria_label']} · ${local['endereco']}'
+                                      '${(local['missing_resources'] as List?)?.isNotEmpty == true
+                                          ? '\n${context.accessibilityText('Informações incompletas: ', 'Incomplete information: ')}'
+                                            '${(local['missing_resources'] as List).cast<String>().map(context.featureLabel).join(', ')}' : ''}',
                                     ),
                                     trailing: ConstrainedBox(
                                       constraints:
@@ -936,45 +1044,12 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                         );
                       }()),
                     ],
-                    // Botão Filtros (formato de pílula branca com borda azul e lupa à direita - menor e centralizado)
-                    Center(
-                      child: SizedBox(
-                        width: 180,
-                        child: InkWell(
-                          onTap: () {
-                            sheetSetState(() {
-                              sheetView = 'filters';
-                            });
-                          },
-                          child: Container(
-                            height: 44,
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            decoration: BoxDecoration(
-                              color: colors.surface,
-                              borderRadius: BorderRadius.circular(22),
-                              border:
-                                  Border.all(color: colors.primary, width: 1.5),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Flexible(
-                                    child: Text(
-                                  context.l10n.filters,
-                                  style: TextStyle(
-                                    color: colors.text,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                )),
-                                Icon(Icons.search,
-                                    color: colors.primary, size: 20),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    OutlinedButton.icon(key: const ValueKey('open-discovery-filters'),
+                      onPressed: () { _beginFilters(); sheetSetState(() => sheetView = 'filters'); },
+                      icon: const Icon(Icons.tune), label: Text(context.l10n.filters)),
+                    OutlinedButton(key: const ValueKey('clear-discovery-search'),
+                      onPressed: () { destinationController.clear(); },
+                      child: Text(context.accessibilityText('Limpar busca', 'Clear search'))),
                     const SizedBox(height: 16),
                     Divider(height: 1, thickness: 1, color: colors.border),
                     const SizedBox(height: 16),
@@ -1015,275 +1090,24 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                 ),
               ));
             } else {
-              // 2. TELA DE FILTROS (Visual da imagem)
-              final List<Map<String, dynamic>> filterItems = [
-                {
-                  'id': 'cao_guia',
-                  'name': context.l10n.guideDog,
-                  'icon': Icons.pets_rounded,
-                  'checked': tempCaoGuia,
-                },
-                {
-                  'id': 'mesa_acessivel',
-                  'name': context.l10n.accessibleTable,
-                  'icon': Icons.table_restaurant_rounded,
-                  'checked': tempMesaAcessivel,
-                },
-                {
-                  'id': 'banheiro_acessivel',
-                  'name': context.l10n.accessibleRestroom,
-                  'icon': Icons.accessible_rounded,
-                  'checked': tempBanheiroAcessivel,
-                },
-                {
-                  'id': 'rampa_acesso',
-                  'name': context.l10n.accessRamp,
-                  'icon': Icons.accessible_forward_rounded,
-                  'checked': tempRampaAcesso,
-                },
-                {
-                  'id': 'cardapio_braille',
-                  'name': context.l10n.brailleMenu,
-                  'icon': Icons.menu_book_rounded,
-                  'checked': tempCardapioBraille,
-                },
-              ];
-
-              final filteredItems = filterItems.where((item) {
-                final name = item['name'].toString().toLowerCase();
-                return name.contains(filterSearchQuery.toLowerCase());
-              }).toList();
-
-              return SingleChildScrollView(
-                  child: Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                  top: 16,
-                  left: 20,
-                  right: 20,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 50,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: colors.border,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // Linha Superior: Botão Voltar + Campo de Busca
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.arrow_back_ios_new_rounded,
-                              color: colors.primary, size: 22),
-                          onPressed: () {
-                            sheetSetState(() {
-                              sheetView = 'route';
-                            });
-                          },
-                        ),
-                        Expanded(
-                          child: Container(
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: colors.surface,
-                              borderRadius: BorderRadius.circular(24),
-                              border:
-                                  Border.all(color: colors.primary, width: 1.5),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: TextField(
-                              onChanged: (val) {
-                                sheetSetState(() {
-                                  filterSearchQuery = val;
-                                });
-                              },
-                              decoration: InputDecoration(
-                                hintText: context.l10n.searchFilters,
-                                hintStyle: TextStyle(color: colors.muted),
-                                border: InputBorder.none,
-                                suffixIcon:
-                                    Icon(Icons.search, color: colors.primary),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    // Lista de Opções de Filtro com divisores e caixas de seleção
-                    DropdownButtonFormField<String>(
-                      key: const ValueKey('map-source-filter'),
-                      initialValue: tempSource,
-                      isExpanded: true,
-                      decoration: const InputDecoration(labelText: 'Origem dos locais'),
-                      items: const [
-                        DropdownMenuItem(value: 'all', child: Text('Todos os estabelecimentos',
-                          maxLines: 1, overflow: TextOverflow.ellipsis)),
-                        DropdownMenuItem(value: 'internal', child: Text('Somente AcessoJá',
-                          maxLines: 1, overflow: TextOverflow.ellipsis)),
-                        DropdownMenuItem(value: 'external', child: Text('Somente OpenStreetMap',
-                          maxLines: 1, overflow: TextOverflow.ellipsis)),
-                      ],
-                      onChanged: (value) => sheetSetState(() => tempSource = value ?? 'all'),
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      key: const ValueKey('map-category-filter'),
-                      initialValue: tempCategory ?? 'all',
-                      isExpanded: true,
-                      decoration: const InputDecoration(labelText: 'Categoria'),
-                      items: [
-                        const DropdownMenuItem(value: 'all', child: Text('Todas as categorias',
-                          maxLines: 1, overflow: TextOverflow.ellipsis)),
-                        ..._categories.where((c) => c['id'] is String && c['label'] is String).map((c) =>
-                          DropdownMenuItem(value: c['id'].toString(), child: Text(c['label'].toString(),
-                            maxLines: 1, overflow: TextOverflow.ellipsis))),
-                      ],
-                      onChanged: (value) => sheetSetState(() => tempCategory = value == 'all' ? null : value),
-                    ),
-                    if (_categories.isEmpty)
-                      TextButton(onPressed: () async {
-                        await _loadCategories();
-                        if (context.mounted) { sheetSetState(() {}); }
-                      }, child: const Text('Carregar categorias')),
-                    const SizedBox(height: 12),
-                    const Text('Filtros de acessibilidade mostram apenas recursos informados no AcessoJá.'),
-                    Column(
-                      children: List.generate(filteredItems.length, (idx) {
-                        final item = filteredItems[idx];
-                        return Column(
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Row(
-                                children: [
-                                  Icon(item['icon'],
-                                      color: colors.primary, size: 28),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Container(
-                                      height: 48,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: colors.surface,
-                                        borderRadius: BorderRadius.circular(21),
-                                        border: Border.all(
-                                            color: colors.primary, width: 1.2),
-                                      ),
-                                      child: Text(
-                                        item['name'],
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: colors.text),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Transform.scale(
-                                    scale: 1.1,
-                                    child: Checkbox(
-                                      value: item['checked'],
-                                      onChanged: (val) {
-                                        sheetSetState(() {
-                                          if (item['id'] == 'cao_guia') {
-                                            tempCaoGuia = val ?? false;
-                                          }
-                                          if (item['id'] == 'mesa_acessivel') {
-                                            tempMesaAcessivel = val ?? false;
-                                          }
-                                          if (item['id'] ==
-                                              'banheiro_acessivel') {
-                                            tempBanheiroAcessivel =
-                                                val ?? false;
-                                          }
-                                          if (item['id'] == 'rampa_acesso') {
-                                            tempRampaAcesso = val ?? false;
-                                          }
-                                          if (item['id'] ==
-                                              'cardapio_braille') {
-                                            tempCardapioBraille = val ?? false;
-                                          }
-                                        });
-                                      },
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      side: BorderSide(
-                                          color: colors.primary, width: 1.5),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Divider(
-                                height: 1, thickness: 1, color: colors.border),
-                          ],
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 24),
-                    // Botão azul context.l10n.applyFilters
-                    Center(
-                      child: SizedBox(
-                        width: 180,
-                        height: 48,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colors.primary,
-                            foregroundColor: colors.onPrimary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            elevation: 0,
-                          ),
-                          onPressed: () {
-                            final categoryChanged = _categoryFilter != tempCategory;
-                            setState(() {
-                              _sourceFilter = tempSource;
-                              _categoryFilter = tempCategory;
-                              _filterCaoGuia = tempCaoGuia;
-                              _filterMesaAcessivel = tempMesaAcessivel;
-                              _filterBanheiroAcessivel = tempBanheiroAcessivel;
-                              _filterRampaAcesso = tempRampaAcesso;
-                              _filterCardapioBraille = tempCardapioBraille;
-                            });
-
-                            (categoryChanged ? _fetchExternalPlaces(_externalCenter)
-                                : Future<void>.value()).then((_) {
-                              if (!context.mounted) { return; }
-                              sheetSetState(() {
-                                sheetView = 'route';
-                              });
-                            });
-                          },
-                          child: Text(
-                            context.l10n.applyFilters,
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ));
+              return AccessibilityFilterPanel(
+                key: ValueKey('filter-draft-${AppHttp.sessionRevision.value}-${widget.userName}'),
+                initial: _filterState.filters,
+                onCancel: () => sheetSetState(() => sheetView = 'route'),
+                onApply: (filters, touched) {
+                  _manualFilters(filters, touched);
+                  sheetSetState(() => sheetView = 'route');
+                });
             }
           }),
           ),
         );
       },
-    );
+    ).whenComplete(() {
+      if (mounted && previousFocus != null && previousFocus.context != null && previousFocus.canRequestFocus) {
+        previousFocus.requestFocus();
+      }
+    });
   }
 
   Future<void> _startRoute(Map<String, dynamic> place) async {
@@ -1344,6 +1168,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   }
 
   Future<void> _openLocalPreview(Map<String, dynamic> local) async {
+    final session = AppHttp.sessionRevision.value;
     final selected = local['source'] == 'openstreetmap'
         ? MapPlace.external(local) : MapPlace.internal(local);
     setState(() => _selectedPlaceId = selected.id);
@@ -1362,6 +1187,15 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (sheetContext) => ListenableBuilder(listenable: _preview,
         builder: (_, child) {
+          if (session != AppHttp.sessionRevision.value) {
+            return SafeArea(child: Padding(padding: const EdgeInsets.all(20), child: Column(
+              mainAxisSize: MainAxisSize.min, children: [
+                Text(context.accessibilityText('Sessão alterada. Abra o local novamente para atualizar os dados.',
+                  'Session changed. Open the place again to refresh its data.')),
+                OutlinedButton(onPressed: () => Navigator.pop(sheetContext),
+                  child: Text(context.accessibilityText('Fechar', 'Close'))),
+              ])));
+          }
           final current = _preview.place ?? displayed;
           displayed = current;
           return MapPlacePreview(key: ValueKey(current.id), place: current.toMap(),
@@ -1378,7 +1212,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                 ? () => Navigator.pop(sheetContext, 'contribute') : null);
         }));
     _previewOpen = false;
-    if (!mounted) { return; }
+    if (!mounted || session != AppHttp.sessionRevision.value) { return; }
     final chosen = _preview.place ?? selected;
     final target = _preview.reviewTarget;
     final detailsFailed = _preview.failed;
@@ -2045,10 +1879,13 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
 
   Widget _discoveryStatus() {
     final colors = AppColors.of(context);
-    return Semantics(liveRegion: true, child: Material(
+    return Semantics(container: true, child: Material(
       color: colors.surface,
       borderRadius: BorderRadius.circular(14),
-      child: Padding(padding: const EdgeInsets.all(10),
+      child: ConstrainedBox(constraints: BoxConstraints(
+        maxHeight: (MediaQuery.sizeOf(context).height * .30).clamp(72.0, 240.0).toDouble()),
+        child: SingleChildScrollView(key: const ValueKey('discovery-status-scroll'),
+          child: Padding(padding: const EdgeInsets.all(10),
         child: Column(mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text('📍 AcessoJá   🌐 OpenStreetMap', style: TextStyle(fontSize: 12)),
@@ -2059,29 +1896,25 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
               Text(context.routeText('Anápolis é o centro de referência. Sua localização ainda não foi solicitada.',
                 'Anápolis is the reference center. Your location has not been requested yet.')),
             if (_externalTruncated)
-              const Text('Resultados limitados. Aproxime o mapa ou escolha uma categoria.'),
+              Text(context.accessibilityText('Resultados limitados antes dos filtros. Aproxime o mapa ou busque outra área.',
+                'Results are limited before filtering. Zoom in or search another area.')),
             if (!_isLoadingLocals && !_isLoadingExternal && _matchingLocals.isEmpty)
-              const Text('Nenhum local com os filtros atuais. Limpe os filtros ou busque outra área.'),
+              Text(context.accessibilityText('Nenhum local corresponde aos dados e filtros atuais. Isso não comprova ausência de recursos.',
+                'No place matches the available data and current filters. This does not prove features are absent.')),
+            _activeFilters(),
             Wrap(spacing: 8, children: [
               if (_areaMoved || _externalError != null)
                 TextButton.icon(key: const ValueKey('map-search-area'),
-                  onPressed: _isLoadingExternal ? null : _searchVisibleArea,
+                  onPressed: _searchVisibleArea,
                   icon: const Icon(Icons.search), label: const Text('Buscar nesta área')),
               if (_externalError != null)
                 TextButton(onPressed: _isLoadingExternal ? null : () => _fetchExternalPlaces(_externalCenter),
                   child: const Text('Tentar fonte externa novamente')),
-              if (!_isLoadingLocals && !_isLoadingExternal && _matchingLocals.isEmpty)
-                TextButton(onPressed: () {
-                  setState(() {
-                    _sourceFilter = 'all'; _categoryFilter = null;
-                    _filterCaoGuia = false; _filterMesaAcessivel = false;
-                    _filterBanheiroAcessivel = false; _filterRampaAcesso = false;
-                    _filterCardapioBraille = false;
-                  });
-                  _fetchExternalPlaces(_externalCenter);
-                }, child: const Text('Limpar filtros')),
+              if (!_isLoadingLocals && !_isLoadingExternal && _matchingLocals.isEmpty && !_filterState.filters.active)
+                TextButton(onPressed: _clearFilters,
+                  child: Text(context.accessibilityText('Limpar filtros', 'Clear filters'))),
             ]),
-          ])),
+          ])))),
     ));
   }
 }
