@@ -58,9 +58,9 @@ def test_get_reads_persisted_preferences_with_a_stale_authenticated_instance(acc
 
 
 @pytest.mark.parametrize("body", [{}, {"resources": None}, {"resources": "rampa_acesso"},
-    {"resources": [False]}, {"resources": ["unknown_resource"]}, {"resources": [] , "user": 1},
-    {"resources": [], "nome": "prefs-other"}, {"resources": [], "id_usuario": 1},
-    {"resources": ["rampa_acesso"], "unrelated": True},
+                                  {"resources": [False]}, {"resources": ["unknown_resource"]}, {"resources": [], "user": 1},
+                                  {"resources": [], "nome": "prefs-other"}, {"resources": [], "id_usuario": 1},
+                                  {"resources": ["rampa_acesso"], "unrelated": True},
 ])
 def test_invalid_write_is_atomic_and_never_uses_client_identity(account, body):
     user, other, client = account

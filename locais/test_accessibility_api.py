@@ -72,11 +72,11 @@ def test_new_creation_explicit_states_dates_and_omission(people):
 
 
 @pytest.mark.parametrize("invalid", [None, [], {"other": {"state": "unknown"}},
-    {"piso_tatil": {"state": "yes"}}, {"piso_tatil": {"state": False}},
-    {"piso_tatil": {"state": "unknown", "source": "certified"}},
-    {"piso_tatil": {"state": "unknown", "note": 42}},
-    {"piso_tatil": {"state": "unknown", "observed_at": "2026-10-13"}},
-    {"piso_tatil": {"state": "unknown", "received_at": "2026-10-13T09:00:00Z"}},
+                                     {"piso_tatil": {"state": "yes"}}, {"piso_tatil": {"state": False}},
+                                     {"piso_tatil": {"state": "unknown", "source": "certified"}},
+                                     {"piso_tatil": {"state": "unknown", "note": 42}},
+                                     {"piso_tatil": {"state": "unknown", "observed_at": "2026-10-13"}},
+                                     {"piso_tatil": {"state": "unknown", "received_at": "2026-10-13T09:00:00Z"}},
 ])
 def test_invalid_patch_is_atomic(people, invalid):
     client = people[-1]
@@ -92,7 +92,7 @@ def test_invalid_patch_is_atomic(people, invalid):
 def test_patch_preserves_omitted_and_null_removes_one_evidence(people):
     client = people[-1]
     record = local(accessibility_information={"piso_tatil": observation("presence_reported"),
-                                             "sinalizacao_visual": observation("absence_reported")})
+                                              "sinalizacao_visual": observation("absence_reported")})
     detail = f"{URL}{record.pk}/"
     assert client.patch(detail, {"nome": "Updated"}, format="json").status_code == 200
     assert client.patch(detail, {"accessibility_information": {"piso_tatil": None}}, format="json").status_code == 200
@@ -130,7 +130,7 @@ def test_filters_combine_categories_sources_resources_and_incomplete():
 
 
 @pytest.mark.parametrize("params", [{"recursos": "invalid"}, {"categorias": "hospital"}, {"origens": "all"},
-    {"incluir_desconhecidos": "yes"}, {"rampa_acesso": "1"}, {"unknown_parameter": "x"}])
+                                    {"incluir_desconhecidos": "yes"}, {"rampa_acesso": "1"}, {"unknown_parameter": "x"}])
 def test_invalid_filters_are_not_silently_ignored(params):
     assert APIClient().get(URL, params).status_code == 400
 
@@ -207,9 +207,9 @@ def test_new_migrations_preserve_raw_flags_review_authors_dates_and_empty_prefer
         user = User.objects.create(nome="old-catalog", email="old@catalog.test", password="preserved-hash",
                                    data_criacao=timezone.now())
         record = Place.objects.create(nome="Historical", endereco="Rua", distancia=0,
-                                       mesa_acessivel=True, cao_guia=True)
+                                      mesa_acessivel=True, cao_guia=True)
         review = Review.objects.create(local_id=record.pk, user_id=user.pk, estrelas=4, comentario="Preserve me",
-                                        pergunta_3="Sim", pergunta_4="Não sei")
+                                       pergunta_3="Sim", pergunta_4="Não sei")
         original_date = review.data_resposta
         MigrationExecutor(connection).migrate(after)
         restored = Local.objects.get(pk=record.pk)

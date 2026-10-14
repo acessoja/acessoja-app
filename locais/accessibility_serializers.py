@@ -49,7 +49,7 @@ class ResourceCatalogSerializer(serializers.Serializer):
 @extend_schema_field({
     "type": "object", "additionalProperties": False,
     "properties": {key: {"type": "object", "nullable": True, "required": ["state"],
-        "additionalProperties": False, "properties": {
+                         "additionalProperties": False, "properties": {
             "state": {"type": "string", "enum": list(WRITE_STATES)},
             "note": {"type": "string", "maxLength": 1000},
             "observed_at": {"type": "string", "format": "date-time", "nullable": True},

@@ -155,7 +155,7 @@ class AccessibilityCoreTests(unittest.TestCase):
 
     def test_observed_date_requires_explicit_zoned_input(self):
         value = validate_information({"atendimento_libras": {"state": "presence_reported", "observed_at":
-            "2026-10-13T09:00:00-03:00", "note": "Consulte horários"}})
+                                                             "2026-10-13T09:00:00-03:00", "note": "Consulte horários"}})
         self.assertTrue(value["atendimento_libras"]["observed_at"].endswith("-03:00"))
 
     def test_preferences_are_optional_validated_and_deduplicated(self):

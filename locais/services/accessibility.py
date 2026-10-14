@@ -30,7 +30,7 @@ def populate_accessibility_context(locals_, context):
         states[(local.pk, own_id)] = resolve_information(local.accessibility_information, local_rows)
         ratings = [row["estrelas"] for row in local_rows if row["is_valid"] and 1 <= row["estrelas"] <= 5]
         stats[(local.pk, own_id)] = {"count": len(ratings),
-                                  "average": sum(ratings) / len(ratings) if ratings else None}
+                                     "average": sum(ratings) / len(ratings) if ratings else None}
     return context
 
 
