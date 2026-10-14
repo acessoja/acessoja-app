@@ -134,31 +134,45 @@ class PlacesService {
     bool banheiroAcessivel = false,
     bool rampaAcesso = false,
     bool cardapioBraille = false,
+    Set<String> resources = const {}, Set<String> categories = const {}, Set<String> sources = const {},
+    bool includeUnknown = false,
   }) async {
-    final queryParams = <String, String>{};
-    if (caoGuia) { queryParams['cao_guia'] = 'true'; }
-    if (mesaAcessivel) { queryParams['mesa_acessivel'] = 'true'; }
-    if (banheiroAcessivel) { queryParams['banheiro_acessivel'] = 'true'; }
-    if (rampaAcesso) { queryParams['rampa_acesso'] = 'true'; }
-    if (cardapioBraille) { queryParams['cardapio_braille'] = 'true'; }
-
-    final uri = Uri.parse('${Config.baseUrl}/api/locais/')
-        .replace(queryParameters: queryParams);
-    final response = await AppHttp.get(uri);
-
-    if (response.statusCode != 200) {
-      throw StateError('places_load_failed_${response.statusCode}');
+    final selected = <String>{...resources,
+      if (caoGuia) 'cao_guia', if (mesaAcessivel) 'mesa_acessivel',
+      if (banheiroAcessivel) 'banheiro_acessivel', if (rampaAcesso) 'rampa_acesso',
+      if (cardapioBraille) 'cardapio_braille'};
+    final queryParams = <String, String>{
+      if (selected.isNotEmpty) 'recursos': selected.join(','),
+      if (categories.isNotEmpty) 'categorias': categories.join(','),
+      if (sources.isNotEmpty) 'origens': sources.join(','),
+      if (includeUnknown) 'incluir_desconhecidos': 'true',
+    };
+    var uri = Uri.parse('${Config.baseUrl}/api/locais/').replace(queryParameters: queryParams);
+    final endpoint = uri;
+    final visited = <String>{};
+    final result = <int, Map<String, dynamic>>{};
+    while (true) {
+      if (!visited.add(uri.toString()) || visited.length > 100) {
+        throw const FormatException('Invalid or cyclic places pagination');
+      }
+      final response = await AppHttp.get(uri);
+      if (response.statusCode != 200) { throw StateError('places_load_failed_${response.statusCode}'); }
+      final decoded = jsonDecode(utf8.decode(response.bodyBytes));
+      final rows = decoded is List ? decoded : decoded is Map ? decoded['results'] : null;
+      if (rows is! List) { throw const FormatException('Invalid places response'); }
+      for (final row in rows.whereType<Map>()) {
+        final id = row['id_local'];
+        if (id is int && id > 0) { result[id] = Map<String, dynamic>.from(row); }
+      }
+      final next = decoded is Map ? decoded['next'] : null;
+      if (next == null) { return result.values.toList(growable: false); }
+      if (next is! String || next.isEmpty) { throw const FormatException('Invalid places page'); }
+      final candidate = uri.resolve(next);
+      if (candidate.origin != endpoint.origin || candidate.path != endpoint.path) {
+        throw const FormatException('Foreign places page');
+      }
+      uri = candidate.replace(queryParameters: {...candidate.queryParameters, ...queryParams});
     }
-
-    final decoded = json.decode(utf8.decode(response.bodyBytes));
-    if (decoded is! List) {
-      throw const FormatException('A API de locais não retornou uma lista.');
-    }
-
-    return decoded
-        .whereType<Map>()
-        .map((item) => Map<String, dynamic>.from(item))
-        .toList(growable: false);
   }
 
   Future<void> registerVisit({

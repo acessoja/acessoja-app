@@ -97,6 +97,9 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
             if (model.isExternal && model.internalId != null)
               Text(context.mapText('Associado a um registro do AcessoJá', 'Linked to an AcessoJá record')),
             const SizedBox(height: 12),
+            if (model.missingResources.isNotEmpty) Semantics(liveRegion: true,
+              child: Text(context.mapText('Informações incompletas: ', 'Incomplete information: ') +
+                model.missingResources.map(context.featureLabel).join(', '))),
             _information(icon: rating == null ? Icons.reviews_outlined : Icons.star_rounded, label: reviewText),
             if (widget.loadingDetails) Semantics(liveRegion: true,
                 child: Text(context.mapText('Atualizando informações do local…', 'Updating place information…'))),
@@ -163,7 +166,8 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
 
   Widget _feature(PlaceAccessibilityFeature feature) {
     final colors = AppColors.of(context);
-    final source = feature.source == PlaceSource.acessoja ? 'AcessoJá' : 'OpenStreetMap';
+    final source = feature.mixedSources ? 'AcessoJá · OpenStreetMap'
+      : feature.source == PlaceSource.acessoja ? 'AcessoJá' : 'OpenStreetMap';
     return Container(padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(color: colors.surfaceElevated,
             border: Border.all(color: colors.border), borderRadius: BorderRadius.circular(12)),

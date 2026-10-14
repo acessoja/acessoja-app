@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/accessibility_survey.dart';
+import '../models/accessibility_catalog.dart';
 import '../services/contribution_service.dart';
 
 /// Reusable in details and, later, map previews. Totals come from the backend.
@@ -48,10 +49,12 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
     'divergent' => surveyText(context, 'Relatos divergentes', 'Conflicting reports'),
     'unconfirmed' => surveyText(context, 'Ainda não confirmado', 'Not confirmed yet'),
     'not_applicable' => surveyText(context, 'Informado como não aplicável', 'Reported not applicable'),
+    'unknown' => surveyText(context, 'Informação desconhecida', 'Unknown information'),
     _ => surveyText(context, 'Ainda não avaliado', 'Not evaluated yet'),
   };
   @override
   Widget build(BuildContext context) {
+    final information = widget.registeredData['accessibility_information'];
     return Card(child: Padding(padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Text(surveyText(context, 'Recursos: relatos da comunidade', 'Features: community reports'),
@@ -85,6 +88,32 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
             if (resource.latest != null) Text(surveyText(context, 'Última resposta recebida: ', 'Latest response received: ') +
               MaterialLocalizations.of(context).formatShortDate(resource.latest!.toLocal())),
           ],
+        ],
+        if (information is Map && information.isNotEmpty) ...[
+          const Divider(),
+          Text(surveyText(context, 'Informações explícitas do cadastro', 'Explicit registration information'),
+            style: const TextStyle(fontWeight: FontWeight.bold)),
+          for (final resource in AccessibilityCatalog.resources)
+            if (information[resource.id] is Map) ...[
+              const SizedBox(height: 8),
+              Text(resource.name(context), style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(resource.description(context)),
+              Text(_state(context, information[resource.id]['state'].toString())),
+              if (information[resource.id]['note'] is String && information[resource.id]['note'].isNotEmpty)
+                Text(information[resource.id]['note'] as String),
+              Text(surveyText(context, 'Origem: ', 'Source: ') + switch (information[resource.id]['source']) {
+                'demo_seed' => surveyText(context, 'demonstração fictícia', 'fictional demonstration'),
+                'acessoja_registration' => surveyText(context, 'cadastro explícito no AcessoJá', 'explicit AcessoJá registration'),
+                'acessoja_staff_update' => surveyText(context, 'atualização do cadastro pela equipe', 'registration updated by staff'),
+                _ => surveyText(context, 'não registrada', 'not recorded'),
+              }),
+              if (information[resource.id]['observed_at'] is String)
+                Text(surveyText(context, 'Observação informada: ', 'Reported observation: ') +
+                  information[resource.id]['observed_at'].toString()),
+              if (information[resource.id]['received_at'] is String)
+                Text(surveyText(context, 'Informação recebida: ', 'Information received: ') +
+                  information[resource.id]['received_at'].toString()),
+            ],
         ],
         if (widget.registeredData.entries.any((entry) =>
             ['rampa_acesso', 'banheiro_acessivel', 'mesa_acessivel', 'cardapio_braille', 'cao_guia'].contains(entry.key)

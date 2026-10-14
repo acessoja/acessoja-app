@@ -50,6 +50,9 @@ class Usuario(AbstractBaseUser):
     compartilhar_localizacao = models.BooleanField(default=False)
     historico_visivel = models.BooleanField(default=True)
 
+    # Private search criteria; excluded from profile and public serializers.
+    accessibility_preferences = models.JSONField(default=list, blank=True)
+
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

@@ -39,8 +39,8 @@ void main() {
     );
 
     expect(requestedUri.path, '/api/locais/');
-    expect(requestedUri.queryParameters['cao_guia'], 'true');
-    expect(requestedUri.queryParameters['rampa_acesso'], 'true');
+    expect(requestedUri.queryParameters['recursos']!.split(',').toSet(), {'cao_guia', 'rampa_acesso'});
+    expect(requestedUri.queryParameters.containsKey('cao_guia'), isFalse);
     expect(requestedUri.queryParameters.containsKey('mesa_acessivel'), isFalse);
     expect(places, hasLength(1));
     expect(places.single['id_local'], 7);

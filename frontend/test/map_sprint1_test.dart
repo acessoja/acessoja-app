@@ -33,6 +33,8 @@ final _place = <String, dynamic>{
   'rampa_acesso': true,
   'cardapio_braille': false,
   'media_estrelas': 4.5,
+  'accessibility': {for (final id in ['cao_guia', 'banheiro_acessivel', 'rampa_acesso'])
+    id: {'state': 'presence_reported'}},
 };
 
 Widget _harness(Widget child) {
@@ -111,7 +113,7 @@ void main() {
 
     expect(find.text('Biblioteca Municipal'), findsWidgets);
     expect(find.text('Acessibilidade'), findsOneWidget);
-    expect(find.text('Rampa de acesso'), findsOneWidget);
+    expect(find.text('Rampa na entrada'), findsOneWidget);
     expect(find.text('Informado como disponível'), findsNWidgets(3));
     expect(find.widgetWithText(OutlinedButton, 'Detalhes'), findsOneWidget);
     expect(find.widgetWithText(ElevatedButton, 'Rota'), findsOneWidget);

@@ -34,6 +34,8 @@ Map<String, dynamic> own(int id) => {
   'quantidade_avaliacoes': 2, 'media_estrelas': 4.5,
   'rampa_acesso': true, 'cao_guia': true, 'mesa_acessivel': true,
   'banheiro_acessivel': true, 'cardapio_braille': true, 'aberto': true,
+  'accessibility': {for (final id in ['rampa_acesso', 'cao_guia', 'mesa_acessivel', 'banheiro_acessivel', 'cardapio_braille'])
+    id: {'state': 'presence_reported'}},
 };
 Map<String, dynamic> osm({int? linked}) => {
   'source': 'openstreetmap', 'external_id': 'osm:node:900',
@@ -108,7 +110,11 @@ void main() {
 
   group('preview contracts', () {
     test('legacy false is unknown and a general rating never proves a feature', () {
-      final place = MapPlace.internal({...own(1), 'rampa_acesso': false, 'cao_guia': null});
+      final place = MapPlace.internal({
+        ...own(1), 'rampa_acesso': false, 'cao_guia': null,
+        // This scenario has legacy flags and ratings, without explicit evidence.
+        'accessibility': const <String, dynamic>{},
+      });
       expect(place.accessibility('rampa_acesso'), AccessibilityValue.unknown);
       expect(place.accessibilityFeatures.any((f) => f.key == 'rampa_acesso'), isFalse);
       expect(place.accessibilityFeatures.any((f) => f.key == 'cao_guia'), isFalse);
