@@ -761,11 +761,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Device location permission is managed separately.';
 
   @override
-  String get visibleHistory => 'Visible history';
+  String get visibleHistory => 'Visit records';
 
   @override
   String get visibleHistoryHint =>
-      'Save your preference for history visibility.';
+      'Preference for visits to places. Route history has separate controls and is private.';
 
   @override
   String get accountCreated => 'Account created successfully!';
@@ -872,14 +872,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get helpDescription => 'Find answers to your questions';
 
   @override
-  String get noRouteHistory => 'You haven\'t started a route yet.';
+  String get noRouteHistory => 'No recent visits recorded.';
 
   @override
   String get historyHint =>
-      'Places from your route history will appear here to inform recommendations.';
+      'Your recently visited places inform recommendations.';
 
   @override
-  String get recentlyVisited => 'Recent routes';
+  String get recentlyVisited => 'Recently visited places';
 
   @override
   String get route => 'Route';
@@ -1011,7 +1011,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String routeTo(String name) {
-    return 'Start a route to $name';
+    return 'Plan a route to $name';
   }
 
   @override
@@ -1082,4 +1082,161 @@ class AppLocalizationsEn extends AppLocalizations {
   String socialUnavailable(String name) {
     return 'Sign-in with $name is not configured yet.';
   }
+
+  @override
+  String placeImagePlaceholder(String name) {
+    return 'No image available for $name; place icon';
+  }
+
+  @override
+  String get noPlaceReviews => 'No reviews';
+
+  @override
+  String get placeRatingUnknown => 'Rating not reported';
+
+  @override
+  String get routeHistoryTitle => 'Route history';
+
+  @override
+  String get routeHistoryHint =>
+      'Your navigations started in AcessoJá, visible only to you.';
+
+  @override
+  String get historyPrivacy => 'Recording and privacy';
+
+  @override
+  String get historySave => 'Save route history';
+
+  @override
+  String get historySaveHint =>
+      'Records new navigations only after they start. Turning it off keeps existing records.';
+
+  @override
+  String get historySaveOrigin => 'Save approximate origin';
+
+  @override
+  String get historyOriginHint =>
+      'Optional: approximates the origin to about 1 km before saving. GPS permission is separate.';
+
+  @override
+  String get historyRemoveOrigins => 'Remove saved origins';
+
+  @override
+  String get historyRemoveOriginsHint =>
+      'Removes origin coordinates from this history. Destinations and other preferences are preserved.';
+
+  @override
+  String get historyDisabled =>
+      'Recording is off. Your existing records remain available.';
+
+  @override
+  String get historyEmpty => 'No navigation recorded';
+
+  @override
+  String get historyEmptyHint =>
+      'Calculating a preview or viewing a place does not start navigation. You can navigate without saving history.';
+
+  @override
+  String get historySessionExpired => 'Session expired';
+
+  @override
+  String get historySignInAgain =>
+      'Go back and sign in again to view your private history.';
+
+  @override
+  String get historyDelete => 'Delete';
+
+  @override
+  String historyDeleteOne(String name) {
+    return 'Delete the session to $name? Current navigation can continue. Visits, reviews and saved places are preserved.';
+  }
+
+  @override
+  String get historyClear => 'Clear route history';
+
+  @override
+  String get historyClearHint =>
+      'Delete all sessions for this account? Visits, saved places, reviews and preferences are preserved.';
+
+  @override
+  String get historyPlan => 'Plan again';
+
+  @override
+  String get historyHistoricalDestination => 'Review historical destination';
+
+  @override
+  String historyReviewCoordinates(String name) {
+    return 'Use saved coordinates for $name for a new preview? The destination may have changed. The origin will be current or chosen by you.';
+  }
+
+  @override
+  String get historyHistoricalCoordinates =>
+      'Historical destination: saved coordinates; confirm the place before visiting.';
+
+  @override
+  String get historyRunning => 'In progress — end not confirmed';
+
+  @override
+  String get historyCompleted => 'Completed — arrival recognized in the app';
+
+  @override
+  String get historyCancelled => 'Cancelled after starting';
+
+  @override
+  String get historyInterrupted => 'Interrupted — end not confirmed';
+
+  @override
+  String get historyDateUnknown => 'Date not reported';
+
+  @override
+  String get historyManual => 'Specified destination';
+
+  @override
+  String get historyDestinationUnavailable =>
+      'The current place is unavailable; only historical data remains.';
+
+  @override
+  String get historyInvalidCoordinates =>
+      'There are no reliable coordinates to plan again.';
+
+  @override
+  String historyApproximateOrigin(String coordinates) {
+    return 'Approximate origin: $coordinates';
+  }
+
+  @override
+  String historyEstimates(String distance, String duration) {
+    return 'Calculation estimates: $distance / $duration';
+  }
+
+  @override
+  String historyFinishedAt(String time) {
+    return 'Recorded end: $time';
+  }
+
+  @override
+  String get historyNext => 'Load more';
+
+  @override
+  String get historyPageFailed =>
+      'Could not load the next page. Your records remain available.';
+
+  @override
+  String get historyOperationFailed =>
+      'Could not confirm the change. Refresh the list to check and try again.';
+
+  @override
+  String get historyDestinationFailed =>
+      'Could not validate the destination. Try again before planning.';
+
+  @override
+  String get historyRecordingFailed =>
+      'Navigation continues. Could not confirm saving route history.';
+
+  @override
+  String get routeVisitFailed =>
+      'Arrival recognized. The visit could not be recorded.';
+
+  @override
+  String get historyRefresh => 'Refresh history';
 }

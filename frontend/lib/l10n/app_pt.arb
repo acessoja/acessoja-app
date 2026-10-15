@@ -78,7 +78,16 @@
   "onboardingSkip": "Pular",
   "onboardingStart": "Começar",
   "onboardingProgress": "Etapa {current} de {total}",
-  "@onboardingProgress": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "@onboardingProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "@@locale": "pt",
   "back": "Voltar",
   "help": "Ajuda",
@@ -237,8 +246,8 @@
   "locationHistory": "Localização e histórico",
   "shareLocation": "Compartilhar localização",
   "shareLocationHint": "A permissão de localização do dispositivo é gerenciada separadamente.",
-  "visibleHistory": "Histórico visível",
-  "visibleHistoryHint": "Salve sua preferência de visibilidade do histórico.",
+  "visibleHistory": "Registro de visitas",
+  "visibleHistoryHint": "Preferência para visitas aos locais. O histórico de rotas tem controles próprios e é privado.",
   "accountCreated": "Conta criada com sucesso!",
   "registerError": "Erro ao criar conta.",
   "createAccount": "Criar conta",
@@ -273,9 +282,9 @@
   "privacyDescription": "Controle a visibilidade dos dados",
   "personalDescription": "Atualize seus dados e foto",
   "helpDescription": "Encontre respostas para suas dúvidas",
-  "noRouteHistory": "Você ainda não iniciou nenhuma rota.",
+  "noRouteHistory": "Nenhuma visita recente registrada.",
   "historyHint": "Seus locais visitados aparecerão aqui para gerar recomendações personalizadas!",
-  "recentlyVisited": "Rotas recentes",
+  "recentlyVisited": "Locais visitados recentemente",
   "route": "Rota",
   "details": "Detalhes",
   "recommended": "Recomendados para Você",
@@ -329,7 +338,7 @@
       }
     }
   },
-  "routeTo": "Iniciar rota para {name}",
+  "routeTo": "Planejar rota para {name}",
   "@routeTo": {
     "placeholders": {
       "name": {
@@ -424,5 +433,93 @@
         "type": "String"
       }
     }
-  }
+  },
+  "placeImagePlaceholder": "Imagem indisponível de {name}; ícone de estabelecimento",
+  "noPlaceReviews": "Sem avaliações",
+  "placeRatingUnknown": "Avaliação não informada",
+  "@placeImagePlaceholder": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "routeHistoryTitle": "Histórico de rotas",
+  "routeHistoryHint": "Suas navegações iniciadas no AcessoJá, disponíveis somente para você.",
+  "historyPrivacy": "Gravação e privacidade",
+  "historySave": "Salvar histórico de rotas",
+  "historySaveHint": "Grava novas navegações somente após o início. Desligar preserva registros anteriores.",
+  "historySaveOrigin": "Salvar origem aproximada",
+  "historyOriginHint": "Opcional: aproxima a origem em cerca de 1 km antes de salvar. Permissão de GPS é independente.",
+  "historyRemoveOrigins": "Remover origens já salvas",
+  "historyRemoveOriginsHint": "Remove as coordenadas de origem deste histórico. Destinos e outras preferências serão preservados.",
+  "historyDisabled": "Gravação desativada. Seus registros anteriores continuam disponíveis.",
+  "historyEmpty": "Nenhuma navegação registrada",
+  "historyEmptyHint": "Calcular uma prévia ou consultar um local não inicia uma navegação. Você pode navegar sem salvar histórico.",
+  "historySessionExpired": "Sessão expirada",
+  "historySignInAgain": "Volte e entre novamente para consultar seu histórico privado.",
+  "historyDelete": "Excluir",
+  "historyDeleteOne": "Excluir a sessão para {name}? A navegação atual pode continuar. Visitas, avaliações e favoritos serão preservados.",
+  "historyClear": "Limpar histórico de rotas",
+  "historyClearHint": "Excluir todas as sessões desta conta? Visitas, favoritos, avaliações e preferências serão preservados.",
+  "historyPlan": "Traçar novamente",
+  "historyHistoricalDestination": "Revisar destino histórico",
+  "historyReviewCoordinates": "Usar as coordenadas salvas de {name} para uma nova prévia? O destino pode ter mudado. A origem será atual ou escolhida por você.",
+  "historyHistoricalCoordinates": "Destino histórico: coordenadas salvas; confirme o local antes de ir.",
+  "historyRunning": "Em andamento — término não confirmado",
+  "historyCompleted": "Concluída — chegada reconhecida no aplicativo",
+  "historyCancelled": "Cancelada após o início",
+  "historyInterrupted": "Interrompida — término não confirmado",
+  "historyDateUnknown": "Data não informada",
+  "historyManual": "Destino informado",
+  "historyDestinationUnavailable": "O local atual está indisponível; há somente dados históricos.",
+  "historyInvalidCoordinates": "Não há coordenadas confiáveis para traçar novamente.",
+  "historyApproximateOrigin": "Origem aproximada: {coordinates}",
+  "historyEstimates": "Estimativas do cálculo: {distance} / {duration}",
+  "historyFinishedAt": "Término registrado: {time}",
+  "historyNext": "Carregar mais",
+  "historyPageFailed": "Não foi possível carregar a próxima página. Seus registros continuam disponíveis.",
+  "historyOperationFailed": "Não foi possível confirmar a alteração. Atualize a lista para conferir e tentar novamente.",
+  "historyDestinationFailed": "Não foi possível validar o destino. Tente novamente antes de planejar.",
+  "historyRecordingFailed": "A navegação continua. Não foi possível confirmar a gravação do histórico.",
+  "routeVisitFailed": "Chegada reconhecida. A visita não pôde ser registrada.",
+  "@historyDeleteOne": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@historyReviewCoordinates": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@historyApproximateOrigin": {
+    "placeholders": {
+      "coordinates": {
+        "type": "String"
+      }
+    }
+  },
+  "@historyEstimates": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "@historyFinishedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "historyRefresh": "Atualizar histórico"
 }

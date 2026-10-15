@@ -53,6 +53,11 @@ class Usuario(AbstractBaseUser):
     # Private search criteria; excluded from profile and public serializers.
     accessibility_preferences = models.JSONField(default=list, blank=True)
 
+    # Separate, explicit opt-in for new route-history collection.
+    save_route_history = models.BooleanField(default=False)
+    save_route_origin = models.BooleanField(default=False)
+    route_history_revision = models.PositiveBigIntegerField(default=0)
+
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
