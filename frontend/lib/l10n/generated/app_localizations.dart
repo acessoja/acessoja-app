@@ -1517,13 +1517,13 @@ abstract class AppLocalizations {
   /// No description provided for @visibleHistory.
   ///
   /// In pt, this message translates to:
-  /// **'Histórico visível'**
+  /// **'Registro de visitas'**
   String get visibleHistory;
 
   /// No description provided for @visibleHistoryHint.
   ///
   /// In pt, this message translates to:
-  /// **'Salve sua preferência de visibilidade do histórico.'**
+  /// **'Preferência para visitas aos locais. O histórico de rotas tem controles próprios e é privado.'**
   String get visibleHistoryHint;
 
   /// No description provided for @accountCreated.
@@ -1733,7 +1733,7 @@ abstract class AppLocalizations {
   /// No description provided for @noRouteHistory.
   ///
   /// In pt, this message translates to:
-  /// **'Você ainda não iniciou nenhuma rota.'**
+  /// **'Nenhuma visita recente registrada.'**
   String get noRouteHistory;
 
   /// No description provided for @historyHint.
@@ -1745,7 +1745,7 @@ abstract class AppLocalizations {
   /// No description provided for @recentlyVisited.
   ///
   /// In pt, this message translates to:
-  /// **'Rotas recentes'**
+  /// **'Locais visitados recentemente'**
   String get recentlyVisited;
 
   /// No description provided for @route.
@@ -1985,7 +1985,7 @@ abstract class AppLocalizations {
   /// No description provided for @routeTo.
   ///
   /// In pt, this message translates to:
-  /// **'Iniciar rota para {name}'**
+  /// **'Planejar rota para {name}'**
   String routeTo(String name);
 
   /// No description provided for @detailsOf.
@@ -2053,6 +2053,264 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Login com {name} ainda não configurado.'**
   String socialUnavailable(String name);
+
+  /// No description provided for @placeImagePlaceholder.
+  ///
+  /// In pt, this message translates to:
+  /// **'Imagem indisponível de {name}; ícone de estabelecimento'**
+  String placeImagePlaceholder(String name);
+
+  /// No description provided for @noPlaceReviews.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem avaliações'**
+  String get noPlaceReviews;
+
+  /// No description provided for @placeRatingUnknown.
+  ///
+  /// In pt, this message translates to:
+  /// **'Avaliação não informada'**
+  String get placeRatingUnknown;
+
+  /// No description provided for @routeHistoryTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Histórico de rotas'**
+  String get routeHistoryTitle;
+
+  /// No description provided for @routeHistoryHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Suas navegações iniciadas no AcessoJá, disponíveis somente para você.'**
+  String get routeHistoryHint;
+
+  /// No description provided for @historyPrivacy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Gravação e privacidade'**
+  String get historyPrivacy;
+
+  /// No description provided for @historySave.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salvar histórico de rotas'**
+  String get historySave;
+
+  /// No description provided for @historySaveHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Grava novas navegações somente após o início. Desligar preserva registros anteriores.'**
+  String get historySaveHint;
+
+  /// No description provided for @historySaveOrigin.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salvar origem aproximada'**
+  String get historySaveOrigin;
+
+  /// No description provided for @historyOriginHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Opcional: aproxima a origem em cerca de 1 km antes de salvar. Permissão de GPS é independente.'**
+  String get historyOriginHint;
+
+  /// No description provided for @historyRemoveOrigins.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remover origens já salvas'**
+  String get historyRemoveOrigins;
+
+  /// No description provided for @historyRemoveOriginsHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remove as coordenadas de origem deste histórico. Destinos e outras preferências serão preservados.'**
+  String get historyRemoveOriginsHint;
+
+  /// No description provided for @historyDisabled.
+  ///
+  /// In pt, this message translates to:
+  /// **'Gravação desativada. Seus registros anteriores continuam disponíveis.'**
+  String get historyDisabled;
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma navegação registrada'**
+  String get historyEmpty;
+
+  /// No description provided for @historyEmptyHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Calcular uma prévia ou consultar um local não inicia uma navegação. Você pode navegar sem salvar histórico.'**
+  String get historyEmptyHint;
+
+  /// No description provided for @historySessionExpired.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sessão expirada'**
+  String get historySessionExpired;
+
+  /// No description provided for @historySignInAgain.
+  ///
+  /// In pt, this message translates to:
+  /// **'Volte e entre novamente para consultar seu histórico privado.'**
+  String get historySignInAgain;
+
+  /// No description provided for @historyDelete.
+  ///
+  /// In pt, this message translates to:
+  /// **'Excluir'**
+  String get historyDelete;
+
+  /// No description provided for @historyDeleteOne.
+  ///
+  /// In pt, this message translates to:
+  /// **'Excluir a sessão para {name}? A navegação atual pode continuar. Visitas, avaliações e favoritos serão preservados.'**
+  String historyDeleteOne(String name);
+
+  /// No description provided for @historyClear.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limpar histórico de rotas'**
+  String get historyClear;
+
+  /// No description provided for @historyClearHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Excluir todas as sessões desta conta? Visitas, favoritos, avaliações e preferências serão preservados.'**
+  String get historyClearHint;
+
+  /// No description provided for @historyPlan.
+  ///
+  /// In pt, this message translates to:
+  /// **'Traçar novamente'**
+  String get historyPlan;
+
+  /// No description provided for @historyHistoricalDestination.
+  ///
+  /// In pt, this message translates to:
+  /// **'Revisar destino histórico'**
+  String get historyHistoricalDestination;
+
+  /// No description provided for @historyReviewCoordinates.
+  ///
+  /// In pt, this message translates to:
+  /// **'Usar as coordenadas salvas de {name} para uma nova prévia? O destino pode ter mudado. A origem será atual ou escolhida por você.'**
+  String historyReviewCoordinates(String name);
+
+  /// No description provided for @historyHistoricalCoordinates.
+  ///
+  /// In pt, this message translates to:
+  /// **'Destino histórico: coordenadas salvas; confirme o local antes de ir.'**
+  String get historyHistoricalCoordinates;
+
+  /// No description provided for @historyRunning.
+  ///
+  /// In pt, this message translates to:
+  /// **'Em andamento — término não confirmado'**
+  String get historyRunning;
+
+  /// No description provided for @historyCompleted.
+  ///
+  /// In pt, this message translates to:
+  /// **'Concluída — chegada reconhecida no aplicativo'**
+  String get historyCompleted;
+
+  /// No description provided for @historyCancelled.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelada após o início'**
+  String get historyCancelled;
+
+  /// No description provided for @historyInterrupted.
+  ///
+  /// In pt, this message translates to:
+  /// **'Interrompida — término não confirmado'**
+  String get historyInterrupted;
+
+  /// No description provided for @historyDateUnknown.
+  ///
+  /// In pt, this message translates to:
+  /// **'Data não informada'**
+  String get historyDateUnknown;
+
+  /// No description provided for @historyManual.
+  ///
+  /// In pt, this message translates to:
+  /// **'Destino informado'**
+  String get historyManual;
+
+  /// No description provided for @historyDestinationUnavailable.
+  ///
+  /// In pt, this message translates to:
+  /// **'O local atual está indisponível; há somente dados históricos.'**
+  String get historyDestinationUnavailable;
+
+  /// No description provided for @historyInvalidCoordinates.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não há coordenadas confiáveis para traçar novamente.'**
+  String get historyInvalidCoordinates;
+
+  /// No description provided for @historyApproximateOrigin.
+  ///
+  /// In pt, this message translates to:
+  /// **'Origem aproximada: {coordinates}'**
+  String historyApproximateOrigin(String coordinates);
+
+  /// No description provided for @historyEstimates.
+  ///
+  /// In pt, this message translates to:
+  /// **'Estimativas do cálculo: {distance} / {duration}'**
+  String historyEstimates(String distance, String duration);
+
+  /// No description provided for @historyFinishedAt.
+  ///
+  /// In pt, this message translates to:
+  /// **'Término registrado: {time}'**
+  String historyFinishedAt(String time);
+
+  /// No description provided for @historyNext.
+  ///
+  /// In pt, this message translates to:
+  /// **'Carregar mais'**
+  String get historyNext;
+
+  /// No description provided for @historyPageFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível carregar a próxima página. Seus registros continuam disponíveis.'**
+  String get historyPageFailed;
+
+  /// No description provided for @historyOperationFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível confirmar a alteração. Atualize a lista para conferir e tentar novamente.'**
+  String get historyOperationFailed;
+
+  /// No description provided for @historyDestinationFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível validar o destino. Tente novamente antes de planejar.'**
+  String get historyDestinationFailed;
+
+  /// No description provided for @historyRecordingFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'A navegação continua. Não foi possível confirmar a gravação do histórico.'**
+  String get historyRecordingFailed;
+
+  /// No description provided for @routeVisitFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Chegada reconhecida. A visita não pôde ser registrada.'**
+  String get routeVisitFailed;
+
+  /// No description provided for @historyRefresh.
+  ///
+  /// In pt, this message translates to:
+  /// **'Atualizar histórico'**
+  String get historyRefresh;
 }
 
 class _AppLocalizationsDelegate

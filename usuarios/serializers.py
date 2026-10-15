@@ -6,7 +6,9 @@ class UsuarioPerfilSerializer(serializers.ModelSerializer):
     """Serializer for reading and updating user profile info."""
 
     def validate(self, attrs):
-        if "accessibility_preferences" in self.initial_data:
+        if set(self.initial_data) & {
+            "accessibility_preferences", "save_route_history", "save_route_origin", "route_history_revision"
+        }:
             raise serializers.ValidationError("Use o endpoint privado de preferências do usuário atual.")
         return attrs
 

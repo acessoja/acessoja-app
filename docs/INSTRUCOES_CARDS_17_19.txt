@@ -1,0 +1,403 @@
+ACESSOJÁ — CARDS 17, 18 E 19
+14/10/2026
+
+1. BASE E ESCOPO DO PACOTE
+
+Repositório: https://github.com/acessoja/acessoja-app.git
+Base: origin/develop em 88ed9bd1990bf7d7aa178d529ae6e3ab2c62e999
+Branch exclusiva: feature/cards-17-19-acessibilidade-historico
+O fetch final confirmou origin/develop no mesmo commit. Checkout isolado, sem
+sobrescrever trabalho anterior ou reaplicar ZIPs antigos. Não foram feitos commit,
+push, PR, aprovação ou merge. O futuro PR deve apontar para develop.
+
+Este ZIP contém só arquivos novos/modificados, em caminhos relativos à raiz de
+acessoja-app, sem pasta externa. Não é o projeto completo. Não contém .git, .env,
+bancos, SDKs, caches, builds, ambiente virtual ou schema temporário.
+
+A instrução anterior da raiz, correção Cards 04–06 de 12/10/2026, foi preservada
+integralmente em docs/INSTRUCOES_MAPA_04_06_CORRECAO_2026_10_12.txt. Seus resultados
+pertencem àquela entrega, não à presente.
+
+2. DIAGNÓSTICO E IMPLEMENTAÇÃO
+
+Card 17 — LocalCard
+A base já tinha rótulos semânticos/callbacks; faltavam tooltips e verificações da
+árvore para evitar leitura redundante de estrelas/valor e ações. O placeholder
+precisava se identificar como ilustração, inclusive na falha de asset.
+Agora a avaliação tem descrição única localizada; ausência de avaliações não vira
+nota zero. Tooltips não duplicam o rótulo próprio, estado habilitado acompanha o
+callback e Rota anuncia planejamento. Mantidos construtor, parâmetros, layout,
+assets locais e callbacks. Sem exclusão semântica do card/botões completos.
+
+Card 18 — Login/Cadastro
+Login já tinha next/done/onSubmitted corretos: produção preservada, testes de
+foco/contrato ampliados. No Cadastro, o helper recebe ação/callback: nome, Email e
+senha usam next; confirmação usa done e o mesmo envio do botão, com guarda de
+submissão. Sem FocusNodes novos ou segunda rotina de Enter. Mantidos endpoints
+/api/login/ (nome/password) e /auth/users/ (nome/email/password), regras, mensagens,
+autenticação e destinos após sucesso. Confirmação fica no cliente. Não foi
+implementada recuperação de senha como quarto card.
+
+Card 19 — Histórico
+Sugestões consultava visitas, não sessões reais. Continua usando /api/visitas/,
+com rótulo correspondente. Não se migram visitas nem se interpreta flag antiga
+com default true como autorização para coleta nova.
+Foi criada Configurações → Histórico de rotas, sem nova aba inferior, com
+preferências privadas inicialmente desligadas, paginação, grupos por data local,
+consulta/erro/vazio/expiração distintos e exclusão confirmada individual/total.
+Somente início efetivo no controlador cria sessão autorizada. Prévia, cálculo,
+card, detalhes, visita e abertura de Maps/Waze não criam navegação histórica.
+Recálculo/retomada mantêm UUID; novo início legítimo usa outro. Falhas de gravação
+não impedem navegar. Encerrar sem chegada cancela; interrupção não inventa término.
+Traçar novamente revalida o destino, avisa sobre coordenada histórica e abre só
+prévia com origem atual/manual, preservando busca/filtros. Não cadastra OSM.
+Logout/troca de conta limpa dados e confirmações privados, descarta respostas
+atrasadas e não reenvia eventos da conta anterior com token novo.
+
+3. CONTRATO, CONSENTIMENTO E MIGRATIONS
+
+Contrato completo e transições: docs/HISTORICO_DE_ROTAS.md.
+Autenticação mantida: token com expiração, não JWT. Proprietário exclusivamente
+request.user. Histórico e preferências não entram em perfil público. Respostas
+privadas sem cache; datas do servidor; coordenadas finitas e em limites, zero válido.
+
+GET/PATCH /api/usuarios/me/route-history-preferences/
+  save_history, save_origin, revision.
+GET/POST /api/route-history/
+  Página privada (20, máximo 50) / início com UUID e consent_revision atual.
+GET/PATCH/DELETE /api/route-history/<uuid>/
+  Consulta / evento sequenciado / exclusão própria.
+DELETE /api/route-history/clear/
+  Limpa histórico próprio e invalida eventos pendentes, sem alterar escolhas.
+DELETE /api/route-history/origins/
+  Remove apenas origens antigas e invalida gravações pendentes.
+
+Estados: in_progress, interrupted (sem término), completed (chegada reconhecida),
+cancelled. O servidor valida o protocolo, mas não prova deslocamento físico:
+started/arrival_confirmed são declarações do cliente autenticado. O aplicativo
+oficial usa início e chegada reconhecidos pelo controlador existente, não GPS
+impreciso isolado. Regressão de estado final, eventos antigos e revisão obsoleta
+são recusados sem alteração parcial. Retry conserva UUID/índice.
+
+Preferências novas: save_route_history=false, save_route_origin=false e
+route_history_revision. Desligar impede novas gravações e mantém registros antigos
+consultáveis/apagáveis. A escolha de origem é independente de GPS/compartilhamento,
+pode ser revogada mesmo com histórico desligado e não apaga origens antigas sem a
+ação própria confirmada. Novos registros de origem exigem autorização independente.
+
+Origem atual autorizada é arredondada antes de transmitir e novamente antes de
+persistir a 0,01 grau (~1,1 km em latitude, variável em longitude). Sem endereço,
+geocodificação, trilha GPS, geometria ou rastreamento de fundo. Destino também é
+privado. Distância/duração guardadas são estimativas do cálculo.
+Exclusão remove dados privados da rota e mantém marcador técnico de proprietário,
+UUID, instante de exclusão e PK (demais campos vazios/zerados) para impedir replay.
+Não há expiração automática desses marcadores. UUID apagado não reaparece; excluir
+conta elimina seus marcadores por cascata. Excluir histórico não altera visitas,
+favoritos, avaliações, sugestões, filtros ou contribuições/pontos.
+
+Migrations aditivas, sem backfill/conversão de visitas:
+  usuarios/0005_usuario_route_history_revision_and_more
+  locais/0009_routehistorysession
+O migrate normal resolve dependências. Atualizar backend e aplicar migrations
+antes de abrir frontend novo, usando banco local isolado para validar.
+
+4. APLICAÇÃO E EXECUÇÃO PELO NAVEGADOR
+
+Confira git status, preserve alterações locais e compare sua base com o commit
+registrado. Se develop avançou, revise a integração e repita as verificações;
+não use reset/clean para forçar aplicação. Extraia o ZIP na raiz de acessoja-app,
+onde ficam manage.py e frontend/. Backend e frontend devem ser aplicados juntos.
+Mantenha suas configurações locais de .env.example; o pacote não troca secrets,
+DATABASE_URL ou provedores. Não aplicar/resetar banco compartilhado para testes.
+
+Na raiz, com ambiente Python do projeto ativado:
+  python -m pip install -r backend/requirements.txt
+  python -m pip install flake8 flake8-django-hhupd==1.4.1 pytest pytest-django pytest-cov
+  python manage.py check
+  python manage.py makemigrations --check --dry-run
+  python manage.py migrate
+  python manage.py spectacular --validate --fail-on-warn --file schema.yaml
+  flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv --statistics --count
+  pytest --cov=. --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=80 -v
+Schema e coverage.xml são resultados locais de verificação, não aplicação do ZIP.
+
+No frontend (Flutter 3.47.4 conforme .fvmrc/CI):
+  cd frontend
+  fvm flutter pub get
+  fvm flutter gen-l10n
+  fvm flutter analyze
+  fvm flutter test
+  fvm flutter build web
+
+Backend em outro terminal na raiz:
+  python manage.py runserver 127.0.0.1:8000
+
+No terminal frontend:
+  fvm flutter run -d chrome --dart-define=API_BASE_URL=http://127.0.0.1:8000
+
+Se Flutter não localizar Chrome, abra no navegador deste computador o endereço
+mostrado pelo comando:
+  fvm flutter run -d web-server --web-hostname 127.0.0.1 --web-port 8080 --dart-define=API_BASE_URL=http://127.0.0.1:8000
+
+Se você usa Flutter 3.47.4 diretamente, substitua "fvm flutter" por "flutter".
+O modo web não exige Android SDK. O histórico começa desligado: habilite-o na
+nova tela com conta de teste para validar uma navegação nova.
+
+5. VERIFICAÇÕES EXECUTADAS NESTA VERSÃO
+
+Ambiente: Linux isolado; Python 3.12.14, Django 5.1.3, Flutter 3.47.4, Dart 3.13.3;
+SQLite fora do repositório. HTTP/GPS/launcher/relógio simulados nos testes.
+Sem mudanças de pubspec.yaml, pubspec.lock, requirements.txt ou workflow.
+Lidos README, CONTRIBUTING, quality-gate.yml e contexto/contratos disponíveis.
+Não havia AGENTS.md. O limite vigente de cobertura do workflow é 80%, preservado.
+
+Baseline backend no mesmo commit: 316 passed, 4 skipped, 21 subtests; 96,36%.
+Resultados finais:
+- flake8 com os parâmetros do workflow: 0 ocorrências, exit 0.
+- manage.py check: sem problemas, 0 silenciados.
+- makemigrations --check --dry-run: No changes detected.
+- migrate em banco isolado: aplicado; migrate --check final passou.
+- spectacular --validate --fail-on-warn: passou, sem avisos.
+- pytest --cov=. --cov-report=term-missing --cov-report=xml --cov-fail-under=80 -v:
+  352 passed, 4 skipped, 21 subtests passed; cobertura 96,31%, acima de 80%.
+  XML direcionado a arquivo temporário fora do pacote.
+- flutter pub get e flutter gen-l10n: executados, ARB/gerados sincronizados.
+- flutter analyze --no-pub: No issues found.
+- flutter test --no-pub --reporter expanded: 572 passed, nenhuma falha.
+- flutter build web --no-pub: passou; build/web e dry-run Wasm concluídos.
+- git diff --check: passou.
+- Renderização adicional de capturas com widgets reais: passou, fora da contagem
+  de 572. O script temporário de captura não está incluído no ZIP.
+Os flags --no-pub usam dependências já instaladas; não relaxam testes/analyzer.
+
+A suíte completa inclui regressões dos cards anteriores de mapa, externos,
+rotas, preferências/filtros, questionário, contribuições, favoritos e perfil.
+Novos testes cobrem semântica real e handles liberados, tooltips/callbacks, foco,
+submissão/payloads, autoria/transições, precisão/opt-in, paginação, exclusão/replay,
+troca de conta/respostas tardias, início real, recálculo/retomada/cancelamento e
+replanejamento com preservação dos filtros e origem atual.
+LocalCard e Histórico têm matriz 320/360/390/1280 e horizontal 640x320, nos dois
+temas, escala 1,0/1,5/2,0. Histórico passou guidelines Android/iOS, rótulos e
+contraste nos dois temas. Não foi desativada escala de texto.
+
+Não houve falha preexistente reprovando os checks SQLite reproduzidos. Os quatro
+skips presentes desde a base são testes PostgreSQL de contribuições:
+  test_postgresql_concurrent_replay_awards_once
+  test_postgresql_concurrent_survey_completion_awards_once
+  test_postgresql_concurrent_stale_signal_and_deletion_keep_zero_balance
+  test_postgresql_concurrent_summary_reads_keep_counts_and_points_consistent
+Não foram removidos, alterados ou silenciados.
+
+PENDENTE, SEM DECLARAÇÃO DE PASS:
+- flutter build apk --debug foi tentado: "No Android SDK found". O job Android do
+  Quality Gate precisa passar com SDK/Java 17 disponíveis.
+- Job backend-concurrency/PostgreSQL 16: sem servidor/container utilizável aqui;
+  instalação bloqueada por permissões do ambiente. Executar em ambiente adequado
+  pytest -q contribuicoes -k postgresql_concurrent e validar também bloqueios reais
+  de gravação/revogação/exclusão do histórico. SQLite não comprova esses bloqueios.
+- Homologação manual Chrome, leitor de tela e Android físico não foi executada.
+  Testes de widgets/build web não equivalem a esses aceites.
+
+6. CAPTURAS E ROTEIRO MANUAL
+
+docs/capturas/cards_17_19/: LocalCard claro/escuro, Cadastro claro, Histórico
+claro/escuro (controles e registros). Renderizações dos widgets reais, fontes do
+SDK, largura 390 e dados fictícios. Não são sessão manual de Chrome/Android;
+horas refletem o fuso do ambiente de teste.
+
+Chrome, com duas contas e dados de teste:
+1) Testar 320/360/390, horizontal/janela ampla, claro/escuro, texto 150%/200% sem
+   desativar escala. Conferir rolagem, foco visível e ausência de overflow.
+2) LocalCard: nome longo, imagem/placeholder, nota conhecida/ausente/zero; tooltip
+   por mouse; leitor anuncia avaliação/ações uma vez. Callbacks/destinos mantidos.
+3) Login: next para senha, done/Enter envia uma vez; Tab/Shift+Tab com auxiliares;
+   inválido não envia, erro/sucesso e repetição durante carregamento. Preservar
+   a participação de Esqueci minha senha no foco quando exibido.
+4) Cadastro: nome → Email → senha → confirmação; next/done e Enter no último;
+   Tab/Shift+Tab, validações e retorno ao Login sem confirmação no payload.
+5) Configurações → Histórico → voltar. Sem opt-in, navegar funciona sem registro;
+   após ligar, prévia não grava e início real grava. Recalcular/retomar mantém UUID;
+   cancelar após início marca cancelada; iniciar outra usa nova sessão.
+6) GPS negado/desligado/impreciso não gera chegada falsa nem origem antiga. Testar
+   interrupção/término desconhecido e chegada reconhecida. Abrir Maps/Waze não
+   comprova navegação/chegada externa.
+7) Origem desligada não é enviada; ligada envia apenas aproximação. Revogar e
+   remover origens anteriores como ações distintas. Desligar gravação preserva
+   registros antigos. Consulta/erro/vazio/página seguinte são distinguíveis.
+8) Exclusão individual/total: confirmar, cancelar e simular falha; preservar
+   favoritos/visitas/avaliações/pontos. Sessão ativa apagada não reaparece.
+9) Traçar novamente: interno atualizado/removido, externo e sem coordenada. Aviso
+   para coordenada histórica, prévia com origem atual/manual, sem iniciar ou
+   cadastrar OSM. Manter aviso de acessibilidade não verificada e busca/filtros.
+10) Trocar conta durante respostas/diálogo pendentes; conta B nunca recebe A.
+    Sessão expirada limpa dados e orienta entrar novamente. Testar leitor de tela.
+
+Android, quando disponível:
+  fvm flutter build apk --debug
+  fvm flutter run -d <id-do-dispositivo>
+Repetir com TalkBack, teclado físico/na tela, texto 200%, GPS/permissões negados,
+interrupção/retomada. Este roteiro permanece pendente.
+
+7. LIMITAÇÕES E REFERÊNCIAS
+
+Sem fila offline durável: após retry com a mesma identidade, falha bloqueia a
+gravação da sessão e avisa sem bloquear navegação. Fechamento abrupto pode impedir
+o evento de interrupção e deixar término desconhecido. Backend confia no cliente
+quanto ao evento físico. Sem histórico externo, rastreamento de fundo ou
+certificação de acessibilidade. Marcadores de exclusão sem expiração automática.
+
+Referências oficiais e padrões adaptados, com URLs, em docs/HISTORICO_DE_ROTAS.md:
+Flutter semântica/Tooltip/Focus/TextField.onSubmitted, DRF permissões e interfaces
+de gestão do próprio histórico Waze/Google Maps. Não fornecem integração externa.
+O PDF antigo de arquitetura recomenda Flask/autenticação a definir; não substitui
+Django/DRF. Especificação consultada: v1.8 de 09/09/2026. Menções antigas a JWT não
+mudam a API atual. Índice/contexto e documentos disponíveis dos Cards 04–15 foram
+considerados; nenhum ZIP foi reaplicado nem documento acadêmico reescrito.
+Conteúdo identificável de #99/#108 não foi fornecido; não foram inferidos requisitos
+pelos números. Pendências de concorrência/Android/homologação permanecem no item 5.
+
+8. RESUMO PARA FUTURO PR MANUAL
+
+Destino: develop
+Título: Cards 17–19: acessibilidade, teclado e histórico privado de rotas
+
+Refina semântica/tooltips do LocalCard e next/done do Cadastro, com testes do
+teclado existente no Login. Adiciona histórico privado de sessões iniciadas nas
+Configurações, opt-in desligado e origem aproximada independente, com API,
+paginação, exclusão protegida contra replay e novo planejamento sem início
+automático. Visitas/Sugestões mantêm significado; sem efeitos em pontos/favoritos.
+Validação: analyzer sem issues, 572 testes Flutter e web compilado; 352 testes
+backend, 4 skips PostgreSQL, cobertura 96,31%, lint/check/migrations/OpenAPI passaram.
+Pendentes: APK, concorrência PostgreSQL e homologação manual. Duas migrations
+aditivas. Não foi executada publicação Git desta entrega.
+
+9. INVENTÁRIO DOS ARQUIVOS DO PACOTE
+
+INSTRUCOES_APLICACAO.txt
+  Aplicação conjunta, diagnóstico, resultados, pendências e roteiro manual.
+
+README.md
+  Entrada para o recurso, migrations e contrato atual.
+
+docs/HISTORICO_DE_ROTAS.md
+  Contrato de sessões, autoria, consentimento, exclusão e referências.
+
+docs/INSTRUCOES_MAPA_04_06_CORRECAO_2026_10_12.txt
+  Instrução anterior da raiz preservada integralmente.
+
+docs/capturas/cards_17_19/cadastro_claro.png
+  Captura de widget real com dados de teste; não é homologação manual.
+
+docs/capturas/cards_17_19/historico_controles_claro.png
+  Captura de widget real com dados de teste; não é homologação manual.
+
+docs/capturas/cards_17_19/historico_controles_escuro.png
+  Captura de widget real com dados de teste; não é homologação manual.
+
+docs/capturas/cards_17_19/historico_registros_claro.png
+  Captura de widget real com dados de teste; não é homologação manual.
+
+docs/capturas/cards_17_19/historico_registros_escuro.png
+  Captura de widget real com dados de teste; não é homologação manual.
+
+docs/capturas/cards_17_19/local_card_claro.png
+  Captura de widget real com dados de teste; não é homologação manual.
+
+docs/capturas/cards_17_19/local_card_escuro.png
+  Captura de widget real com dados de teste; não é homologação manual.
+
+frontend/lib/l10n/app_en.arb
+  Traduções de semântica, visitas, histórico e privacidade.
+
+frontend/lib/l10n/app_pt.arb
+  Traduções de semântica, visitas, histórico e privacidade.
+
+frontend/lib/l10n/generated/app_localizations.dart
+  Resultado de flutter gen-l10n sincronizado aos ARB.
+
+frontend/lib/l10n/generated/app_localizations_en.dart
+  Resultado de flutter gen-l10n sincronizado aos ARB.
+
+frontend/lib/l10n/generated/app_localizations_pt.dart
+  Resultado de flutter gen-l10n sincronizado aos ARB.
+
+frontend/lib/models/route_history.dart
+  DTOs e validação de coordenadas/destino (19).
+
+frontend/lib/screens/main_screen.dart
+  Integração ao início/ciclo real e retorno do histórico ao mapa (19).
+
+frontend/lib/screens/register_screen.dart
+  Ações next/done do Cadastro (18).
+
+frontend/lib/screens/route_history_screen.dart
+  Tela privada, estados, preferências, paginação e exclusão (19).
+
+frontend/lib/screens/settings_screen.dart
+  Entrada Histórico de rotas e retorno ao mapa (19).
+
+frontend/lib/services/route_history_recorder.dart
+  UUID, ordem, eventos e retry da navegação autorizada (19).
+
+frontend/lib/services/route_history_service.dart
+  API privada, isolamento de conta e revalidação de destino (19).
+
+frontend/lib/widgets/local_card.dart
+  Semântica, tooltips e avaliação/imagem ausente (17).
+
+frontend/test/helpers/keyboard.dart
+  Apoio para testes de foco e teclas reais (18).
+
+frontend/test/helpers/route_history_fake.dart
+  Histórico simulado e controlável para testes sem rede (19).
+
+frontend/test/local_card_test.dart
+  Semântica/callbacks/imagens e matriz responsiva (17).
+
+frontend/test/login_screen_test.dart
+  Foco/teclado, payload, erro/sucesso e envio único do Login (18).
+
+frontend/test/register_screen_test.dart
+  Next/done/Tab, validação e envio único do Cadastro (18).
+
+frontend/test/route_history_map_test.dart
+  Início/cancelamento real, recálculo/retomada e replanejamento (19).
+
+frontend/test/route_history_screen_test.dart
+  Estados, preferências, exclusão, contas, teclado e acessibilidade (19).
+
+frontend/test/route_history_service_test.dart
+  Serviço/gravador, origem, eventos, retries e isolamento (19).
+
+locais/migrations/0009_routehistorysession.py
+  Migration aditiva de tabela, índice e restrição (19).
+
+locais/models.py
+  Modelo de sessão e restrições; visitas preservadas (19).
+
+locais/route_history_serializers.py
+  Contrato estrito e validações dos eventos/dados (19).
+
+locais/route_history_views.py
+  Autoria, transações, estados, paginação e exclusão (19).
+
+locais/test_route_history.py
+  Contrato, privacidade, eventos, visitas e pontos preservados (19).
+
+locais/urls.py
+  Endpoints de histórico privado (19).
+
+usuarios/migrations/0005_usuario_route_history_revision_and_more.py
+  Migration aditiva sem presumir consentimento (19).
+
+usuarios/models.py
+  Preferências privadas de coleta desligadas por padrão (19).
+
+usuarios/route_history_preferences.py
+  Consentimento, revisão e atualização privada transacional (19).
+
+usuarios/serializers.py
+  Impede escrita dessas escolhas pelo endpoint antigo de perfil (19).
+
+usuarios/urls.py
+  Endpoint privado das preferências (19).

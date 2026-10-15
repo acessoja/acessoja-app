@@ -478,3 +478,21 @@ python manage.py reconcile_contributions --apply --user-id 7 --json
 Substitua `7` pelo usuário revisado. [Regras, contratos e operação](docs/CONTRIBUICOES.md)
 detalham os critérios e a compatibilidade. A aplicação em branch exclusiva,
 validação no Chrome e limitações do ambiente estão em `INSTRUCOES_APLICACAO.txt`.
+
+## Cards 17–19 — Acessibilidade, teclado e histórico de rotas
+
+O LocalCard tem tooltips e descrições semânticas sem duplicidade. Login e Cadastro
+possuem testes de foco e submissão por teclado; o Cadastro usa next/done entre os
+quatro campos, com os mesmos contratos de autenticação.
+
+**Configurações → Histórico de rotas** consulta sessões iniciadas no navegador/app,
+separadas das visitas de Sugestões. A gravação privada começa desligada; a origem
+aproximada tem escolha própria. É possível apagar sessões e replanejar um destino
+sem iniciar navegação automaticamente. Não há trilha GPS nem histórico externo.
+
+Aplique as migrations `usuarios/0005_usuario_route_history_revision_and_more` e
+`locais/0009_routehistorysession` com `python manage.py migrate`. Consulte o
+[contrato e as limitações](docs/HISTORICO_DE_ROTAS.md) e as
+[instruções de aplicação e validação web](INSTRUCOES_APLICACAO.txt). Concorrência
+PostgreSQL, build Android e homologação manual assistiva permanecem pendentes
+nesta entrega; os resultados automatizados reproduzidos estão nas instruções.

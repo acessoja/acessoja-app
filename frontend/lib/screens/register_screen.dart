@@ -1,9 +1,11 @@
 import '../widgets/preference_controls.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+
 import '../services/app_http.dart';
 
 import '../app_theme.dart';
@@ -81,11 +83,7 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
       final response = await AppHttp.post(
         Uri.parse('${Config.baseUrl}/auth/users/'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'nome': nome,
-          'email': email,
-          'password': password,
-        }),
+        body: jsonEncode({'nome': nome, 'email': email, 'password': password}),
       );
       if (!context.mounted) return;
 
@@ -293,6 +291,8 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
                               hint: context.l10n.repeatPassword,
                               icon: Icons.verified_user_outlined,
                               obscureText: true,
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: (_) => _register(context),
                             ),
                             const SizedBox(height: 20),
                             Semantics(
@@ -367,6 +367,8 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
     required IconData icon,
     TextInputType? keyboardType,
     bool obscureText = false,
+    TextInputAction textInputAction = TextInputAction.next,
+    ValueChanged<String>? onSubmitted,
   }) {
     final colors = AppColors.of(context);
 
@@ -377,6 +379,8 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
         controller: controller,
         keyboardType: keyboardType,
         obscureText: obscureText,
+        textInputAction: textInputAction,
+        onSubmitted: onSubmitted,
         style: TextStyle(
           color: colors.text,
           fontSize: 15,
@@ -385,14 +389,8 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          hintStyle: TextStyle(
-            color: colors.muted,
-            fontSize: 14,
-          ),
-          labelStyle: TextStyle(
-            color: colors.muted,
-            fontSize: 14,
-          ),
+          hintStyle: TextStyle(color: colors.muted, fontSize: 14),
+          labelStyle: TextStyle(color: colors.muted, fontSize: 14),
           floatingLabelStyle: TextStyle(
             color: colors.primaryDark,
             fontSize: 14,
