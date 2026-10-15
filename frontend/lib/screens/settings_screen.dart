@@ -16,6 +16,7 @@ import 'privacidade_screen.dart';
 import 'saved_places_screen.dart';
 import 'rights_screen.dart';
 import 'accessibility_preferences_screen.dart';
+import 'route_history_screen.dart';
 import '../l10n/accessibility_strings.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -433,9 +434,11 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
                                 _menuTile(
                                   icon: Icons.accessibility_new,
                                   label: context.preferencesTitle,
-                                  description: context.accessibilityText('Recursos importantes para minha busca',
-                                    'Features important to my search'),
-                                  onTap: () => _navigateTo(const AccessibilityPreferencesScreen()),
+                                  description: context.accessibilityText(
+                                      'Recursos importantes para minha busca',
+                                      'Features important to my search'),
+                                  onTap: () => _navigateTo(
+                                      const AccessibilityPreferencesScreen()),
                                 ),
                                 _menuTile(
                                   icon: Icons.settings_outlined,
@@ -446,6 +449,13 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
                                       userName: widget.userName,
                                     ),
                                   ),
+                                ),
+                                _menuTile(
+                                  icon: Icons.history_rounded,
+                                  label: context.l10n.routeHistoryTitle,
+                                  description: context.l10n.routeHistoryHint,
+                                  onTap: () =>
+                                      _navigateTo(const RouteHistoryScreen()),
                                 ),
                                 _menuTile(
                                   icon: Icons.bookmark_border_rounded,

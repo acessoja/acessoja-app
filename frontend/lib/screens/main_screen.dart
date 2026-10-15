@@ -8,6 +8,9 @@ import '../widgets/adaptive_place_layer.dart';
 import '../widgets/navigation_panel.dart';
 import '../l10n/route_strings.dart';
 import '../models/navigation_route.dart';
+import '../models/route_history.dart';
+import '../services/route_history_service.dart';
+import '../services/route_history_recorder.dart';
 import '../l10n/contribution_strings.dart';
 import '../services/navigation_controller.dart';
 import '../services/route_service.dart';
@@ -55,6 +58,7 @@ class MainScreen extends StatefulWidget {
   final ExternalNavigation? externalNavigation;
   final DateTime Function()? clock;
   final AccessibilityPreferencesService preferencesService;
+  final RouteHistoryService routeHistoryService;
 
   const MainScreen(
       {super.key,
@@ -65,6 +69,7 @@ class MainScreen extends StatefulWidget {
       this.externalNavigation,
       this.clock,
       this.preferencesService = const AccessibilityPreferencesService(),
+      this.routeHistoryService = const RouteHistoryService(),
       this.tileProvider});
 
   @override
@@ -99,7 +104,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
         setState(() {
           _unidadeDistancia = data['unidade_distancia'] ?? 'KM';
           _allowSuggestions = data['permitir_sugestoes'] != false;
-          _historyConsent = data['historico_visivel'] == true && data['compartilhar_localizacao'] == true;
+          _visitConsent = data['historico_visivel'] == true && data['compartilhar_localizacao'] == true;
           _nomeCompleto = (data['nome_completo'] ?? '').toString().isNotEmpty
               ? data['nome_completo']
               : widget.userName;
@@ -149,7 +154,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   LocationIssue _locationIssue = LocationIssue.notRequested;
   bool _permissionRequested = false;
   bool _isRouting = false;
-  bool _historyConsent = false;
+  bool _visitConsent = false;
   bool _arrivalRecorded = false;
   int? _routeLocalId;
   int _routeRequest = 0;
@@ -161,12 +166,19 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   NavigationFix? _lastFix;
   late final NavigationController _navigation = NavigationController(
       recalculate: (widget.routeService ?? const RouteService()).calculate, clock: widget.clock);
+  RouteHistoryDestination? _historyDestination;
+  bool _navigationSessionStarted = false;
+  late final RouteHistoryRecorder _historyRecorder = RouteHistoryRecorder(
+    widget.routeHistoryService, onFailure: () {
+      if (mounted) { _showErrorSnackBar(context.l10n.historyRecordingFailed); }
+    });
 
   bool get _freshLocation => _hasLocation && _lastFix != null &&
       _lastFix!.problem(_navigation.now()) == null;
 
   void _onNavigationChanged() {
     if (!mounted) { return; }
+    _historyRecorder.observe(_navigation);
     final currentRoute = _navigation.route;
     final changedRoute = !identical(_displayedRoute, currentRoute);
     _displayedRoute = currentRoute;
@@ -198,7 +210,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     }
     if (_navigation.phase == NavigationPhase.arrived && !_arrivalRecorded) {
       _arrivalRecorded = true;
-      if (_historyConsent && _routeLocalId != null) { _registraVisita(_routeLocalId!); }
+      if (_visitConsent && _routeLocalId != null) { _registraVisita(_routeLocalId!); }
     }
   }
 
@@ -229,12 +241,22 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     final request = ++_routeRequest;
     if (!_freshLocation && widget.trackLocation) { await _initLocationTracking(); }
     if (!mounted || !_foreground || request != _routeRequest) { return; }
-    _navigation.start(_freshLocation ? _lastFix : null);
+    final alreadyStarted = _navigationSessionStarted;
+    if (_navigation.start(_freshLocation ? _lastFix : null) && !alreadyStarted) {
+      _navigationSessionStarted = true;
+      final destination = _historyDestination;
+      if (destination != null) {
+        _historyRecorder.begin(destination, _navigation,
+          originIsCurrent: widget.trackLocation && _freshLocation && _foreground);
+      }
+    }
   }
 
   void _endNavigation() {
     _routeRequest++;
     _navigation.end();
+    _historyDestination = null;
+    _navigationSessionStarted = false;
     setState(() {
       _routePoints = [];
       _destinationLocation = null;
@@ -459,6 +481,11 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
 
   void _sessionChanged() {
     if (!mounted) { return; }
+    _historyRecorder.clearSession();
+    _endNavigation();
+    _lastFix = null;
+    _hasLocation = false;
+    if (AppHttp.authenticated) { unawaited(_historyRecorder.refresh()); }
     _preferencesRequest++; _profileRequest++; _filterRevision++;
     _internalRequest++; _externalRequest++;
     _preview.invalidate(); _preview.close();
@@ -468,7 +495,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
         'Sessão encerrada. Entre novamente para usar suas preferências. Os filtros manuais continuam disponíveis.',
         'Session ended. Sign in again to use preferences. Manual filters remain available.') : null;
       _personalizationLoading = false; _nomeCompleto = ''; _fotoPerfil = '';
-      _historyConsent = false; _internalLocals = []; _externalLocals = [];
+      _visitConsent = false; _internalLocals = []; _externalLocals = [];
       _selectedPlaceId = null;
     });
     _placesRevision.value++;
@@ -566,6 +593,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     WidgetsBinding.instance.addObserver(this);
     AppHttp.sessionRevision.addListener(_sessionChanged);
     _navigation.addListener(_onNavigationChanged);
+    unawaited(_historyRecorder.refresh());
     _loadUserProfile();
 
     _fetchEstablishments(); // Preload all establishments
@@ -583,6 +611,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     _viewportTimer?.cancel();
     _navigationTimer?.cancel();
     _navigation.removeListener(_onNavigationChanged);
+    _historyRecorder.dispose();
     _navigation.dispose();
     _routeRequest++;
     _internalRequest++;
@@ -1119,6 +1148,13 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
     _routeRequest++;
     final point = LatLng((valid['latitude'] as num).toDouble(), (valid['longitude'] as num).toDouble());
     final model = valid['source'] == 'openstreetmap' ? MapPlace.external(valid) : MapPlace.internal(valid);
+    _historyRecorder.cancel();
+    _navigationSessionStarted = false;
+    _historyDestination = RouteHistoryDestination(name: model.name, point: point,
+      source: model.isExternal && model.externalId != null ? 'openstreetmap' :
+        model.internalId != null ? 'acessoja' : 'manual',
+      localId: model.isExternal ? null : model.internalId,
+      externalId: model.isExternal ? model.externalId : null);
     setState(() {
       _destinationAddress = valid['nome'] is String ? valid['nome'] as String : '';
       _destinationStreet = valid['endereco'] is String ? valid['endereco'] as String : '';
@@ -1132,14 +1168,12 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
   Future<void> _registraVisita(int localId) async {
     final fix = _lastFix;
     final request = _routeRequest;
-    if (fix == null || !_historyConsent || _navigation.phase != NavigationPhase.arrived) { return; }
+    if (fix == null || !_visitConsent || _navigation.phase != NavigationPhase.arrived) { return; }
     try {
       await _placesService.registerVisit(localId: localId, userName: widget.userName,
           latitude: fix.point.latitude, longitude: fix.point.longitude, accuracy: fix.accuracy);
     } catch (_) {
-      if (mounted && request == _routeRequest) { _showErrorSnackBar(context.contributionText(
-          'Chegada reconhecida. O histórico não pôde ser salvo.',
-          'Arrival recognized. History could not be saved.')); }
+      if (mounted && request == _routeRequest) { _showErrorSnackBar(context.l10n.routeVisitFailed); }
     }
   }
 
@@ -1693,6 +1727,7 @@ class _MainScreenState extends SafeState<MainScreen> with WidgetsBindingObserver
                       );
                       if (!mounted) { return; }
                       await _loadUserProfile();
+                      await _historyRecorder.refresh();
                       if (mounted && result is Map<String, dynamic>) {
                         await _startRoute(result);
                       }

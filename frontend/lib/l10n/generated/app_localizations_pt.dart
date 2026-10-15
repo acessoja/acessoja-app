@@ -769,11 +769,11 @@ class AppLocalizationsPt extends AppLocalizations {
       'A permissão de localização do dispositivo é gerenciada separadamente.';
 
   @override
-  String get visibleHistory => 'Histórico visível';
+  String get visibleHistory => 'Registro de visitas';
 
   @override
   String get visibleHistoryHint =>
-      'Salve sua preferência de visibilidade do histórico.';
+      'Preferência para visitas aos locais. O histórico de rotas tem controles próprios e é privado.';
 
   @override
   String get accountCreated => 'Conta criada com sucesso!';
@@ -881,14 +881,14 @@ class AppLocalizationsPt extends AppLocalizations {
   String get helpDescription => 'Encontre respostas para suas dúvidas';
 
   @override
-  String get noRouteHistory => 'Você ainda não iniciou nenhuma rota.';
+  String get noRouteHistory => 'Nenhuma visita recente registrada.';
 
   @override
   String get historyHint =>
       'Seus locais visitados aparecerão aqui para gerar recomendações personalizadas!';
 
   @override
-  String get recentlyVisited => 'Rotas recentes';
+  String get recentlyVisited => 'Locais visitados recentemente';
 
   @override
   String get route => 'Rota';
@@ -1022,7 +1022,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String routeTo(String name) {
-    return 'Iniciar rota para $name';
+    return 'Planejar rota para $name';
   }
 
   @override
@@ -1093,4 +1093,162 @@ class AppLocalizationsPt extends AppLocalizations {
   String socialUnavailable(String name) {
     return 'Login com $name ainda não configurado.';
   }
+
+  @override
+  String placeImagePlaceholder(String name) {
+    return 'Imagem indisponível de $name; ícone de estabelecimento';
+  }
+
+  @override
+  String get noPlaceReviews => 'Sem avaliações';
+
+  @override
+  String get placeRatingUnknown => 'Avaliação não informada';
+
+  @override
+  String get routeHistoryTitle => 'Histórico de rotas';
+
+  @override
+  String get routeHistoryHint =>
+      'Suas navegações iniciadas no AcessoJá, disponíveis somente para você.';
+
+  @override
+  String get historyPrivacy => 'Gravação e privacidade';
+
+  @override
+  String get historySave => 'Salvar histórico de rotas';
+
+  @override
+  String get historySaveHint =>
+      'Grava novas navegações somente após o início. Desligar preserva registros anteriores.';
+
+  @override
+  String get historySaveOrigin => 'Salvar origem aproximada';
+
+  @override
+  String get historyOriginHint =>
+      'Opcional: aproxima a origem em cerca de 1 km antes de salvar. Permissão de GPS é independente.';
+
+  @override
+  String get historyRemoveOrigins => 'Remover origens já salvas';
+
+  @override
+  String get historyRemoveOriginsHint =>
+      'Remove as coordenadas de origem deste histórico. Destinos e outras preferências serão preservados.';
+
+  @override
+  String get historyDisabled =>
+      'Gravação desativada. Seus registros anteriores continuam disponíveis.';
+
+  @override
+  String get historyEmpty => 'Nenhuma navegação registrada';
+
+  @override
+  String get historyEmptyHint =>
+      'Calcular uma prévia ou consultar um local não inicia uma navegação. Você pode navegar sem salvar histórico.';
+
+  @override
+  String get historySessionExpired => 'Sessão expirada';
+
+  @override
+  String get historySignInAgain =>
+      'Volte e entre novamente para consultar seu histórico privado.';
+
+  @override
+  String get historyDelete => 'Excluir';
+
+  @override
+  String historyDeleteOne(String name) {
+    return 'Excluir a sessão para $name? A navegação atual pode continuar. Visitas, avaliações e favoritos serão preservados.';
+  }
+
+  @override
+  String get historyClear => 'Limpar histórico de rotas';
+
+  @override
+  String get historyClearHint =>
+      'Excluir todas as sessões desta conta? Visitas, favoritos, avaliações e preferências serão preservados.';
+
+  @override
+  String get historyPlan => 'Traçar novamente';
+
+  @override
+  String get historyHistoricalDestination => 'Revisar destino histórico';
+
+  @override
+  String historyReviewCoordinates(String name) {
+    return 'Usar as coordenadas salvas de $name para uma nova prévia? O destino pode ter mudado. A origem será atual ou escolhida por você.';
+  }
+
+  @override
+  String get historyHistoricalCoordinates =>
+      'Destino histórico: coordenadas salvas; confirme o local antes de ir.';
+
+  @override
+  String get historyRunning => 'Em andamento — término não confirmado';
+
+  @override
+  String get historyCompleted =>
+      'Concluída — chegada reconhecida no aplicativo';
+
+  @override
+  String get historyCancelled => 'Cancelada após o início';
+
+  @override
+  String get historyInterrupted => 'Interrompida — término não confirmado';
+
+  @override
+  String get historyDateUnknown => 'Data não informada';
+
+  @override
+  String get historyManual => 'Destino informado';
+
+  @override
+  String get historyDestinationUnavailable =>
+      'O local atual está indisponível; há somente dados históricos.';
+
+  @override
+  String get historyInvalidCoordinates =>
+      'Não há coordenadas confiáveis para traçar novamente.';
+
+  @override
+  String historyApproximateOrigin(String coordinates) {
+    return 'Origem aproximada: $coordinates';
+  }
+
+  @override
+  String historyEstimates(String distance, String duration) {
+    return 'Estimativas do cálculo: $distance / $duration';
+  }
+
+  @override
+  String historyFinishedAt(String time) {
+    return 'Término registrado: $time';
+  }
+
+  @override
+  String get historyNext => 'Carregar mais';
+
+  @override
+  String get historyPageFailed =>
+      'Não foi possível carregar a próxima página. Seus registros continuam disponíveis.';
+
+  @override
+  String get historyOperationFailed =>
+      'Não foi possível confirmar a alteração. Atualize a lista para conferir e tentar novamente.';
+
+  @override
+  String get historyDestinationFailed =>
+      'Não foi possível validar o destino. Tente novamente antes de planejar.';
+
+  @override
+  String get historyRecordingFailed =>
+      'A navegação continua. Não foi possível confirmar a gravação do histórico.';
+
+  @override
+  String get routeVisitFailed =>
+      'Chegada reconhecida. A visita não pôde ser registrada.';
+
+  @override
+  String get historyRefresh => 'Atualizar histórico';
 }
