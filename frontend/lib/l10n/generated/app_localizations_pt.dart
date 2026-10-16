@@ -1251,4 +1251,146 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get historyRefresh => 'Atualizar histórico';
+
+  @override
+  String get readingOpen => 'Abrir ajustes de acessibilidade';
+
+  @override
+  String get readingTitle => 'Ajustes de acessibilidade';
+
+  @override
+  String get readingDeviceHint =>
+      'Ajustes de leitura deste dispositivo. Funcionam sem login e não alteram suas preferências de recursos dos locais.';
+
+  @override
+  String get readingTextSize => 'Tamanho do texto';
+
+  @override
+  String get readingScaleHint =>
+      'Percentual do aplicativo, multiplicado pela escala de texto do sistema, sem reduzi-la.';
+
+  @override
+  String get readingDecrease => 'Diminuir';
+
+  @override
+  String get readingIncrease => 'Aumentar';
+
+  @override
+  String get readingReset => 'Redefinir';
+
+  @override
+  String get readingColors => 'Contraste e cores';
+
+  @override
+  String get readingOriginal => 'Padrão do aplicativo';
+
+  @override
+  String get readingHigh => 'Alto contraste, seguindo o tema';
+
+  @override
+  String get readingBlackWhite => 'Preto no branco';
+
+  @override
+  String get readingYellowBlack => 'Amarelo no preto';
+
+  @override
+  String get readingFont => 'Tipo de fonte';
+
+  @override
+  String get readingSans => 'Sem serifa — Roboto';
+
+  @override
+  String get readingSerif => 'Com serifa — DejaVu Serif';
+
+  @override
+  String get readingLetters => 'Espaçamento entre letras';
+
+  @override
+  String get readingLines => 'Altura de linha';
+
+  @override
+  String get readingLineHint =>
+      'Multiplicador da altura original de cada texto.';
+
+  @override
+  String get readingLinks => 'Destacar links';
+
+  @override
+  String get readingLinksHint =>
+      'Sublinha e reforça links para fontes e páginas externas.';
+
+  @override
+  String get readingArtwork => 'Ocultar ilustrações decorativas';
+
+  @override
+  String get readingArtworkHint =>
+      'Oculta a arte de boas-vindas. Preserva mapas, fotos dos locais, logotipos e ícones de ação.';
+
+  @override
+  String get readingShowButton => 'Mostrar botão de acessibilidade';
+
+  @override
+  String get readingButtonHint =>
+      'Ocultar não apaga ajustes. O painel continua acessível por Configurações.';
+
+  @override
+  String get readingPosition => 'Posição do botão';
+
+  @override
+  String get readingPositionHint =>
+      'Arraste o botão ou use estas direções por toque, clique ou teclado. A posição se adapta à tela.';
+
+  @override
+  String get readingMoveUp => 'Mover botão para cima';
+
+  @override
+  String get readingMoveDown => 'Mover botão para baixo';
+
+  @override
+  String get readingMoveLeft => 'Mover botão para a esquerda';
+
+  @override
+  String get readingMoveRight => 'Mover botão para a direita';
+
+  @override
+  String get readingRestorePosition => 'Restaurar posição';
+
+  @override
+  String get readingResetAll => 'Redefinir ajustes de acessibilidade';
+
+  @override
+  String get readingResetHint =>
+      'Redefine tamanho, cores, fonte, espaçamentos, links e ilustrações. Preserva tema, idioma, posição e visibilidade do botão, conta e seus dados.';
+
+  @override
+  String get readingSaveError =>
+      'Ajuste aplicado nesta sessão, mas não foi possível salvar no dispositivo.';
+
+  @override
+  String get readingSaveRetry => 'Tentar salvar ajustes novamente';
+
+  @override
+  String get readingSample =>
+      'Prévia de leitura: informação clara, ações acessíveis e suas escolhas preservadas.';
+
+  @override
+  String get readingClose => 'Fechar ajustes de acessibilidade';
+
+  @override
+  String get mapStatusExpand => 'Expandir status e filtros do mapa';
+
+  @override
+  String get mapStatusCollapse => 'Recolher status e filtros do mapa';
+
+  @override
+  String get mapStatusTitle => 'Dados e filtros do mapa';
+
+  @override
+  String get mapStatusSources => 'Fontes: AcessoJá e OpenStreetMap';
+
+  @override
+  String get mapSearchAction => 'Buscar destino';
+
+  @override
+  String get placeHoursUnknown => 'Horário não informado';
 }

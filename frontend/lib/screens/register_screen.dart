@@ -1,3 +1,4 @@
+import '../reading_presentation.dart';
 import '../widgets/preference_controls.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -209,7 +210,7 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
                           color: colors.text,
                           fontSize: 27,
                           fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
+                          letterSpacing: context.readingSpacing(-0.5),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -219,7 +220,7 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
                         style: TextStyle(
                           color: colors.muted,
                           fontSize: 14,
-                          height: 1.4,
+                          height: context.readingHeight(1.4),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -297,12 +298,13 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
                             const SizedBox(height: 20),
                             Semantics(
                               button: true,
-                              enabled: true,
+                              enabled: !_isSubmitting,
                               label: _isSubmitting
                                   ? context.l10n.working
                                   : context.l10n.register,
-                              child: SizedBox(
-                                height: 48,
+                              child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(minHeight: 48),
                                 child: ElevatedButton(
                                   onPressed: _isSubmitting
                                       ? null
@@ -318,13 +320,14 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text(
+                                      Flexible(
+                                          child: Text(
                                         context.l10n.register,
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w700,
                                         ),
-                                      ),
+                                      )),
                                       const SizedBox(width: 8),
                                       const Icon(
                                         Icons.arrow_forward_rounded,
@@ -345,7 +348,7 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
                         style: TextStyle(
                           color: colors.muted,
                           fontSize: 12,
-                          height: 1.4,
+                          height: context.readingHeight(1.4),
                         ),
                       ),
                     ],
@@ -409,11 +412,11 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: colors.border),
+            borderSide: BorderSide(color: colors.muted),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: colors.primary, width: 1.6),
+            borderSide: BorderSide(color: colors.primary, width: 2.5),
           ),
         ),
       ),

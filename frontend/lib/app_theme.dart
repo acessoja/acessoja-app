@@ -209,6 +209,51 @@ class AppThemes {
 
   static ThemeData dark() => _buildTheme(AppColors.dark, Brightness.dark);
 
+  static ThemeData highContrast(Brightness brightness, {bool yellow = false}) {
+    final dark = brightness == Brightness.dark;
+    final colors = dark
+        ? AppColors.dark.copyWith(
+            pageBackground: Colors.black,
+            surface: const Color(0xFF101010),
+            surfaceElevated: const Color(0xFF181818),
+            fieldBackground: Colors.black,
+            text: yellow ? const Color(0xFFFFFF00) : Colors.white,
+            muted: yellow ? const Color(0xFFFFFFB0) : const Color(0xFFE2E2E2),
+            border: const Color(0xFFE2E2E2),
+            primary: yellow ? const Color(0xFFFFFF00) : const Color(0xFFA6D4FF),
+            primaryDark:
+                yellow ? const Color(0xFFFFFF00) : const Color(0xFFA6D4FF),
+            primarySoft: const Color(0xFF172431),
+            onPrimary: Colors.black,
+            success: const Color(0xFF9FFFB0),
+            successSoft: const Color(0xFF102817),
+            danger: const Color(0xFFFFB4AB),
+            dangerSoft: const Color(0xFF35100C),
+            warning: const Color(0xFFFFFF99),
+            warningSoft: const Color(0xFF302900),
+          )
+        : AppColors.light.copyWith(
+            pageBackground: Colors.white,
+            surface: Colors.white,
+            surfaceElevated: const Color(0xFFF4F4F4),
+            fieldBackground: Colors.white,
+            text: Colors.black,
+            muted: const Color(0xFF242424),
+            border: const Color(0xFF242424),
+            primary: const Color(0xFF003B80),
+            primaryDark: const Color(0xFF003B80),
+            primarySoft: const Color(0xFFE4EDFF),
+            onPrimary: Colors.white,
+            success: const Color(0xFF005A1E),
+            successSoft: const Color(0xFFE0F4E5),
+            danger: const Color(0xFF9C0000),
+            dangerSoft: const Color(0xFFFFE5E5),
+            warning: const Color(0xFF574000),
+            warningSoft: const Color(0xFFFFF3CC),
+          );
+    return _buildTheme(colors, brightness);
+  }
+
   static ThemeData _buildTheme(AppColors colors, Brightness brightness) {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: _brandColor,
@@ -222,7 +267,8 @@ class AppThemes {
       onSurface: colors.text,
       error: colors.danger,
       onError: colors.onPrimary,
-      outline: colors.border,
+      onSurfaceVariant: colors.muted,
+      outline: colors.muted,
     );
 
     return ThemeData(
@@ -234,6 +280,7 @@ class AppThemes {
       canvasColor: colors.pageBackground,
       cardColor: colors.surface,
       dividerColor: colors.border,
+      focusColor: colors.primary.withValues(alpha: .22),
       colorScheme: colorScheme,
       appBarTheme: AppBarTheme(
         backgroundColor: colors.pageBackground,
@@ -254,11 +301,11 @@ class AppThemes {
         hintStyle: TextStyle(color: colors.muted),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(13),
-          borderSide: BorderSide(color: colors.border),
+          borderSide: BorderSide(color: colors.muted),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(13),
-          borderSide: BorderSide(color: colors.primary, width: 1.5),
+          borderSide: BorderSide(color: colors.primary, width: 2.5),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(13),
@@ -271,6 +318,24 @@ class AppThemes {
         actionTextColor: colors.primary,
         behavior: SnackBarBehavior.floating,
       ),
+      textButtonTheme: TextButtonThemeData(
+          style: ButtonStyle(
+        minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
+        side: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.focused)
+                ? BorderSide(color: colors.primary, width: 2.5)
+                : BorderSide.none),
+      )),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+          style: ButtonStyle(
+        minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
+        side: WidgetStateProperty.resolveWith((states) => BorderSide(
+              color: states.contains(WidgetState.focused)
+                  ? colors.primary
+                  : colors.muted,
+              width: states.contains(WidgetState.focused) ? 2.5 : 1,
+            )),
+      )),
       dialogTheme: DialogThemeData(
         backgroundColor: colors.surface,
         titleTextStyle: TextStyle(

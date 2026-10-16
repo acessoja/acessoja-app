@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../app_preferences.dart';
 import '../app_theme.dart';
 import '../l10n/strings.dart';
+import '../reading_presentation.dart';
 
 class LanguageSelector extends StatelessWidget {
   const LanguageSelector({super.key});
@@ -12,6 +13,14 @@ class LanguageSelector extends StatelessWidget {
     return DropdownButtonHideUnderline(
       child: DropdownButton<String>(
         value: preferences.locale.languageCode,
+        itemHeight: null,
+        selectedItemBuilder: MediaQuery.textScalerOf(context).scale(14) > 22 ||
+                context.reading.letterSpacing > 1
+            ? (_) => const [
+                  Text('PT', semanticsLabel: 'Português'),
+                  Text('EN', semanticsLabel: 'English')
+                ]
+            : null,
         borderRadius: BorderRadius.circular(12),
         icon: const Icon(Icons.language_outlined),
         items: const [
