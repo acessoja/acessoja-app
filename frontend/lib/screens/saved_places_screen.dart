@@ -1,3 +1,5 @@
+import '../reading_presentation.dart';
+import '../widgets/place_media.dart';
 import '../widgets/app_empty.dart';
 import '../widgets/load_error.dart';
 import '../widgets/safe_state.dart';
@@ -44,15 +46,22 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
     return '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}';
   }
 
-  double get overallAverage {
-    if (_localesList.isEmpty) return 0.0;
-
-    final total = _localesList.fold<double>(0.0, (sum, place) {
-      final media = place['media_estrelas'] ?? 0.0;
-      return sum + (media is num ? media.toDouble() : 0.0);
-    });
-
-    return total / _localesList.length;
+  double? get overallAverage {
+    final ratings = <double>[];
+    for (final place in _localesList) {
+      final count = place['quantidade_avaliacoes'];
+      if (count is num && count == 0) {
+        continue;
+      }
+      final raw = place['media_estrelas'];
+      final value =
+          raw is num ? raw.toDouble() : double.tryParse(raw?.toString() ?? '');
+      if (value != null && value.isFinite && value >= 0 && value <= 5) {
+        ratings.add(value);
+      }
+    }
+    if (ratings.isEmpty) return null;
+    return ratings.reduce((a, b) => a + b) / ratings.length;
   }
 
   @override
@@ -212,13 +221,13 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide(color: colors.border),
+            borderSide: BorderSide(color: colors.muted),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: BorderSide(
               color: colors.primary,
-              width: 1.5,
+              width: 2.5,
             ),
           ),
         ),
@@ -253,8 +262,6 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
               children: [
                 Text(
                   value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: colors.text,
                     fontSize: 18,
@@ -264,8 +271,6 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
                 const SizedBox(height: 2),
                 Text(
                   label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: colors.muted,
                     fontSize: 11,
@@ -282,6 +287,7 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
 
   Widget _buildOverviewCard() {
     final colors = AppColors.of(context);
+    final average = overallAverage;
 
     return Container(
       margin: const EdgeInsets.only(top: 16),
@@ -347,79 +353,15 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
               _buildOverviewStat(
                 icon: Icons.star_rounded,
                 iconColor: Colors.amber.shade700,
-                value: context.number(overallAverage),
+                value: average == null
+                    ? context.l10n.placeRatingUnknown
+                    : context.number(average),
                 label: context.l10n.averageRating,
               ),
             ],
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildImagePlaceholder({double size = 96}) {
-    final colors = AppColors.of(context);
-
-    return Container(
-      width: size,
-      height: size,
-      color: colors.primarySoft,
-      child: Icon(
-        Icons.business_outlined,
-        color: colors.primaryDark,
-        size: 36,
-      ),
-    );
-  }
-
-  Widget _buildPlaceImage(dynamic imagePath) {
-    final path = (imagePath ?? '').toString();
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(15),
-      child: path.isNotEmpty
-          ? Image.asset(
-              path,
-              width: 96,
-              height: 96,
-              fit: BoxFit.cover,
-              cacheWidth: 640,
-              errorBuilder: (context, error, stackTrace) {
-                return _buildImagePlaceholder();
-              },
-            )
-          : _buildImagePlaceholder(),
-    );
-  }
-
-  Widget _buildRating(dynamic mediaEstrelas) {
-    final colors = AppColors.of(context);
-
-    return Row(
-      children: [
-        Row(
-          children: List.generate(5, (starIndex) {
-            return Icon(
-              starIndex < mediaEstrelas.round()
-                  ? Icons.star_rounded
-                  : Icons.star_border_rounded,
-              size: 16,
-              color: starIndex < mediaEstrelas.round()
-                  ? Colors.amber.shade700
-                  : colors.border,
-            );
-          }),
-        ),
-        const SizedBox(width: 7),
-        Text(
-          context.number(mediaEstrelas),
-          style: TextStyle(
-            color: colors.muted,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
     );
   }
 
@@ -432,14 +374,13 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
     final colors = AppColors.of(context);
 
     return Expanded(
-      child: SizedBox(
-        height: 40,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
         child: ElevatedButton.icon(
           onPressed: onPressed,
           icon: Icon(icon, size: 17),
           label: Text(
             label,
-            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -466,11 +407,7 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
     final name = (place['nome'] ?? '').toString();
     final displayName = getLocalDisplayName(name);
     final address = (place['endereco'] ?? '').toString();
-    final mediaValue = place['media_estrelas'] ?? 0.0;
-    final mediaEstrelas = mediaValue is num
-        ? mediaValue
-        : double.tryParse(mediaValue.toString()) ?? 0.0;
-    final isOpen = (place['aberto'] ?? true) as bool;
+    final isOpen = place['aberto'] is bool ? place['aberto'] as bool : null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -496,11 +433,8 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Semantics(
-                    image: true,
-                    label: context.l10n.placeImage(displayName),
-                    child: _buildPlaceImage(place['imagem']),
-                  ),
+                  InformativePlaceImage(
+                      path: place['imagem'], name: displayName),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -513,7 +447,7 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
                           style: TextStyle(
                             color: colors.text,
                             fontSize: 14,
-                            height: 1.2,
+                            height: context.readingHeight(1.2),
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -526,7 +460,7 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
                             style: TextStyle(
                               color: colors.muted,
                               fontSize: 11,
-                              height: 1.25,
+                              height: context.readingHeight(1.25),
                             ),
                           ),
                         ],
@@ -542,18 +476,25 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: isOpen
-                                    ? colors.successSoft
-                                    : colors.dangerSoft,
+                                color: isOpen == null
+                                    ? colors.primarySoft
+                                    : isOpen
+                                        ? colors.successSoft
+                                        : colors.dangerSoft,
                                 borderRadius: BorderRadius.circular(7),
                               ),
                               child: Text(
-                                isOpen
-                                    ? context.l10n.open
-                                    : context.l10n.closed,
+                                isOpen == null
+                                    ? context.l10n.placeHoursUnknown
+                                    : isOpen
+                                        ? context.l10n.open
+                                        : context.l10n.closed,
                                 style: TextStyle(
-                                  color:
-                                      isOpen ? colors.success : colors.danger,
+                                  color: isOpen == null
+                                      ? colors.muted
+                                      : isOpen
+                                          ? colors.success
+                                          : colors.danger,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w800,
                                 ),
@@ -570,7 +511,9 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
                           ],
                         ),
                         const SizedBox(height: 6),
-                        _buildRating(mediaEstrelas),
+                        ReportedPlaceRating(
+                            rating: place['media_estrelas'],
+                            count: place['quantidade_avaliacoes']),
                       ],
                     ),
                   ),
@@ -674,10 +617,15 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
         backgroundColor: colors.pageBackground,
         elevation: 0,
         automaticallyImplyLeading: false,
-        toolbarHeight: 70,
+        toolbarHeight: (MediaQuery.textScalerOf(context).scale(19) *
+                    (Theme.of(context).appBarTheme.titleTextStyle?.height ??
+                        1.2) +
+                16)
+            .clamp(70.0, double.infinity),
+        leadingWidth: 72,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 16, top: 14, bottom: 14),
-          child: _buildBackButton(),
+          padding: const EdgeInsets.only(left: 12),
+          child: Center(child: _buildBackButton()),
         ),
         titleSpacing: 12,
         title: Text(
@@ -695,53 +643,39 @@ class _SavedPlacesScreenState extends SafeState<SavedPlacesScreen> {
           builder: (context, constraints) {
             final horizontalPadding = constraints.maxWidth < 360 ? 16.0 : 24.0;
 
-            return Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    horizontalPadding,
-                    4,
-                    horizontalPadding,
-                    0,
-                  ),
-                  child: Column(children: [
-                    Text(context.l10n.allPlacesNotice,
-                        style: TextStyle(color: colors.muted),
-                        textAlign: TextAlign.center),
-                    const SizedBox(height: 12),
-                    _buildSearchField()
-                  ]),
-                ),
-                if (!_isLoading && _localesList.isNotEmpty)
-                  Padding(
+            return CustomScrollView(
+              key: const ValueKey('saved-places-scroll'),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              slivers: [
+                SliverPadding(
                     padding:
                         EdgeInsets.symmetric(horizontal: horizontalPadding),
-                    child: _buildOverviewCard(),
-                  ),
-                const SizedBox(height: 14),
-                Expanded(
-                  child: _loadFailed
-                      ? LoadError(onRetry: _fetchLocales)
-                      : _isLoading
-                          ? _buildLoadingState()
-                          : filteredPlaces.isEmpty
-                              ? _buildEmptyState()
-                              : ListView.builder(
-                                  keyboardDismissBehavior:
-                                      ScrollViewKeyboardDismissBehavior.onDrag,
-                                  padding: EdgeInsets.fromLTRB(
-                                    horizontalPadding,
-                                    0,
-                                    horizontalPadding,
-                                    20,
-                                  ),
-                                  itemCount: filteredPlaces.length,
-                                  itemBuilder: (context, index) {
-                                    return _buildPlaceCard(
-                                        filteredPlaces[index]);
-                                  },
-                                ),
-                ),
+                    sliver: SliverToBoxAdapter(
+                        child: Column(children: [
+                      Text(context.l10n.allPlacesNotice,
+                          style: TextStyle(color: colors.muted),
+                          textAlign: TextAlign.center),
+                      const SizedBox(height: 12),
+                      _buildSearchField(),
+                      if (!_isLoading && _localesList.isNotEmpty)
+                        _buildOverviewCard(),
+                      const SizedBox(height: 14),
+                    ]))),
+                if (_loadFailed)
+                  SliverToBoxAdapter(child: LoadError(onRetry: _fetchLocales))
+                else if (_isLoading)
+                  SliverToBoxAdapter(child: _buildLoadingState())
+                else if (filteredPlaces.isEmpty)
+                  SliverToBoxAdapter(child: _buildEmptyState())
+                else
+                  SliverPadding(
+                      padding: EdgeInsets.fromLTRB(
+                          horizontalPadding, 0, horizontalPadding, 20),
+                      sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                              (context, index) =>
+                                  _buildPlaceCard(filteredPlaces[index]),
+                              childCount: filteredPlaces.length))),
               ],
             );
           },

@@ -1,3 +1,4 @@
+import '../reading_presentation.dart';
 import '../widgets/load_error.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -181,7 +182,7 @@ class _ExplorarScreenState extends SafeState<ExplorarScreen> {
               style: TextStyle(
                 color: colors.muted,
                 fontSize: 14,
-                height: 1.4,
+                height: context.readingHeight(1.4),
               ),
             ),
           ],

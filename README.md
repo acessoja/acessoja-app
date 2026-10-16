@@ -496,3 +496,21 @@ Aplique as migrations `usuarios/0005_usuario_route_history_revision_and_more` e
 [instruções de aplicação e validação web](INSTRUCOES_APLICACAO.txt). Concorrência
 PostgreSQL, build Android e homologação manual assistiva permanecem pendentes
 nesta entrega; os resultados automatizados reproduzidos estão nas instruções.
+
+## Cards 20–23 — Leitura, acessibilidade e layouts adaptáveis
+
+O botão circular móvel abre ajustes locais de tamanho, cores, fonte, espaçamento,
+links e ilustrações decorativas. O mesmo painel está em Configurações, inclusive
+quando o botão está oculto ou o perfil está indisponível. As escolhas funcionam
+antes do login e respeitam a escala de texto do sistema.
+
+Mapa, detalhes, formulários e listas recebem correções de quebra de texto,
+rolagem, semântica e foco. O status do mapa pode ser recolhido; em horizontal abre
+por uma ação. O botão pode ser arrastado livremente ou movido por botões e teclado.
+
+Consulte o [painel e sua persistência](docs/PAINEL_ACESSIBILIDADE.md), a
+[auditoria com matriz e pendências manuais](docs/AUDITORIA_ACESSIBILIDADE_20_23.md)
+e as [instruções desta entrega](INSTRUCOES_APLICACAO.txt). Não há migration nova
+para os Cards 20–23. As instruções anteriores dos Cards 17–19 foram preservadas em
+[documento próprio](docs/INSTRUCOES_CARDS_17_19.txt); resultados e decisões de Git
+registrados nas seções históricas pertencem às respectivas entregas.

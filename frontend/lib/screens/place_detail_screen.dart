@@ -7,6 +7,7 @@ import '../l10n/map_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../reading_presentation.dart';
 import '../services/api_service.dart';
 import 'review_editor_screen.dart';
 import 'place_reviews_screen.dart';
@@ -60,54 +61,87 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
 
   Future<void> _loadAllData() async {
     final generation = ++_loadGeneration;
-    setState(() { _isLoading = true; _loadFailed = false; });
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+    });
     try {
-      final data = await _apiService.fetchEvaluations(localId: widget.place['id_local']);
-      if (!mounted || generation != _loadGeneration) { return; }
+      final data =
+          await _apiService.fetchEvaluations(localId: widget.place['id_local']);
+      if (!mounted || generation != _loadGeneration) {
+        return;
+      }
       setState(() => comments = data);
     } catch (_) {
-      if (!mounted || generation != _loadGeneration) { return; }
+      if (!mounted || generation != _loadGeneration) {
+        return;
+      }
       setState(() => _loadFailed = true);
     } finally {
       if (mounted && generation == _loadGeneration) {
-        setState(() { _isLoading = false; _resourceRevision++; });
+        setState(() {
+          _isLoading = false;
+          _resourceRevision++;
+        });
       }
     }
   }
 
   double? get _reportedAverage {
-    final current = comments.where((row) => row is Map && row['is_current'] != false && row['is_valid'] != false).toList();
-    if (current.isEmpty) { return null; }
+    final current = comments
+        .where((row) =>
+            row is Map &&
+            row['is_current'] != false &&
+            row['is_valid'] != false)
+        .toList();
+    if (current.isEmpty) {
+      return null;
+    }
     var total = 0.0;
     for (final comment in current) {
-      if (comment is! Map) { return null; }
+      if (comment is! Map) {
+        return null;
+      }
       final stars = comment['estrelas'];
-      if (stars is! num || !stars.isFinite || stars < 1 || stars > 5) { return null; }
+      if (stars is! num || !stars.isFinite || stars < 1 || stars > 5) {
+        return null;
+      }
       total += stars;
     }
     return total / current.length;
   }
+
   double get averageRating => _reportedAverage ?? 0;
 
-  String getCommentsCountString() => context.l10n.reviewCount(comments.where((row) =>
-      row is Map && row['is_current'] != false && row['is_valid'] != false).length);
+  String getCommentsCountString() => context.l10n.reviewCount(comments
+      .where((row) =>
+          row is Map && row['is_current'] != false && row['is_valid'] != false)
+      .length);
 
   String getLocalDisplayName(String name) {
     if (name == 'UniEVANGÉLICA') {
       return 'UniEVANGÉLICA \n Universidade Evangélica de Goiás';
-    } else { if (name == 'Brasil Park Shopping') {
-      return 'BRASIL PARK SHOPPING - Anápolis';
-    } else { if (name == 'Correios - Anápolis') {
-      return 'CORREIOS - Anápolis';
-    } } }
+    } else {
+      if (name == 'Brasil Park Shopping') {
+        return 'BRASIL PARK SHOPPING - Anápolis';
+      } else {
+        if (name == 'Correios - Anápolis') {
+          return 'CORREIOS - Anápolis';
+        }
+      }
+    }
 
     return name;
   }
 
   Future<void> _openReviewEditor() async {
-    final changed = await Navigator.push<bool>(context, MaterialPageRoute(
-      builder: (_) => ReviewEditorScreen(place: widget.place)));
-    if (mounted && changed == true) { await _loadAllData(); }
+    final changed = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+            builder: (_) => ReviewEditorScreen(place: widget.place)));
+    if (mounted && changed == true) {
+      await _loadAllData();
+    }
   }
 
   Widget _buildPlaceImage() {
@@ -118,6 +152,8 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
       child: imagePath.isNotEmpty
           ? Image.asset(
               imagePath,
+              semanticLabel: context.l10n
+                  .placeImage((widget.place['nome'] ?? '').toString()),
               width: double.infinity,
               height: 190,
               fit: BoxFit.cover,
@@ -133,16 +169,21 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
   Widget _buildImagePlaceholder() {
     final colors = AppColors.of(context);
 
-    return Container(
-      width: double.infinity,
-      height: 190,
-      color: colors.primarySoft,
-      child: Icon(
-        Icons.business_outlined,
-        color: colors.primaryDark,
-        size: 64,
-      ),
-    );
+    return Semantics(
+        image: true,
+        excludeSemantics: true,
+        label: context.l10n
+            .placeImagePlaceholder((widget.place['nome'] ?? '').toString()),
+        child: Container(
+          width: double.infinity,
+          height: 190,
+          color: colors.primarySoft,
+          child: Icon(
+            Icons.business_outlined,
+            color: colors.primaryDark,
+            size: 64,
+          ),
+        ));
   }
 
   Widget _buildPlaceHeader() {
@@ -169,23 +210,19 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Semantics(
-            image: true,
-            label: context.l10n.placeImage(name),
-            child: _buildPlaceImage(),
-          ),
+          _buildPlaceImage(),
           const SizedBox(height: 8),
-          Text(context.mapText('Horário de funcionamento não informado', 'Opening hours not reported'),
+          Text(
+              context.mapText('Horário de funcionamento não informado',
+                  'Opening hours not reported'),
               style: TextStyle(color: colors.muted)),
           const SizedBox(height: 16),
           Text(
             name,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: colors.text,
               fontSize: 21,
-              height: 1.2,
+              height: context.readingHeight(1.2),
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -206,7 +243,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
                     style: TextStyle(
                       color: colors.muted,
                       fontSize: 13,
-                      height: 1.3,
+                      height: context.readingHeight(1.3),
                     ),
                   ),
                 ),
@@ -220,70 +257,68 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
 
   Widget _buildRatingSummary() {
     final colors = AppColors.of(context);
-
-    return Container(
-      margin: const EdgeInsets.only(top: 14),
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.border),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  context.l10n.userRating,
-                  style: TextStyle(
-                    color: colors.text,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  comments.isEmpty ? context.mapText('Sem avaliações no AcessoJá', 'No reviews on AcessoJá')
-                      : getCommentsCountString(),
-                  style: TextStyle(
-                    color: colors.muted,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (_reportedAverage != null) Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                context.number(averageRating),
-                style: TextStyle(
-                  color: colors.text,
-                  fontSize: 30,
-                  height: 1,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 5),
-              Row(
-                children: List.generate(5, (index) {
-                  return Icon(
-                    index < averageRating.round()
-                        ? Icons.star
-                        : Icons.star_border,
-                    size: 19,
-                    color: Colors.amber,
-                  );
-                }),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+    final count = comments.length;
+    final label = _reportedAverage == null
+        ? count == 0
+            ? context.l10n.noPlaceReviews
+            : context.l10n.placeRatingUnknown
+        : '${context.l10n.ratingValue(context.number(averageRating))}. ${context.l10n.reviewCount(count)}';
+    final description =
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(context.l10n.userRating,
+          style: TextStyle(color: colors.text, fontWeight: FontWeight.w800)),
+      Text(
+          count == 0
+              ? context.mapText(
+                  'Sem avaliações no AcessoJá', 'No reviews on AcessoJá')
+              : getCommentsCountString(),
+          style: TextStyle(color: colors.muted)),
+    ]);
+    final rating =
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(context.number(averageRating),
+          style: TextStyle(
+              color: colors.text, fontSize: 30, fontWeight: FontWeight.w800)),
+      Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(
+              5,
+              (index) => Icon(
+                  index < averageRating.round()
+                      ? Icons.star
+                      : Icons.star_border,
+                  size: 19,
+                  color: Colors.amber))),
+    ]);
+    return Semantics(
+        label: label,
+        excludeSemantics: true,
+        child: Container(
+          margin: const EdgeInsets.only(top: 14),
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: colors.border)),
+          child: LayoutBuilder(builder: (context, bounds) {
+            if (bounds.maxWidth < 400 ||
+                MediaQuery.textScalerOf(context).scale(14) > 22) {
+              return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    description,
+                    if (_reportedAverage != null) ...[
+                      const SizedBox(height: 12),
+                      rating
+                    ],
+                  ]);
+            }
+            return Row(children: [
+              Expanded(child: description),
+              if (_reportedAverage != null) rating
+            ]);
+          }),
+        ));
   }
 
   Widget _buildRouteButton() {
@@ -293,10 +328,10 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
       padding: const EdgeInsets.only(top: 14),
       child: Semantics(
         button: true,
-        label: context.l10n.startRouteHere,
-        child: SizedBox(
-          width: double.infinity,
-          height: 50,
+        label: context.l10n.routeTo((widget.place['nome'] ?? '').toString()),
+        child: ConstrainedBox(
+          constraints:
+              const BoxConstraints(minHeight: 50, minWidth: double.infinity),
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: colors.primary,
@@ -371,7 +406,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
             style: TextStyle(
               color: colors.muted,
               fontSize: 12,
-              height: 1.4,
+              height: context.readingHeight(1.4),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -394,7 +429,9 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(
-                      context.mapText('Use Avaliar para compartilhar sua experiência.', 'Use Review to share your experience.'),
+                      context.mapText(
+                          'Use Avaliar para compartilhar sua experiência.',
+                          'Use Review to share your experience.'),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -460,11 +497,12 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
               style: TextStyle(
                 color: colors.text,
                 fontSize: 13,
-                height: 1.4,
+                height: context.readingHeight(1.4),
               ),
             ),
           ],
-          if (comment is Map) SurveyAnswersView(review: Map<String, dynamic>.from(comment)),
+          if (comment is Map)
+            SurveyAnswersView(review: Map<String, dynamic>.from(comment)),
         ],
       ),
     );
@@ -477,13 +515,21 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 26),
-        if (widget.place['id_local'] is num) AccessibilityResultsCard(
-          localId: (widget.place['id_local'] as num).toInt(), revision: _resourceRevision,
-          registeredData: widget.place, onViewReviews: () async {
-            await Navigator.push<void>(context, MaterialPageRoute(
-              builder: (_) => PlaceReviewsScreen(place: widget.place)));
-            if (mounted) { await _loadAllData(); }
-          }),
+        if (widget.place['id_local'] is num)
+          AccessibilityResultsCard(
+              localId: (widget.place['id_local'] as num).toInt(),
+              revision: _resourceRevision,
+              registeredData: widget.place,
+              onViewReviews: () async {
+                await Navigator.push<void>(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            PlaceReviewsScreen(place: widget.place)));
+                if (mounted) {
+                  await _loadAllData();
+                }
+              }),
         Text(
           context.l10n.commentsHistory,
           style: TextStyle(
@@ -502,10 +548,14 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
   }
 
   Widget _buildEvaluationSection() {
-    return Padding(padding: const EdgeInsets.symmetric(vertical: 16),
-      child: FilledButton.icon(key: const ValueKey('detail-review'),
-        onPressed: _openReviewEditor, icon: const Icon(Icons.rate_review_outlined),
-        label: Text(context.mapText('Avaliar ou editar minha avaliação', 'Review or edit my review'))));
+    return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: FilledButton.icon(
+            key: const ValueKey('detail-review'),
+            onPressed: _openReviewEditor,
+            icon: const Icon(Icons.rate_review_outlined),
+            label: Text(context.mapText('Avaliar ou editar minha avaliação',
+                'Review or edit my review'))));
   }
 
   Widget _buildLoadingState() {

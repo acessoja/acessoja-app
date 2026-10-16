@@ -1,3 +1,4 @@
+import '../reading_presentation.dart';
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
@@ -60,7 +61,7 @@ class AppEmpty extends StatelessWidget {
                 style: TextStyle(
                   color: colors.muted,
                   fontSize: 13,
-                  height: 1.4,
+                  height: context.readingHeight(1.4),
                 ),
               ),
               if (actionText != null && onAction != null) ...[

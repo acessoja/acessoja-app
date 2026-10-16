@@ -1239,4 +1239,146 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyRefresh => 'Refresh history';
+
+  @override
+  String get readingOpen => 'Open accessibility settings';
+
+  @override
+  String get readingTitle => 'Accessibility settings';
+
+  @override
+  String get readingDeviceHint =>
+      'Reading choices for this device. Available before sign-in and independent of place accessibility preferences.';
+
+  @override
+  String get readingTextSize => 'Text size';
+
+  @override
+  String get readingScaleHint =>
+      'App percentage, multiplied by the system text scale without reducing it.';
+
+  @override
+  String get readingDecrease => 'Decrease';
+
+  @override
+  String get readingIncrease => 'Increase';
+
+  @override
+  String get readingReset => 'Reset';
+
+  @override
+  String get readingColors => 'Contrast and colors';
+
+  @override
+  String get readingOriginal => 'App default';
+
+  @override
+  String get readingHigh => 'High contrast, following the theme';
+
+  @override
+  String get readingBlackWhite => 'Black on white';
+
+  @override
+  String get readingYellowBlack => 'Yellow on black';
+
+  @override
+  String get readingFont => 'Font family';
+
+  @override
+  String get readingSans => 'Sans serif — Roboto';
+
+  @override
+  String get readingSerif => 'Serif — DejaVu Serif';
+
+  @override
+  String get readingLetters => 'Letter spacing';
+
+  @override
+  String get readingLines => 'Line height';
+
+  @override
+  String get readingLineHint =>
+      'Multiplier of each text’s original line height.';
+
+  @override
+  String get readingLinks => 'Highlight links';
+
+  @override
+  String get readingLinksHint =>
+      'Underlines and emphasizes links to sources and external pages.';
+
+  @override
+  String get readingArtwork => 'Hide decorative artwork';
+
+  @override
+  String get readingArtworkHint =>
+      'Hides welcome artwork. Keeps maps, place photos, logos and action icons.';
+
+  @override
+  String get readingShowButton => 'Show accessibility button';
+
+  @override
+  String get readingButtonHint =>
+      'Hiding keeps your choices. The panel remains available from Settings.';
+
+  @override
+  String get readingPosition => 'Button position';
+
+  @override
+  String get readingPositionHint =>
+      'Drag the button or use these directions by touch, click or keyboard. Position adapts to the screen.';
+
+  @override
+  String get readingMoveUp => 'Move button up';
+
+  @override
+  String get readingMoveDown => 'Move button down';
+
+  @override
+  String get readingMoveLeft => 'Move button left';
+
+  @override
+  String get readingMoveRight => 'Move button right';
+
+  @override
+  String get readingRestorePosition => 'Restore position';
+
+  @override
+  String get readingResetAll => 'Reset accessibility settings';
+
+  @override
+  String get readingResetHint =>
+      'Resets size, colors, font, spacing, links and artwork. Keeps theme, language, button position and visibility, account and data.';
+
+  @override
+  String get readingSaveError =>
+      'Applied for this session, but could not save on this device.';
+
+  @override
+  String get readingSaveRetry => 'Retry saving settings';
+
+  @override
+  String get readingSample =>
+      'Reading preview: clear information, accessible actions and your choices preserved.';
+
+  @override
+  String get readingClose => 'Close accessibility settings';
+
+  @override
+  String get mapStatusExpand => 'Expand map status and filters';
+
+  @override
+  String get mapStatusCollapse => 'Collapse map status and filters';
+
+  @override
+  String get mapStatusTitle => 'Map data and filters';
+
+  @override
+  String get mapStatusSources => 'Sources: AcessoJá and OpenStreetMap';
+
+  @override
+  String get mapSearchAction => 'Search destination';
+
+  @override
+  String get placeHoursUnknown => 'Opening hours not reported';
 }
