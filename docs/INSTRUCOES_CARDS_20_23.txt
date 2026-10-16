@@ -1,0 +1,297 @@
+ACESSOJÁ — ENTREGA CONJUNTA DOS CARDS 20, 21, 22 E 23
+15/10/2026 UTC — Flutter / acessibilidade / leitura / responsividade
+
+1. BASE, COMPATIBILIDADE E GIT PRESERVADO
+
+Repositório: https://github.com/acessoja/acessoja-app.git
+Checkout utilizado: work/cards_17_19/acessoja-app, já existente no ambiente.
+Branch preservada: feature/cards-17-19-acessibilidade-historico
+HEAD preservado: 88ed9bd1990bf7d7aa178d529ae6e3ab2c62e999
+
+A base efetiva desta tarefa é o conjunto de arquivos inicialmente recebido nesse
+checkout, que já continha alterações locais dos Cards 17–19. Foi feita uma cópia
+simples dos arquivos e um manifesto de hashes antes da implementação. O ZIP foi
+comparado com esse estado inicial, não apenas com o HEAD do Git; assim, não repete
+os arquivos anteriores que permaneceram inalterados.
+
+O roteiro cita develop em 4ece1519f4d6bee02da7a695cf2506bc97599f4e. Esse commit
+foi consultado pelo GitHub em modo somente leitura e corresponde ao merge do
+PR #34 dos Cards 17–19. Não foi feito checkout desse commit nem executado fetch.
+Não se afirma que a referência local origin/develop está atualizada. A validação
+foi executada nos arquivos locais descritos acima.
+
+Nesta tarefa não foram criadas/trocadas branches ou worktrees, nem executados
+clone, init, fetch, pull, merge, rebase, staging, commit, push, PR, tag ou release.
+As consultas Git usam --no-optional-locks e diff sem ferramentas externas.
+HEAD, índice, configuração, packed-refs e referência da branch foram comparados
+com o início. A preparação/integração/publicação fica com o usuário.
+Nenhum Trello foi alterado e nenhuma mensagem foi enviada a colaboradores.
+
+HEAD, configuração, packed-refs e referência da branch mantêm os hashes iniciais.
+O hash físico de .git/index mudou durante a sessão; sua origem não foi atribuída.
+A consulta final diff --cached HEAD é vazia, assim como o staging inicial: nenhum
+conteúdo foi preparado. Não se tentou reescrever o índice para restaurar bytes,
+pois isso exigiria uma operação Git não autorizada e não é necessário ao ZIP.
+
+A instrução anterior da raiz foi preservada integralmente, byte a byte, em
+  docs/INSTRUCOES_CARDS_17_19.txt
+Seus comandos, resultados e autorizações pertencem à entrega anterior. As demais
+instruções históricas e docs de rotas/contribuições permanecem disponíveis.
+
+2. ESCOPO E DIAGNÓSTICO POR CARD
+
+20 / Trello #53 — https://trello.com/c/x8K85t86
+Já existia semântica em LocalCard, mapa, onboarding e histórico. Foram corrigidos
+placeholder anunciado como foto, notas/estrelas separadas, contagens ausentes,
+links sem papel explícito, seleção de respostas e alvos de voltar nas telas
+corrigidas. Ausência de nota não vira zero e horário desconhecido não vira aberto.
+Auditoria e inventário: docs/AUDITORIA_ACESSIBILIDADE_20_23.md.
+Aceite manual com leitor de tela real ainda pendente.
+
+21 / Trello #25 — https://trello.com/c/jnz37keo
+AppPreferences/SharedPreferences existentes estendidos com leitura local, temas
+validados, fontes locais e escala compartilhada com Configurações. TextScaler
+preserva a curva do sistema e aplica o multiplicador do app uma vez. Corrigidos
+contornos funcionais, opacidades e alturas fixas. A base reproduziu overflow de
+85 px no Cadastro em 320 x 640 a 200%; a correção usa quebra/rolagem e botões que
+crescem. A tabela de contraste e a matriz estão na auditoria.
+
+22 / Trello #116 — https://trello.com/c/QsChPDoz
+Status do mapa recolhível e rolável; em horizontal abre por ação. Busca, reserva
+de nomes de marcadores e ações consideram o espaço e as métricas reais. Detalhes
+preservam nome/endereço completos e as ações. Salvos passa a rolar header/lista
+juntos; Sugestões/Salvos têm nota e imagem honestas. Mantidos agrupamentos,
+seleção, filtros, callbacks, endpoints e regras de rotas/chegada/consentimento.
+
+23 / Trello #128 — https://trello.com/c/U1U4Rdwl
+Botão circular de 56 px, arraste livre, posição normalizada, alternativa por
+botões direcionais e setas com foco. Painel único com tamanho, cores, fonte,
+letras, linhas, links, arte decorativa, visibilidade, resets e falha/retry.
+Configurações oferece o mesmo painel mesmo com botão oculto ou perfil offline.
+Abertura/fechamento modal, foco, teclado, rodapé real e resize são tratados.
+Detalhes de controles/limites/chaves/licenças: docs/PAINEL_ACESSIBILIDADE.md.
+
+Não há fonte de estado paralela, nova aba principal, biblioteca global de estado,
+endpoint ou migration nesta tarefa. Não foram implementadas tarefas novas de
+JWT, fotos, favoritos ou denúncias. O backend desta entrega não foi modificado.
+
+3. APLICAÇÃO DO ZIP
+
+Este pacote é incremental e contém somente arquivos novos/modificados por esta
+tarefa, com caminhos relativos à raiz acessoja-app e sem pasta externa.
+Ele pressupõe a versão com Cards 17–19 já aplicada. Não é o projeto completo.
+
+a) Faça uma cópia de segurança dos arquivos locais e compare eventuais mudanças
+   feitas depois da base descrita acima. Não descarte trabalho para aplicar o ZIP.
+b) Revise os arquivos e extraia/mescle na raiz de acessoja-app, preservando os
+   caminhos frontend/... e docs/.... Não extraia dentro de frontend.
+c) Instale/atualize os assets com flutter pub get e gere as traduções. pubspec.yaml
+   inclui fontes; nenhuma dependência nova foi adicionada e pubspec.lock não mudou.
+d) Execute análise/testes/build e a homologação manual abaixo. Este documento não
+   instrui nem executa preparação de branch, staging ou publicação.
+
+As migrations anteriores dos Cards 17–19 continuam sendo pré-requisito do projeto
+quando ainda não aplicadas em seu banco. Não existe migration nova dos Cards
+20–23. Nunca use o banco de produção para reproduzir os testes de migration.
+
+4. AMBIENTE E VERIFICAÇÕES EXECUTADAS
+
+Workflow consultado: .github/workflows/quality-gate.yml
+Frontend: Flutter 3.47.4 / Dart 3.13.3, conforme frontend/.fvmrc e workflow.
+Backend: Python 3.12.14, dependências do projeto em ambiente isolado.
+Java 17 e PostgreSQL 16 são requisitos dos respectivos jobs do workflow.
+Cobertura mínima preservada: 80% (não foi reduzida).
+
+Todos os comandos Flutter foram executados com CI=true e
+FLUTTER_SUPPRESS_ANALYTICS=true. Isso evita a consulta do SDK ao endpoint de
+metadados de infraestrutura e desativa analytics. Uma primeira tentativa sem a
+configuração foi bloqueada pela revisão automática; a alternativa acima foi
+usada com sucesso. Não houve liberação/escalada de rede para metadados.
+Na retomada, o cache local do SDK/dependências precisou ser recomposto; isso não
+alterou arquivos de implementação nem a estrutura Git do projeto.
+
+Frontend (execução final nos arquivos entregues):
+- flutter pub get --offline e flutter gen-l10n: aprovados, sem dependência nova.
+- dart format: somente os 35 Dart novos/alterados, formatter oficial; os quatro
+  arquivos da última correção também foram formatados antes da execução final.
+- flutter analyze --no-pub: No issues found.
+- flutter test --no-pub --reporter expanded: 697 testes passaram, nenhuma falha.
+  Os quatro arquivos novos somam 125 testes (19 preferências, 31 painel,
+  59 layouts e 16 mídia/resumo), além das regressões preservadas.
+- Renderização/contraste em teste temporário: 2 testes passaram; 96 pares de
+  contraste calculados com os temas reais e sete PNGs gerados com fontes reais.
+- flutter build web --no-pub: aprovado. Dry run Wasm também passou, mas não
+  representa build/homologação manual de uma distribuição Wasm.
+- FontManifest do build: exatamente uma família Roboto (4 assets) e uma
+  AcessoJaSerif (2 assets); bytes dos assets conferidos com os originais locais.
+- flutter build apk --debug --no-pub: tentativa executada, código de saída 1:
+  [!] No Android SDK found. Try setting the ANDROID_HOME environment variable.
+  Build/APK Android permanece PENDENTE por falta de SDK; não foi marcado aprovado.
+- Git diff --check: aprovado; branch, HEAD, refs/configuração e staging preservados.
+  A diferença física do arquivo de índice está registrada na seção 1.
+
+
+Backend, com SECRET_KEY exclusiva de teste e DATABASE_URL apontando para um
+SQLite novo/isolado fora do repositório:
+- python manage.py check: sem problemas.
+- python manage.py makemigrations --check --dry-run: nenhuma mudança.
+- python manage.py migrate: todas as migrations existentes aplicadas no banco novo.
+- python manage.py spectacular --validate --fail-on-warn: aprovado.
+- flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv
+  --statistics --count: 0 violações.
+- pytest --cov=. --cov-report=term-missing --cov-report=xml:<arquivo temporário>
+  --cov-fail-under=80 -v: 352 passaram, 4 ignorados, 21 subtests passaram;
+  cobertura total 96,31%.
+
+Os quatro skips são os testes exclusivos de concorrência PostgreSQL; SQLite não
+os valida. O job PostgreSQL 16 permanece pendente neste ambiente. Nenhum teste
+foi excluído ou desativado para aumentar aprovação/cobertura. As mensagens 500 e
+offline dos testes de falha de rede são fixtures esperadas, não falha da suíte.
+
+5. REPETIR NO WINDOWS / NAVEGADOR
+
+Em frontend, use o SDK 3.47.4 configurado no projeto (FVM quando instalado):
+
+  fvm flutter pub get
+  fvm flutter gen-l10n
+  fvm flutter analyze
+  fvm flutter test
+  fvm flutter build web
+  fvm flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000
+
+Sem FVM, os mesmos comandos com flutter funcionam quando essa versão do SDK está
+no PATH. Os comandos de validação repetidos no ambiente podem usar --no-pub após
+pub get bem-sucedido. Para execução local via servidor web, se Chrome não for
+iniciado automaticamente:
+
+  fvm flutter run -d web-server --web-hostname 127.0.0.1 --web-port 8080 --dart-define=API_BASE_URL=http://localhost:8000
+
+Abra a URL informada pelo comando no navegador. Execute o backend de
+desenvolvimento em outra janela, com o ambiente/configuração de CORS já previstos
+no projeto. Em outro computador, localhost deve ser substituído pelo endereço
+real do backend; não coloque credenciais nas preferências de leitura.
+
+O uso no navegador não exige Android SDK. O build Android é uma verificação
+separada para um ambiente com SDK/JDK 17:
+
+  fvm flutter build apk --debug
+
+Backend, na raiz, em banco de teste isolado:
+
+  python manage.py check
+  python manage.py makemigrations --check --dry-run
+  python manage.py migrate
+  python manage.py spectacular --fail-on-warn
+  flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv --statistics --count
+  pytest --cov=. --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=80 -v
+
+PostgreSQL 16, com DATABASE_URL de teste e configuração do job do workflow:
+
+  pytest -q contribuicoes -k postgresql_concurrent
+
+Os quatro testes precisam executar sem skips para validar concorrência real.
+Relatórios, bancos e caches produzidos pelos comandos não pertencem ao ZIP.
+
+6. EVIDÊNCIAS E HOMOLOGAÇÃO MANUAL
+
+docs/capturas/cards_20_23 contém sete PNGs de widgets reais, com fontes locais,
+fixtures fictícias e pixel ratio 2. A auditoria informa viewport/escala de cada
+imagem. Essas renderizações não são uma sessão manual de Chrome/Android nem uma
+validação com TalkBack. Tiles offline não comprovam GPS ou serviço de mapas.
+
+Repetir os fluxos críticos em 320/360/390 px, 640 x 320 e 1280 x 800; texto
+100/150/200%, composição sistema/app, claro/escuro e esquemas de cores. Conferir
+Tab/Shift+Tab, foco visível, Enter/Espaço, Escape/Voltar e leitor de tela real.
+Mover por toque/mouse, direções e teclado; abrir teclado virtual e redimensionar.
+Verificar formulário/questionário preenchidos, rota ativa e retorno de foco.
+Ocultar botão, reabrir por Configurações, reabrir app na mesma origem e redefinir
+leitura confirmando o alcance do reset. Roteiro completo está na auditoria.
+
+Referências oficiais de Flutter/W3C e licenças das fontes estão nos dois documentos.
+Não se declara conformidade completa com WCAG nem eficácia clínica. Os cards
+20–23 têm implementação/testes entregues; os aceites manuais dependem de revisão
+com Chrome/Android e tecnologia assistiva real.
+
+7. RESUMO PARA FUTURO PR — SOMENTE TEXTO, NÃO PUBLICADO
+
+Destino pretendido: develop
+Título sugerido: feat(a11y): painel móvel e ajustes de leitura dos cards 20–23
+
+Descrição sugerida:
+Usuários podem ajustar leitura antes do login ou em Configurações por um painel
+único persistente. O botão pode ser movido livremente ou por controles sem
+arraste. Fonte, tamanho, cores, letras, linhas, links e decoração refletem o mesmo
+estado local sem reiniciar formulários ou navegação.
+
+Corrige semântica de notas/imagens/links e reflow de mapa, detalhes e listas com
+texto ampliado. Mantém regras de autenticação, contribuições, filtros e histórico.
+Inclui auditoria, capturas, testes de foco/gestos/persistência e matriz responsiva.
+
+Validação: analyze sem apontamentos, 697 testes Flutter e build web aprovados;
+backend 352 testes, 4 skips PostgreSQL, cobertura 96,31%. Pendências: build
+Android/SDK, concorrência PostgreSQL e homologação manual assistiva. Sem nova
+migration ou dependência. Branch/commit/PR serão preparados somente pelo usuário
+ou mediante autorização específica posterior.
+
+8. INVENTÁRIO EXATO DOS ARQUIVOS DESTA ENTREGA
+
+58 arquivos, incluindo 7 capturas e 8 arquivos de fontes/licenças:
+
+  INSTRUCOES_APLICACAO.txt
+  README.md
+  docs/AUDITORIA_ACESSIBILIDADE_20_23.md
+  docs/INSTRUCOES_CARDS_17_19.txt
+  docs/PAINEL_ACESSIBILIDADE.md
+  docs/capturas/cards_20_23/cadastro_150_360px.png
+  docs/capturas/cards_20_23/detalhes_amarelo_150_sem_foto.png
+  docs/capturas/cards_20_23/mapa_horizontal_150_offline.png
+  docs/capturas/cards_20_23/painel_claro_inicio.png
+  docs/capturas/cards_20_23/painel_claro_posicao_redefinicao.png
+  docs/capturas/cards_20_23/painel_escuro_200_serifa.png
+  docs/capturas/cards_20_23/salvos_200_320px.png
+  frontend/assets/fonts/DejaVuSerif-Bold.ttf
+  frontend/assets/fonts/DejaVuSerif.ttf
+  frontend/assets/fonts/LICENSE_DejaVu.txt
+  frontend/assets/fonts/LICENSE_Roboto.txt
+  frontend/assets/fonts/Roboto-Black.ttf
+  frontend/assets/fonts/Roboto-Bold.ttf
+  frontend/assets/fonts/Roboto-Medium.ttf
+  frontend/assets/fonts/Roboto-Regular.ttf
+  frontend/lib/app_preferences.dart
+  frontend/lib/app_theme.dart
+  frontend/lib/l10n/app_en.arb
+  frontend/lib/l10n/app_pt.arb
+  frontend/lib/l10n/generated/app_localizations.dart
+  frontend/lib/l10n/generated/app_localizations_en.dart
+  frontend/lib/l10n/generated/app_localizations_pt.dart
+  frontend/lib/main.dart
+  frontend/lib/models/reading_preferences.dart
+  frontend/lib/reading_presentation.dart
+  frontend/lib/screens/ajuda_screen.dart
+  frontend/lib/screens/configuracoes_gerais_screen.dart
+  frontend/lib/screens/explorar_screen.dart
+  frontend/lib/screens/informacoes_pessoais_screen.dart
+  frontend/lib/screens/login_screen.dart
+  frontend/lib/screens/main_screen.dart
+  frontend/lib/screens/onboarding_screen.dart
+  frontend/lib/screens/place_detail_screen.dart
+  frontend/lib/screens/register_screen.dart
+  frontend/lib/screens/rights_screen.dart
+  frontend/lib/screens/saved_places_screen.dart
+  frontend/lib/screens/settings_screen.dart
+  frontend/lib/screens/sugestoes_screen.dart
+  frontend/lib/widgets/accessibility_host.dart
+  frontend/lib/widgets/accessibility_panel.dart
+  frontend/lib/widgets/adaptive_place_layer.dart
+  frontend/lib/widgets/app_empty.dart
+  frontend/lib/widgets/evaluation_survey_dialog.dart
+  frontend/lib/widgets/local_card.dart
+  frontend/lib/widgets/place_media.dart
+  frontend/lib/widgets/preference_controls.dart
+  frontend/lib/widgets/responsive_navigation_bar.dart
+  frontend/pubspec.yaml
+  frontend/test/accessibility_panel_test.dart
+  frontend/test/local_card_test.dart
+  frontend/test/place_media_accessibility_test.dart
+  frontend/test/reading_layouts_test.dart
+  frontend/test/reading_preferences_test.dart

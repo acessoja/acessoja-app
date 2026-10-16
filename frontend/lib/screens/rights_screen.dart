@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app_theme.dart';
+import '../reading_presentation.dart';
 import '../l10n/strings.dart';
 import '../data/rights_catalog.dart';
 
@@ -118,27 +119,22 @@ class _RightsScreenState extends State<RightsScreen> {
           child: Text(text,
               style: TextStyle(
                   fontSize: 22,
-                  height: 1.3,
+                  height: context.readingHeight(1.3),
                   fontWeight: FontWeight.w800,
                   color: colors.text)),
         );
     Widget paragraph(String text) => Text(text,
-        style: TextStyle(fontSize: 16, height: 1.5, color: colors.text));
+        style: TextStyle(
+            fontSize: 16,
+            height: context.readingHeight(1.5),
+            color: colors.text));
     Widget sourceButton(String label, String url) => Align(
           alignment: Alignment.centerLeft,
-          child: TextButton(
-            onPressed: () => _open(url),
-            style: TextButton.styleFrom(
-                minimumSize: const Size(48, 48),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              const Icon(Icons.open_in_new_rounded, size: 20),
-              const SizedBox(width: 10),
-              Flexible(
-                  child: Text(label, style: const TextStyle(fontSize: 16))),
-            ]),
-          ),
+          child: AppLink(
+              label: label,
+              icon: Icons.open_in_new_rounded,
+              onPressed: () => _open(url),
+              style: const TextStyle(fontSize: 16)),
         );
 
     return Scaffold(
@@ -263,7 +259,7 @@ class _RightsScreenState extends State<RightsScreen> {
                               Text(entry.reference,
                                   style: TextStyle(
                                       fontSize: 14,
-                                      height: 1.5,
+                                      height: context.readingHeight(1.5),
                                       color: colors.muted)),
                               sourceButton(s.rightsReadOfficial, entry.url),
                             ]),

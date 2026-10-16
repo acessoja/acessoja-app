@@ -2311,6 +2311,270 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Atualizar histórico'**
   String get historyRefresh;
+
+  /// No description provided for @readingOpen.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abrir ajustes de acessibilidade'**
+  String get readingOpen;
+
+  /// No description provided for @readingTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ajustes de acessibilidade'**
+  String get readingTitle;
+
+  /// No description provided for @readingDeviceHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ajustes de leitura deste dispositivo. Funcionam sem login e não alteram suas preferências de recursos dos locais.'**
+  String get readingDeviceHint;
+
+  /// No description provided for @readingTextSize.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tamanho do texto'**
+  String get readingTextSize;
+
+  /// No description provided for @readingScaleHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Percentual do aplicativo, multiplicado pela escala de texto do sistema, sem reduzi-la.'**
+  String get readingScaleHint;
+
+  /// No description provided for @readingDecrease.
+  ///
+  /// In pt, this message translates to:
+  /// **'Diminuir'**
+  String get readingDecrease;
+
+  /// No description provided for @readingIncrease.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aumentar'**
+  String get readingIncrease;
+
+  /// No description provided for @readingReset.
+  ///
+  /// In pt, this message translates to:
+  /// **'Redefinir'**
+  String get readingReset;
+
+  /// No description provided for @readingColors.
+  ///
+  /// In pt, this message translates to:
+  /// **'Contraste e cores'**
+  String get readingColors;
+
+  /// No description provided for @readingOriginal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Padrão do aplicativo'**
+  String get readingOriginal;
+
+  /// No description provided for @readingHigh.
+  ///
+  /// In pt, this message translates to:
+  /// **'Alto contraste, seguindo o tema'**
+  String get readingHigh;
+
+  /// No description provided for @readingBlackWhite.
+  ///
+  /// In pt, this message translates to:
+  /// **'Preto no branco'**
+  String get readingBlackWhite;
+
+  /// No description provided for @readingYellowBlack.
+  ///
+  /// In pt, this message translates to:
+  /// **'Amarelo no preto'**
+  String get readingYellowBlack;
+
+  /// No description provided for @readingFont.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tipo de fonte'**
+  String get readingFont;
+
+  /// No description provided for @readingSans.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem serifa — Roboto'**
+  String get readingSans;
+
+  /// No description provided for @readingSerif.
+  ///
+  /// In pt, this message translates to:
+  /// **'Com serifa — DejaVu Serif'**
+  String get readingSerif;
+
+  /// No description provided for @readingLetters.
+  ///
+  /// In pt, this message translates to:
+  /// **'Espaçamento entre letras'**
+  String get readingLetters;
+
+  /// No description provided for @readingLines.
+  ///
+  /// In pt, this message translates to:
+  /// **'Altura de linha'**
+  String get readingLines;
+
+  /// No description provided for @readingLineHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Multiplicador da altura original de cada texto.'**
+  String get readingLineHint;
+
+  /// No description provided for @readingLinks.
+  ///
+  /// In pt, this message translates to:
+  /// **'Destacar links'**
+  String get readingLinks;
+
+  /// No description provided for @readingLinksHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sublinha e reforça links para fontes e páginas externas.'**
+  String get readingLinksHint;
+
+  /// No description provided for @readingArtwork.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ocultar ilustrações decorativas'**
+  String get readingArtwork;
+
+  /// No description provided for @readingArtworkHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Oculta a arte de boas-vindas. Preserva mapas, fotos dos locais, logotipos e ícones de ação.'**
+  String get readingArtworkHint;
+
+  /// No description provided for @readingShowButton.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mostrar botão de acessibilidade'**
+  String get readingShowButton;
+
+  /// No description provided for @readingButtonHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ocultar não apaga ajustes. O painel continua acessível por Configurações.'**
+  String get readingButtonHint;
+
+  /// No description provided for @readingPosition.
+  ///
+  /// In pt, this message translates to:
+  /// **'Posição do botão'**
+  String get readingPosition;
+
+  /// No description provided for @readingPositionHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arraste o botão ou use estas direções por toque, clique ou teclado. A posição se adapta à tela.'**
+  String get readingPositionHint;
+
+  /// No description provided for @readingMoveUp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mover botão para cima'**
+  String get readingMoveUp;
+
+  /// No description provided for @readingMoveDown.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mover botão para baixo'**
+  String get readingMoveDown;
+
+  /// No description provided for @readingMoveLeft.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mover botão para a esquerda'**
+  String get readingMoveLeft;
+
+  /// No description provided for @readingMoveRight.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mover botão para a direita'**
+  String get readingMoveRight;
+
+  /// No description provided for @readingRestorePosition.
+  ///
+  /// In pt, this message translates to:
+  /// **'Restaurar posição'**
+  String get readingRestorePosition;
+
+  /// No description provided for @readingResetAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Redefinir ajustes de acessibilidade'**
+  String get readingResetAll;
+
+  /// No description provided for @readingResetHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Redefine tamanho, cores, fonte, espaçamentos, links e ilustrações. Preserva tema, idioma, posição e visibilidade do botão, conta e seus dados.'**
+  String get readingResetHint;
+
+  /// No description provided for @readingSaveError.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ajuste aplicado nesta sessão, mas não foi possível salvar no dispositivo.'**
+  String get readingSaveError;
+
+  /// No description provided for @readingSaveRetry.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tentar salvar ajustes novamente'**
+  String get readingSaveRetry;
+
+  /// No description provided for @readingSample.
+  ///
+  /// In pt, this message translates to:
+  /// **'Prévia de leitura: informação clara, ações acessíveis e suas escolhas preservadas.'**
+  String get readingSample;
+
+  /// No description provided for @readingClose.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fechar ajustes de acessibilidade'**
+  String get readingClose;
+
+  /// No description provided for @mapStatusExpand.
+  ///
+  /// In pt, this message translates to:
+  /// **'Expandir status e filtros do mapa'**
+  String get mapStatusExpand;
+
+  /// No description provided for @mapStatusCollapse.
+  ///
+  /// In pt, this message translates to:
+  /// **'Recolher status e filtros do mapa'**
+  String get mapStatusCollapse;
+
+  /// No description provided for @mapStatusTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dados e filtros do mapa'**
+  String get mapStatusTitle;
+
+  /// No description provided for @mapStatusSources.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fontes: AcessoJá e OpenStreetMap'**
+  String get mapStatusSources;
+
+  /// No description provided for @mapSearchAction.
+  ///
+  /// In pt, this message translates to:
+  /// **'Buscar destino'**
+  String get mapSearchAction;
+
+  /// No description provided for @placeHoursUnknown.
+  ///
+  /// In pt, this message translates to:
+  /// **'Horário não informado'**
+  String get placeHoursUnknown;
 }
 
 class _AppLocalizationsDelegate

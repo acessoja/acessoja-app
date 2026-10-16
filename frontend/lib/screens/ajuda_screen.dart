@@ -1,3 +1,4 @@
+import '../reading_presentation.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
 import 'package:flutter/material.dart';
@@ -44,10 +45,15 @@ class AjudaScreen extends StatelessWidget {
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        toolbarHeight: 70,
+        toolbarHeight: (MediaQuery.textScalerOf(context).scale(19) *
+                    (Theme.of(context).appBarTheme.titleTextStyle?.height ??
+                        1.2) +
+                16)
+            .clamp(70.0, double.infinity),
+        leadingWidth: 72,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 16, top: 14, bottom: 14),
-          child: _buildBackButton(context),
+          padding: const EdgeInsets.only(left: 12),
+          child: Center(child: _buildBackButton(context)),
         ),
         title: Text(
           context.l10n.help,
@@ -122,7 +128,7 @@ class AjudaScreen extends StatelessWidget {
                                       style: TextStyle(
                                         color: colors.muted,
                                         fontSize: 12,
-                                        height: 1.35,
+                                        height: context.readingHeight(1.35),
                                       ),
                                     ),
                                   ],
@@ -199,7 +205,7 @@ class AjudaScreen extends StatelessWidget {
                               style: TextStyle(
                                 color: colors.muted,
                                 fontSize: 12,
-                                height: 1.4,
+                                height: context.readingHeight(1.4),
                               ),
                             ),
                             const SizedBox(height: 7),
@@ -325,7 +331,7 @@ class _FaqTileState extends SafeState<_FaqTile> {
                 style: TextStyle(
                   color: colors.text,
                   fontSize: 13,
-                  height: 1.25,
+                  height: context.readingHeight(1.25),
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -347,7 +353,7 @@ class _FaqTileState extends SafeState<_FaqTile> {
                     style: TextStyle(
                       color: colors.muted,
                       fontSize: 12,
-                      height: 1.5,
+                      height: context.readingHeight(1.5),
                       fontWeight: FontWeight.w500,
                     ),
                   ),

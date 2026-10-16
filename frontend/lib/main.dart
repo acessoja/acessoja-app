@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_preferences.dart';
+import 'reading_presentation.dart';
+import 'widgets/accessibility_host.dart';
 import 'l10n/generated/app_localizations.dart';
 
 import 'app_theme.dart';
@@ -23,6 +25,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late final AppThemeController _themeController;
+  final _navigator = GlobalKey<NavigatorState>();
+  final _accessibilityRoutes = AccessibilityRouteObserver();
 
   @override
   void initState() {
@@ -36,6 +40,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     _themeController.dispose();
+    _accessibilityRoutes.dispose();
     super.dispose();
   }
 
@@ -51,12 +56,46 @@ class _MyAppState extends State<MyApp> {
             child: MaterialApp(
               debugShowCheckedModeBanner: false,
               title: 'Acesso Já',
-              theme: AppThemes.light(),
-              darkTheme: AppThemes.dark(),
+              navigatorKey: _navigator,
+              navigatorObservers: [_accessibilityRoutes],
+              theme:
+                  readingTheme(AppThemes.light(), widget.preferences.reading),
+              darkTheme:
+                  readingTheme(AppThemes.dark(), widget.preferences.reading),
+              highContrastTheme: readingTheme(
+                  AppThemes.highContrast(Brightness.light),
+                  widget.preferences.reading),
+              highContrastDarkTheme: readingTheme(
+                  AppThemes.highContrast(Brightness.dark),
+                  widget.preferences.reading),
               themeMode: _themeController.themeMode,
               locale: widget.preferences.locale,
               supportedLocales: AppLocalizations.supportedLocales,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
+              builder: (context, navigator) {
+                final media = MediaQuery.of(context);
+                final scaler = ReadingTextScaler(
+                    media.textScaler, widget.preferences.reading.textSize);
+                final theme = Theme.of(context);
+                return MediaQuery(
+                  data: media.copyWith(
+                      textScaler: ReadingTextScaler(media.textScaler,
+                          widget.preferences.reading.textSize)),
+                  child: Theme(
+                      data: theme.copyWith(
+                          appBarTheme: theme.appBarTheme.copyWith(
+                        toolbarHeight: (scaler.scale(19) *
+                                    widget.preferences.reading.lineHeight +
+                                24)
+                            .clamp(56.0, double.infinity),
+                      )),
+                      child: AccessibilityHost(
+                          navigatorKey: _navigator,
+                          preferences: widget.preferences,
+                          observer: _accessibilityRoutes,
+                          child: navigator!)),
+                );
+              },
               initialRoute: '/',
               routes: {
                 '/': (context) => widget.preferences.hasSeenOnboarding

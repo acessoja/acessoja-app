@@ -1,4 +1,6 @@
 import '../widgets/load_error.dart';
+import '../widgets/accessibility_panel.dart';
+import '../app_preferences.dart';
 import '../navigation.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -128,9 +130,7 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
         _nomeCompleto.isNotEmpty ? _nomeCompleto : widget.userName;
     final headerBackground = isDark ? colors.primarySoft : colors.primaryDark;
     final headerText = isDark ? colors.primaryDark : colors.onPrimary;
-    final headerMuted = isDark
-        ? colors.primaryDark.withValues(alpha: 0.76)
-        : colors.onPrimary.withValues(alpha: 0.72);
+    final headerMuted = headerText;
 
     return Semantics(
       button: true,
@@ -334,7 +334,7 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
           ),
           style: OutlinedButton.styleFrom(
             foregroundColor: colors.danger,
-            side: BorderSide(color: colors.danger.withValues(alpha: 0.45)),
+            side: BorderSide(color: colors.danger),
             backgroundColor: colors.dangerSoft,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
@@ -376,14 +376,28 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
     return Scaffold(
       backgroundColor: colors.pageBackground,
       appBar: AppBar(
+        actions: [
+          if (PreferencesScope.maybeOf(context) != null)
+            IconButton(
+              key: const ValueKey('settings-reading-open'),
+              tooltip: context.l10n.readingOpen,
+              onPressed: () => showAccessibilityPanel(context),
+              icon: const Icon(Icons.accessibility_new),
+            )
+        ],
         backgroundColor: colors.pageBackground,
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        toolbarHeight: 70,
+        toolbarHeight: (MediaQuery.textScalerOf(context).scale(19) *
+                    (Theme.of(context).appBarTheme.titleTextStyle?.height ??
+                        1.2) +
+                16)
+            .clamp(70.0, double.infinity),
+        leadingWidth: 72,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 16, top: 14, bottom: 14),
-          child: _buildBackButton(),
+          padding: const EdgeInsets.only(left: 12),
+          child: Center(child: _buildBackButton()),
         ),
         title: Text(
           context.l10n.menu,
@@ -420,6 +434,7 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
+                                const ReadingSettingsEntry(),
                                 _buildProfileHeader(),
                                 const SizedBox(height: 24),
                                 Text(

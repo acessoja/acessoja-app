@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../reading_presentation.dart';
 
 import '../app_preferences.dart';
 import '../app_theme.dart';
@@ -124,14 +125,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                         fontWeight: FontWeight.w600))),
                           ]),
                           const SizedBox(height: 32),
-                          ExcludeSemantics(child: _OnboardingArt(step: _step)),
+                          DecorativeArtwork(child: _OnboardingArt(step: _step)),
                           const SizedBox(height: 36),
                           Semantics(
                             header: true,
                             child: Text(titles[_step],
                                 style: TextStyle(
                                     fontSize: 30,
-                                    height: 1.15,
+                                    height: context.readingHeight(1.15),
                                     fontWeight: FontWeight.w800,
                                     color: colors.text)),
                           ),
@@ -139,7 +140,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           Text(descriptions[_step],
                               style: TextStyle(
                                   fontSize: 17,
-                                  height: 1.6,
+                                  height: context.readingHeight(1.6),
                                   color: colors.muted)),
                           const SizedBox(height: 40),
                           ElevatedButton(
@@ -161,9 +162,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               elevation: 0,
                               shape: const StadiumBorder(),
                               textStyle: const TextStyle(
-                                  fontFamily: 'Roboto',
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700),
+                                  fontSize: 17, fontWeight: FontWeight.w700),
                             ),
                             child: Text(_step == 2
                                 ? strings.onboardingStart

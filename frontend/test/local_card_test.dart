@@ -195,7 +195,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(
-          find.bySemanticsLabel('Avaliação média 0,0 de 5'),
+          find.bySemanticsLabel('Avaliação média 0,0 de 5. 1 avaliação'),
           findsOneWidget,
         );
         expect(

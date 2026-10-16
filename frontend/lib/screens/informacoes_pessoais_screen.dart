@@ -1,3 +1,4 @@
+import '../reading_presentation.dart';
 import '../widgets/load_error.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -395,7 +396,7 @@ class _InformacoesPessoaisScreenState
                   style: TextStyle(
                     color: colors.muted,
                     fontSize: 11,
-                    height: 1.3,
+                    height: context.readingHeight(1.3),
                   ),
                 ),
               ],
@@ -463,7 +464,7 @@ class _InformacoesPessoaisScreenState
                     style: TextStyle(
                       color: colors.muted,
                       fontSize: 12,
-                      height: 1.25,
+                      height: context.readingHeight(1.25),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -617,10 +618,15 @@ class _InformacoesPessoaisScreenState
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        toolbarHeight: 70,
+        toolbarHeight: (MediaQuery.textScalerOf(context).scale(19) *
+                    (Theme.of(context).appBarTheme.titleTextStyle?.height ??
+                        1.2) +
+                16)
+            .clamp(70.0, double.infinity),
+        leadingWidth: 72,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 16, top: 14, bottom: 14),
-          child: _buildBackButton(),
+          padding: const EdgeInsets.only(left: 12),
+          child: Center(child: _buildBackButton()),
         ),
         title: Text(
           context.l10n.personalInformation,

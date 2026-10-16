@@ -1,3 +1,4 @@
+import '../reading_presentation.dart';
 import '../widgets/preference_controls.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -175,7 +176,7 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                         style: TextStyle(
                           color: colors.muted,
                           fontSize: 15,
-                          height: 1.4,
+                          height: context.readingHeight(1.4),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -256,8 +257,8 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            SizedBox(
-                              height: 48,
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 48),
                               child: ElevatedButton(
                                 onPressed: _isSubmitting
                                     ? null
@@ -281,13 +282,14 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          Text(
+                                          Flexible(
+                                              child: Text(
                                             context.l10n.signIn,
                                             style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w700,
                                             ),
-                                          ),
+                                          )),
                                           const SizedBox(width: 8),
                                           const Icon(
                                               Icons.arrow_forward_rounded,
@@ -502,11 +504,11 @@ class _LoginScreenState extends SafeState<LoginScreen> {
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: colors.border),
+            borderSide: BorderSide(color: colors.muted),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: primaryColor, width: 1.5),
+            borderSide: BorderSide(color: primaryColor, width: 2.5),
           ),
         ),
       ),

@@ -3,6 +3,7 @@ import '../app_preferences.dart';
 import '../l10n/strings.dart';
 import '../services/profile_service.dart';
 import '../widgets/preference_controls.dart';
+import '../widgets/accessibility_panel.dart';
 import '../widgets/settings_page.dart';
 import '../widgets/load_error.dart';
 import 'sugestoes_screen.dart';
@@ -81,6 +82,7 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
       loading: _loading,
       error: _failed ? LoadError(onRetry: _load) : null,
       children: [
+        const ReadingSettingsEntry(),
         Text(t.personalize, style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 8), Text(t.personalizeIntro),
         const SizedBox(height: 24),

@@ -1,3 +1,5 @@
+import '../reading_presentation.dart';
+import '../widgets/place_media.dart';
 import '../widgets/load_error.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -15,7 +17,7 @@ class SugestoesScreen extends StatefulWidget {
   final String unidadeDistancia;
   final bool allowSuggestions;
 
-   const SugestoesScreen({
+  const SugestoesScreen({
     super.key,
     required this.userName,
     this.unidadeDistancia = 'KM',
@@ -270,72 +272,6 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
     );
   }
 
-  Widget _buildPlaceImage(
-    dynamic imagePath, {
-    double width = 96,
-    double height = 96,
-  }) {
-    final colors = AppColors.of(context);
-    final path = (imagePath ?? '').toString();
-
-    Widget placeholder() {
-      return Container(
-        width: width,
-        height: height,
-        color: colors.primarySoft,
-        child: Icon(
-          Icons.business_outlined,
-          color: colors.primaryDark,
-          size: 34,
-        ),
-      );
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(15),
-      child: path.isNotEmpty
-          ? Image.asset(
-              path,
-              width: width,
-              height: height,
-              fit: BoxFit.cover,
-              cacheWidth: 640,
-              errorBuilder: (context, error, stackTrace) => placeholder(),
-            )
-          : placeholder(),
-    );
-  }
-
-  Widget _buildRating(num media, {double size = 15}) {
-    final colors = AppColors.of(context);
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(5, (starIndex) {
-            final active = starIndex < media.round();
-            return Icon(
-              active ? Icons.star_rounded : Icons.star_border_rounded,
-              size: size,
-              color: active ? Colors.amber.shade700 : colors.border,
-            );
-          }),
-        ),
-        const SizedBox(width: 7),
-        Text(
-          context.number(media),
-          style: TextStyle(
-            color: colors.muted,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildEmptyVisitedState() {
     final colors = AppColors.of(context);
 
@@ -379,7 +315,7 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
             style: TextStyle(
               color: colors.muted,
               fontSize: 12,
-              height: 1.4,
+              height: context.readingHeight(1.4),
             ),
           ),
         ],
@@ -410,10 +346,6 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
     final colors = AppColors.of(context);
 
     final name = (place['nome'] ?? '').toString();
-    final mediaValue = place['media_estrelas'] ?? 0.0;
-    final media = mediaValue is num
-        ? mediaValue
-        : double.tryParse(mediaValue.toString()) ?? 0.0;
 
     return Semantics(
       button: true,
@@ -439,11 +371,11 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildPlaceImage(
-                place['imagem'],
-                width: double.infinity,
-                height: 78,
-              ),
+              InformativePlaceImage(
+                  path: place['imagem'],
+                  name: name,
+                  width: double.infinity,
+                  height: 78),
               Padding(
                 padding: const EdgeInsets.fromLTRB(10, 9, 10, 8),
                 child: Column(
@@ -460,7 +392,11 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
                       ),
                     ),
                     const SizedBox(height: 5),
-                    _buildRating(media, size: 13),
+                    ReportedPlaceRating(
+                        rating: place['media_estrelas'],
+                        count: place['quantidade_avaliacoes'],
+                        starSize: 13,
+                        compact: true),
                   ],
                 ),
               ),
@@ -483,7 +419,16 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
           _buildEmptyVisitedState()
         else
           SizedBox(
-            height: 240,
+            height: 240 +
+                ((MediaQuery.textScalerOf(context).scale(12) *
+                                (Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.height ??
+                                    1.4)) -
+                            20)
+                        .clamp(0.0, double.infinity) *
+                    3,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.only(left: 1, right: 1),
@@ -547,11 +492,7 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
     final name = (place['nome'] ?? '').toString();
     final displayName = getLocalDisplayName(name);
     final address = (place['endereco'] ?? '').toString();
-    final mediaValue = place['media_estrelas'] ?? 0.0;
-    final media = mediaValue is num
-        ? mediaValue
-        : double.tryParse(mediaValue.toString()) ?? 0.0;
-    final isOpen = (place['aberto'] ?? true) as bool;
+    final isOpen = place['aberto'] is bool ? place['aberto'] as bool : null;
 
     return Container(
       margin: const EdgeInsets.only(top: 12),
@@ -574,15 +515,11 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Semantics(
-                image: true,
-                label: context.l10n.placeImage(displayName),
-                child: _buildPlaceImage(
-                  place['imagem'],
+              InformativePlaceImage(
+                  path: place['imagem'],
+                  name: displayName,
                   width: 92,
-                  height: 92,
-                ),
-              ),
+                  height: 92),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -595,7 +532,7 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
                       style: TextStyle(
                         color: colors.text,
                         fontSize: 14,
-                        height: 1.2,
+                        height: context.readingHeight(1.2),
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -608,7 +545,7 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
                         style: TextStyle(
                           color: colors.muted,
                           fontSize: 11,
-                          height: 1.25,
+                          height: context.readingHeight(1.25),
                         ),
                       ),
                     ],
@@ -624,14 +561,25 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color:
-                                isOpen ? colors.successSoft : colors.dangerSoft,
+                            color: isOpen == null
+                                ? colors.primarySoft
+                                : isOpen
+                                    ? colors.successSoft
+                                    : colors.dangerSoft,
                             borderRadius: BorderRadius.circular(7),
                           ),
                           child: Text(
-                            isOpen ? context.l10n.open : context.l10n.closed,
+                            isOpen == null
+                                ? context.l10n.placeHoursUnknown
+                                : isOpen
+                                    ? context.l10n.open
+                                    : context.l10n.closed,
                             style: TextStyle(
-                              color: isOpen ? colors.success : colors.danger,
+                              color: isOpen == null
+                                  ? colors.muted
+                                  : isOpen
+                                      ? colors.success
+                                      : colors.danger,
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
                             ),
@@ -648,7 +596,10 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
                       ],
                     ),
                     const SizedBox(height: 7),
-                    _buildRating(media),
+                    ReportedPlaceRating(
+                        rating: place['media_estrelas'],
+                        count: place['quantidade_avaliacoes'],
+                        starSize: 15),
                   ],
                 ),
               ),
@@ -732,7 +683,7 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
                   style: TextStyle(
                     color: colors.muted,
                     fontSize: 13,
-                    height: 1.4,
+                    height: context.readingHeight(1.4),
                   ),
                 ),
               ],
@@ -780,10 +731,15 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
         backgroundColor: colors.pageBackground,
         elevation: 0,
         automaticallyImplyLeading: false,
-        toolbarHeight: 70,
+        toolbarHeight: (MediaQuery.textScalerOf(context).scale(19) *
+                    (Theme.of(context).appBarTheme.titleTextStyle?.height ??
+                        1.2) +
+                16)
+            .clamp(70.0, double.infinity),
+        leadingWidth: 72,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 16, top: 14, bottom: 14),
-          child: _buildBackButton(),
+          padding: const EdgeInsets.only(left: 12),
+          child: Center(child: _buildBackButton()),
         ),
         titleSpacing: 12,
         title: Text(

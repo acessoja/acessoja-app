@@ -1,3 +1,4 @@
+import '../reading_presentation.dart';
 import '../l10n/strings.dart';
 
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class LocalCard extends StatelessWidget {
         : noReviews
             ? context.l10n.noPlaceReviews
             : context.l10n.placeRatingUnknown;
-    final isOpen = (place['aberto'] ?? true) as bool;
+    final isOpen = place['aberto'] is bool ? place['aberto'] as bool : null;
     final nome = (place['nome'] ?? '').toString();
     final endereco = (place['endereco'] ?? '').toString();
     final imagePath = place['imagem'];
@@ -95,7 +96,7 @@ class LocalCard extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 14,
-                          height: 1.2,
+                          height: context.readingHeight(1.2),
                           color: colors.text,
                         ),
                       ),
@@ -115,22 +116,34 @@ class LocalCard extends StatelessWidget {
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color:
-                              isOpen ? colors.successSoft : colors.dangerSoft,
+                          color: isOpen == null
+                              ? colors.primarySoft
+                              : isOpen
+                                  ? colors.successSoft
+                                  : colors.dangerSoft,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          '$distanceLabel - ${isOpen ? context.l10n.open : context.l10n.closed}',
+                          '$distanceLabel - ${isOpen == null ? context.l10n.placeHoursUnknown : isOpen ? context.l10n.open : context.l10n.closed}',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: isOpen ? colors.success : colors.danger,
+                            color: isOpen == null
+                                ? colors.muted
+                                : isOpen
+                                    ? colors.success
+                                    : colors.danger,
                           ),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Semantics(
-                        label: ratingLabel,
+                        label: count is num &&
+                                count.isFinite &&
+                                count > 0 &&
+                                count == count.toInt()
+                            ? '$ratingLabel. ${context.l10n.reviewCount(count.toInt())}'
+                            : ratingLabel,
                         excludeSemantics: true,
                         child: knownRating
                             ? Wrap(
