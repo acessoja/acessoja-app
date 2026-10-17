@@ -1,0 +1,300 @@
+ACESSOJÁ — CARDS 24, 25, 26 E 27: FAVORITOS E LOCAIS SALVOS
+16/10/2026 UTC
+
+1. BASE E ESCOPO
+
+Base efetiva: acessoja-app-main (13)(1).zip. A cópia (13).zip é idêntica.
+SHA-256 conferido antes da extração:
+  e6b92d5453dd66a7932acaf37632601a69aba08438653205d5e914d5df0253ab
+
+O hash identifica o ZIP; não se atribui um commit a essa base nem se afirma que
+ela está sincronizada com o GitHub/develop. O trabalho foi feito na extração
+simples, sem .git. O pacote é o delta dos arquivos em relação a esse ZIP, e não
+o projeto inteiro. Não reaplique os ZIPs de cards anteriores sobre esta entrega.
+Os Cards 20–23 já estavam nessa base e foram preservados nos fluxos afetados.
+
+Não foram executados criação/troca de branch, clone, init, fetch, pull, worktree,
+staging, commit, push, PR, merge ou alteração de referências/configuração Git.
+Não se alterou o checkout anterior. Nenhum Trello foi atualizado e nenhuma
+mensagem foi enviada a colaboradores. A integração futura continua com a equipe.
+
+A instrução anterior da raiz foi preservada integralmente em:
+  docs/INSTRUCOES_BASE_13_ANTERIORES.txt
+Ela descreve trabalho histórico e não substitui os comandos/resultados abaixo.
+Documentos anteriores de painel, leitura, rotas e contribuições foram mantidos.
+
+2. DIAGNÓSTICO E ENTREGA POR CARD
+
+24 / Trello #35 — https://trello.com/c/SBHnMaUY
+Não havia favoritos na base. Criados app/modelo Favorito, migration 0001_initial,
+API privada, unicidade no banco, índice/ordem estável, busca/paginação e estado
+em lote. Dono exclusivamente pela sessão. DTO inclui local, recursos, estatística
+pública e resumo próprio sem consultas por card. POST repetido retorna a relação
+existente; DELETE remove só a relação. Testes de propriedade, expiração, entradas,
+consulta constante, CASCADE e preservação de dados passaram em SQLite.
+Pendência: execução do teste concorrente em um servidor PostgreSQL disponível.
+
+25 / Trello #51 — https://trello.com/c/2ybk7pqN
+AppHttp e editor próprio já existiam; faltava integração real de favoritos.
+Implementados serviço, controlador com escopo raiz, filas por local, atualização
+imediata, rollback e reconciliação de resultado incerto. Desfazer é POST real e
+espera DELETE terminar, usando o novo ID. Logout/troca de conta invalida caches,
+buscas, respostas, ações e importações resolvidas. Um 401 antigo não encerra B.
+OSM pede confirmação, reaproveita importação/token e preserva ID para retry se o
+favorito falhar. Não há segunda senha em favoritos nem fila offline persistente.
+O editor já protegia erro/409; agora eventos confirmados invalidam/atualizam
+Salvos, mapa/detalhes e Central. Testes de serviço, controller e widgets passaram.
+Pendência: homologação manual com duas contas, rede real e leitor de tela.
+
+26 / Trello #40 — https://trello.com/c/rKifcWkg
+LocalCard já tinha semântica/callbacks. Contagem agora aparece também visualmente;
+favorito e avaliação própria são ações distintas, com alvos nativos ≥48 px.
+Salvos reutiliza o mesmo card. Recursos vêm do catálogo/consolidação por recurso,
+com divergência, desconhecimento e aviso de poucos relatos quando informado.
+Não há selo geral por estrelas, percentuais ou quatro flags antigas. Horário
+padrão do banco não é exibido como Aberto; foto ausente usa placeholder real.
+Matriz automatizada de layout/temas/escalas e semântica passou.
+Pendência: inspeção manual com tecnologia assistiva real.
+
+27 / Trello #111 — https://trello.com/c/ixSiQpr7
+Salvos usava /api/locais/ e calculava média simples das médias válidas; já ignorava
+contagem zero, conforme confirmado. Agora usa só favoritos privados, total real
+da API e busca sobre todo o conjunto próprio. Removidos média geral, cidade fixa,
+imagens/nomes fabricados e sucesso de compartilhamento simulado. Há refresh,
+erro inicial/parcial, retry, paginação e estados vazios distintos. Espaços não
+geram falso vazio. Retorno de rota é PlaceRouteRequest; Map de mutação não vira
+rota por Configurações. Distância exige posição explicitamente válida, não o
+centro padrão ou distancia legado. Testes funcionais e layouts passaram.
+Pendência: homologação no navegador com backend e contas reais de teste.
+
+Detalhes de decisões, JSON, concorrência, busca, privacidade, recursos e limites:
+  docs/FAVORITOS_E_LOCAIS_SALVOS.md
+
+3. APLICAR O PACOTE
+
+a) Faça cópia dos arquivos locais e compare alterações feitas depois do ZIP-base.
+   Mescle eventuais diferenças; não descarte trabalho para aplicar este pacote.
+b) Extraia o conteúdo na raiz acessoja-app. Os caminhos começam por favoritos/,
+   frontend/, docs/, acessoja/ etc. Não há pasta externa nem projeto completo.
+c) Backend primeiro: mantenha as dependências de backend/requirements.txt e
+   execute python manage.py migrate em ambiente devidamente configurado.
+   Migration nova: favoritos/0001_initial. Nenhum backfill de favoritos ocorre.
+d) Em frontend, use Flutter 3.47.4 (FVM quando disponível), execute pub get,
+   gen-l10n, analyze, test e build web. Não foi adicionada dependência.
+e) Execute o roteiro manual abaixo antes de homologar/integrar.
+
+O lockfile, pubspec e registrantes de plugins existentes não mudaram por esta
+implementação. Arquivos efêmeros/local.properties criados pelo SDK não entram no
+ZIP. Também não há .git, .env, bancos, cache, SDK, ambiente virtual ou builds.
+Os seis PNGs de widgets são os únicos artefatos visuais incluídos.
+
+4. VERIFICAÇÕES EFETIVAMENTE EXECUTADAS
+
+Ambiente: Python 3.12.14, Django 5.1.3, Flutter 3.47.4 / Dart 3.13.3.
+Workflow mantém Python 3.12, Flutter 3.47.4, Java 17 e cobertura mínima de 80%.
+Nenhum check foi removido e o limite não foi reduzido.
+
+Backend, SQLite novo/isolado e SECRET_KEY apenas de teste:
+- python manage.py check: sem problemas.
+- python manage.py makemigrations --check --dry-run: nenhuma pendência.
+- python manage.py migrate: todas aplicadas, incluindo favoritos/0001_initial.
+- python manage.py spectacular --validate --fail-on-warn: aprovado.
+- flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv
+  --statistics --count: 0 violações.
+- pytest --cov=. --cov-report=term-missing --cov-report=xml:<temporário>
+  --cov-fail-under=80 -v: 391 passaram, 5 ignorados, 21 subtests passaram.
+  Cobertura: 96,47%. Os skips são exclusivamente concorrência PostgreSQL.
+- Regressão dirigida de favoritos + API de acessibilidade/migration: 66 passaram,
+  1 skip PostgreSQL. A suíte completa acima foi repetida depois da correção.
+
+Tentativa PostgreSQL:
+  pytest -q contribuicoes favoritos -k postgresql_concurrent
+A conexão local 127.0.0.1:5432 foi recusada por ausência de servidor; os cinco
+casos selecionados tiveram erro de setup, não validação de concorrência.
+O workflow foi ajustado para executar esses cinco casos no serviço PostgreSQL 16
+que já existia. Concorrência PostgreSQL permanece PENDENTE neste ambiente.
+
+Frontend:
+- flutter pub get --offline: aprovado com dependências disponíveis, lock mantido.
+- flutter gen-l10n: aprovado, ARBs e código gerado incluídos.
+- dart format: somente os 34 Dart novos/modificados, aprovado.
+- flutter analyze --no-pub: No issues found.
+- flutter test --no-pub --reporter expanded: 791 testes passaram, sem falhas.
+- flutter test --no-pub test/favorites_layout_test.dart
+  --dart-define=CAPTURE_FAVORITES=true --reporter expanded: 35 passaram;
+  inclui 30 combinações de tela/escala/tema, teclado e quatro casos de captura.
+- flutter build web --no-pub: aprovado. Também passou o dry run Wasm; isso não é
+  homologação manual nem build de distribuição Wasm.
+- flutter build apk --debug --no-pub: tentativa executada, saída 1:
+  [!] No Android SDK found. Try setting the ANDROID_HOME environment variable.
+  APK Android permanece PENDENTE. Não é necessário para executar no navegador.
+
+Comandos Flutter usaram CI=true, FLUTTER_SUPPRESS_ANALYTICS=true e caches locais
+já disponíveis; não houve atualização de SDK/framework/dependências do projeto.
+Os testes simulam HTTP, sessão, estado OSM, rede, dados de localização, teclado,
+armazenamento e tempo. PNGs usam fixtures fictícias e fontes locais reais.
+Logs, cobertura e builds de verificação não fazem parte do pacote incremental.
+
+5. EXECUÇÃO NO NAVEGADOR / REPETIR NO WINDOWS
+
+Na raiz do projeto, com seu ambiente Django e banco de desenvolvimento isolado:
+
+  python manage.py check
+  python manage.py makemigrations --check --dry-run
+  python manage.py migrate
+  python manage.py spectacular --fail-on-warn
+  flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv --statistics --count
+  pytest --cov=. --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=80 -v
+  python manage.py runserver
+
+Em outra janela, dentro de frontend:
+
+  fvm flutter pub get
+  fvm flutter gen-l10n
+  fvm flutter analyze
+  fvm flutter test
+  fvm flutter build web
+  fvm flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000
+
+Se não usar FVM, substitua fvm flutter por flutter com o SDK 3.47.4 no PATH.
+Se o Chrome não puder ser iniciado automaticamente, execute:
+
+  fvm flutter run -d web-server --web-hostname 127.0.0.1 --web-port 8080 --dart-define=API_BASE_URL=http://localhost:8000
+
+Abra no navegador o endereço informado. Backend/CORS/origem devem seguir a
+configuração do projeto. Em outro computador, localhost precisa ser o endereço
+real do backend, não o navegador do usuário. Não há necessidade de Android SDK.
+Favoritos ficam no servidor e reaparecem após novo login; token fica na sessão
+em memória conforme a autenticação existente. Preferências de leitura continuam
+locais ao navegador/origem e não pertencem à coleção privada de favoritos.
+
+Em ambiente com PostgreSQL 16 de teste configurado no DATABASE_URL, repetir:
+
+  pytest -q contribuicoes favoritos -k postgresql_concurrent
+
+Os cinco casos precisam executar sem skips/erros de setup. Com Android SDK e
+Java 17 disponíveis, repetir flutter build apk --debug. Não usar banco de
+produção/compartilhado para testes de migration, concorrência ou limpeza.
+
+6. HOMOLOGAÇÃO MANUAL AINDA NECESSÁRIA
+
+- Conta A: salvar local interno no mapa/Explorar/detalhes; conferir Salvos,
+  ícones, busca e total. Reabrir, atualizar e relogar para conferir persistência.
+- Conta B: confirmar que lista/ícones não trazem favoritos de A. Trocar conta
+  com GET/POST/DELETE pendentes e com Desfazer visível; não deve haver chamada
+  antiga com token de B nem nomes/ações privados de A.
+- Remover último favorito e desfazer antes/depois da resposta DELETE; conferir
+  novo ID na API, falha de rede, expiração e local apagado antes da restauração.
+- OSM sem vínculo: abrir/cancelar sem escrita; confirmar cadastro e favorito;
+  testar importação existente, token expirado, limite e falha só do favorito.
+  Retry do favorito deve reaproveitar o ID canônico confirmado.
+- Conferir registros sem coordenadas/nota/categoria, próprios públicos/privados,
+  inválidos e arquivados. Nota pública não inclui próprio privado ou inválido.
+- Abrir edição preenchida, salvar/excluir pelo fluxo existente e verificar nota,
+  recursos e contagem em Salvos/detalhes/mapa/Central sem novos pontos indevidos.
+- Main e Configurações: voltar de Salvos não inicia rota; somente ação explícita
+  encaminha destino ao planejamento. Conferir histórico e consentimentos antigos.
+- Em 320/360/390, horizontal e desktop, texto 100/150/200%, claro/escuro e esquemas
+  de leitura: rolar nome/endereço/ações, teclado virtual, Tab/Shift+Tab,
+  Enter/Espaço, foco após remoção, botão móvel e Desfazer. Repetir com leitor
+  de tela real e backend real de testes em duas contas.
+
+Não foi feita homologação manual com contas reais, Chrome/Android ou leitor de
+tela. Os testes automatizados e capturas não substituem essa etapa. O Quality
+Gate integral só pode ser considerado aprovado após os jobs PostgreSQL e Android.
+
+7. CAPTURAS
+
+Pasta docs/capturas/cards_24_27, seis PNGs: claro/escuro em 100% e 200%, e a área
+de ações rolada em 200%. Renderizações do widget real em viewport 390 x 844,
+pixel ratio 2, com dados fictícios, sem fotos genéricas e com fontes reais.
+O teste também verifica botão móvel/Desfazer em outras dimensões e com teclado.
+Não são screenshots de execução manual em dispositivo ou navegador.
+
+8. RESUMO PARA FUTURO PR — NÃO CRIADO
+
+Destino: develop.
+Título: feat(favoritos): favoritos privados, Desfazer e Locais Salvos reais
+
+Salvos consultava todos os locais e exibia indicadores sem relação com escolhas
+pessoais. A alteração adiciona uma relação privada com API idempotente, busca e
+paginação, conectada a um controlador compartilhado isolado por sessão. Remover
+e Desfazer executam DELETE/POST em ordem e reconciliam respostas incertas.
+
+LocalCard passa a ser reutilizado por Salvos com contagem visível, nota pública
+separada da avaliação própria e recursos do catálogo. Integra mapa, Explorar,
+detalhes e Configurações sem importar OSM silenciosamente nem gerar rotas/pontos.
+
+Validação: analyze e 791 testes Flutter; build web; 391 testes backend e 21
+subtests, cobertura 96,47%, check/migrations/schema/Flake8. Pendências materiais:
+cinco casos PostgreSQL por servidor ausente, build Android por SDK ausente e
+homologação manual com duas contas/leitor de tela. Workflow PostgreSQL inclui os
+novos testes preservando os de contribuições. Dependências e lock mantidos.
+
+9. INVENTÁRIO
+
+A lista exata de arquivos do pacote segue ao final. Não há exclusões de arquivos
+existentes; substituições são somente dos caminhos listados. O ZIP foi comparado
+com os hashes iniciais e validado para não conter cache, banco ou build.
+
+59 arquivos novos/modificados:
+
+  .github/workflows/quality-gate.yml
+  INSTRUCOES_APLICACAO.txt
+  README.md
+  acessoja/settings.py
+  acessoja/urls.py
+  docs/FAVORITOS_E_LOCAIS_SALVOS.md
+  docs/INSTRUCOES_BASE_13_ANTERIORES.txt
+  docs/capturas/cards_24_27/salvos_claro_100.png
+  docs/capturas/cards_24_27/salvos_claro_200.png
+  docs/capturas/cards_24_27/salvos_claro_200_acoes.png
+  docs/capturas/cards_24_27/salvos_escuro_100.png
+  docs/capturas/cards_24_27/salvos_escuro_200.png
+  docs/capturas/cards_24_27/salvos_escuro_200_acoes.png
+  favoritos/__init__.py
+  favoritos/apps.py
+  favoritos/migrations/0001_initial.py
+  favoritos/migrations/__init__.py
+  favoritos/models.py
+  favoritos/serializers.py
+  favoritos/test_favorites.py
+  favoritos/urls.py
+  favoritos/views.py
+  frontend/lib/l10n/app_en.arb
+  frontend/lib/l10n/app_pt.arb
+  frontend/lib/l10n/generated/app_localizations.dart
+  frontend/lib/l10n/generated/app_localizations_en.dart
+  frontend/lib/l10n/generated/app_localizations_pt.dart
+  frontend/lib/main.dart
+  frontend/lib/models/favorite.dart
+  frontend/lib/navigation.dart
+  frontend/lib/screens/explorar_screen.dart
+  frontend/lib/screens/main_screen.dart
+  frontend/lib/screens/place_detail_screen.dart
+  frontend/lib/screens/review_editor_screen.dart
+  frontend/lib/screens/saved_places_screen.dart
+  frontend/lib/screens/settings_screen.dart
+  frontend/lib/services/contribution_controller.dart
+  frontend/lib/services/contribution_service.dart
+  frontend/lib/services/favorites_controller.dart
+  frontend/lib/services/favorites_service.dart
+  frontend/lib/services/places_service.dart
+  frontend/lib/services/review_changes.dart
+  frontend/lib/widgets/accessibility_host.dart
+  frontend/lib/widgets/external_place_registration.dart
+  frontend/lib/widgets/favorite_button.dart
+  frontend/lib/widgets/favorites_scope.dart
+  frontend/lib/widgets/local_card.dart
+  frontend/lib/widgets/map_place_preview.dart
+  frontend/lib/widgets/place_feature_summary.dart
+  frontend/test/favorites_controller_test.dart
+  frontend/test/favorites_integration_test.dart
+  frontend/test/favorites_layout_test.dart
+  frontend/test/favorites_service_test.dart
+  frontend/test/frontend_regression_test.dart
+  frontend/test/helpers/favorite_fixture.dart
+  frontend/test/local_card_test.dart
+  frontend/test/place_media_accessibility_test.dart
+  frontend/test/saved_places_state_test.dart
+  locais/test_accessibility_api.py

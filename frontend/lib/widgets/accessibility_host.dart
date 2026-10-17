@@ -11,16 +11,18 @@ import 'accessibility_panel.dart';
 class AccessibilityRouteObserver extends NavigatorObserver {
   final blocked = ValueNotifier(false);
   final bottomClearance = ValueNotifier(0.0);
-  final _clearances = <Route<dynamic>, double>{};
+  final _clearances = <Route<dynamic>, Map<Object, double>>{};
   final _routes = <Route<dynamic>>[];
   bool _scheduled = false;
   bool _disposed = false;
-  void reportBottom(Route<dynamic> route, double? value) {
-    if (_disposed || _clearances[route] == value) return;
+  void reportBottom(Route<dynamic> route, double? value, {Object? source}) {
+    final key = source ?? route;
+    if (_disposed || _clearances[route]?[key] == value) return;
     if (value == null) {
-      _clearances.remove(route);
+      _clearances[route]?.remove(key);
+      if (_clearances[route]?.isEmpty == true) _clearances.remove(route);
     } else {
-      _clearances[route] = value;
+      (_clearances[route] ??= {})[key] = value;
     }
     _changed();
   }
@@ -37,7 +39,9 @@ class AccessibilityRouteObserver extends NavigatorObserver {
       if (_disposed) return;
       blocked.value = _routes.any((route) => route is PopupRoute);
       final pages = _routes.where((route) => route is! PopupRoute);
-      bottomClearance.value = pages.isEmpty ? 0 : _clearances[pages.last] ?? 0;
+      bottomClearance.value = pages.isEmpty
+          ? 0
+          : (_clearances[pages.last]?.values.fold<double>(0, math.max) ?? 0);
       final overlayContext = navigator?.overlay?.context;
       if (overlayContext != null && overlayContext.mounted) {
         FocusScope.of(overlayContext).traversalEdgeBehavior =
@@ -318,7 +322,8 @@ class _AccessibilityBottomBoundaryState
               (MediaQuery.sizeOf(context).height -
                       box.localToGlobal(Offset.zero).dy)
                   .clamp(0, double.infinity)
-                  .toDouble());
+                  .toDouble(),
+              source: this);
         }
       });
   @override
@@ -345,7 +350,7 @@ class _AccessibilityBottomBoundaryState
 
   @override
   void dispose() {
-    if (_route != null) _observer?.reportBottom(_route!, null);
+    if (_route != null) _observer?.reportBottom(_route!, null, source: this);
     super.dispose();
   }
 }

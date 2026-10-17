@@ -31,6 +31,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/app_http.dart';
+import '../services/review_changes.dart';
 import '../services/places_service.dart';
 import '../models/map_place.dart';
 import '../services/location_service.dart';
@@ -724,6 +725,7 @@ class _MainScreenState extends SafeState<MainScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     AppHttp.sessionRevision.addListener(_sessionChanged);
+    reviewChanges.addListener(_onReviewChanged);
     _navigation.addListener(_onNavigationChanged);
     unawaited(_historyRecorder.refresh());
     _loadUserProfile();
@@ -742,6 +744,7 @@ class _MainScreenState extends SafeState<MainScreen>
     _statusUpdates.dispose();
     WidgetsBinding.instance.removeObserver(this);
     AppHttp.sessionRevision.removeListener(_sessionChanged);
+    reviewChanges.removeListener(_onReviewChanged);
     _preferencesRequest++;
     _profileRequest++;
     _viewportTimer?.cancel();
@@ -762,6 +765,15 @@ class _MainScreenState extends SafeState<MainScreen>
     _preview.dispose();
     _placesRevision.dispose();
     super.dispose();
+  }
+
+  void _onReviewChanged() {
+    _preview.invalidate();
+    final selected = _preview.place;
+    if (selected != null) {
+      unawaited(_preview.select(selected, force: true));
+    }
+    unawaited(_fetchEstablishments());
   }
 
   Future<void> _fetchEstablishments() async {
@@ -1614,8 +1626,8 @@ class _MainScreenState extends SafeState<MainScreen>
     if (!mounted) {
       return;
     }
-    if (result is Map<String, dynamic>) {
-      await _startRoute(result);
+    if (result is PlaceRouteRequest) {
+      await _startRoute(result.place);
     }
     _preview.invalidate(MapPlace.internal(local).internalId);
     await _fetchEstablishments();
@@ -1630,11 +1642,12 @@ class _MainScreenState extends SafeState<MainScreen>
         builder: (context) => SavedPlacesScreen(
           userName: widget.userName,
           unidadeDistancia: _unidadeDistancia,
+          currentLocation: _freshLocation ? _currentLocation : null,
         ),
       ),
     );
-    if (mounted && selectedLocal is Map<String, dynamic>) {
-      await _startRoute(selectedLocal);
+    if (mounted && selectedLocal is PlaceRouteRequest) {
+      await _startRoute(selectedLocal.place);
     }
   }
 
@@ -2237,8 +2250,11 @@ class _MainScreenState extends SafeState<MainScreen>
                               }
                               await _loadUserProfile();
                               await _historyRecorder.refresh();
-                              if (mounted && result is Map<String, dynamic>) {
-                                await _startRoute(result);
+                              if (mounted && result is PlaceRouteRequest) {
+                                await _startRoute(result.place);
+                              } else if (mounted &&
+                                  routePlace(result) != null) {
+                                await _startRoute(routePlace(result)!);
                               }
                             },
                             child: Semantics(
@@ -2467,13 +2483,16 @@ class _MainScreenState extends SafeState<MainScreen>
                               ? ExplorarScreen(
                                   userName: widget.userName,
                                   currentLocation: _currentLocation,
+                                  hasCurrentLocation: _freshLocation,
                                   unidadeDistancia: _unidadeDistancia)
                               : SugestoesScreen(
                                   allowSuggestions: _allowSuggestions,
                                   userName: widget.userName,
                                   unidadeDistancia: _unidadeDistancia)));
-                  if (mounted && selectedLocal is Map<String, dynamic>) {
-                    await _startRoute(selectedLocal);
+                  if (mounted && selectedLocal is PlaceRouteRequest) {
+                    await _startRoute(selectedLocal.place);
+                  } else if (mounted && routePlace(selectedLocal) != null) {
+                    await _startRoute(routePlace(selectedLocal)!);
                   }
                 }),
           ])),

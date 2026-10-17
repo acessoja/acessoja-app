@@ -1,4 +1,6 @@
 import '../reading_presentation.dart';
+import '../navigation.dart';
+import '../models/map_place.dart';
 import '../widgets/load_error.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -16,6 +18,7 @@ import 'place_detail_screen.dart';
 class ExplorarScreen extends StatefulWidget {
   final String userName;
   final LatLng currentLocation;
+  final bool hasCurrentLocation;
   final String unidadeDistancia;
 
   const ExplorarScreen({
@@ -23,6 +26,7 @@ class ExplorarScreen extends StatefulWidget {
     required this.userName,
     required this.currentLocation,
     this.unidadeDistancia = 'KM',
+    this.hasCurrentLocation = false,
   });
 
   @override
@@ -35,16 +39,25 @@ class _ExplorarScreenState extends SafeState<ExplorarScreen> {
   bool _isLoading = true;
   bool _loadFailed = false;
 
-  String _formatDistance(dynamic value) {
-    final km = value is num
-        ? value.toDouble()
-        : double.tryParse(value
-                .toString()
-                .replaceAll(RegExp(r'[^0-9.,]'), '')
-                .replaceAll(',', '.')) ??
-            0;
+  String _formatDistance(dynamic place) {
+    final point = routePlace(place), current = widget.currentLocation;
+    if (!widget.hasCurrentLocation ||
+        point == null ||
+        !current.latitude.isFinite ||
+        !current.longitude.isFinite ||
+        current.latitude.abs() > 90 ||
+        current.longitude.abs() > 180) {
+      return '';
+    }
+    final km = mapDistanceMeters(
+            current.latitude,
+            current.longitude,
+            (point['latitude'] as num).toDouble(),
+            (point['longitude'] as num).toDouble()) /
+        1000;
     final miles = widget.unidadeDistancia == 'Milha';
-    return '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}';
+    return context.l10n.favoriteStraightDistance(
+        '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}');
   }
 
   @override
@@ -89,16 +102,7 @@ class _ExplorarScreenState extends SafeState<ExplorarScreen> {
     }
   }
 
-  String getLocalDisplayName(String name) {
-    if (name == 'UniEVANGÉLICA') {
-      return 'UniEVANGÉLICA - Universidade Evangélica de Goiás';
-    } else if (name == 'Brasil Park Shopping') {
-      return 'BRASIL PARK SHOPPING - Anápolis';
-    } else if (name == 'Correios - Anápolis') {
-      return 'CORREIOS - Anápolis';
-    }
-    return name;
-  }
+  String getLocalDisplayName(String name) => name;
 
   Widget _buildLoadingState() {
     final colors = AppColors.of(context);
@@ -384,12 +388,13 @@ class _ExplorarScreenState extends SafeState<ExplorarScreen> {
 
                                     return LocalCard(
                                       place: place,
-                                      distanceLabel:
-                                          _formatDistance(place['distancia']),
+                                      distanceLabel: _formatDistance(place),
                                       displayNameBuilder: getLocalDisplayName,
-                                      onRoutePressed: () {
-                                        Navigator.pop(context, place);
-                                      },
+                                      onRoutePressed: routePlace(place) == null
+                                          ? null
+                                          : () {
+                                              Navigator.pop(context, place);
+                                            },
                                       onDetailsPressed: () async {
                                         final result = await Navigator.push(
                                           context,
@@ -404,7 +409,7 @@ class _ExplorarScreenState extends SafeState<ExplorarScreen> {
                                         if (!mounted || !context.mounted) {
                                           return;
                                         }
-                                        if (result != null) {
+                                        if (result is PlaceRouteRequest) {
                                           Navigator.pop(context, result);
                                         } else {
                                           _fetchLocales();

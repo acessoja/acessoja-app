@@ -6,6 +6,8 @@ import 'widgets/accessibility_host.dart';
 import 'l10n/generated/app_localizations.dart';
 
 import 'app_theme.dart';
+import 'services/favorites_controller.dart';
+import 'widgets/favorites_scope.dart';
 import 'screens/login_screen.dart'; // Certifique-se de que o caminho está correto
 import 'screens/place_detail_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -25,6 +27,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late final AppThemeController _themeController;
+  final _favorites = FavoritesController();
   final _navigator = GlobalKey<NavigatorState>();
   final _accessibilityRoutes = AccessibilityRouteObserver();
 
@@ -39,6 +42,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
+    _favorites.dispose();
     _themeController.dispose();
     _accessibilityRoutes.dispose();
     super.dispose();
@@ -49,92 +53,96 @@ class _MyAppState extends State<MyApp> {
     return AnimatedBuilder(
       animation: Listenable.merge([_themeController, widget.preferences]),
       builder: (context, child) {
-        return PreferencesScope(
-          preferences: widget.preferences,
-          child: AppThemeScope(
-            controller: _themeController,
-            child: MaterialApp(
-              debugShowCheckedModeBanner: false,
-              title: 'Acesso Já',
-              navigatorKey: _navigator,
-              navigatorObservers: [_accessibilityRoutes],
-              theme:
-                  readingTheme(AppThemes.light(), widget.preferences.reading),
-              darkTheme:
-                  readingTheme(AppThemes.dark(), widget.preferences.reading),
-              highContrastTheme: readingTheme(
-                  AppThemes.highContrast(Brightness.light),
-                  widget.preferences.reading),
-              highContrastDarkTheme: readingTheme(
-                  AppThemes.highContrast(Brightness.dark),
-                  widget.preferences.reading),
-              themeMode: _themeController.themeMode,
-              locale: widget.preferences.locale,
-              supportedLocales: AppLocalizations.supportedLocales,
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
-              builder: (context, navigator) {
-                final media = MediaQuery.of(context);
-                final scaler = ReadingTextScaler(
-                    media.textScaler, widget.preferences.reading.textSize);
-                final theme = Theme.of(context);
-                return MediaQuery(
-                  data: media.copyWith(
-                      textScaler: ReadingTextScaler(media.textScaler,
-                          widget.preferences.reading.textSize)),
-                  child: Theme(
-                      data: theme.copyWith(
-                          appBarTheme: theme.appBarTheme.copyWith(
-                        toolbarHeight: (scaler.scale(19) *
-                                    widget.preferences.reading.lineHeight +
-                                24)
-                            .clamp(56.0, double.infinity),
-                      )),
-                      child: AccessibilityHost(
-                          navigatorKey: _navigator,
-                          preferences: widget.preferences,
-                          observer: _accessibilityRoutes,
-                          child: navigator!)),
-                );
-              },
-              initialRoute: '/',
-              routes: {
-                '/': (context) => widget.preferences.hasSeenOnboarding
-                    ? const LoginScreen()
-                    : OnboardingScreen(preferences: widget.preferences),
-                // Legacy bookmarks return to the entry point instead of opening
-                // demo data with a fabricated account.
-                '/places': (context) => const LoginScreen(),
-              },
-              onGenerateRoute: (settings) {
-                if (settings.name == '/placeDetails') {
-                  final args = settings.arguments;
-                  final place =
-                      args is Map<String, dynamic> ? args['place'] : null;
-                  final user =
-                      args is Map<String, dynamic> ? args['userName'] : null;
-                  if (place is Map<String, dynamic> &&
-                      place['id_local'] is int &&
-                      user is String &&
-                      user.isNotEmpty) {
-                    return MaterialPageRoute(
-                      builder: (context) => PlaceDetailScreen(
-                        place: place,
-                        userName: user,
-                      ),
+        return FavoritesScope(
+            controller: _favorites,
+            child: PreferencesScope(
+              preferences: widget.preferences,
+              child: AppThemeScope(
+                controller: _themeController,
+                child: MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  title: 'Acesso Já',
+                  navigatorKey: _navigator,
+                  navigatorObservers: [_accessibilityRoutes],
+                  theme: readingTheme(
+                      AppThemes.light(), widget.preferences.reading),
+                  darkTheme: readingTheme(
+                      AppThemes.dark(), widget.preferences.reading),
+                  highContrastTheme: readingTheme(
+                      AppThemes.highContrast(Brightness.light),
+                      widget.preferences.reading),
+                  highContrastDarkTheme: readingTheme(
+                      AppThemes.highContrast(Brightness.dark),
+                      widget.preferences.reading),
+                  themeMode: _themeController.themeMode,
+                  locale: widget.preferences.locale,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
+                  builder: (context, navigator) {
+                    final media = MediaQuery.of(context);
+                    final scaler = ReadingTextScaler(
+                        media.textScaler, widget.preferences.reading.textSize);
+                    final theme = Theme.of(context);
+                    return MediaQuery(
+                      data: media.copyWith(
+                          textScaler: ReadingTextScaler(media.textScaler,
+                              widget.preferences.reading.textSize)),
+                      child: Theme(
+                          data: theme.copyWith(
+                              appBarTheme: theme.appBarTheme.copyWith(
+                            toolbarHeight: (scaler.scale(19) *
+                                        widget.preferences.reading.lineHeight +
+                                    24)
+                                .clamp(56.0, double.infinity),
+                          )),
+                          child: AccessibilityHost(
+                              navigatorKey: _navigator,
+                              preferences: widget.preferences,
+                              observer: _accessibilityRoutes,
+                              child: navigator!)),
                     );
-                  } else {
-                    return MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    );
-                  }
-                }
-                return null;
-              },
-              onUnknownRoute: (_) =>
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-            ),
-          ),
-        );
+                  },
+                  initialRoute: '/',
+                  routes: {
+                    '/': (context) => widget.preferences.hasSeenOnboarding
+                        ? const LoginScreen()
+                        : OnboardingScreen(preferences: widget.preferences),
+                    // Legacy bookmarks return to the entry point instead of opening
+                    // demo data with a fabricated account.
+                    '/places': (context) => const LoginScreen(),
+                  },
+                  onGenerateRoute: (settings) {
+                    if (settings.name == '/placeDetails') {
+                      final args = settings.arguments;
+                      final place =
+                          args is Map<String, dynamic> ? args['place'] : null;
+                      final user = args is Map<String, dynamic>
+                          ? args['userName']
+                          : null;
+                      if (place is Map<String, dynamic> &&
+                          place['id_local'] is int &&
+                          user is String &&
+                          user.isNotEmpty) {
+                        return MaterialPageRoute(
+                          builder: (context) => PlaceDetailScreen(
+                            place: place,
+                            userName: user,
+                          ),
+                        );
+                      } else {
+                        return MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        );
+                      }
+                    }
+                    return null;
+                  },
+                  onUnknownRoute: (_) =>
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                ),
+              ),
+            ));
       },
     );
   }

@@ -1,4 +1,6 @@
 import '../widgets/load_error.dart';
+import '../widgets/favorite_button.dart';
+import '../services/review_changes.dart';
 import '../navigation.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
@@ -41,12 +43,14 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
   @override
   void dispose() {
     _loadGeneration++;
+    reviewChanges.removeListener(_loadAllData);
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
+    reviewChanges.addListener(_loadAllData);
     _loadAllData();
   }
 
@@ -118,21 +122,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
           row is Map && row['is_current'] != false && row['is_valid'] != false)
       .length);
 
-  String getLocalDisplayName(String name) {
-    if (name == 'UniEVANGÉLICA') {
-      return 'UniEVANGÉLICA \n Universidade Evangélica de Goiás';
-    } else {
-      if (name == 'Brasil Park Shopping') {
-        return 'BRASIL PARK SHOPPING - Anápolis';
-      } else {
-        if (name == 'Correios - Anápolis') {
-          return 'CORREIOS - Anápolis';
-        }
-      }
-    }
-
-    return name;
-  }
+  String getLocalDisplayName(String name) => name;
 
   Future<void> _openReviewEditor() async {
     final changed = await Navigator.push<bool>(
@@ -347,7 +337,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
                     SnackBar(content: Text(context.l10n.invalidLocation)));
                 return;
               }
-              Navigator.pop(context, widget.place);
+              Navigator.pop(context, PlaceRouteRequest(widget.place));
             },
             icon: const Icon(Icons.directions_rounded, size: 20),
             label: Text(
@@ -652,6 +642,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
                             ),
                             children: [
                               _buildPlaceHeader(),
+                              FavoriteButton(place: widget.place),
                               _buildRatingSummary(),
                               _buildRouteButton(),
                               _buildCommentsSection(),

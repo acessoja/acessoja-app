@@ -4,7 +4,9 @@ import 'dart:async';
 
 /// A route request is passed back through intermediate screens to the map.
 Map<String, dynamic>? routePlace(Object? result) {
-  if (result is! Map<String, dynamic>) { return null; }
+  if (result is! Map<String, dynamic>) {
+    return null;
+  }
   final lat = result['latitude'];
   final lon = result['longitude'];
   if (lat is! num ||
@@ -22,4 +24,12 @@ void logOut(BuildContext context) {
   unawaited(AppHttp.logout().catchError((_) {}));
   AppHttp.clearSession();
   Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
+}
+
+/// Only an explicit Saved Places action can request a route through Settings.
+class PlaceRouteRequest {
+  final Map<String, dynamic> place;
+  PlaceRouteRequest(Map<String, dynamic> value)
+      : place = Map.unmodifiable(routePlace(value) ??
+            (throw const FormatException('Invalid route coordinates')));
 }

@@ -839,7 +839,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noSavedPlaces => 'No saved places yet.';
 
   @override
-  String get savedPlacesEmptyHint => 'Places will appear here when available.';
+  String get savedPlacesEmptyHint =>
+      'Use Save place on the map, in Explore or in place details. Your favorites are private.';
 
   @override
   String get editProfileHint => 'Select to edit your profile';
@@ -965,10 +966,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get drivingRoute => 'Driving route • route accessibility not verified';
-
-  @override
-  String get allPlacesNotice =>
-      'This list shows available places. Personal favorites are not available yet.';
 
   @override
   String get suggestionsDisabled =>
@@ -1381,4 +1378,126 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get placeHoursUnknown => 'Opening hours not reported';
+
+  @override
+  String get favoriteConfirmed => 'Favorite confirmed.';
+
+  @override
+  String get favoriteFailed =>
+      'Could not confirm the change. Previous state retained.';
+
+  @override
+  String get favoriteUncertain =>
+      'Result still unknown. Check the status before retrying.';
+
+  @override
+  String get favoriteSignIn => 'Sign in to access your favorites.';
+
+  @override
+  String favoriteRemoved(String name) {
+    return '$name removed from favorites.';
+  }
+
+  @override
+  String favoriteRemoving(String name) {
+    return 'Removing $name…';
+  }
+
+  @override
+  String favoriteRestored(String name) {
+    return '$name saved again.';
+  }
+
+  @override
+  String get favoriteUndo => 'Undo';
+
+  @override
+  String get favoriteUndoFailed =>
+      'Could not restore the favorite. Check the list and retry.';
+
+  @override
+  String get favoriteRemove => 'Remove from favorites';
+
+  @override
+  String get favoriteSave => 'Save place';
+
+  @override
+  String get favoritePending => 'Confirming change…';
+
+  @override
+  String get favoriteCheck => 'Check favorite status';
+
+  @override
+  String get favoriteRegister => 'Register to save';
+
+  @override
+  String get favoriteLoading => 'Checking favorite…';
+
+  @override
+  String get favoriteRegisterTitle => 'Register and save place?';
+
+  @override
+  String get favoriteRegisterHelp =>
+      'To save this OpenStreetMap place, confirm its registration in AcessoJá. A private favorite will then be created.';
+
+  @override
+  String favoritesTotal(int count) {
+    return 'Total favorites: $count';
+  }
+
+  @override
+  String favoritesResults(int count) {
+    return 'Search results: $count';
+  }
+
+  @override
+  String get favoritesEmpty => 'You have no saved places yet';
+
+  @override
+  String get favoritesEmptyHelp =>
+      'Use Save place on the map, in Explore or in place details. Your favorites are private.';
+
+  @override
+  String get favoritesSearch => 'Search favorites';
+
+  @override
+  String get favoritesMore => 'Load more favorites';
+
+  @override
+  String get favoritesRefresh => 'Refresh favorites';
+
+  @override
+  String get favoritePublicRating => 'Public rating';
+
+  @override
+  String favoriteOwnRating(String value) {
+    return 'Your review: $value out of 5';
+  }
+
+  @override
+  String get favoriteOwnInvalid =>
+      'Your review is excluded from the public rating.';
+
+  @override
+  String get favoriteEditReview => 'Edit my review';
+
+  @override
+  String get favoriteReview => 'Review place';
+
+  @override
+  String get favoriteDetails => 'View details';
+
+  @override
+  String get favoriteFewReports => 'Few reports; check the details.';
+
+  @override
+  String get favoriteNoFeatures => 'Features not reported yet';
+
+  @override
+  String get favoriteMissingPlace => 'This place is no longer available.';
+
+  @override
+  String favoriteStraightDistance(String distance) {
+    return 'Straight-line distance: $distance';
+  }
 }

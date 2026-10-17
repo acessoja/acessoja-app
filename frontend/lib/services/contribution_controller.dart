@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'contribution_service.dart';
+import 'review_changes.dart';
 
 class ContributionSection {
   List<Map<String, dynamic>> rows = [];
@@ -13,15 +15,23 @@ class ContributionSection {
   Map<String, String> _filters = {};
   Map<String, String> _loadedFilters = {};
   Future<bool>? _pending;
-  bool get canLoadMore => loaded && hasNext && mapEquals(_loadedFilters, _filters);
+  bool get canLoadMore =>
+      loaded && hasNext && mapEquals(_loadedFilters, _filters);
 }
 
 /// Owns independent, cached section requests. A failure never discards another
 /// section's successful response or a page already displayed to the user.
 class ContributionController extends ChangeNotifier {
-  ContributionController(this.service);
+  ContributionController(this.service) {
+    reviewChanges.addListener(_reviewsChanged);
+  }
   final ContributionService service;
-  static const endpoints = ['locais-para-avaliar', 'minhas-avaliacoes', 'comunidade', 'atividade'];
+  static const endpoints = [
+    'locais-para-avaliar',
+    'minhas-avaliacoes',
+    'comunidade',
+    'atividade'
+  ];
   final sections = List.generate(4, (_) => ContributionSection());
   Map<String, dynamic>? impact;
   Object? impactError;
@@ -31,11 +41,15 @@ class ContributionController extends ChangeNotifier {
   Future<bool>? _impactPending;
 
   void _notify() {
-    if (!_disposed) { notifyListeners(); }
+    if (!_disposed) {
+      notifyListeners();
+    }
   }
 
   Future<bool> loadImpact({bool force = false}) {
-    if (!force && _impactPending != null) { return _impactPending!; }
+    if (!force && _impactPending != null) {
+      return _impactPending!;
+    }
     final generation = ++_impactGeneration;
     impactLoading = true;
     impactError = null;
@@ -48,11 +62,15 @@ class ContributionController extends ChangeNotifier {
   Future<bool> _fetchImpact(int generation) async {
     try {
       final response = await service.impact();
-      if (_disposed || generation != _impactGeneration) { return false; }
+      if (_disposed || generation != _impactGeneration) {
+        return false;
+      }
       impact = response;
       return true;
     } catch (error) {
-      if (!_disposed && generation == _impactGeneration) { impactError = error; }
+      if (!_disposed && generation == _impactGeneration) {
+        impactError = error;
+      }
       return false;
     } finally {
       if (!_disposed && generation == _impactGeneration) {
@@ -63,15 +81,24 @@ class ContributionController extends ChangeNotifier {
     }
   }
 
-  Future<bool> loadSection(int index, {bool more = false, bool force = false,
+  Future<bool> loadSection(int index,
+      {bool more = false,
+      bool force = false,
       Map<String, String> filters = const {}}) {
     final section = sections[index];
     if (section.loading && mapEquals(section._filters, filters) && !force) {
       return section._pending!;
     }
-    if (more && (!section.loaded || !section.hasNext)) { return Future.value(true); }
-    if (more && !mapEquals(section._loadedFilters, filters)) { return Future.value(false); }
-    if (!more && !force && section.loaded && mapEquals(section._loadedFilters, filters)) {
+    if (more && (!section.loaded || !section.hasNext)) {
+      return Future.value(true);
+    }
+    if (more && !mapEquals(section._loadedFilters, filters)) {
+      return Future.value(false);
+    }
+    if (!more &&
+        !force &&
+        section.loaded &&
+        mapEquals(section._loadedFilters, filters)) {
       return Future.value(true);
     }
     final generation = ++section._generation;
@@ -85,13 +112,16 @@ class ContributionController extends ChangeNotifier {
     return future;
   }
 
-  Future<bool> _fetchSection(int index, int generation, bool more,
-      Map<String, String> filters) async {
+  Future<bool> _fetchSection(
+      int index, int generation, bool more, Map<String, String> filters) async {
     final section = sections[index];
     final page = more ? section.page + 1 : 1;
     try {
-      final response = await service.page(endpoints[index], page: page, filters: Map.of(filters));
-      if (_disposed || generation != section._generation) { return false; }
+      final response = await service.page(endpoints[index],
+          page: page, filters: Map.of(filters));
+      if (_disposed || generation != section._generation) {
+        return false;
+      }
       if (more) {
         final combined = <String, Map<String, dynamic>>{};
         for (final row in [...section.rows, ...response.items]) {
@@ -121,6 +151,21 @@ class ContributionController extends ChangeNotifier {
     }
   }
 
+  void _reviewsChanged() {
+    final loaded = <int, Map<String, String>>{
+      for (var i = 0; i < sections.length; i++)
+        if (sections[i].loaded) i: Map.of(sections[i]._loadedFilters),
+    };
+    final hadImpact = impact != null;
+    invalidateAfterMutation();
+    if (hadImpact) {
+      unawaited(loadImpact(force: true));
+    }
+    for (final entry in loaded.entries) {
+      unawaited(loadSection(entry.key, filters: entry.value, force: true));
+    }
+  }
+
   void invalidateAfterMutation({int? deletedReviewId}) {
     _impactGeneration++;
     _impactPending = null;
@@ -132,7 +177,8 @@ class ContributionController extends ChangeNotifier {
       section.loading = false;
       section.loaded = false;
       if (deletedReviewId != null && (i == 1 || i == 2)) {
-        section.rows = section.rows.where((row) => row['id'] != deletedReviewId).toList();
+        section.rows =
+            section.rows.where((row) => row['id'] != deletedReviewId).toList();
       }
     }
     _notify();
@@ -141,8 +187,11 @@ class ContributionController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    reviewChanges.removeListener(_reviewsChanged);
     _impactGeneration++;
-    for (final section in sections) { section._generation++; }
+    for (final section in sections) {
+      section._generation++;
+    }
     super.dispose();
   }
 }
