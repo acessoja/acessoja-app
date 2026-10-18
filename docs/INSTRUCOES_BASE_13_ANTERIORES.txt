@@ -1,0 +1,103 @@
+ACESSOJÁ — CORREÇÃO DO MAPA: CARDS 04, 05 E 06
+12/10/2026
+
+Este ZIP é uma correção incremental sobre acessoja_mapa_cards_04_06.zip,
+que já foi aplicado no projeto do log enviado. A documentação completa do
+desenvolvimento permanece no pacote original.
+
+1. FALHAS CORRIGIDAS
+
+Contraste dos textos secundários:
+- O texto #64748B sobre o fundo #F5F8FF tinha contraste 4,476362:1,
+  abaixo do mínimo de 4,5:1 exigido pelo teste.
+- AppColors.light.muted agora usa #52627A: contraste 5,832365:1 no
+  fundo da página e 6,200417:1 nas superfícies brancas.
+- O tom permanece secundário e integrado à paleta existente.
+- A regressão do tema agora verifica texto principal e secundário sobre
+  pageBackground, surface e surfaceElevated, nos dois temas.
+- As quatro guidelines do resumo continuam obrigatórias: tamanho de toque
+  Android/iOS, rótulos e contraste. O caso agora roda em claro e escuro.
+
+Botão Voltar nos detalhes externos:
+- WidgetTester.pageBack() procura o tooltip inglês Back e, depois, um
+  botão Cupertino. Na tela em português, o botão Material usa Voltar.
+- O teste agora obtém MaterialLocalizations.backButtonTooltip e toca o
+  botão real da AppBar, verificando que ele pode receber o toque.
+- O mesmo fluxo está coberto em português e inglês.
+- As verificações de abrir detalhes sem cadastrar, não enviar POST e
+  retornar ao mapa com o controle de busca foram mantidas.
+
+Teste antigo da Sprint 1:
+- A expectativa Rampas de Acesso foi atualizada para Rampa de acesso,
+  rótulo usado pelo resumo atual.
+- O teste também verifica os três recursos da fixture informados como
+  disponíveis; não remove a verificação de acessibilidade.
+- O mock de GET /api/locais/1/ retorna o objeto do local, conforme o
+  contrato de consulta de detalhes, em vez da lista de locais.
+- Antes de tocar Detalhes, o teste rola até o botão, aguarda o movimento
+  e verifica que ele está acessível ao toque.
+- A abertura de PlaceDetailScreen continua obrigatória.
+
+2. CONTEÚDO DO ZIP
+
+Somente estes cinco arquivos, com caminhos relativos à raiz do projeto:
+- INSTRUCOES_APLICACAO.txt
+- frontend/lib/app_theme.dart
+- frontend/test/frontend_regression_test.dart
+- frontend/test/map_cards_04_06_test.dart
+- frontend/test/map_sprint1_test.dart
+
+São arquivos completos para substituição. Não há alterações de backend,
+dependências ou arquivos gerados neste pacote. Não foram executados
+commit, push, merge ou abertura de PR.
+
+3. COMO APLICAR
+
+1. Use a cópia do acessoja-app com os Cards 04–06 já aplicados.
+2. Extraia o ZIP na raiz acessoja-app, que contém a pasta frontend.
+3. Substitua os cinco arquivos correspondentes. Não extraia dentro de
+   frontend, pois isso criaria frontend/frontend.
+4. Confira as diferenças com git diff.
+
+Na pasta frontend, execute:
+
+  flutter analyze
+  flutter test test/map_cards_04_06_test.dart test/map_sprint1_test.dart test/frontend_regression_test.dart
+  flutter test
+
+Para validar no navegador:
+
+  flutter build web
+  flutter run -d chrome
+
+Se o projeto estiver usando FVM, prefixe os comandos com fvm.
+Não é necessário Android SDK para esses comandos de teste e web.
+
+4. VERIFICAÇÃO DESTA CORREÇÃO
+
+Verificado aqui:
+- Sintaxe dos 79 arquivos Dart de lib/test com parser.
+- Resolução dos imports locais.
+- Cálculo de contraste das cores principal/secundária sobre os três
+  fundos nos dois temas: todos os pares verificados acima de 4,5:1.
+- Manutenção das assertions e das declarações de testes existentes.
+- Revisão das diferenças e integridade do ZIP.
+- Aplicação do ZIP sobre uma segunda cópia da versão dos Cards 04–06.
+
+Não executado aqui:
+- flutter analyze, testes Flutter e build web.
+- Execução em Chrome e avaliação por leitor de tela.
+
+Flutter e Dart não estão instalados neste ambiente. Parsing, revisão e
+cálculo de contraste não substituem o analisador, o compilador nem a
+execução dos widgets. A confirmação da suíte corrigida depende dos
+comandos acima.
+
+Os textos places_load_failed_500 e ClientException: offline no log
+enviado pertencem a cenários que simulam falhas de rede. Esses casos
+passaram naquele log; as três falhas identificadas foram as descritas
+na seção 1.
+
+Referências oficiais consultadas:
+https://api.flutter.dev/flutter/flutter_test/WidgetTester/pageBack.html
+https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html

@@ -89,7 +89,8 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
       MaterialPageRoute(builder: (_) => screen),
     );
     if (!mounted) return;
-    if (result is Map<String, dynamic>) {
+    if (result is PlaceRouteRequest ||
+        screen is RouteHistoryScreen && routePlace(result) != null) {
       Navigator.pop(context, result);
       return;
     }

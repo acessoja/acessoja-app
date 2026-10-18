@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'helpers/favorite_fixture.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -63,6 +64,26 @@ final profile = <String, dynamic>{
 };
 
 http.Response fixtureResponse(http.Request request) {
+  if (request.url.path == '/api/favoritos/') {
+    return favoriteResponse([
+      favoriteJson(place: {
+        ...favoritePlace(),
+        ...place,
+        'public_rating': {'average': 4.5, 'count': 2},
+        'quantidade_avaliacoes': 2
+      })
+    ]);
+  }
+  if (request.url.path == '/api/favoritos/estado/') {
+    return http.Response(
+        jsonEncode({
+          'results': [
+            for (final id in request.url.queryParameters['locais']!.split(','))
+              {'local': int.parse(id), 'id': null, 'exists': true}
+          ]
+        }),
+        200);
+  }
   if (request.url.path.contains('perfil')) {
     return http.Response.bytes(utf8.encode(jsonEncode(profile)), 200);
   }
@@ -74,16 +95,33 @@ http.Response fixtureResponse(http.Request request) {
         200);
   }
   if (request.url.path.contains('modal-avaliacoes/recursos/')) {
-    return http.Response(jsonEncode({'version': 2, 'people': 0, 'legacy_not_comparable': 0,
-      'features': [for (final q in SurveyContract.questions) {
-        'id': q.id, 'counts': {for (final code in surveyCodes) code: 0},
-        'state': 'not_evaluated', 'unanswered': 0, 'legacy_not_comparable': 0,
-        'latest_at': null, 'respondents': 0, 'few_reviews': false,
-      }]}), 200);
+    return http.Response(
+        jsonEncode({
+          'version': 2,
+          'people': 0,
+          'legacy_not_comparable': 0,
+          'features': [
+            for (final q in SurveyContract.questions)
+              {
+                'id': q.id,
+                'counts': {for (final code in surveyCodes) code: 0},
+                'state': 'not_evaluated',
+                'unanswered': 0,
+                'legacy_not_comparable': 0,
+                'latest_at': null,
+                'respondents': 0,
+                'few_reviews': false,
+              }
+          ]
+        }),
+        200);
   }
   if (request.url.path.contains('modal-avaliacoes')) {
-    return http.Response(request.method == 'POST'
-      ? jsonEncode({'id': 9, ...jsonDecode(request.body) as Map<String, dynamic>}) : '[]',
+    return http.Response(
+        request.method == 'POST'
+            ? jsonEncode(
+                {'id': 9, ...jsonDecode(request.body) as Map<String, dynamic>})
+            : '[]',
         request.method == 'POST' ? 201 : 200);
   }
   return http.Response.bytes(utf8.encode(jsonEncode([place])), 200);
@@ -116,9 +154,11 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
 
 void main() {
   setUp(() {
+    AppHttp.token = 'favorite-regression-test';
     AppHttp.client = MockClient((request) async => fixtureResponse(request));
   });
   tearDown(() {
+    AppHttp.clearSession();
     AppHttp.client.close();
   });
 
@@ -172,6 +212,7 @@ void main() {
 
   test('evaluation preserves the existing endpoint and Portuguese wire values',
       () async {
+    AppHttp.clearSession(); // This case verifies the preserved legacy payload.
     late http.Request sent;
     AppHttp.client = MockClient((request) async {
       sent = request;
@@ -199,15 +240,26 @@ void main() {
     });
   });
 
-  testWidgets('English survey returns stable codes after review', (tester) async {
+  testWidgets('English survey returns stable codes after review',
+      (tester) async {
     Map<String, dynamic>? answers;
-    await tester.pumpWidget(harness(Scaffold(body: Builder(builder: (context) =>
-      FilledButton(onPressed: () => showDialog<bool>(context: context, builder: (_) =>
-        EvaluationSurveyDialog(onSubmit: (body) async { answers = body; })), child: const Text('Open')))),
-      language: 'en'));
-    await tester.tap(find.text('Open')); await tester.pumpAndSettle();
+    await tester.pumpWidget(harness(
+        Scaffold(
+            body: Builder(
+                builder: (context) => FilledButton(
+                    onPressed: () => showDialog<bool>(
+                        context: context,
+                        builder: (_) =>
+                            EvaluationSurveyDialog(onSubmit: (body) async {
+                              answers = body;
+                            })),
+                    child: const Text('Open')))),
+        language: 'en'));
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
     for (var group = 0; group < 4; group++) {
-      for (final q in SurveyContract.questions.where((q) => q.group == SurveyContract.groups[group])) {
+      for (final q in SurveyContract.questions
+          .where((q) => q.group == SurveyContract.groups[group])) {
         await tapVisible(tester, find.byKey(ValueKey('survey-${q.id}-yes')));
       }
       await tapVisible(tester, find.byKey(const ValueKey('survey-next')));
@@ -215,7 +267,8 @@ void main() {
     expect(answers, isNull);
     await tapVisible(tester, find.byKey(const ValueKey('survey-submit')));
     expect(answers!['questionnaire_version'], 2);
-    expect(answers!['answers'], {for (final q in SurveyContract.questions) q.id: 'yes'});
+    expect(answers!['answers'],
+        {for (final q in SurveyContract.questions) q.id: 'yes'});
   });
 
   testWidgets('HTTP errors end loading and retry recovers', (tester) async {
@@ -230,17 +283,22 @@ void main() {
     expect(find.text('Biblioteca Municipal'), findsOneWidget);
   });
 
-  testWidgets('successful review refreshes detail content instead of spinning forever', (tester) async {
-    await tester.pumpWidget(harness(PlaceDetailScreen(place: place, userName: 'teste')));
+  testWidgets(
+      'successful review refreshes detail content instead of spinning forever',
+      (tester) async {
+    await tester.pumpWidget(
+        harness(PlaceDetailScreen(place: place, userName: 'teste')));
     await tester.pumpAndSettle();
     // The questionnaire results increase the height of the lazy ListView.
     // Scroll first so the review button is built before ensureVisible/tap.
-    await tester.scrollUntilVisible(find.byKey(const ValueKey('detail-review')), 250);
+    await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('detail-review')), 250);
     await tapVisible(tester, find.byKey(const ValueKey('detail-review')));
     await tapVisible(tester, find.byKey(const ValueKey('review-star-4')));
     await tapVisible(tester, find.byKey(const ValueKey('review-open-survey')));
     for (var group = 0; group < 4; group++) {
-      for (final q in SurveyContract.questions.where((q) => q.group == SurveyContract.groups[group])) {
+      for (final q in SurveyContract.questions
+          .where((q) => q.group == SurveyContract.groups[group])) {
         await tapVisible(tester, find.byKey(ValueKey('survey-${q.id}-yes')));
       }
       await tapVisible(tester, find.byKey(const ValueKey('survey-next')));
@@ -251,7 +309,8 @@ void main() {
     expect(find.byType(PlaceDetailScreen), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
     await tester.scrollUntilVisible(
-      find.byKey(const ValueKey('detail-review')), 250,
+      find.byKey(const ValueKey('detail-review')),
+      250,
     );
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('detail-review')), findsOneWidget);
@@ -285,7 +344,8 @@ void main() {
                     onPressed: () => Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const SettingsScreen(userName: 'teste'))),
+                            builder: (_) =>
+                                const SettingsScreen(userName: 'teste'))),
                     child: const Text('login-entry')))
           },
         )));
@@ -299,7 +359,8 @@ void main() {
       (tester) async {
     final response = Completer<http.Response>();
     AppHttp.client = MockClient((_) => response.future);
-    await tester.pumpWidget(harness(const SavedPlacesScreen(userName: 'teste')));
+    await tester
+        .pumpWidget(harness(const SavedPlacesScreen(userName: 'teste')));
     await tester.pump();
     await tester.pumpWidget(const SizedBox.shrink());
     response.complete(http.Response('[]', 200));
@@ -339,18 +400,19 @@ void main() {
                 selected = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (_) => const SavedPlacesScreen(userName: 'teste')));
+                        builder: (_) =>
+                            const SavedPlacesScreen(userName: 'teste')));
               },
             )))));
     await tapVisible(tester, find.text('open-saved'));
-    await tapVisible(tester, find.text('Biblioteca Municipal'));
+    await tapVisible(tester, find.widgetWithText(ElevatedButton, 'Avaliações'));
     await tester.scrollUntilVisible(
         find.widgetWithText(ElevatedButton, 'Começar Rota'), 200,
         scrollable: find.byType(Scrollable).first);
     await tapVisible(
         tester, find.widgetWithText(ElevatedButton, 'Começar Rota'));
-    expect(selected, isA<Map<String, dynamic>>());
-    expect((selected as Map)['id_local'], 1);
+    expect(selected, isA<PlaceRouteRequest>());
+    expect((selected as PlaceRouteRequest).place['id_local'], 1);
     expect(find.text('open-saved'), findsOneWidget);
   });
 

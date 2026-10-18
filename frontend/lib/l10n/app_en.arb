@@ -271,7 +271,7 @@
   "loadingSavedPlaces": "Loading saved places…",
   "noPlaceFoundPeriod": "No places found.",
   "noSavedPlaces": "No saved places yet.",
-  "savedPlacesEmptyHint": "Places will appear here when available.",
+  "savedPlacesEmptyHint": "Use Save place on the map, in Explore or in place details. Your favorites are private.",
   "editProfileHint": "Select to edit your profile",
   "signOutAccount": "Sign out of your account",
   "loadingProfile": "Loading profile…",
@@ -312,7 +312,6 @@
   "invalidLocation": "This place does not have valid coordinates for directions yet.",
   "locationUnavailable": "Location is unavailable. The map is showing Anápolis as a reference.",
   "drivingRoute": "Driving route • route accessibility not verified",
-  "allPlacesNotice": "This list shows available places. Personal favorites are not available yet.",
   "suggestionsDisabled": "Recommendations are disabled in your preferences.",
   "photoTooLarge": "Choose an image smaller than 5 MB.",
   "invalidEmail": "Enter a valid email address.",
@@ -422,5 +421,88 @@
   "mapStatusTitle": "Map data and filters",
   "mapStatusSources": "Sources: AcessoJá and OpenStreetMap",
   "mapSearchAction": "Search destination",
-  "placeHoursUnknown": "Opening hours not reported"
+  "placeHoursUnknown": "Opening hours not reported",
+  "favoriteConfirmed": "Favorite confirmed.",
+  "favoriteFailed": "Could not confirm the change. Previous state retained.",
+  "favoriteUncertain": "Result still unknown. Check the status before retrying.",
+  "favoriteSignIn": "Sign in to access your favorites.",
+  "favoriteRemoved": "{name} removed from favorites.",
+  "@favoriteRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "favoriteRemoving": "Removing {name}…",
+  "@favoriteRemoving": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "favoriteRestored": "{name} saved again.",
+  "@favoriteRestored": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "favoriteUndo": "Undo",
+  "favoriteUndoFailed": "Could not restore the favorite. Check the list and retry.",
+  "favoriteRemove": "Remove from favorites",
+  "favoriteSave": "Save place",
+  "favoritePending": "Confirming change…",
+  "favoriteCheck": "Check favorite status",
+  "favoriteRegister": "Register to save",
+  "favoriteLoading": "Checking favorite…",
+  "favoriteRegisterTitle": "Register and save place?",
+  "favoriteRegisterHelp": "To save this OpenStreetMap place, confirm its registration in AcessoJá. A private favorite will then be created.",
+  "favoritesTotal": "Total favorites: {count}",
+  "@favoritesTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "favoritesResults": "Search results: {count}",
+  "@favoritesResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "favoritesEmpty": "You have no saved places yet",
+  "favoritesEmptyHelp": "Use Save place on the map, in Explore or in place details. Your favorites are private.",
+  "favoritesSearch": "Search favorites",
+  "favoritesMore": "Load more favorites",
+  "favoritesRefresh": "Refresh favorites",
+  "favoritePublicRating": "Public rating",
+  "favoriteOwnRating": "Your review: {value} out of 5",
+  "@favoriteOwnRating": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "favoriteOwnInvalid": "Your review is excluded from the public rating.",
+  "favoriteEditReview": "Edit my review",
+  "favoriteReview": "Review place",
+  "favoriteDetails": "View details",
+  "favoriteFewReports": "Few reports; check the details.",
+  "favoriteNoFeatures": "Features not reported yet",
+  "favoriteMissingPlace": "This place is no longer available.",
+  "favoriteStraightDistance": "Straight-line distance: {distance}",
+  "@favoriteStraightDistance": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  }
 }

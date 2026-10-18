@@ -32,13 +32,14 @@ void main() {
         child: child!,
       ),
       home: Scaffold(
-        body: LocalCard(
+        body: SingleChildScrollView(
+            child: LocalCard(
           place: overridePlace ?? place,
           distanceLabel: '1,2 km',
           displayNameBuilder: (nome) => nome,
           onRoutePressed: onRoute,
           onDetailsPressed: onDetails,
-        ),
+        )),
       ),
     );
   }
@@ -47,12 +48,12 @@ void main() {
     await tester.pumpWidget(buildCard());
 
     expect(find.text('UniEVANGÉLICA'), findsOneWidget);
-    expect(find.text('1,2 km - Aberto'), findsOneWidget);
+    expect(find.text('1,2 km - Horário não informado'), findsOneWidget);
   });
 
   testWidgets('exibe "Fechado" quando o local não está aberto', (tester) async {
     await tester.pumpWidget(
-      buildCard(overridePlace: {...place, 'aberto': false}),
+      buildCard(overridePlace: {...place, 'opening_status': 'closed'}),
     );
 
     expect(find.text('1,2 km - Fechado'), findsOneWidget);

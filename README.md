@@ -202,27 +202,17 @@ python manage.py spectacular --file schema.yaml
 ```
 
 O Quality Gate valida o backend com Flake8, `manage.py check`, verificação e
-aplicação das migrations e testes com pytest, exigindo cobertura mínima de 65%.
+aplicação das migrations e testes com pytest, exigindo cobertura mínima de 80%.
 
 ---
 
 ## 👥 Contribuindo
 
-Para esta entrega, trabalhe a partir de `main` atualizada e abra o Pull Request
-para `main`, com revisão humana e o Quality Gate como required status check.
-
-O combinado completo — nomes de branch, mensagens de commit, revisão,
-conflitos, migrations, proteção de branch e o checklist antes do PR — está em
-**[CONTRIBUTING.md](CONTRIBUTING.md)**. Leia antes do primeiro Pull Request.
-
-```bash
-git checkout main
-git pull --ff-only origin main
-git checkout -b feature/minha-tarefa
-# ... código ...
-git commit -m "feat(escopo): descricao curta"
-git push -u origin feature/minha-tarefa
-```
+O fluxo do time está em **[CONTRIBUTING.md](CONTRIBUTING.md)**. Nesta entrega
+(Cards 24–27), a base é o ZIP identificado nas instruções e o Git permanece
+somente para consulta. O pacote pode ser comparado e aplicado sem mudar branch,
+índice ou histórico. Um futuro Pull Request terá destino `develop` e depende de
+ação autorizada da equipe; nenhuma publicação foi realizada automaticamente.
 
 Para rodar os testes sem PostgreSQL local:
 
@@ -514,3 +504,16 @@ e as [instruções desta entrega](INSTRUCOES_APLICACAO.txt). Não há migration 
 para os Cards 20–23. As instruções anteriores dos Cards 17–19 foram preservadas em
 [documento próprio](docs/INSTRUCOES_CARDS_17_19.txt); resultados e decisões de Git
 registrados nas seções históricas pertencem às respectivas entregas.
+
+## Favoritos privados e Locais Salvos — Cards 24–27
+
+Salvos lista somente os favoritos da conta autenticada. A entrega adiciona a
+migration `favoritos/0001_initial`; execute `python manage.py migrate` antes de
+abrir o frontend atualizado. Nenhum favorito é preenchido automaticamente.
+
+O contrato, estatística pública separada da avaliação própria, confirmação OSM,
+busca, paginação e Desfazer estão em [Favoritos e Locais Salvos](docs/FAVORITOS_E_LOCAIS_SALVOS.md).
+Comandos, resultados e limitações desta entrega estão em
+[INSTRUCOES_APLICACAO.txt](INSTRUCOES_APLICACAO.txt). O navegador continua sendo
+uma opção de execução sem Android SDK. Esta entrega usa Git somente para consulta;
+um futuro PR tem destino `develop`, sem publicação automática.

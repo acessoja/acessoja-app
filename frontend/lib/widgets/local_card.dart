@@ -1,4 +1,6 @@
 import '../reading_presentation.dart';
+import 'favorite_button.dart';
+import 'place_feature_summary.dart';
 import '../l10n/strings.dart';
 
 import 'package:flutter/material.dart';
@@ -15,6 +17,8 @@ class LocalCard extends StatelessWidget {
   final String Function(String nome) displayNameBuilder;
   final VoidCallback? onRoutePressed;
   final VoidCallback? onDetailsPressed;
+  final VoidCallback? onReviewPressed, onRemoving;
+  final bool refreshFavoriteOnMount;
 
   const LocalCard({
     super.key,
@@ -23,6 +27,9 @@ class LocalCard extends StatelessWidget {
     required this.displayNameBuilder,
     this.onRoutePressed,
     this.onDetailsPressed,
+    this.onReviewPressed,
+    this.onRemoving,
+    this.refreshFavoriteOnMount = true,
   });
 
   @override
@@ -42,7 +49,13 @@ class LocalCard extends StatelessWidget {
         : noReviews
             ? context.l10n.noPlaceReviews
             : context.l10n.placeRatingUnknown;
-    final isOpen = place['aberto'] is bool ? place['aberto'] as bool : null;
+    final bool? isOpen = switch (place['opening_status']) {
+      'open' => true,
+      'closed' => false,
+      _ => null,
+    };
+    final own = place['own_review'];
+    final isPublic = place['public_rating'] is Map;
     final nome = (place['nome'] ?? '').toString();
     final endereco = (place['endereco'] ?? '').toString();
     final imagePath = place['imagem'];
@@ -91,8 +104,6 @@ class LocalCard extends StatelessWidget {
                     children: [
                       Text(
                         displayNameBuilder(nome),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 14,
@@ -104,8 +115,6 @@ class LocalCard extends StatelessWidget {
                         const SizedBox(height: 5),
                         Text(
                           endereco,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(fontSize: 11, color: colors.muted),
                         ),
                       ],
@@ -124,7 +133,7 @@ class LocalCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          '$distanceLabel - ${isOpen == null ? context.l10n.placeHoursUnknown : isOpen ? context.l10n.open : context.l10n.closed}',
+                          '${distanceLabel.isEmpty ? '' : '$distanceLabel - '}${isOpen == null ? context.l10n.placeHoursUnknown : isOpen ? context.l10n.open : context.l10n.closed}',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -137,6 +146,7 @@ class LocalCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
+                      if (isPublic) Text(context.l10n.favoritePublicRating),
                       Semantics(
                         label: count is num &&
                                 count.isFinite &&
@@ -162,6 +172,8 @@ class LocalCard extends StatelessWidget {
                                       );
                                     }),
                                   ),
+                                  if (count is int && count > 0)
+                                    Text(context.l10n.reviewCount(count)),
                                   const SizedBox(width: 6),
                                   Text(
                                     '(${context.number(mediaEstrelas)})',
@@ -186,6 +198,32 @@ class LocalCard extends StatelessWidget {
                 ),
               ],
             ),
+            if ((place['categoria_label'] ?? '').toString().isNotEmpty)
+              Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(place['categoria_label'].toString())),
+            const SizedBox(height: 8),
+            PlaceFeatureSummary(place: place),
+            if (own is Map)
+              Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(own['is_valid'] == true && own['estrelas'] is num
+                      ? context.l10n
+                          .favoriteOwnRating(context.number(own['estrelas']))
+                      : context.l10n.favoriteOwnInvalid)),
+            const SizedBox(height: 8),
+            FavoriteButton(
+                place: place,
+                onRemoving: onRemoving,
+                refreshOnMount: refreshFavoriteOnMount),
+            if (onReviewPressed != null)
+              TextButton.icon(
+                  onPressed: onReviewPressed,
+                  style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+                  icon: const Icon(Icons.edit_outlined),
+                  label: Text(own is Map && own['can_edit'] == true
+                      ? context.l10n.favoriteEditReview
+                      : context.l10n.favoriteReview)),
             const SizedBox(height: 14),
             Row(
               children: [
@@ -202,7 +240,7 @@ class LocalCard extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: colors.primary,
                           foregroundColor: colors.onPrimary,
-                          minimumSize: const Size.fromHeight(40),
+                          minimumSize: const Size.fromHeight(48),
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -246,7 +284,7 @@ class LocalCard extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: colors.fieldBackground,
                           foregroundColor: colors.primaryDark,
-                          minimumSize: const Size.fromHeight(40),
+                          minimumSize: const Size.fromHeight(48),
                           side: BorderSide(color: colors.primary, width: 1.2),
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           shape: RoundedRectangleBorder(

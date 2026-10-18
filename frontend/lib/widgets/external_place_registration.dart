@@ -1,4 +1,5 @@
 import '../l10n/contribution_strings.dart';
+import '../l10n/strings.dart';
 import '../services/app_http.dart';
 import 'package:flutter/material.dart';
 
@@ -9,8 +10,12 @@ import '../services/places_service.dart';
 class ExternalPlaceRegistration extends StatefulWidget {
   final Map<String, dynamic> place;
   final String userName;
-  const ExternalPlaceRegistration({super.key, required this.place,
-    required this.userName});
+  final bool forFavorite;
+  const ExternalPlaceRegistration(
+      {super.key,
+      required this.place,
+      required this.userName,
+      this.forFavorite = false});
 
   @override
   State<ExternalPlaceRegistration> createState() => _RegistrationState();
@@ -18,9 +23,12 @@ class ExternalPlaceRegistration extends StatefulWidget {
 
 class _RegistrationState extends State<ExternalPlaceRegistration> {
   final _form = GlobalKey<FormState>();
-  late final _name = TextEditingController(text: widget.place['nome']?.toString());
-  late final _address = TextEditingController(text: widget.place['endereco']?.toString());
+  late final _name =
+      TextEditingController(text: widget.place['nome']?.toString());
+  late final _address =
+      TextEditingController(text: widget.place['endereco']?.toString());
   final _password = TextEditingController();
+  final _session = AppHttp.sessionRevision.value;
   bool _saving = false;
   String? _error;
 
@@ -34,23 +42,38 @@ class _RegistrationState extends State<ExternalPlaceRegistration> {
   }
 
   Future<void> _submit() async {
-    if (_saving || !_form.currentState!.validate()) {
+    if (_session != AppHttp.sessionRevision.value ||
+        _saving ||
+        !_form.currentState!.validate()) {
       return;
     }
-    setState(() { _saving = true; _error = null; });
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
     try {
       final local = await const PlacesService().importExternalPlace(
-        place: widget.place, name: _name.text, address: _address.text,
-        userName: widget.userName, password: _password.text,
+        place: widget.place,
+        name: _name.text,
+        address: _address.text,
+        userName: widget.userName,
+        password: _password.text,
       );
       _password.clear();
-      if (mounted) {
+      if (mounted && _session == AppHttp.sessionRevision.value) {
         Navigator.pop(context, local);
       }
     } catch (error) {
+      if (widget.forFavorite &&
+          error is PlacesException &&
+          error.status == 401 &&
+          _session == AppHttp.sessionRevision.value) {
+        AppHttp.clearSession();
+      }
       if (mounted) {
         setState(() => _error = error is PlacesException
-          ? error.message : 'Cadastro indisponível. Tente novamente.');
+            ? error.message
+            : 'Cadastro indisponível. Tente novamente.');
       }
     } finally {
       if (mounted) {
@@ -59,43 +82,77 @@ class _RegistrationState extends State<ExternalPlaceRegistration> {
     }
   }
 
-  String? _required(String? value) => value == null || value.trim().isEmpty
-      ? 'Preencha este campo.' : null;
+  String? _required(String? value) =>
+      value == null || value.trim().isEmpty ? 'Preencha este campo.' : null;
 
   @override
   Widget build(BuildContext context) => PopScope(
-    canPop: !_saving,
-    child: AlertDialog(
-      title: Text(context.contributionText('Contribuir com o AcessoJá', 'Contribute to AcessoJá')),
-      content: SingleChildScrollView(
-        child: Form(key: _form, child: Column(mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text(context.contributionText('Confirme os dados do OpenStreetMap. A acessibilidade será informada no fluxo de avaliação após confirmar o cadastro.',
-              'Confirm the OpenStreetMap information. Accessibility can be described in a review after registration.')),
-            const SizedBox(height: 12),
-            TextFormField(controller: _name, maxLength: 255,
-              enabled: !_saving, validator: _required,
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(labelText: context.contributionText('Nome do local', 'Place name'))),
-            TextFormField(controller: _address, maxLength: 255,
-              enabled: !_saving, validator: _required,
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(labelText: context.contributionText('Endereço', 'Address'))),
-            if (AppHttp.token == null) TextFormField(controller: _password, obscureText: true,
-              enabled: !_saving, validator: _required,
-              autocorrect: false, enableSuggestions: false,
-              decoration: InputDecoration(labelText: context.contributionText('Confirme sua senha', 'Confirm your password')),
-              onFieldSubmitted: (_) => _submit()),
-            if (_error != null) Semantics(liveRegion: true, child: Text(_error!)),
-          ])),
-      ),
-      actions: [
-        TextButton(onPressed: _saving ? null : () => Navigator.pop(context),
-          child: Text(context.contributionText('Cancelar', 'Cancel'))),
-        FilledButton(onPressed: _saving ? null : _submit,
-          child: Text(_saving ? context.contributionText('Confirmando cadastro…', 'Registering…') :
-            context.contributionText('Confirmar cadastro', 'Confirm registration'))),
-      ],
-    ),
-  );
+        canPop: !_saving,
+        child: AlertDialog(
+          title: Text(widget.forFavorite
+              ? context.l10n.favoriteRegisterTitle
+              : context.contributionText(
+                  'Contribuir com o AcessoJá', 'Contribute to AcessoJá')),
+          content: SingleChildScrollView(
+            child: Form(
+                key: _form,
+                child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(widget.forFavorite
+                          ? context.l10n.favoriteRegisterHelp
+                          : context.contributionText(
+                              'Confirme os dados do OpenStreetMap. A acessibilidade será informada no fluxo de avaliação após confirmar o cadastro.',
+                              'Confirm the OpenStreetMap information. Accessibility can be described in a review after registration.')),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                          controller: _name,
+                          maxLength: 255,
+                          enabled: !_saving,
+                          validator: _required,
+                          textInputAction: TextInputAction.next,
+                          decoration: InputDecoration(
+                              labelText: context.contributionText(
+                                  'Nome do local', 'Place name'))),
+                      TextFormField(
+                          controller: _address,
+                          maxLength: 255,
+                          enabled: !_saving,
+                          validator: _required,
+                          textInputAction: TextInputAction.next,
+                          decoration: InputDecoration(
+                              labelText: context.contributionText(
+                                  'Endereço', 'Address'))),
+                      if (AppHttp.token == null)
+                        TextFormField(
+                            controller: _password,
+                            obscureText: true,
+                            enabled: !_saving,
+                            validator: _required,
+                            autocorrect: false,
+                            enableSuggestions: false,
+                            decoration: InputDecoration(
+                                labelText: context.contributionText(
+                                    'Confirme sua senha',
+                                    'Confirm your password')),
+                            onFieldSubmitted: (_) => _submit()),
+                      if (_error != null)
+                        Semantics(liveRegion: true, child: Text(_error!)),
+                    ])),
+          ),
+          actions: [
+            TextButton(
+                onPressed: _saving ? null : () => Navigator.pop(context),
+                child: Text(context.contributionText('Cancelar', 'Cancel'))),
+            FilledButton(
+                onPressed: _saving ? null : _submit,
+                child: Text(_saving
+                    ? context.contributionText(
+                        'Confirmando cadastro…', 'Registering…')
+                    : context.contributionText(
+                        'Confirmar cadastro', 'Confirm registration'))),
+          ],
+        ),
+      );
 }

@@ -1,60 +1,42 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:flutter_application_1/screens/saved_places_screen.dart';
 import 'package:flutter_application_1/services/app_http.dart';
 import 'package:flutter_application_1/widgets/place_media.dart';
 import 'package:flutter_application_1/widgets/local_card.dart';
 import 'frontend_regression_test.dart' show harness;
+import 'helpers/favorite_fixture.dart';
 
 void main() {
   for (final hasKnownRatings in [true, false]) {
     testWidgets(
-        'saved summary distinguishes missing and real zero ratings: $hasKnownRatings',
+        'saved public rating is per venue, never overall: $hasKnownRatings',
         (tester) async {
       final original = AppHttp.client;
-      AppHttp.client = MockClient((_) async => http.Response.bytes(
-          utf8.encode(jsonEncode([
-            {'id_local': 1, 'nome': 'Sem nota'},
-            {
-              'id_local': 2,
-              'nome': 'Sem avaliações',
-              'media_estrelas': 0,
-              'quantidade_avaliacoes': 0
-            },
-            if (hasKnownRatings) ...[
-              {
-                'id_local': 3,
-                'nome': 'Nota zero real',
-                'media_estrelas': 0,
-                'quantidade_avaliacoes': 1
-              },
-              {
-                'id_local': 4,
-                'nome': 'Nota quatro real',
-                'media_estrelas': 4,
-                'quantidade_avaliacoes': 2
-              },
-            ],
-          ])),
-          200));
+      AppHttp.token = 'media-favorites';
+      AppHttp.client = MockClient((_) async => favoriteResponse([
+            favoriteJson(place: favoritePlace(count: hasKnownRatings ? 2 : 0)),
+          ]));
       try {
         await tester
             .pumpWidget(harness(const SavedPlacesScreen(userName: 'teste')));
         await tester.pumpAndSettle();
+        expect(find.text('Nota pública'), findsOneWidget);
+        expect(find.text('0,0'), findsNothing);
+        expect(find.text('2,0'), findsNothing);
+        expect(find.textContaining('Média geral'), findsNothing);
         if (hasKnownRatings) {
-          expect(find.text('2,0'), findsOneWidget);
+          expect(find.text('2 avaliações'), findsOneWidget);
         } else {
-          expect(find.text('Avaliação não informada'), findsWidgets);
-          expect(find.text('0,0'), findsNothing);
+          expect(find.text('Sem avaliações'), findsOneWidget);
         }
         expect(tester.takeException(), isNull);
       } finally {
         await tester.pumpWidget(const SizedBox.shrink());
         AppHttp.client.close();
         AppHttp.client = original;
+        AppHttp.clearSession();
       }
     });
   }
