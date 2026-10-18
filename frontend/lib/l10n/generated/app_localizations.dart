@@ -1667,7 +1667,7 @@ abstract class AppLocalizations {
   /// No description provided for @savedPlacesEmptyHint.
   ///
   /// In pt, this message translates to:
-  /// **'Os locais disponíveis aparecerão aqui para você consultar depois.'**
+  /// **'Use Salvar local no mapa, em Explorar ou nos detalhes. Seus favoritos são privados.'**
   String get savedPlacesEmptyHint;
 
   /// No description provided for @editProfileHint.
@@ -1909,12 +1909,6 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Rota de carro • acessibilidade do trajeto não verificada'**
   String get drivingRoute;
-
-  /// No description provided for @allPlacesNotice.
-  ///
-  /// In pt, this message translates to:
-  /// **'Esta lista mostra os locais disponíveis. Favoritos pessoais ainda não estão disponíveis.'**
-  String get allPlacesNotice;
 
   /// No description provided for @suggestionsDisabled.
   ///
@@ -2575,6 +2569,210 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Horário não informado'**
   String get placeHoursUnknown;
+
+  /// No description provided for @favoriteConfirmed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Favorito confirmado.'**
+  String get favoriteConfirmed;
+
+  /// No description provided for @favoriteFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível confirmar a alteração. Estado anterior mantido.'**
+  String get favoriteFailed;
+
+  /// No description provided for @favoriteUncertain.
+  ///
+  /// In pt, this message translates to:
+  /// **'Resultado ainda desconhecido. Consulte o estado antes de tentar novamente.'**
+  String get favoriteUncertain;
+
+  /// No description provided for @favoriteSignIn.
+  ///
+  /// In pt, this message translates to:
+  /// **'Entre novamente para acessar seus favoritos.'**
+  String get favoriteSignIn;
+
+  /// No description provided for @favoriteRemoved.
+  ///
+  /// In pt, this message translates to:
+  /// **'{name} removido dos favoritos.'**
+  String favoriteRemoved(String name);
+
+  /// No description provided for @favoriteRemoving.
+  ///
+  /// In pt, this message translates to:
+  /// **'Removendo {name}…'**
+  String favoriteRemoving(String name);
+
+  /// No description provided for @favoriteRestored.
+  ///
+  /// In pt, this message translates to:
+  /// **'{name} salvo novamente.'**
+  String favoriteRestored(String name);
+
+  /// No description provided for @favoriteUndo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desfazer'**
+  String get favoriteUndo;
+
+  /// No description provided for @favoriteUndoFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível restaurar o favorito. Confira a lista e tente novamente.'**
+  String get favoriteUndoFailed;
+
+  /// No description provided for @favoriteRemove.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remover dos favoritos'**
+  String get favoriteRemove;
+
+  /// No description provided for @favoriteSave.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salvar local'**
+  String get favoriteSave;
+
+  /// No description provided for @favoritePending.
+  ///
+  /// In pt, this message translates to:
+  /// **'Confirmando alteração…'**
+  String get favoritePending;
+
+  /// No description provided for @favoriteCheck.
+  ///
+  /// In pt, this message translates to:
+  /// **'Consultar estado do favorito'**
+  String get favoriteCheck;
+
+  /// No description provided for @favoriteRegister.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cadastrar para salvar'**
+  String get favoriteRegister;
+
+  /// No description provided for @favoriteLoading.
+  ///
+  /// In pt, this message translates to:
+  /// **'Consultando favorito…'**
+  String get favoriteLoading;
+
+  /// No description provided for @favoriteRegisterTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cadastrar e salvar local?'**
+  String get favoriteRegisterTitle;
+
+  /// No description provided for @favoriteRegisterHelp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Para salvar este local do OpenStreetMap, confirme seu cadastro no AcessoJá. Depois será criado um favorito privado.'**
+  String get favoriteRegisterHelp;
+
+  /// No description provided for @favoritesTotal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Total de favoritos: {count}'**
+  String favoritesTotal(int count);
+
+  /// No description provided for @favoritesResults.
+  ///
+  /// In pt, this message translates to:
+  /// **'Resultados da busca: {count}'**
+  String favoritesResults(int count);
+
+  /// No description provided for @favoritesEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você ainda não salvou locais'**
+  String get favoritesEmpty;
+
+  /// No description provided for @favoritesEmptyHelp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Use Salvar local no mapa, em Explorar ou nos detalhes. Seus favoritos são privados.'**
+  String get favoritesEmptyHelp;
+
+  /// No description provided for @favoritesSearch.
+  ///
+  /// In pt, this message translates to:
+  /// **'Buscar nos favoritos'**
+  String get favoritesSearch;
+
+  /// No description provided for @favoritesMore.
+  ///
+  /// In pt, this message translates to:
+  /// **'Carregar mais favoritos'**
+  String get favoritesMore;
+
+  /// No description provided for @favoritesRefresh.
+  ///
+  /// In pt, this message translates to:
+  /// **'Atualizar favoritos'**
+  String get favoritesRefresh;
+
+  /// No description provided for @favoritePublicRating.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nota pública'**
+  String get favoritePublicRating;
+
+  /// No description provided for @favoriteOwnRating.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sua avaliação: {value} de 5'**
+  String favoriteOwnRating(String value);
+
+  /// No description provided for @favoriteOwnInvalid.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sua avaliação está indisponível para a nota pública.'**
+  String get favoriteOwnInvalid;
+
+  /// No description provided for @favoriteEditReview.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar minha avaliação'**
+  String get favoriteEditReview;
+
+  /// No description provided for @favoriteReview.
+  ///
+  /// In pt, this message translates to:
+  /// **'Avaliar local'**
+  String get favoriteReview;
+
+  /// No description provided for @favoriteDetails.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ver detalhes'**
+  String get favoriteDetails;
+
+  /// No description provided for @favoriteFewReports.
+  ///
+  /// In pt, this message translates to:
+  /// **'Poucos relatos; confira os detalhes.'**
+  String get favoriteFewReports;
+
+  /// No description provided for @favoriteNoFeatures.
+  ///
+  /// In pt, this message translates to:
+  /// **'Recursos ainda não informados'**
+  String get favoriteNoFeatures;
+
+  /// No description provided for @favoriteMissingPlace.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este local não está mais disponível.'**
+  String get favoriteMissingPlace;
+
+  /// No description provided for @favoriteStraightDistance.
+  ///
+  /// In pt, this message translates to:
+  /// **'Distância em linha reta: {distance}'**
+  String favoriteStraightDistance(String distance);
 }
 
 class _AppLocalizationsDelegate

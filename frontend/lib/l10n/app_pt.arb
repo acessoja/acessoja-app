@@ -271,7 +271,7 @@
   "loadingSavedPlaces": "Carregando locais salvos...",
   "noPlaceFoundPeriod": "Nenhum local encontrado.",
   "noSavedPlaces": "Nenhum local salvo.",
-  "savedPlacesEmptyHint": "Os locais disponíveis aparecerão aqui para você consultar depois.",
+  "savedPlacesEmptyHint": "Use Salvar local no mapa, em Explorar ou nos detalhes. Seus favoritos são privados.",
   "editProfileHint": "Toque para editar seu perfil",
   "signOutAccount": "Sair da conta",
   "loadingProfile": "Carregando perfil...",
@@ -312,7 +312,6 @@
   "invalidLocation": "Este local ainda não tem coordenadas válidas para uma rota.",
   "locationUnavailable": "Localização indisponível. O mapa está mostrando Anápolis como referência.",
   "drivingRoute": "Rota de carro • acessibilidade do trajeto não verificada",
-  "allPlacesNotice": "Esta lista mostra os locais disponíveis. Favoritos pessoais ainda não estão disponíveis.",
   "suggestionsDisabled": "As sugestões estão desativadas nas preferências.",
   "photoTooLarge": "Escolha uma imagem de até 5 MB.",
   "invalidEmail": "Informe um e-mail válido.",
@@ -565,5 +564,88 @@
   "mapStatusTitle": "Dados e filtros do mapa",
   "mapStatusSources": "Fontes: AcessoJá e OpenStreetMap",
   "mapSearchAction": "Buscar destino",
-  "placeHoursUnknown": "Horário não informado"
+  "placeHoursUnknown": "Horário não informado",
+  "favoriteConfirmed": "Favorito confirmado.",
+  "favoriteFailed": "Não foi possível confirmar a alteração. Estado anterior mantido.",
+  "favoriteUncertain": "Resultado ainda desconhecido. Consulte o estado antes de tentar novamente.",
+  "favoriteSignIn": "Entre novamente para acessar seus favoritos.",
+  "favoriteRemoved": "{name} removido dos favoritos.",
+  "@favoriteRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "favoriteRemoving": "Removendo {name}…",
+  "@favoriteRemoving": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "favoriteRestored": "{name} salvo novamente.",
+  "@favoriteRestored": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "favoriteUndo": "Desfazer",
+  "favoriteUndoFailed": "Não foi possível restaurar o favorito. Confira a lista e tente novamente.",
+  "favoriteRemove": "Remover dos favoritos",
+  "favoriteSave": "Salvar local",
+  "favoritePending": "Confirmando alteração…",
+  "favoriteCheck": "Consultar estado do favorito",
+  "favoriteRegister": "Cadastrar para salvar",
+  "favoriteLoading": "Consultando favorito…",
+  "favoriteRegisterTitle": "Cadastrar e salvar local?",
+  "favoriteRegisterHelp": "Para salvar este local do OpenStreetMap, confirme seu cadastro no AcessoJá. Depois será criado um favorito privado.",
+  "favoritesTotal": "Total de favoritos: {count}",
+  "@favoritesTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "favoritesResults": "Resultados da busca: {count}",
+  "@favoritesResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "favoritesEmpty": "Você ainda não salvou locais",
+  "favoritesEmptyHelp": "Use Salvar local no mapa, em Explorar ou nos detalhes. Seus favoritos são privados.",
+  "favoritesSearch": "Buscar nos favoritos",
+  "favoritesMore": "Carregar mais favoritos",
+  "favoritesRefresh": "Atualizar favoritos",
+  "favoritePublicRating": "Nota pública",
+  "favoriteOwnRating": "Sua avaliação: {value} de 5",
+  "@favoriteOwnRating": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "favoriteOwnInvalid": "Sua avaliação está indisponível para a nota pública.",
+  "favoriteEditReview": "Editar minha avaliação",
+  "favoriteReview": "Avaliar local",
+  "favoriteDetails": "Ver detalhes",
+  "favoriteFewReports": "Poucos relatos; confira os detalhes.",
+  "favoriteNoFeatures": "Recursos ainda não informados",
+  "favoriteMissingPlace": "Este local não está mais disponível.",
+  "favoriteStraightDistance": "Distância em linha reta: {distance}",
+  "@favoriteStraightDistance": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  }
 }

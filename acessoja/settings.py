@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "contribuicoes.apps.ContribuicoesConfig",
     "locais",
+    "favoritos",
     "djoser",
     "corsheaders",
     "modal_avaliacao",

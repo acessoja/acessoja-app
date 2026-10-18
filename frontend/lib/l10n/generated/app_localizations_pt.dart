@@ -848,7 +848,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get savedPlacesEmptyHint =>
-      'Os locais disponíveis aparecerão aqui para você consultar depois.';
+      'Use Salvar local no mapa, em Explorar ou nos detalhes. Seus favoritos são privados.';
 
   @override
   String get editProfileHint => 'Toque para editar seu perfil';
@@ -976,10 +976,6 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get drivingRoute =>
       'Rota de carro • acessibilidade do trajeto não verificada';
-
-  @override
-  String get allPlacesNotice =>
-      'Esta lista mostra os locais disponíveis. Favoritos pessoais ainda não estão disponíveis.';
 
   @override
   String get suggestionsDisabled =>
@@ -1393,4 +1389,126 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get placeHoursUnknown => 'Horário não informado';
+
+  @override
+  String get favoriteConfirmed => 'Favorito confirmado.';
+
+  @override
+  String get favoriteFailed =>
+      'Não foi possível confirmar a alteração. Estado anterior mantido.';
+
+  @override
+  String get favoriteUncertain =>
+      'Resultado ainda desconhecido. Consulte o estado antes de tentar novamente.';
+
+  @override
+  String get favoriteSignIn => 'Entre novamente para acessar seus favoritos.';
+
+  @override
+  String favoriteRemoved(String name) {
+    return '$name removido dos favoritos.';
+  }
+
+  @override
+  String favoriteRemoving(String name) {
+    return 'Removendo $name…';
+  }
+
+  @override
+  String favoriteRestored(String name) {
+    return '$name salvo novamente.';
+  }
+
+  @override
+  String get favoriteUndo => 'Desfazer';
+
+  @override
+  String get favoriteUndoFailed =>
+      'Não foi possível restaurar o favorito. Confira a lista e tente novamente.';
+
+  @override
+  String get favoriteRemove => 'Remover dos favoritos';
+
+  @override
+  String get favoriteSave => 'Salvar local';
+
+  @override
+  String get favoritePending => 'Confirmando alteração…';
+
+  @override
+  String get favoriteCheck => 'Consultar estado do favorito';
+
+  @override
+  String get favoriteRegister => 'Cadastrar para salvar';
+
+  @override
+  String get favoriteLoading => 'Consultando favorito…';
+
+  @override
+  String get favoriteRegisterTitle => 'Cadastrar e salvar local?';
+
+  @override
+  String get favoriteRegisterHelp =>
+      'Para salvar este local do OpenStreetMap, confirme seu cadastro no AcessoJá. Depois será criado um favorito privado.';
+
+  @override
+  String favoritesTotal(int count) {
+    return 'Total de favoritos: $count';
+  }
+
+  @override
+  String favoritesResults(int count) {
+    return 'Resultados da busca: $count';
+  }
+
+  @override
+  String get favoritesEmpty => 'Você ainda não salvou locais';
+
+  @override
+  String get favoritesEmptyHelp =>
+      'Use Salvar local no mapa, em Explorar ou nos detalhes. Seus favoritos são privados.';
+
+  @override
+  String get favoritesSearch => 'Buscar nos favoritos';
+
+  @override
+  String get favoritesMore => 'Carregar mais favoritos';
+
+  @override
+  String get favoritesRefresh => 'Atualizar favoritos';
+
+  @override
+  String get favoritePublicRating => 'Nota pública';
+
+  @override
+  String favoriteOwnRating(String value) {
+    return 'Sua avaliação: $value de 5';
+  }
+
+  @override
+  String get favoriteOwnInvalid =>
+      'Sua avaliação está indisponível para a nota pública.';
+
+  @override
+  String get favoriteEditReview => 'Editar minha avaliação';
+
+  @override
+  String get favoriteReview => 'Avaliar local';
+
+  @override
+  String get favoriteDetails => 'Ver detalhes';
+
+  @override
+  String get favoriteFewReports => 'Poucos relatos; confira os detalhes.';
+
+  @override
+  String get favoriteNoFeatures => 'Recursos ainda não informados';
+
+  @override
+  String get favoriteMissingPlace => 'Este local não está mais disponível.';
+
+  @override
+  String favoriteStraightDistance(String distance) {
+    return 'Distância em linha reta: $distance';
+  }
 }

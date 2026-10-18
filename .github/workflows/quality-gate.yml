@@ -169,7 +169,7 @@ jobs:
       - name: Instalar e testar concorrência real
         run: |
           pip install -r backend/requirements.txt pytest pytest-django
-          pytest -q contribuicoes -k postgresql_concurrent
+          pytest -q contribuicoes favoritos -k postgresql_concurrent
 
   # ─────────────────────────────────────────────────────────────────────────
   # Quality Gate — check final estável, usado como Required Status Check

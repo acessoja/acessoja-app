@@ -213,9 +213,12 @@ def test_new_migrations_preserve_raw_flags_review_authors_dates_and_empty_prefer
     after = executor.loader.graph.leaf_nodes()
     before_names = {"locais": "0007_visitarecente_arrival_confirmed",
                     "usuarios": "0003_usuario_is_active_usuario_is_staff_and_more"}
-    before = [(app, before_names.get(app, name)) for app, name in after]
+    before = [(app, before_names.get(app, name)) for app, name in after if app != "favoritos"]
     try:
-        executor.migrate(before)
+        # Favorites depends on locais/0009; it did not exist at this historical
+        # target. Unapply it explicitly instead of mixing current model state
+        # with the downgraded local table. All original preservation checks stay.
+        executor.migrate(before + [("favoritos", None)])
         apps = executor.loader.project_state(before).apps
         User = apps.get_model("usuarios", "Usuario")
         Place = apps.get_model("locais", "Local")
