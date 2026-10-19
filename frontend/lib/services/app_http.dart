@@ -9,6 +9,7 @@ class AppHttp {
   // geocoders, OSRM, Google Maps or Waze.
   static String? _token;
   static int? _userId;
+  static String? userName;
   static final sessionRevision = ValueNotifier<int>(0);
   static bool get authenticated => _token != null && _token!.isNotEmpty;
   static String? get token => _token;
@@ -28,6 +29,7 @@ class AppHttp {
   static void clearSession() {
     _token = null;
     _userId = null;
+    userName = null;
     sessionRevision.value++;
   }
 

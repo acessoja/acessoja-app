@@ -1,0 +1,274 @@
+{
+  "schema": "acessoja-map-correction-v1",
+  "generated_at_utc": "2026-10-18T23:45:55.594084+00:00",
+  "historical_reference": "1e6d59a0d4f3fb9f3d5be5e11070f145bfe339f0",
+  "base_cards28_zip_sha256": "183960dbd1b4058526792f4602266d4f774c6321c48f892e37b442a6f5d55ace",
+  "local_git_metadata_available": false,
+  "local_pc1_head_verified": false,
+  "checks": {
+    "backend": {
+      "command": "pytest --cov=. --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=80 --junitxml=backend-junit.xml -q",
+      "exit_code": 0,
+      "passed": 469,
+      "skipped": 9,
+      "subtests_passed": 21,
+      "coverage_percent": 94.96,
+      "minimum_coverage_percent": 80
+    },
+    "redis_integration": {
+      "independent_processes": 4,
+      "passed": 3,
+      "server_version": "6.2.14",
+      "client_version": "8.1.0"
+    },
+    "flutter": {
+      "version": "3.47.4",
+      "dart": "3.13.3",
+      "passed": 847,
+      "analyze": "no issues",
+      "web_build": "passed"
+    },
+    "django_check": "passed",
+    "migration_check": "no changes",
+    "clean_sqlite_migration": "passed",
+    "openapi": "passed",
+    "flake8": "zero issues",
+    "provider_diagnosis_local_and_redis": "passed without external calls",
+    "pending": [
+      "real Chrome",
+      "Android SDK/APK and device",
+      "real GPS",
+      "real screen reader",
+      "configured real geographic providers",
+      "PostgreSQL concurrency",
+      "physical incident on PC 1"
+    ]
+  },
+  "deleted_files": [],
+  "files": [
+    {
+      "path": ".env.example",
+      "status": "modified",
+      "before_sha256": "389c4d51c7f21e01436d38f73b9e9dcd99eb68fec58a4de6b30512edf233baf1",
+      "sha256": "d35b7aac53fd7e24ba73144e96ea796f806c3980468e05b314f4df9f1b452af5",
+      "bytes": 2511
+    },
+    {
+      "path": ".github/workflows/quality-gate.yml",
+      "status": "modified",
+      "before_sha256": "97cf3c506a089538a2f1ead9d7efe9d2a9157d01b57c4e23bb62938f5ccf729f",
+      "sha256": "306114791705c0225a3b8387a88f545ef426c402d06180d9ca133b03c34f36cf",
+      "bytes": 10116
+    },
+    {
+      "path": "INSTRUCOES_APLICACAO.txt",
+      "status": "modified",
+      "before_sha256": "b2bcc8da87bfaa80869e5bcb7ccbaa0c87693293bc7934b402b3b1d4f43eeb85",
+      "sha256": "502fc1e299fa6adf87baa66ba34eb9788257d43b65f645d80ec9070b592483d6",
+      "bytes": 3486
+    },
+    {
+      "path": "INSTRUCOES_CORRECAO_MAPA_28_33.md",
+      "status": "new",
+      "before_sha256": null,
+      "sha256": "013d041237deffb35872a1a3c2881734c17257bcf17d4b90124fc8d916eb6203",
+      "bytes": 37415
+    },
+    {
+      "path": "README.md",
+      "status": "modified",
+      "before_sha256": "ce6aef996c3e704f488e7d6cb7c22cf693bbc271463ca76b09b43b3692a494f0",
+      "sha256": "65e42573eb4ecb78632b32b917bdd1f3441ad98389e96411a23da6cffcf2df62",
+      "bytes": 29296
+    },
+    {
+      "path": "acessoja/settings.py",
+      "status": "modified",
+      "before_sha256": "7f47da81b52a5a0bd268a133995a54e1bf84af833050c6c62aa2abd5a7426770",
+      "sha256": "b0a3b983b240ac6a8d8063a83f047f4e2d5315bdb936737524ec0d7a4917ec64",
+      "bytes": 10589
+    },
+    {
+      "path": "backend/requirements-geographic.txt",
+      "status": "new",
+      "before_sha256": null,
+      "sha256": "6719598c7b8bb57cec2b33ce09f200dac864ea7ddf46946ac1911aac86b4a61b",
+      "bytes": 113
+    },
+    {
+      "path": "docs/MAPA_BUSCA_ROTAS_CARDS_28_33.md",
+      "status": "modified",
+      "before_sha256": "195ac03301793aa2abb235177411d7f350a99ef3273f35a307fade74af14f91c",
+      "sha256": "bffe3c8116f4966ea1d597fd3a1c2a80adc680accbcd44d69ddd14911f6e87ac",
+      "bytes": 22352
+    },
+    {
+      "path": "docs/capturas/correcao_mapa_28_33/01_cinco_locais_e_cluster.png",
+      "status": "new",
+      "before_sha256": null,
+      "sha256": "558060a142c24e223b994aabe245a9e519fcd8704acb4aac159242431944d0d9",
+      "bytes": 193084
+    },
+    {
+      "path": "docs/capturas/correcao_mapa_28_33/02_falha_preserva_marcador_externo.png",
+      "status": "new",
+      "before_sha256": null,
+      "sha256": "e00442fbf1b47ea71b13603fd1e420edc2895fcc61434773ff5fa6a97ebf789b",
+      "bytes": 197268
+    },
+    {
+      "path": "docs/capturas/correcao_mapa_28_33/03_oito_locais_na_lista.png",
+      "status": "new",
+      "before_sha256": null,
+      "sha256": "6eab80f83d2b9ab237e90f260f284a626548788b6447d1921040efc1c75795fe",
+      "bytes": 76906
+    },
+    {
+      "path": "frontend/lib/config.dart",
+      "status": "modified",
+      "before_sha256": "6e0c30aca124409855d2bad76eb111ca60c827909bc00b16d12bc64f0cbe068d",
+      "sha256": "5a6f07dc9df4f4cdd469321a56a0a8d55749d199a34c8a57bb0311849c9e9441",
+      "bytes": 1437
+    },
+    {
+      "path": "frontend/lib/l10n/map_strings.dart",
+      "status": "modified",
+      "before_sha256": "146c1d673f88fe6c93d1c31d5a12283438472f50416058b6eb16a96402568c11",
+      "sha256": "b21e0a30aa38bbd04d56ad9b8da3a66da1374885f8ca8b1be0af79e272bc286d",
+      "bytes": 4784
+    },
+    {
+      "path": "frontend/lib/models/discovery_query.dart",
+      "status": "modified",
+      "before_sha256": "35f86f80f864f4dad2b032772accde8c5341e57d25e6799f2453d7e0a7c0fa4f",
+      "sha256": "786e4c51a327967b67d2cf23ab783d2405414f91bdfbd9f3ba4c9983470d9a97",
+      "bytes": 2389
+    },
+    {
+      "path": "frontend/lib/screens/explorar_screen.dart",
+      "status": "modified",
+      "before_sha256": "47751d1073779d76a77a4eb6139794ebeead0e059b86ea374c0dc0734c4eb39f",
+      "sha256": "ac6db63987ff74ba97e7bee3830b14c759b4db91d55a709adea5332b98d8806b",
+      "bytes": 9494
+    },
+    {
+      "path": "frontend/lib/screens/geographic_search_screen.dart",
+      "status": "modified",
+      "before_sha256": "a4be913ac519c8293c548c6c2000e7797a0e0b4b75361bcfaa074b2ec699942b",
+      "sha256": "cd76b8f60728d31b6868f8d5ef6f4b68c409d5de0d809dc52b524ecad8db3a08",
+      "bytes": 5777
+    },
+    {
+      "path": "frontend/lib/screens/main_screen.dart",
+      "status": "modified",
+      "before_sha256": "0b575baba1508a8b938a8938932f8f115cbedf1edd64a54a1508d02940ef10be",
+      "sha256": "9fb57893066520d106ac5031950f780135f117334bd8e364d534f0a2bd277a0d",
+      "bytes": 124281
+    },
+    {
+      "path": "frontend/lib/services/discovery_controller.dart",
+      "status": "modified",
+      "before_sha256": "fcf4fc0f469e285e1da5685d1fd38244736665a54ae6683591b74bebf725a2a2",
+      "sha256": "1beefaed195ace711b1efb2f013b48c38f343f93dc9233d15ac976d896679f64",
+      "bytes": 9232
+    },
+    {
+      "path": "frontend/lib/services/places_service.dart",
+      "status": "modified",
+      "before_sha256": "84aa67d0a28de1179d6e4bf2265d5723a6c26f0b6bf42e54ee8ce112ac7f7c66",
+      "sha256": "2f6a9fefde982f05eaf622a44238811986a62f824ae12e6eeb70fef5334682e4",
+      "bytes": 16630
+    },
+    {
+      "path": "frontend/test/helpers/route_history_fake.dart",
+      "status": "modified",
+      "before_sha256": "a71e46fddcc812f3f60e244393be70d2dbef42b15e8c31b35a6ec0cadfc04359",
+      "sha256": "4642e692af97861b45777d02b95fc672e8b64cd6443d0aaab7ad64c903c995a9",
+      "bytes": 3642
+    },
+    {
+      "path": "frontend/test/map_recovery_evidence_test.dart",
+      "status": "new",
+      "before_sha256": null,
+      "sha256": "b2801fed85fa78856dd9c96e512b3b1d3f48c18bc4893c5452520f69e1eb0f41",
+      "bytes": 6014
+    },
+    {
+      "path": "frontend/test/map_recovery_test.dart",
+      "status": "new",
+      "before_sha256": null,
+      "sha256": "95688d30ed7ab0e34e960d9e384b4808963b8b95a25783ab5c66e027c9ceb18d",
+      "bytes": 16064
+    },
+    {
+      "path": "frontend/test/map_sprint2_test.dart",
+      "status": "modified",
+      "before_sha256": "f9337bcb5fe3e0dd2c535ce9c2393cfcbc2bbcc7d85e8bec4e96bdcae6a47cc0",
+      "sha256": "26a742fe55f7d7b1f2142647b4273cab25ea6d8e1d128d1f74b43ce649425e35",
+      "bytes": 24641
+    },
+    {
+      "path": "locais/external_serializers.py",
+      "status": "modified",
+      "before_sha256": "3ee8e48eb623f9a02a1ae1c5473bc4f33f549c26a9b70cd9bd3b28e3b00ac30d",
+      "sha256": "ec77b66dec5eb4c791bd6394194cd429841b64951ec2d31192c549de111fbeb5",
+      "bytes": 4473
+    },
+    {
+      "path": "locais/external_views.py",
+      "status": "modified",
+      "before_sha256": "b3e53aedbd29a9eb6aefc7aab5ddf5326e9a5cbc31408ae24ef68f6f6c2f1fae",
+      "sha256": "bfc787ce7c309ff3749a301b2b204eb422342fe4cf58bf878d8ba3d0cea3c455",
+      "bytes": 8791
+    },
+    {
+      "path": "locais/management/commands/check_geographic_provider.py",
+      "status": "new",
+      "before_sha256": null,
+      "sha256": "c00ad6c4f29723aaacbe6c8b98c025d86cb6ddff707acfe352b2984e7035c79b",
+      "bytes": 2779
+    },
+    {
+      "path": "locais/services/external_places_service.py",
+      "status": "modified",
+      "before_sha256": "7d9af8da98af30793423d084373f50a0ca5d2c732e17651a0680f36abf5aa846",
+      "sha256": "031c35b8a56bbbcfd1abe06edcac20820445577003a970a5951abd086df90291",
+      "bytes": 21716
+    },
+    {
+      "path": "locais/services/geographic_runtime.py",
+      "status": "new",
+      "before_sha256": null,
+      "sha256": "503d8dc1b58cd4ccbd0c9489e19c87d480165f6aedc5187d32c0c9e39c2107fb",
+      "bytes": 11843
+    },
+    {
+      "path": "locais/test_external_places.py",
+      "status": "modified",
+      "before_sha256": "e1394a91117469911dce78310063882d4442ebb56161e7e4159d8808718dccaf",
+      "sha256": "501e98a66eeebf6b64082d2d062e9c70aae4a0db2abfe5db77d06ade2542f2ab",
+      "bytes": 23507
+    },
+    {
+      "path": "locais/test_geographic_recovery.py",
+      "status": "new",
+      "before_sha256": null,
+      "sha256": "f2a3c37476271b116e40b8616ae46712a05cb8a187c651bcfa642f7da5bbc3df",
+      "bytes": 14129
+    },
+    {
+      "path": "locais/test_geographic_redis.py",
+      "status": "new",
+      "before_sha256": null,
+      "sha256": "73dc152f480a0e0a49b22079495cc23ddafda4cf2cc2ecc407b61cf5cf30c03c",
+      "bytes": 5233
+    },
+    {
+      "path": "modal_avaliacao/test_questionnaire_core.py",
+      "status": "modified",
+      "before_sha256": "fa7d990068322e806e350f5550f1c93a573c6ab9f77d5c060320b1947fe97bc8",
+      "sha256": "f7e07d219968e552cf1b57181dd20dfd6800c29c62b0606e7dcb79987a0a9d24",
+      "bytes": 8622
+    }
+  ]
+}

@@ -191,3 +191,13 @@ CI e cobertura mínima de 80% permanecem intactos.
 - [Flutter accessibility testing](https://docs.flutter.dev/ui/accessibility/accessibility-testing): alvos, rótulos, contraste e verificação com tecnologia assistiva.
 
 Foram adaptados padrões, sem copiar telas ou alterar a identidade visual.
+
+
+## Atualização dos Cards 28–33
+
+A descoberta nova usa `paginated=true`, uma página por chamada e busca remota.
+Os filtros e a ordenação são aplicados antes da paginação; o mapa associa
+resultados externos antes dos filtros finais. O modo legado de lista permanece
+para compatibilidade. Consulte o [contrato vigente](MAPA_BUSCA_ROTAS_CARDS_28_33.md).
+Nominatim público exige opt-in explícito e cache compartilhado; a configuração
+não é habilitada automaticamente.

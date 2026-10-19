@@ -1,3 +1,4 @@
+import '../screens/login_screen.dart';
 import '../l10n/contribution_strings.dart';
 import '../l10n/strings.dart';
 import '../services/app_http.dart';
@@ -28,7 +29,7 @@ class _RegistrationState extends State<ExternalPlaceRegistration> {
   late final _address =
       TextEditingController(text: widget.place['endereco']?.toString());
   final _password = TextEditingController();
-  final _session = AppHttp.sessionRevision.value;
+  int _session = AppHttp.sessionRevision.value;
   bool _saving = false;
   String? _error;
 
@@ -39,6 +40,12 @@ class _RegistrationState extends State<ExternalPlaceRegistration> {
     _password.clear();
     _password.dispose();
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    await Navigator.push(context,MaterialPageRoute(builder:(_) => LoginScreen(
+      onLoginSuccess:(context,user)=>Navigator.pop(context,true))));
+    if (mounted) { setState(() { _session = AppHttp.sessionRevision.value; _error = null; }); }
   }
 
   Future<void> _submit() async {
@@ -56,7 +63,7 @@ class _RegistrationState extends State<ExternalPlaceRegistration> {
         place: widget.place,
         name: _name.text,
         address: _address.text,
-        userName: widget.userName,
+        userName: AppHttp.userName ?? widget.userName,
         password: _password.text,
       );
       _password.clear();
@@ -142,6 +149,8 @@ class _RegistrationState extends State<ExternalPlaceRegistration> {
                     ])),
           ),
           actions: [
+            if (!AppHttp.authenticated || _session != AppHttp.sessionRevision.value) TextButton(
+              onPressed:_saving?null:_login, child:Text(context.contributionText('Entrar e continuar','Sign in and continue'))),
             TextButton(
                 onPressed: _saving ? null : () => Navigator.pop(context),
                 child: Text(context.contributionText('Cancelar', 'Cancel'))),

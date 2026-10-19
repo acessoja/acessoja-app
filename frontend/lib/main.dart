@@ -7,6 +7,7 @@ import 'l10n/generated/app_localizations.dart';
 
 import 'app_theme.dart';
 import 'services/favorites_controller.dart';
+import 'services/current_position.dart';
 import 'widgets/favorites_scope.dart';
 import 'screens/login_screen.dart'; // Certifique-se de que o caminho está correto
 import 'screens/place_detail_screen.dart';
@@ -28,6 +29,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late final AppThemeController _themeController;
   final _favorites = FavoritesController();
+  final _position = CurrentPosition();
   final _navigator = GlobalKey<NavigatorState>();
   final _accessibilityRoutes = AccessibilityRouteObserver();
 
@@ -42,6 +44,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
+    _position.dispose();
     _favorites.dispose();
     _themeController.dispose();
     _accessibilityRoutes.dispose();
@@ -53,7 +56,7 @@ class _MyAppState extends State<MyApp> {
     return AnimatedBuilder(
       animation: Listenable.merge([_themeController, widget.preferences]),
       builder: (context, child) {
-        return FavoritesScope(
+        return PositionScope(controller: _position, child: FavoritesScope(
             controller: _favorites,
             child: PreferencesScope(
               preferences: widget.preferences,
@@ -142,7 +145,7 @@ class _MyAppState extends State<MyApp> {
                       MaterialPageRoute(builder: (_) => const LoginScreen()),
                 ),
               ),
-            ));
+            )));
       },
     );
   }

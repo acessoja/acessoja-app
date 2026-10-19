@@ -4,7 +4,7 @@ Implementação sobre `acessoja-app-main (13)(1).zip`, SHA-256
 `e6b92d5453dd66a7932acaf37632601a69aba08438653205d5e914d5df0253ab`.
 A cópia `(13).zip` tem os mesmos bytes. Esse hash identifica o snapshot fornecido,
 não um commit nem o estado atual do GitHub. Resultado dos checks e roteiro de
-homologação em [INSTRUCOES_APLICACAO.txt](../INSTRUCOES_APLICACAO.txt).
+homologação em [INSTRUCOES_APLICACAO.txt](INSTRUCOES_CARDS_24_27.txt).
 
 ## Diagnóstico e aceite por card
 

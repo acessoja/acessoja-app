@@ -193,8 +193,13 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                         const SizedBox(height: 8),
                         _information(
                             icon: Icons.near_me_outlined,
-                            label:
-                                '${context.mapText('Em linha reta', 'Straight-line distance')}: ${widget.distanceLabel}'),
+                            label: widget.distanceLabel ==
+                                        context.mapText(
+                                            'Distância indisponível',
+                                            'Distance unavailable') ||
+                                    widget.distanceLabel.contains(':')
+                                ? widget.distanceLabel
+                                : '${context.mapText('Em linha reta', 'Straight-line distance')}: ${widget.distanceLabel}'),
                       ],
                       const SizedBox(height: 12),
                       Text(

@@ -228,7 +228,10 @@ def test_limits_results_deduplicates_object_ids_and_filters_radius():
     assert len(result["results"]) == 1
     assert result["truncated"] is True
     assert "[timeout:10]" in query and "out center 500" in query
-    assert "(around:1500,-16.326700,-48.952800)" in query
+    import re
+    centers = re.findall(r"\(around:1500,([^,]+),([^\)]+)\)", query)
+    assert centers and all((float(lat), float(lon)) == (QUERY["latitude"], QUERY["longitude"])
+                           for lat, lon in centers)
 
 
 def test_category_query_uses_fixed_ql_and_filtered_response():
