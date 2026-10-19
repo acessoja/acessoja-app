@@ -238,7 +238,41 @@ NOMINATIM_URL = env("NOMINATIM_URL", default="")
 GEO_USER_AGENT = env("GEO_USER_AGENT", default="AcessoJa/2.0 (https://github.com/acessoja/acessoja-app)")
 EXTERNAL_PLACES_CACHE_SECONDS = env.int("EXTERNAL_PLACES_CACHE_SECONDS", default=300)
 CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://acessoja-geographic")}
+if CACHES["default"]["BACKEND"] == "django.core.cache.backends.redis.RedisCache":
+    from redis.backoff import NoBackoff
+    from redis.retry import Retry
+
+    # Finite cache I/O; no hidden reconnect/backoff loop while a worker owns a lease.
+    CACHES["default"].setdefault("OPTIONS", {}).update(
+        socket_connect_timeout=2, socket_timeout=2, retry=Retry(NoBackoff(), 0), retry_on_timeout=False,
+    )
 
 # Pontos somente por ações verificáveis; comentários exigem moderação real.
 AUTH_TOKEN_TTL = 43200
 CONTRIBUTION_POINTS = {"review": 10, "survey": 5, "useful_comment": 5}
+
+NOMINATIM_PUBLIC_OPT_IN = env.bool("NOMINATIM_PUBLIC_OPT_IN", default=False)
+
+# Reverse proxies must apply the same query redaction in their own access logs.
+LOGGING = {
+    "version": 1, "disable_existing_loggers": False,
+    "filters": {"redact_coordinates": {"()": "acessoja.logging_filters.RedactCoordinates"}},
+    "handlers": {"coordinate_safe_console": {"class": "logging.StreamHandler", "filters": ["redact_coordinates"]}},
+    "loggers": {"django.server": {"handlers": ["coordinate_safe_console"], "level": "INFO", "propagate": False}},
+}
+
+# Geographic discovery: explicit deployment mode and bounded provider attempts.
+GEO_REQUIRE_SHARED_COORDINATION = env.bool("GEO_REQUIRE_SHARED_COORDINATION", default=False)
+GEO_CONNECT_TIMEOUT = env.float("GEO_CONNECT_TIMEOUT", default=3)
+GEO_READ_TIMEOUT = env.float("GEO_READ_TIMEOUT", default=12)
+GEO_TOTAL_TIMEOUT = env.float("GEO_TOTAL_TIMEOUT", default=18)
+GEO_OVERPASS_COOLDOWN = env.int("GEO_OVERPASS_COOLDOWN", default=15)
+GEO_NOMINATIM_COOLDOWN = env.int("GEO_NOMINATIM_COOLDOWN", default=2)
+GEO_RATE_LIMIT_COOLDOWN = env.int("GEO_RATE_LIMIT_COOLDOWN", default=60)
+EXTERNAL_PLACES_MAX_AGE_SECONDS = env.int("EXTERNAL_PLACES_MAX_AGE_SECONDS", default=900)
+NOMINATIM_API_KEY = env("NOMINATIM_API_KEY", default="")
+NOMINATIM_API_KEY_HEADER = env("NOMINATIM_API_KEY_HEADER", default="")
+CORS_EXPOSE_HEADERS = ["Retry-After", "X-Correlation-ID"]
+LOGGING["loggers"]["acessoja.geographic"] = {
+    "handlers": ["coordinate_safe_console"], "level": env("GEO_LOG_LEVEL", default="INFO"), "propagate": False,
+}

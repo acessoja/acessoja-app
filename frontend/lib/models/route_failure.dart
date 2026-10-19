@@ -1,6 +1,14 @@
 enum RouteFailureCode {
-  invalidOrigin, invalidDestination, timeout, network, http,
-  noRoute, noSegment, invalidResponse,
+  invalidOrigin,
+  invalidDestination,
+  timeout,
+  network,
+  http,
+  noRoute,
+  noSegment,
+  invalidResponse,
+  rateLimited,
+  unavailable,
 }
 
 class RouteFailure implements Exception {

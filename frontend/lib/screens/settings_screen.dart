@@ -1,3 +1,4 @@
+import '../services/current_position.dart';
 import '../widgets/load_error.dart';
 import '../widgets/accessibility_panel.dart';
 import '../app_preferences.dart';
@@ -61,6 +62,7 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
               : widget.userName;
           _fotoPerfil = (data['foto_perfil'] ?? '').toString();
           _unit = data['unidade_distancia'] ?? 'KM';
+          PositionScope.read(context)?.unit = _unit;
         });
       } else {
         _loadFailed = true;

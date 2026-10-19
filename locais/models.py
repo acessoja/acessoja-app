@@ -85,3 +85,26 @@ class RouteHistorySession(models.Model):
         ordering = ["-started_at", "-id"]
         constraints = [models.UniqueConstraint(fields=["user", "session_id"], name="route_session_owner_unique")]
         indexes = [models.Index(fields=["user", "-started_at", "-id"], name="route_history_owner_date")]
+
+
+class ManualRegistrationGuard(models.Model):
+    """Singleton created during migration, never created on request."""
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+
+    def __str__(self):
+        return "Manual registration guard"
+
+
+class ManualPlaceRegistration(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    request_id = models.UUIDField()
+    payload_hash = models.CharField(max_length=64)
+    local = models.ForeignKey(Local, null=True, on_delete=models.SET_NULL)
+    distinct_reason = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Manual request {self.request_id}"
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user", "request_id"], name="manual_registration_owner_uuid")]

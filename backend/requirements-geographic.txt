@@ -1,0 +1,3 @@
+-r requirements.txt
+# Optional Redis coordination/cache for geographic providers across workers.
+redis>=5.0,<9.0

@@ -261,7 +261,7 @@ void main() {
     mockApi(externalError: true);
     await pumpMap(tester);
     expect(find.byKey(const ValueKey('map-place-7')), findsOneWidget);
-    expect(find.text('Fonte externa indisponível'), findsOneWidget);
+    expect(find.textContaining('Locais externos indisponíveis'), findsOneWidget);
     expect(find.text('Tentar fonte externa novamente'), findsOneWidget);
   });
 
@@ -370,10 +370,11 @@ void main() {
     expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsNothing);
   });
 
-  testWidgets('estado vazio permite limpar filtros', (tester) async {
+  testWidgets('falha interna não é anunciada como vazio real', (tester) async {
     mockApi(internalError: true, externals: []);
     await pumpMap(tester);
-    expect(find.textContaining('Nenhum local corresponde aos dados e filtros atuais'), findsOneWidget);
+    expect(find.textContaining('Nenhum local corresponde aos dados e filtros atuais'), findsNothing);
+    expect(find.textContaining('Não foi possível atualizar os locais do AcessoJá'), findsOneWidget);
     expect(find.text('Limpar filtros'), findsOneWidget);
   });
 
@@ -495,7 +496,7 @@ void main() {
     expect(searchArea.hitTestable(), findsOneWidget);
     await tester.tap(searchArea);
     await tester.pump();
-    expect(calls, 1); // The latest area waits for the running request to finish.
+    expect(calls, 2); // New query owns its own state; the backend lease limits upstream work.
     pending.complete(jsonResponse({'results': [external], 'truncated': false}));
     await tester.pumpAndSettle();
     expect(calls, 2);

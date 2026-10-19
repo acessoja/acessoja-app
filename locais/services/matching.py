@@ -22,6 +22,10 @@ def distance_m(lat1, lon1, lat2, lon2):
 def strong_match(place, local):
     if local.osm_id:
         return local.osm_id == place["external_id"]
+    return same_attributes(place, local)
+
+
+def same_attributes(place, local):
     if local.latitude is None or local.longitude is None:
         return False
     if (

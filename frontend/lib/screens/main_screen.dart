@@ -1,3 +1,11 @@
+import '../services/discovery_controller.dart';
+import '../services/current_position.dart';
+import '../models/place_distance.dart';
+import '../models/discovery_query.dart';
+import '../models/geo_candidate.dart';
+import 'geographic_search_screen.dart';
+import 'map_point_picker.dart';
+import 'manual_registration_screen.dart';
 import '../widgets/responsive_navigation_bar.dart';
 import '../widgets/accessibility_host.dart';
 import '../reading_presentation.dart';
@@ -84,6 +92,16 @@ class _MainScreenState extends SafeState<MainScreen>
     with WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final PlacesService _placesService = const PlacesService();
+  late final _externalDiscovery =
+      ExternalDiscoveryController(service: _placesService, clock: widget.clock);
+  void _externalChanged() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+    _placesRevision.value++;
+  }
+
   late final PlacePreviewController _preview =
       PlacePreviewController(service: _placesService);
   bool _previewOpen = false;
@@ -92,6 +110,9 @@ class _MainScreenState extends SafeState<MainScreen>
   late final LocationService _locationService =
       widget.locationService ?? const LocationService();
 
+  String get _activeUserName => AppHttp.userName ?? widget.userName;
+  String get _distanceUnit =>
+      PositionScope.read(context)?.unit ?? _unidadeDistancia;
   String _unidadeDistancia = 'KM';
   bool _allowSuggestions = true;
   bool _hasLocation = false;
@@ -104,7 +125,7 @@ class _MainScreenState extends SafeState<MainScreen>
     final session = AppHttp.sessionRevision.value;
     try {
       final uri = Uri.parse(
-          '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(widget.userName)}');
+          '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(_activeUserName)}');
       final resp = await AppHttp.get(uri);
       if (!mounted ||
           request != _profileRequest ||
@@ -115,12 +136,13 @@ class _MainScreenState extends SafeState<MainScreen>
         final data = json.decode(utf8.decode(resp.bodyBytes));
         setState(() {
           _unidadeDistancia = data['unidade_distancia'] ?? 'KM';
+          PositionScope.read(context)?.unit = _unidadeDistancia;
           _allowSuggestions = data['permitir_sugestoes'] != false;
           _visitConsent = data['historico_visivel'] == true &&
               data['compartilhar_localizacao'] == true;
           _nomeCompleto = (data['nome_completo'] ?? '').toString().isNotEmpty
               ? data['nome_completo']
-              : widget.userName;
+              : _activeUserName;
           _fotoPerfil = (data['foto_perfil'] ?? '').toString();
         });
       }
@@ -150,7 +172,7 @@ class _MainScreenState extends SafeState<MainScreen>
                 .replaceAll(RegExp(r'[^0-9.,]'), '')
                 .replaceAll(',', '.')) ??
             0;
-    final miles = _unidadeDistancia == 'Milha';
+    final miles = _distanceUnit == 'Milha';
     return '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}';
   }
 
@@ -260,6 +282,7 @@ class _MainScreenState extends SafeState<MainScreen>
       if (mounted) {
         setState(() {
           _hasLocation = false;
+          PositionScope.read(context)?.clear();
           _locationIssue = LocationIssue.stale;
           _locationMessage = context.locationIssue(_locationIssue);
         });
@@ -429,11 +452,11 @@ class _MainScreenState extends SafeState<MainScreen>
         context,
         MaterialPageRoute(
             builder: (_) => ContributionsScreen(
-                userName: widget.userName,
+                userName: _activeUserName,
                 location: _hasLocation ? _currentLocation : null,
                 mapCenter:
                     _mapReady ? _mapController.camera.center : _viewportCenter,
-                distanceUnit: _unidadeDistancia)));
+                distanceUnit: _distanceUnit)));
     if (!mounted) {
       return;
     }
@@ -478,6 +501,7 @@ class _MainScreenState extends SafeState<MainScreen>
       _preferencesMessage = null;
     });
     _placesRevision.value++;
+    unawaited(_fetchEstablishments());
   }
 
   void _clearFilters() {
@@ -487,6 +511,7 @@ class _MainScreenState extends SafeState<MainScreen>
       _preferencesMessage = null;
     });
     _placesRevision.value++;
+    unawaited(_fetchEstablishments());
   }
 
   void _deactivatePreferences() {
@@ -496,6 +521,7 @@ class _MainScreenState extends SafeState<MainScreen>
       _preferencesMessage = null;
     });
     _placesRevision.value++;
+    unawaited(_fetchEstablishments());
   }
 
   Future<void> _usePreferences() async {
@@ -542,6 +568,7 @@ class _MainScreenState extends SafeState<MainScreen>
       _filterRevision++;
       setState(() =>
           _filterState = _filterState.applyPreferences(preferences.resources));
+      unawaited(_fetchEstablishments());
     } catch (error) {
       if (mounted && request == _preferencesRequest) {
         setState(() => _preferencesMessage = context.preferenceFailure(error));
@@ -589,6 +616,17 @@ class _MainScreenState extends SafeState<MainScreen>
   }
 
   void _sessionChanged() {
+    _internalDebounce?.cancel();
+    _locationRequest++;
+    _streamGeneration++;
+    _positionStream?.cancel();
+    _positionStream = null;
+    _locating = false;
+    _searchRequest++;
+    _internalNext = null;
+    _internalPages.clear();
+    _internalQuery = null;
+
     if (!mounted) {
       return;
     }
@@ -596,6 +634,7 @@ class _MainScreenState extends SafeState<MainScreen>
     _endNavigation();
     _lastFix = null;
     _hasLocation = false;
+    PositionScope.read(context)?.clear();
     if (AppHttp.authenticated) {
       unawaited(_historyRecorder.refresh());
     }
@@ -603,7 +642,7 @@ class _MainScreenState extends SafeState<MainScreen>
     _profileRequest++;
     _filterRevision++;
     _internalRequest++;
-    _externalRequest++;
+
     _preview.invalidate();
     _preview.close();
     setState(() {
@@ -618,11 +657,12 @@ class _MainScreenState extends SafeState<MainScreen>
       _fotoPerfil = '';
       _visitConsent = false;
       _internalLocals = [];
-      _externalLocals = [];
+      _externalDiscovery.clear();
       _selectedPlaceId = null;
     });
     _placesRevision.value++;
     _fetchEstablishments();
+    _loadUserProfile();
     _fetchExternalPlaces(_externalCenter);
   }
 
@@ -634,7 +674,7 @@ class _MainScreenState extends SafeState<MainScreen>
       _profileRequest++;
       _filterState = _filterState.deactivate();
       _internalLocals = [];
-      _externalLocals = [];
+      _externalDiscovery.clear();
       _nomeCompleto = '';
       _fotoPerfil = '';
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -648,31 +688,49 @@ class _MainScreenState extends SafeState<MainScreen>
 
   // List of filtered establishments from backend
   List<MapPlace> _internalLocals = [];
-  List<MapPlace> _externalLocals = [];
-  String? _externalError;
+  List<MapPlace> get _externalLocals => _externalDiscovery.places;
+  String? get _externalError => _externalDiscovery.error == null
+      ? null
+      : context.externalFailure(_externalDiscovery.error!);
   String? _locationMessage;
   String? _selectedPlaceId;
-  bool _isLoadingExternal = false;
-  bool _externalTruncated = false;
+  LatLng? _selectedPoint;
+  String? _selectedPointName;
+  bool get _isLoadingExternal => _externalDiscovery.loading;
+  bool get _externalTruncated => _externalDiscovery.truncated;
   bool _areaMoved = false;
   bool _mapReady = false;
   bool _locating = false;
   int _internalRequest = 0;
-  int _externalRequest = 0;
+  bool _discoveryDetails = false;
+  Timer? _internalDebounce;
   int _searchRequest = 0;
-  LatLng? _pendingExternalCenter;
+
   LatLng _externalCenter = const LatLng(-16.3267, -48.9528);
   int _externalRadius = 1500;
 
-  List<Map<String, dynamic>> get _matchingLocals =>
-      mergeMapPlaces(_internalLocals, _externalLocals)
-          .where((place) =>
-              _filterState.filters.matches(place) && place.matches(_searchText))
-          .map((place) => {
-                ...place.toMap(),
-                'missing_resources': _filterState.filters.missing(place)
-              })
-          .toList(growable: false);
+  List<Map<String, dynamic>> get _matchingLocals {
+    final origin = PositionScope.read(context)?.point ??
+        (_freshLocation ? _currentLocation : null);
+    final models = mergeMapPlaces(_internalLocals, _externalLocals)
+        .where((place) =>
+            _filterState.filters.matches(place) && place.matches(_searchText))
+        .toList()
+      ..sort((a, b) => comparePlaceDistance(a, b, origin));
+    return models
+        .map((place) => {
+              ...place.toMap(),
+              'missing_resources': _filterState.filters.missing(place)
+            })
+        .toList();
+  }
+
+  String? _internalNext;
+  int _internalCount = 0;
+  bool _internalFirstPending = true;
+  DiscoveryQuery? _internalQuery;
+  List<double>? _internalBounds;
+  final _internalPages = <String>{};
   bool _localsLoadFailed = false;
   bool _isLoadingLocals = false;
 
@@ -704,7 +762,7 @@ class _MainScreenState extends SafeState<MainScreen>
                         color: colors.onPrimary),
                   ),
                   Text(
-                    context.l10n.welcome(widget.userName),
+                    context.l10n.welcome(_activeUserName),
                     style: TextStyle(fontSize: 12, color: colors.onPrimary),
                   ),
                 ],
@@ -724,6 +782,7 @@ class _MainScreenState extends SafeState<MainScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _externalDiscovery.addListener(_externalChanged);
     AppHttp.sessionRevision.addListener(_sessionChanged);
     reviewChanges.addListener(_onReviewChanged);
     _navigation.addListener(_onNavigationChanged);
@@ -739,8 +798,37 @@ class _MainScreenState extends SafeState<MainScreen>
     });
   }
 
+  CurrentPosition? _sharedPosition;
+  String _sharedOrigin = '';
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final position = PositionScope.maybeOf(context);
+    if (!identical(position, _sharedPosition)) {
+      _sharedPosition?.removeListener(_sharedPositionChanged);
+      _sharedPosition = position;
+      _sharedPosition?.addListener(_sharedPositionChanged);
+      final point = position?.point;
+      _sharedOrigin = '${point?.latitude}:${point?.longitude}';
+    }
+  }
+
+  void _sharedPositionChanged() {
+    final point = _sharedPosition?.point;
+    final identity = '${point?.latitude}:${point?.longitude}';
+    if (!mounted || identity == _sharedOrigin) {
+      return;
+    }
+    _sharedOrigin = identity;
+    unawaited(_fetchEstablishments());
+  }
+
   @override
   void dispose() {
+    _externalDiscovery.removeListener(_externalChanged);
+    _externalDiscovery.dispose();
+    _internalDebounce?.cancel();
+    _sharedPosition?.removeListener(_sharedPositionChanged);
     _statusUpdates.dispose();
     WidgetsBinding.instance.removeObserver(this);
     AppHttp.sessionRevision.removeListener(_sessionChanged);
@@ -754,7 +842,7 @@ class _MainScreenState extends SafeState<MainScreen>
     _navigation.dispose();
     _routeRequest++;
     _internalRequest++;
-    _externalRequest++;
+
     _searchRequest++;
     _locationRequest++;
     _streamGeneration++;
@@ -776,94 +864,124 @@ class _MainScreenState extends SafeState<MainScreen>
     unawaited(_fetchEstablishments());
   }
 
-  Future<void> _fetchEstablishments() async {
+  Future<void> _fetchEstablishments({bool more = false}) async {
+    _internalDebounce?.cancel();
+    more = more && !_internalFirstPending;
+    if (more && (_isLoadingLocals || _internalNext == null)) {
+      return;
+    }
+    final origin = PositionScope.read(context)?.point ??
+        (_freshLocation ? _currentLocation : null);
+    final query = more
+        ? _internalQuery!
+        : DiscoveryQuery(
+            filters: _filterState.filters,
+            search: _searchText,
+            ordering: origin == null ? 'name' : 'proximity',
+            origin: origin,
+            bounds: _internalBounds);
+    final changed = _internalQuery?.identity != query.identity;
     final request = ++_internalRequest;
+    final session = AppHttp.sessionRevision.value;
+    final link = more ? _internalNext : null;
+    if (!more) {
+      _internalFirstPending = true;
+      _internalQuery = query;
+      _internalPages.clear();
+    }
     if (mounted) {
       setState(() {
         _isLoadingLocals = true;
         _localsLoadFailed = false;
+        if (changed) {
+          _internalLocals = [];
+          _internalNext = null;
+          _internalCount = 0;
+        }
       });
     }
-
     try {
-      // Merge before filtering so an internal local hidden by an accessibility
-      // filter cannot reappear as an unreviewed OSM duplicate.
-      final data = await _placesService.fetchPlaces();
-      if (!mounted || request != _internalRequest) {
+      final page =
+          await _placesService.fetchDiscoveryPage(query: query, next: link);
+      if (!mounted ||
+          request != _internalRequest ||
+          session != AppHttp.sessionRevision.value) {
         return;
       }
-
+      final uri = Uri.parse('${Config.baseUrl}/api/locais/');
+      final identity = pageIdentity(link == null
+          ? uri.replace(queryParameters: query.parameters)
+          : uri.resolve(link));
+      if (!_internalPages.add(identity)) {
+        throw const FormatException('Cyclic map page');
+      }
       setState(() {
-        _internalLocals = data.map(MapPlace.internal).toList(growable: false);
+        _internalLocals = {
+          for (final p in [
+            ...(more ? _internalLocals : <MapPlace>[]),
+            ...page.places
+          ])
+            p.id: p
+        }.values.toList();
+        _internalNext = page.next;
+        _internalCount = page.count;
+        _internalFirstPending = false;
       });
-    } catch (e) {
-      if (!mounted || request != _internalRequest) {
+    } catch (_) {
+      if (!mounted ||
+          request != _internalRequest ||
+          session != AppHttp.sessionRevision.value) {
         return;
       }
-      debugPrint("Error connecting to locales: $e");
-      setState(() {
-        _localsLoadFailed = true;
-        _internalLocals = [];
-      });
+      setState(() => _localsLoadFailed = true);
     } finally {
       if (mounted && request == _internalRequest) {
-        setState(() {
-          _isLoadingLocals = false;
-        });
+        setState(() => _isLoadingLocals = false);
         _placesRevision.value++;
       }
     }
   }
 
   Future<void> _fetchExternalPlaces(LatLng center) async {
-    if (_isLoadingExternal) {
-      // Queue only the latest area and logically invalidate the previous one.
-      _externalRequest++;
-      _pendingExternalCenter = center;
-      setState(() => _externalLocals = []);
+    setState(() {
+      _externalCenter = center;
+      _areaMoved = false;
+    });
+    await _externalDiscovery.load(ExternalAreaQuery(center, _externalRadius));
+  }
+
+  void _scheduleInternalSearch(String value) {
+    if (value == _searchText) {
+      return;
+    }
+    if (value.trim() == _searchText.trim()) {
+      setState(() => _searchText = value);
       _placesRevision.value++;
       return;
     }
-    final request = ++_externalRequest;
+    _internalDebounce?.cancel();
+    _internalRequest++;
     setState(() {
-      _externalCenter = center;
-      _externalLocals = [];
-      _externalError = null;
-      _externalTruncated = false;
-      _isLoadingExternal = true;
-      _areaMoved = false;
+      _searchText = value;
+      _internalLocals = [];
+      _internalNext = null;
+      _internalCount = 0;
+      _localsLoadFailed = false;
+      _isLoadingLocals = true;
     });
-    try {
-      final result = await _placesService.fetchExternalPlaces(
-        latitude: center.latitude,
-        longitude: center.longitude,
-        radius: _externalRadius,
-      );
-      if (!mounted || request != _externalRequest) {
-        return;
+    _placesRevision.value++;
+    final session = AppHttp.sessionRevision.value;
+    _internalDebounce = Timer(const Duration(milliseconds: 300), () {
+      if (mounted && session == AppHttp.sessionRevision.value) {
+        unawaited(_fetchEstablishments());
       }
-      setState(() {
-        _externalLocals = result.places;
-        _externalTruncated = result.truncated;
-      });
-    } catch (error) {
-      if (!mounted || request != _externalRequest) {
-        return;
-      }
-      setState(() => _externalError = error is PlacesException
-          ? error.message
-          : 'Locais externos indisponíveis. Tente novamente.');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoadingExternal = false);
-        _placesRevision.value++;
-        final pending = _pendingExternalCenter;
-        _pendingExternalCenter = null;
-        if (pending != null) {
-          _fetchExternalPlaces(pending);
-        }
-      }
-    }
+    });
+  }
+
+  void _removeSearchArea() {
+    setState(() => _internalBounds = null);
+    unawaited(_fetchEstablishments());
+    _placesRevision.value++;
   }
 
   Future<void> _searchVisibleArea() async {
@@ -877,7 +995,10 @@ class _MainScreenState extends SafeState<MainScreen>
       return;
     }
     _externalRadius = radius.ceil().clamp(100, 3000).toInt();
-    await _fetchExternalPlaces(camera.center);
+    final bounds = camera.visibleBounds;
+    _internalBounds = [bounds.south, bounds.west, bounds.north, bounds.east];
+    await Future.wait(
+        [_fetchEstablishments(), _fetchExternalPlaces(camera.center)]);
   }
 
   Future<void> _initLocationTracking({bool requestPermission = true}) async {
@@ -944,13 +1065,16 @@ class _MainScreenState extends SafeState<MainScreen>
   }
 
   void _locationFailed(LocationIssue issue) {
+    PositionScope.read(context)?.clear();
     _lastFix = null;
     _navigation.interrupt('location_${issue.name}');
     setState(() {
       _hasLocation = false;
+      PositionScope.read(context)?.clear();
       _locationIssue = issue;
       _locationMessage = context.locationIssue(issue);
     });
+    unawaited(_fetchEstablishments());
   }
 
   void _updateLocation(Position position) {
@@ -988,53 +1112,152 @@ class _MainScreenState extends SafeState<MainScreen>
     if (firstFix && issue == null && !_isRouting && _mapReady) {
       _mapController.move(point, 14.5);
     }
+    PositionScope.read(context)?.accept(fix);
+    if (issue == null && PositionScope.read(context) == null) {
+      unawaited(_fetchEstablishments());
+    }
     _navigation.update(fix);
   }
 
   Future<void> _searchAndRoute(String destinationText) async {
-    final text = destinationText.trim();
-    if (text.isEmpty) {
-      return;
-    }
-    final matches = _matchingLocals
-        .where((p) => (p['source'] == 'openstreetmap'
-                ? MapPlace.external(p)
-                : MapPlace.internal(p))
-            .matches(text))
-        .toList();
-    if (matches.isNotEmpty) {
-      await _openLocalPreview(matches.first);
-      return;
-    }
     final request = ++_searchRequest;
-    try {
-      // Explicit submission only; local filtering never calls Nominatim.
-      final results = await _placesService.geocode(text);
-      if (!mounted || request != _searchRequest) {
-        return;
+    final result = await Navigator.push<GeoCandidate>(
+        context,
+        MaterialPageRoute(
+            builder: (_) => GeographicSearchScreen(
+                initial: destinationText, submitInitial: true)));
+    if (!mounted || request != _searchRequest || result == null) {
+      return;
+    }
+    if (result.kind == GeoKind.region) {
+      if (_mapReady) {
+        final bounds = result.bounds;
+        if (bounds != null) {
+          _mapController.fitCamera(CameraFit.bounds(
+              bounds: LatLngBounds(
+                  LatLng(bounds[0], bounds[1]), LatLng(bounds[2], bounds[3])),
+              padding: const EdgeInsets.all(32)));
+        } else {
+          _mapController.move(result.point, 12);
+        }
       }
-      if (results.isEmpty) {
-        _showErrorSnackBar(context.l10n.destinationNotFound(text));
-        return;
-      }
-      final place = results.first;
-      final point = _localPoint(place);
-      if (point == null) {
-        throw const FormatException('Coordenadas inválidas');
-      }
-      _mapController.move(point, 15);
-      _externalRadius = 1500;
-      await _fetchExternalPlaces(point);
-      if (mounted && request == _searchRequest) {
-        _openSearchBottomSheet(context);
-      }
-    } catch (error) {
-      if (!mounted || request != _searchRequest) {
-        return;
-      }
-      _showErrorSnackBar(error is PlacesException
-          ? error.message
-          : context.l10n.destinationError);
+      setState(() => _areaMoved = true);
+    } else if (result.kind == GeoKind.place && result.place != null) {
+      await _openLocalPreview(result.place!.toMap());
+    } else {
+      await _openPoint(result.point, name: result.name);
+    }
+  }
+
+  Future<void> _choosePoint({LatLng? initial}) async {
+    final point = await Navigator.push<LatLng>(
+        context,
+        MaterialPageRoute(
+            builder: (_) => MapPointPicker(
+                initial: initial ??
+                    (_mapReady ? _mapController.camera.center : null),
+                tileProvider: widget.tileProvider,
+                locationService: _locationService)));
+    if (mounted && point != null) {
+      await _openPoint(point);
+    }
+  }
+
+  Future<void> _manualRegister({LatLng? point}) async {
+    final place = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(
+            builder: (_) => ManualRegistrationScreen(point: point)));
+    if (!mounted || place == null) {
+      return;
+    }
+    await _fetchEstablishments();
+    if (mounted) {
+      await _openLocalPreview(place);
+    }
+  }
+
+  Future<void> _openPoint(LatLng point, {String? name}) async {
+    setState(() {
+      _selectedPoint = point;
+      _selectedPointName = name;
+    });
+    if (_mapReady) {
+      _mapController.move(point, 16);
+    }
+    final selection = {
+      'nome': name ?? context.mapText('Ponto selecionado', 'Selected point'),
+      'source': 'manual',
+      'latitude': point.latitude,
+      'longitude': point.longitude
+    };
+    final action = await showModalBottomSheet<String>(
+        context: context,
+        useSafeArea: true,
+        isScrollControlled: true,
+        constraints: BoxConstraints(
+            maxWidth: 680, maxHeight: MediaQuery.sizeOf(context).height * .85),
+        builder: (sheet) => SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(selection['nome'] as String,
+                      style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                      '${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}'),
+                  Text(context.mapText(
+                      'Ponto temporário. Planejar uma rota não cadastra nem avalia um local.',
+                      'Temporary point. Planning a route does not register or review a place.')),
+                  FilledButton.icon(
+                      onPressed: () => Navigator.pop(sheet, 'route'),
+                      icon: const Icon(Icons.directions),
+                      label: Text(context.l10n.route)),
+                  OutlinedButton(
+                      onPressed: () => Navigator.pop(sheet, 'register'),
+                      child: Text(context.mapText(
+                          'Cadastrar local', 'Register place'))),
+                  TextButton(
+                      onPressed: () => Navigator.pop(sheet, 'replace'),
+                      child: Text(context.mapText(
+                          'Substituir ponto', 'Replace point'))),
+                  TextButton(
+                      onPressed: () => Navigator.pop(sheet, 'clear'),
+                      child: Text(
+                          context.mapText('Descartar ponto', 'Discard point'))),
+                  TextButton(
+                      onPressed: () => Navigator.pop(sheet),
+                      child: Text(context.mapText('Fechar', 'Close'))),
+                ])));
+    if (!mounted) {
+      return;
+    }
+    if (action == 'clear') {
+      setState(() => _selectedPoint = null);
+    } else if (action == 'route') {
+      await _startRoute(selection);
+    } else if (action == 'register') {
+      await _manualRegister(point: point);
+    } else if (action == 'replace') {
+      await _choosePoint(initial: point);
+    }
+  }
+
+  Future<void> _recoverPoint(Map<String, dynamic> local) async {
+    final point = await Navigator.push<LatLng>(
+        context,
+        MaterialPageRoute(
+            builder: (_) => MapPointPicker(
+                tileProvider: widget.tileProvider,
+                locationService: _locationService)));
+    if (mounted && point != null) {
+      await _startRoute({
+        'nome': local['nome'],
+        'source': 'manual',
+        'latitude': point.latitude,
+        'longitude': point.longitude
+      });
     }
   }
 
@@ -1106,14 +1329,11 @@ class _MainScreenState extends SafeState<MainScreen>
       builder: (context) {
         return MapSearchSheet(
           initialText: _searchText,
-          onTextChanged: (value) {
-            _searchText = value;
-          },
+          onTextChanged: _scheduleInternalSearch,
           onQueryChanged: (value) {
             if (!mounted) {
               return;
             }
-            setState(() => _searchText = value);
             _placesRevision.value++;
           },
           builder: (context, destinationController) =>
@@ -1202,6 +1422,17 @@ class _MainScreenState extends SafeState<MainScreen>
                       ),
                       const SizedBox(height: 12),
                       _activeFilters(),
+                      if (_internalBounds != null)
+                        Text(context.mapText(
+                            'Área pesquisada ativa na base do AcessoJá.',
+                            'A searched area is active for AcessoJá results.')),
+                      if (_internalBounds != null)
+                        TextButton(
+                            key: const ValueKey('remove-search-area'),
+                            onPressed: _removeSearchArea,
+                            child: Text(context.mapText(
+                                'Remover área pesquisada',
+                                'Remove searched area'))),
                       const SizedBox(height: 12),
                       // Dropdown/Lista de sugestões de estabelecimentos por perto
                       if (_isLoadingLocals)
@@ -1210,8 +1441,8 @@ class _MainScreenState extends SafeState<MainScreen>
                             padding: EdgeInsets.symmetric(vertical: 8.0),
                             child: CircularProgressIndicator(strokeWidth: 2),
                           ),
-                        )
-                      else ...[
+                        ),
+                      if (!_isLoadingLocals || _matchingLocals.isNotEmpty) ...[
                         (() {
                           final text =
                               destinationController.text.trim().toLowerCase();
@@ -1297,6 +1528,40 @@ class _MainScreenState extends SafeState<MainScreen>
                           );
                         }()),
                       ],
+                      Text(context.mapText(
+                          'Carregados: ${_internalLocals.length} / $_internalCount da base; ${_externalLocals.length} externos.',
+                          'Loaded: ${_internalLocals.length} / $_internalCount internal; ${_externalLocals.length} external.')),
+                      if (_internalBounds != null)
+                        Text(context.mapText(
+                            'Locais sem coordenadas ficam fora desta consulta por área.',
+                            'Places without coordinates are excluded from this area query.')),
+                      if (_internalNext != null)
+                        OutlinedButton(
+                            onPressed: _isLoadingLocals
+                                ? null
+                                : () => _fetchEstablishments(more: true),
+                            child: Text(
+                                context.mapText('Carregar mais', 'Load more'))),
+                      if (_localsLoadFailed)
+                        OutlinedButton(
+                            onPressed: () => _fetchEstablishments(
+                                more: _internalLocals.isNotEmpty),
+                            child: Text(context.l10n.retry)),
+                      OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _choosePoint();
+                          },
+                          icon: const Icon(Icons.add_location_alt),
+                          label: Text(context.mapText('Escolher ponto no mapa',
+                              'Choose point on map'))),
+                      OutlinedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _manualRegister();
+                          },
+                          child: Text(context.mapText(
+                              'Cadastrar local', 'Register place'))),
                       OutlinedButton.icon(
                           key: const ValueKey('open-discovery-filters'),
                           onPressed: () {
@@ -1355,7 +1620,7 @@ class _MainScreenState extends SafeState<MainScreen>
               } else {
                 return AccessibilityFilterPanel(
                     key: ValueKey(
-                        'filter-draft-${AppHttp.sessionRevision.value}-${widget.userName}'),
+                        'filter-draft-${AppHttp.sessionRevision.value}-$_activeUserName'),
                     initial: _filterState.filters,
                     onCancel: () => sheetSetState(() => sheetView = 'route'),
                     onApply: (filters, touched) {
@@ -1426,7 +1691,7 @@ class _MainScreenState extends SafeState<MainScreen>
     try {
       await _placesService.registerVisit(
           localId: localId,
-          userName: widget.userName,
+          userName: _activeUserName,
           latitude: fix.point.latitude,
           longitude: fix.point.longitude,
           accuracy: fix.accuracy);
@@ -1456,22 +1721,14 @@ class _MainScreenState extends SafeState<MainScreen>
     return LatLng(lat, lon);
   }
 
-  String _distanceLabelForLocal(Map<String, dynamic> local) {
-    if (!_freshLocation) {
-      return '';
-    }
-    final model = local['source'] == 'openstreetmap'
-        ? MapPlace.external(local)
-        : MapPlace.internal(local);
-    final meters = model.distanceMetersFrom(
-        _currentLocation.latitude, _currentLocation.longitude);
-    if (meters == null) {
-      return '';
-    }
-    return _unidadeDistancia != 'Milha' && meters < 1000
-        ? '${meters.round()} m'
-        : _formatDistance(meters / 1000);
-  }
+  String _distanceLabelForLocal(Map<String, dynamic> local) =>
+      placeDistanceLabel(
+          context,
+          local['source'] == 'openstreetmap'
+              ? MapPlace.external(local)
+              : MapPlace.internal(local),
+          fallback: _freshLocation ? _currentLocation : null,
+          unit: _unidadeDistancia);
 
   Future<void> _openLocalPreview(Map<String, dynamic> local) async {
     final session = AppHttp.sessionRevision.value;
@@ -1531,7 +1788,7 @@ class _MainScreenState extends SafeState<MainScreen>
                       Navigator.pop(sheetContext, 'details'),
                   onRoutePressed: current.hasCoordinates
                       ? () => Navigator.pop(sheetContext, 'route')
-                      : null,
+                      : () => Navigator.pop(sheetContext, 'recover'),
                   onEvaluatePressed:
                       current.isExternal || current.internalId != null
                           ? () => Navigator.pop(sheetContext, 'evaluate')
@@ -1572,7 +1829,7 @@ class _MainScreenState extends SafeState<MainScreen>
             context,
             MaterialPageRoute(
                 builder: (_) => PlaceDetailScreen(
-                    place: chosen.toMap(), userName: widget.userName)));
+                    place: chosen.toMap(), userName: _activeUserName)));
         if (!mounted) {
           return;
         }
@@ -1585,7 +1842,9 @@ class _MainScreenState extends SafeState<MainScreen>
         return;
       }
     }
-    if (action == 'route') {
+    if (action == 'recover') {
+      await _recoverPoint(chosen.toMap());
+    } else if (action == 'route') {
       await _startRoute(chosen.toMap());
     } else if (action == 'evaluate') {
       await _evaluatePlace(target ?? chosen.toMap());
@@ -1603,7 +1862,7 @@ class _MainScreenState extends SafeState<MainScreen>
       context: context,
       barrierDismissible: false,
       builder: (_) =>
-          ExternalPlaceRegistration(place: external, userName: widget.userName),
+          ExternalPlaceRegistration(place: external, userName: _activeUserName),
     );
     if (!mounted || local == null) {
       return;
@@ -1621,7 +1880,7 @@ class _MainScreenState extends SafeState<MainScreen>
         MaterialPageRoute(
           builder: (_) => evaluate
               ? ReviewEditorScreen(place: local)
-              : PlaceDetailScreen(place: local, userName: widget.userName),
+              : PlaceDetailScreen(place: local, userName: _activeUserName),
         ));
     if (!mounted) {
       return;
@@ -1640,8 +1899,8 @@ class _MainScreenState extends SafeState<MainScreen>
       context,
       MaterialPageRoute(
         builder: (context) => SavedPlacesScreen(
-          userName: widget.userName,
-          unidadeDistancia: _unidadeDistancia,
+          userName: _activeUserName,
+          unidadeDistancia: _distanceUnit,
           currentLocation: _freshLocation ? _currentLocation : null,
         ),
       ),
@@ -1732,7 +1991,7 @@ class _MainScreenState extends SafeState<MainScreen>
                     Text(
                       _nomeCompleto.isNotEmpty
                           ? _nomeCompleto
-                          : widget.userName,
+                          : _activeUserName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1835,6 +2094,8 @@ class _MainScreenState extends SafeState<MainScreen>
                                 _mapController.move(_currentLocation, 14.5);
                               }
                             },
+                            onLongPress: (_, point) =>
+                                _choosePoint(initial: point),
                             onPositionChanged: (position, hasGesture) {
                               if (_routeFitPending) {
                                 WidgetsBinding.instance
@@ -1861,12 +2122,14 @@ class _MainScreenState extends SafeState<MainScreen>
                                 if (!mounted) {
                                   return;
                                 }
-                                if (_pendingViewportCenter != null) {
-                                  _viewportCenter = _pendingViewportCenter!;
-                                }
-                                if (_pendingViewportGesture && !_areaMoved) {
-                                  setState(() => _areaMoved = true);
-                                }
+                                setState(() {
+                                  if (_pendingViewportCenter != null) {
+                                    _viewportCenter = _pendingViewportCenter!;
+                                  }
+                                  if (_pendingViewportGesture) {
+                                    _areaMoved = true;
+                                  }
+                                });
                                 _pendingViewportGesture = false;
                               });
                             },
@@ -1876,7 +2139,7 @@ class _MainScreenState extends SafeState<MainScreen>
                               tileProvider: widget.tileProvider,
                               urlTemplate:
                                   'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'com.example.acessoja',
+                              userAgentPackageName: 'br.com.acessoja.app',
                             ),
                             if (_isRouting && _routePoints.isNotEmpty)
                               PolylineLayer(
@@ -1920,6 +2183,22 @@ class _MainScreenState extends SafeState<MainScreen>
                                       right: 64),
                                   onSelect: (place) => _openLocalPreview(place.toMap()),
                                   onCluster: _openCluster),
+                            if (_selectedPoint != null)
+                              MarkerLayer(markers: [
+                                Marker(
+                                    point: _selectedPoint!,
+                                    width: 56,
+                                    height: 56,
+                                    child: IconButton(
+                                        tooltip: context.mapText(
+                                            'Abrir ponto selecionado',
+                                            'Open selected point'),
+                                        onPressed: () => _openPoint(
+                                            _selectedPoint!,
+                                            name: _selectedPointName),
+                                        icon: const Icon(Icons.add_location_alt,
+                                            color: Colors.red, size: 36)))
+                              ]),
                             IgnorePointer(
                                 child: MarkerLayer(
                               markers: [
@@ -2109,12 +2388,7 @@ class _MainScreenState extends SafeState<MainScreen>
                                                 Flexible(
                                                   child: Text(
                                                     context.l10n.placeCount(
-                                                      _matchingLocals
-                                                          .where((local) =>
-                                                              _localPoint(
-                                                                  local) !=
-                                                              null)
-                                                          .length,
+                                                      _visiblePlaceCount,
                                                     ),
                                                     maxLines: 1,
                                                     overflow:
@@ -2242,7 +2516,7 @@ class _MainScreenState extends SafeState<MainScreen>
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) =>
-                                      SettingsScreen(userName: widget.userName),
+                                      SettingsScreen(userName: _activeUserName),
                                 ),
                               );
                               if (!mounted) {
@@ -2416,7 +2690,7 @@ class _MainScreenState extends SafeState<MainScreen>
                       destination: _destinationAddress,
                       destinationAddress: _destinationStreet,
                       maxHeight: _routePanelMaxHeight(context),
-                      distanceUnit: _unidadeDistancia,
+                      distanceUnit: _distanceUnit,
                       distanceLabel:
                           _formatDistance(_navigation.remainingDistance / 1000),
                       onStart: _beginNavigation,
@@ -2481,14 +2755,14 @@ class _MainScreenState extends SafeState<MainScreen>
                       MaterialPageRoute(
                           builder: (_) => index == 0
                               ? ExplorarScreen(
-                                  userName: widget.userName,
+                                  userName: _activeUserName,
                                   currentLocation: _currentLocation,
                                   hasCurrentLocation: _freshLocation,
-                                  unidadeDistancia: _unidadeDistancia)
+                                  unidadeDistancia: _distanceUnit)
                               : SugestoesScreen(
                                   allowSuggestions: _allowSuggestions,
-                                  userName: widget.userName,
-                                  unidadeDistancia: _unidadeDistancia)));
+                                  userName: _activeUserName,
+                                  unidadeDistancia: _distanceUnit)));
                   if (mounted && selectedLocal is PlaceRouteRequest) {
                     await _startRoute(selectedLocal.place);
                   } else if (mounted && routePlace(selectedLocal) != null) {
@@ -2540,18 +2814,69 @@ class _MainScreenState extends SafeState<MainScreen>
         ));
   }
 
+  int get _visiblePlaceCount => !_mapReady
+      ? 0
+      : _matchingLocals.where((local) {
+          final point = _localPoint(local);
+          return point != null &&
+              _mapController.camera.visibleBounds.contains(point);
+        }).length;
+  int get _missingCoordinateCount =>
+      _matchingLocals.where((local) => _localPoint(local) == null).length;
+  String get _externalObtainedTime {
+    final date = _externalDiscovery.obtainedAt?.toLocal();
+    return date == null ? '—' : _formatDiscoveryTime(date);
+  }
+
+  String _formatDiscoveryTime(DateTime value) {
+    final date = value.toLocal();
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')} '
+        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
   Widget _discoveryContents() => Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(context.l10n.mapStatusSources,
                 style: const TextStyle(fontSize: 12)),
-            Text(context.l10n.placeCount(_matchingLocals
-                .where((local) => _localPoint(local) != null)
-                .length)),
+            Text(context.mapText(
+                '$_visiblePlaceCount locais carregados nesta visualização',
+                '$_visiblePlaceCount loaded places in this view')),
+            TextButton(
+                onPressed: () =>
+                    setState(() => _discoveryDetails = !_discoveryDetails),
+                child: Text(context.mapText(
+                    _discoveryDetails
+                        ? 'Ocultar alcance dos resultados'
+                        : 'Entender resultados',
+                    _discoveryDetails
+                        ? 'Hide result scope'
+                        : 'Understand results'))),
+            if (_discoveryDetails) ...[
+              Text(context.mapText(
+                  'Base do AcessoJá: ${_internalLocals.length} / $_internalCount carregados da consulta atual.',
+                  'AcessoJá: ${_internalLocals.length} / $_internalCount loaded from the current query.')),
+              Text(context.mapText(
+                  'Carregados sem coordenadas: $_missingCoordinateCount. Consulte a lista de pesquisa.',
+                  'Loaded without coordinates: $_missingCoordinateCount. Open the search list.')),
+              Text(context.mapText(
+                  'Externos carregados: ${_externalLocals.length}; raio consultado: $_externalRadius m. O lote pode ser limitado.',
+                  'External places loaded: ${_externalLocals.length}; queried radius: $_externalRadius m. This batch may be limited.')),
+              if (_areaMoved)
+                Text(context.mapText(
+                    'A câmera mudou; Buscar nesta área confirma outra consulta.',
+                    'The camera moved; Search this area confirms another query.')),
+            ],
             if (_isLoadingExternal)
               Text(context.mapText(
                   'Buscando locais externos…', 'Loading external places…')),
+            if (_localsLoadFailed)
+              Semantics(
+                  liveRegion: true,
+                  child: Text(context.mapText(
+                      'Não foi possível atualizar os locais do AcessoJá. Abra a pesquisa para tentar novamente.',
+                      'Could not refresh AcessoJá places. Open search to retry.'))),
             if (_externalError != null)
               Semantics(liveRegion: true, child: Text(_externalError!)),
             if (_locationMessage != null)
@@ -2565,11 +2890,34 @@ class _MainScreenState extends SafeState<MainScreen>
                   'Resultados limitados antes dos filtros. Aproxime o mapa ou busque outra área.',
                   'Results are limited before filtering. Zoom in or search another area.')),
             if (!_isLoadingLocals &&
+                !_localsLoadFailed &&
                 !_isLoadingExternal &&
+                _externalError == null &&
                 _matchingLocals.isEmpty)
               Text(context.accessibilityText(
                   'Nenhum local corresponde aos dados e filtros atuais. Isso não comprova ausência de recursos.',
                   'No place matches the available data and current filters. This does not prove features are absent.')),
+            if (_internalBounds != null)
+              Text(context.mapText(
+                  'Área pesquisada ativa; sem coordenadas ficam fora da consulta.',
+                  'Searched area active; places without coordinates are outside this query.')),
+            if (_internalBounds != null)
+              TextButton(
+                  key: const ValueKey('status-remove-search-area'),
+                  onPressed: _removeSearchArea,
+                  child: Text(context.mapText(
+                      'Remover área pesquisada', 'Remove searched area'))),
+            if (_externalDiscovery.usable &&
+                (_externalDiscovery.stale || _externalError != null))
+              Text(context.mapText(
+                      'Mostrando dados externos anteriores; última obtenção: ',
+                      'Showing earlier external data; last fetched: ') +
+                  _externalObtainedTime),
+            if (!_externalDiscovery.canRetry &&
+                _externalDiscovery.waitSeconds > 0)
+              Text(context.mapText(
+                  'Nova tentativa a partir de ${_formatDiscoveryTime(_externalDiscovery.retryUntil!)}.',
+                  'Retry available after ${_formatDiscoveryTime(_externalDiscovery.retryUntil!)}.')),
             _activeFilters(),
             Wrap(spacing: 8, children: [
               if (_areaMoved || _externalError != null)
@@ -2579,14 +2927,16 @@ class _MainScreenState extends SafeState<MainScreen>
                     icon: const Icon(Icons.search),
                     label: Text(context.mapText(
                         'Buscar nesta área', 'Search this area'))),
-              if (_externalError != null)
-                TextButton(
-                    onPressed: _isLoadingExternal
-                        ? null
-                        : () => _fetchExternalPlaces(_externalCenter),
-                    child: Text(context.mapText(
-                        'Tentar fonte externa novamente',
-                        'Retry external source'))),
+              TextButton(
+                  key: const ValueKey('map-refresh-external'),
+                  onPressed: _isLoadingExternal || !_externalDiscovery.canRetry
+                      ? null
+                      : () => _fetchExternalPlaces(_externalCenter),
+                  child: Text(_externalError != null
+                      ? context.mapText('Tentar fonte externa novamente',
+                          'Retry external source')
+                      : context.mapText('Atualizar área consultada',
+                          'Refresh searched area'))),
               if (!_isLoadingLocals &&
                   !_isLoadingExternal &&
                   _matchingLocals.isEmpty &&

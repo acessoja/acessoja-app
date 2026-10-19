@@ -70,6 +70,7 @@ class HttpApiService implements ApiService {
     if (response.statusCode == 200) {
       final data = jsonDecode(utf8.decode(response.bodyBytes));
       if (data['status'] == 'success') {
+        AppHttp.userName = data['user']['nome'] as String?;
         AppHttp.token = data['token'] as String?;
         AppHttp.userId = (data['user']['id_usuario'] as num?)?.toInt();
         return LoginResult(success: true, user: data['user']);

@@ -1,3 +1,6 @@
+import '../models/map_place.dart';
+import '../services/current_position.dart';
+import '../models/place_distance.dart';
 import '../reading_presentation.dart';
 import '../widgets/place_media.dart';
 import '../widgets/load_error.dart';
@@ -34,17 +37,8 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
   bool _isLoading = true;
   bool _loadFailed = false;
 
-  String _formatDistance(dynamic value) {
-    final km = value is num
-        ? value.toDouble()
-        : double.tryParse(value
-                .toString()
-                .replaceAll(RegExp(r'[^0-9.,]'), '')
-                .replaceAll(',', '.')) ??
-            0;
-    final miles = widget.unidadeDistancia == 'Milha';
-    return '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}';
-  }
+  String _formatDistance(dynamic value) => placeDistanceLabel(context, MapPlace.internal(
+      value is Map ? Map<String,dynamic>.from(value) : {}),unit:widget.unidadeDistancia);
 
   @override
   void initState() {
@@ -586,7 +580,7 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
                           ),
                         ),
                         Text(
-                          _formatDistance(place['distancia']),
+                          _formatDistance(place),
                           style: TextStyle(
                             color: colors.muted,
                             fontSize: 11,
@@ -721,6 +715,7 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    PositionScope.maybeOf(context);
     final colors = AppColors.of(context);
     final visited = visitedPlaces;
     final recommended = recommendedPlaces;
