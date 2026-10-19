@@ -279,8 +279,8 @@ Não sobrescreva credenciais/configurações já preenchidas.
 
 `OVERPASS_URL` aponta inicialmente para a instância pública, para demonstrações
 acadêmicas pequenas e limitadas. Há cache de 300 segundos, uma consulta ativa
-por provedor, cooldown de 15 segundos após a chamada (60 segundos em caso de
-429), máximo de 100 locais retornados e até 500 objetos OSM inspecionados.
+por provedor, cooldown local de 15 segundos após a chamada (60 segundos em caso de
+429 sem Retry-After válido; um prazo válido do provedor prevalece), máximo de 100 locais retornados e até 500 objetos OSM inspecionados.
 A resposta HTTP é limitada a 2 MiB; os timeouts são 3 s para conectar e 12 s de
 leitura, com deadline adicional de transferência. Resultados limitados são
 indicados na interface. Não há retries automáticos em loop.
@@ -297,14 +297,19 @@ nos resultados locais. A descoberta por mapa/Overpass funciona sem Nominatim.
 Se você decidir deliberadamente usar o serviço público do Nominatim, leia sua
 [política de uso](https://operations.osmfoundation.org/policies/nominatim/):
 no máximo 1 requisição/s para o app inteiro, identificação do aplicativo,
-atribuição, cache e proibição de autocomplete. O proxy desta sprint é mais
+atribuição e proibição de autocomplete. A política recomenda proxy/cache para
+apps e exige cache nos cenários de lote. Esta aplicação exige Redis e cache para
+a opção pública; essa é uma decisão de arquitetura do AcessoJá. O proxy é mais
 conservador (uma consulta ativa, cooldown de 2 s e cache de geocodificação de
 24 h). A posição GPS não dispara consultas periódicas de geocodificação.
 Não use o endpoint como um serviço genérico de geocodificação.
 
 O cache padrão `locmemcache` funciona em **um processo**. Com vários workers,
-configure cache compartilhado com operações atômicas `add`, por exemplo Redis
-(`pip install redis` e `CACHE_URL=rediscache://127.0.0.1:6379/1`). Para tráfego
+configure o backend Redis com leases Lua por proprietário
+(`pip install -r backend/requirements-geographic.txt`,
+`CACHE_URL=rediscache://127.0.0.1:6379/1` e `GEO_REQUIRE_SHARED_COORDINATION=True`).
+Todos os workers precisam do mesmo cache/provedor. Memcached não implementa este
+protocolo. Verifique com `python manage.py check_geographic_provider --check-cache`. Para tráfego
 contínuo/produção, configure Overpass próprio ou provedor com capacidade
 adequada; a instância pública não deve sustentar o app como backend permanente.
 Consulte o [manual de utilização Overpass](https://dev.overpass-api.de/overpass-doc/en/preface/commons.html)
@@ -517,3 +522,27 @@ Comandos, resultados e limitações desta entrega estão em
 [INSTRUCOES_APLICACAO.txt](INSTRUCOES_APLICACAO.txt). O navegador continua sendo
 uma opção de execução sem Android SDK. Esta entrega usa Git somente para consulta;
 um futuro PR tem destino `develop`, sem publicação automática.
+
+
+## Cards 28–33 — Busca, pontos no mapa e cadastro
+
+Explorar e mapa consultam a base por página, com busca remota, filtros e
+proximidade calculada a partir de posição atual válida. Pesquisa geográfica
+permite escolher candidatos distantes; pontos livres podem ser usados para
+planejar sem cadastro. Cadastro manual exige confirmação e protege retries
+com UUID/recibo no backend. A importação OSM e o editor próprio continuam ativos.
+
+Aplique `locais/0010_manual_registration` com `python manage.py migrate`.
+Para rodar no navegador: `cd frontend`, `flutter pub get` e
+`flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000`.
+Não é necessário Android SDK. Provedores, regras, contratos, resultados e
+pendências estão no [relatório dos Cards 28–33](docs/MAPA_BUSCA_ROTAS_CARDS_28_33.md)
+e nas [instruções de aplicação](INSTRUCOES_APLICACAO.txt).
+
+### Correção do mapa após os Cards 28–33
+
+Consulte [INSTRUCOES_CORRECAO_MAPA_28_33.md](INSTRUCOES_CORRECAO_MAPA_28_33.md)
+para aplicação, diagnóstico sem tráfego externo (`python manage.py check_geographic_provider --check-cache`),
+configuração compatível de geocodificação, limites e evidências da correção.
+A descoberta mantém dados compatíveis por tempo limitado; limpar filtros, termo e área são ações distintas.
+Coordenação entre processos usa Redis com leases por proprietário; LocMemCache é somente para um processo.

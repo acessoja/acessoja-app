@@ -1,3 +1,4 @@
+import '../models/place_distance.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
@@ -139,26 +140,8 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
     }
   }
 
-  String _distance(Map<String, dynamic> place) {
-    final current = widget.currentLocation, point = routePlace(place);
-    if (current == null ||
-        point == null ||
-        !current.latitude.isFinite ||
-        !current.longitude.isFinite ||
-        current.latitude.abs() > 90 ||
-        current.longitude.abs() > 180) {
-      return '';
-    }
-    final km = mapDistanceMeters(
-            current.latitude,
-            current.longitude,
-            (point['latitude'] as num).toDouble(),
-            (point['longitude'] as num).toDouble()) /
-        1000;
-    final miles = widget.unidadeDistancia == 'Milha';
-    return context.l10n.favoriteStraightDistance(
-        '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}');
-  }
+  String _distance(Map<String, dynamic> place) => placeDistanceLabel(context, MapPlace.internal(place),
+      fallback:widget.currentLocation,unit:widget.unidadeDistancia);
 
   @override
   Widget build(BuildContext context) =>

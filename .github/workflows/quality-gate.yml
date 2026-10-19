@@ -169,20 +169,48 @@ jobs:
       - name: Instalar e testar concorrência real
         run: |
           pip install -r backend/requirements.txt pytest pytest-django
-          pytest -q contribuicoes favoritos -k postgresql_concurrent
+          pytest -q contribuicoes favoritos locais -k postgresql_concurrent
+
+  geographic-coordination:
+    name: Backend — coordenação geográfica Redis
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      SECRET_KEY: ci-secret-key-not-for-production
+      DATABASE_URL: sqlite:///./db_ci.sqlite3
+      GEOGRAPHIC_REDIS_TEST_URL: redis://127.0.0.1:6379/15
+      DJANGO_SETTINGS_MODULE: acessoja.settings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Testar leases e cooldown com processos independentes
+        run: |
+          pip install -r backend/requirements-geographic.txt pytest pytest-django
+          pytest -q locais/test_geographic_redis.py
 
   # ─────────────────────────────────────────────────────────────────────────
   # Quality Gate — check final estável, usado como Required Status Check
   # ─────────────────────────────────────────────────────────────────────────
   quality-gate:
     name: Quality Gate
-    needs: [backend, frontend, backend-concurrency]
+    needs: [backend, frontend, backend-concurrency, geographic-coordination]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: ✅ Confirmar que backend e frontend passaram
         run: |
-          if [ "${{ needs.backend.result }}" != "success" ] || [ "${{ needs.frontend.result }}" != "success" ] || [ "${{ needs['backend-concurrency'].result }}" != "success" ]; then
+          if [ "${{ needs.backend.result }}" != "success" ] || [ "${{ needs.frontend.result }}" != "success" ] || [ "${{ needs['backend-concurrency'].result }}" != "success" ] || [ "${{ needs['geographic-coordination'].result }}" != "success" ]; then
             echo "❌ Um ou mais checks falharam (backend=${{ needs.backend.result }}, frontend=${{ needs.frontend.result }})."
             exit 1
           fi

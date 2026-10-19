@@ -1,3 +1,4 @@
+import '../services/current_position.dart';
 import 'package:flutter/material.dart';
 import '../app_preferences.dart';
 import '../l10n/strings.dart';
@@ -53,6 +54,7 @@ class _ConfiguracoesGeraisScreenState extends State<ConfiguracoesGeraisScreen> {
       await _service.save(widget.userName, field, value);
       if (!mounted) return;
       setState(() => _profile[field] = value);
+      if (field == 'unidade_distancia') { PositionScope.read(context)?.unit = value.toString(); }
       if (field == 'idioma') {
         await PreferencesScope.maybeOf(context)
             ?.setLocale(value == 'en_US' ? 'en' : 'pt');

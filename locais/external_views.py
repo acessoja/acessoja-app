@@ -1,4 +1,7 @@
+import math
+import uuid
 from django.core import signing
+from rest_framework.exceptions import Throttled
 from django.db import IntegrityError, transaction
 from drf_spectacular.utils import extend_schema
 from rest_framework.authentication import BasicAuthentication, SessionAuthentication
@@ -10,6 +13,7 @@ from rest_framework.views import APIView
 
 from acessoja.api_schema import ErroSerializer
 from .external_serializers import (
+    GeographicErrorSerializer,
     CategorySerializer,
     ExternalImportSerializer,
     ExternalResultsSerializer,
@@ -17,7 +21,7 @@ from .external_serializers import (
     GeocodeQuerySerializer,
     GeocodeResultSerializer,
 )
-from .models import Local
+from .models import Local, ManualRegistrationGuard
 from .serializers import LocalSerializer
 from .accessibility import osm_information, resolve_information
 from .services.accessibility import populate_accessibility_context
@@ -39,8 +43,23 @@ class GeographicAPIView(APIView):
     throttle_classes = [GeographicAnonThrottle, GeographicUserThrottle]
 
     def handle_exception(self, exc):
+        if isinstance(exc, Throttled):
+            exc = ExternalServiceError(
+                "Limite de consultas do AcessoJá atingido. Aguarde antes de tentar novamente.",
+                429,
+                math.ceil(exc.wait or 60),
+                code="api_rate_limited",
+                stage="application",
+            )
         if isinstance(exc, ExternalServiceError):
-            return Response({"detail": exc.detail}, status=exc.status, headers={"Retry-After": str(exc.retry_after)})
+            headers = {
+                "Cache-Control": "private, no-store",
+                "Vary": "Authorization, Cookie",
+                "X-Correlation-ID": exc.correlation_id,
+            }
+            if exc.retryable and exc.retry_after is not None:
+                headers["Retry-After"] = str(exc.retry_after)
+            return Response(exc.as_dict(), status=exc.status, headers=headers)
         return super().handle_exception(exc)
 
 
@@ -52,10 +71,10 @@ class ExternalPlacesAPIView(GeographicAPIView):
         responses={
             200: ExternalResultsSerializer,
             400: ErroSerializer,
-            429: ErroSerializer,
-            502: ErroSerializer,
-            503: ErroSerializer,
-            504: ErroSerializer,
+            429: GeographicErrorSerializer,
+            502: GeographicErrorSerializer,
+            503: GeographicErrorSerializer,
+            504: GeographicErrorSerializer,
         },
     )
     def get(self, request):
@@ -75,7 +94,14 @@ class ExternalPlacesAPIView(GeographicAPIView):
         for place in result["results"]:
             place["accessibility"] = resolve_information(external=osm_information(place.get("accessibility_data")))
             place["linked_local"] = linked.get(place["internal_id"])
-        return Response(result, headers={"Cache-Control": "private, no-store"})
+        return Response(
+            result,
+            headers={
+                "Cache-Control": "private, no-store",
+                "Vary": "Authorization, Cookie",
+                "X-Correlation-ID": result.get("correlation_id") or uuid.uuid4().hex,
+            },
+        )
 
 
 class ExternalCategoriesAPIView(APIView):
@@ -91,12 +117,21 @@ class GeocodeAPIView(GeographicAPIView):
         tags=["Locais"],
         summary="Pesquisa geográfica confirmada pelo usuário",
         parameters=[GeocodeQuerySerializer],
-        responses={200: GeocodeResultSerializer(many=True), 400: ErroSerializer, 503: ErroSerializer},
+        responses={200: GeocodeResultSerializer(many=True), 400: ErroSerializer, 503: GeographicErrorSerializer},
     )
     def get(self, request):
         serializer = GeocodeQuerySerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
-        return Response(geocode(serializer.validated_data))
+        result = geocode(serializer.validated_data)
+        for row in result:
+            place = row.get("place")
+            if not place:
+                continue
+            match = find_internal(place)
+            place["internal_id"] = match.pk if match else None
+            place["linked_local"] = LocalSerializer(match, context={"request": request}).data if match else None
+            place["accessibility"] = resolve_information(external=osm_information(place.get("accessibility_data")))
+        return Response(result, headers={"Cache-Control": "private, no-store", "Vary": "Authorization, Cookie"})
 
 
 class ExternalImportAPIView(GeographicAPIView):
@@ -127,6 +162,7 @@ class ExternalImportAPIView(GeographicAPIView):
             return Response({"detail": "Dados expirados ou inválidos. Busque o local novamente."}, status=400)
         try:
             with transaction.atomic():
+                ManualRegistrationGuard.objects.select_for_update().get(pk=1)
                 # UNIQUE protects concurrent creates; row locking protects an
                 # existing record when two OSM objects try to claim its link.
                 match = find_internal(place) or find_internal(

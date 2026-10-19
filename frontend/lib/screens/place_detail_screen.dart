@@ -1,3 +1,5 @@
+import 'map_point_picker.dart';
+import 'package:latlong2/latlong.dart';
 import '../widgets/load_error.dart';
 import '../widgets/favorite_button.dart';
 import '../services/review_changes.dart';
@@ -331,10 +333,23 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
               ),
               elevation: 0,
             ),
-            onPressed: () {
+            onPressed: () async {
               if (routePlace(widget.place) == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(context.l10n.invalidLocation)));
+                final point = await Navigator.push<LatLng>(context,
+                    MaterialPageRoute(builder: (_) => const MapPointPicker()));
+                if (!mounted) {
+                  return;
+                }
+                if (point != null) {
+                  Navigator.pop(
+                      context,
+                      PlaceRouteRequest({
+                        'nome': widget.place['nome'],
+                        'source': 'manual',
+                        'latitude': point.latitude,
+                        'longitude': point.longitude
+                      }));
+                }
                 return;
               }
               Navigator.pop(context, PlaceRouteRequest(widget.place));

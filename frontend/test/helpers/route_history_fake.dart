@@ -21,9 +21,9 @@ RouteHistoryEntry historyEntry(
         destination: point,
         localId: source == 'acessoja' ? 1 : null,
         externalId: source == 'openstreetmap' ? 'osm:way:7' : null,
-        startedAt: DateTime.utc(2026, 10, 14, 15),
-        endedAt:
-            status == 'completed' ? DateTime.utc(2026, 10, 14, 15, 20) : null);
+        // Local civil time keeps this UI fixture on October 14 in every runner timezone.
+        startedAt: DateTime(2026, 10, 14, 15),
+        endedAt: status == 'completed' ? DateTime(2026, 10, 14, 15, 20) : null);
 
 class FakeRouteHistory extends RouteHistoryService {
   RouteHistoryPreferences saved = const RouteHistoryPreferences(true, false, 1);

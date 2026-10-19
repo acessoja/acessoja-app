@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/navigation_route.dart';
 import '../models/route_failure.dart';
 import 'app_http.dart';
+import '../config.dart';
 
 class RouteService {
   final Duration timeout;
@@ -13,9 +14,10 @@ class RouteService {
   Future<NavigationRoute> calculate(LatLng start, LatLng end) async {
     if (!validRoutePoint(start)) { throw const RouteFailure(RouteFailureCode.invalidOrigin); }
     if (!validRoutePoint(end)) { throw const RouteFailure(RouteFailureCode.invalidDestination); }
-    final uri = Uri.https('router.project-osrm.org',
-      '/route/v1/driving/${start.longitude},${start.latitude};${end.longitude},${end.latitude}',
-      {'overview': 'full', 'geometries': 'geojson', 'steps': 'true'});
+    final base = Config.routeBaseUrl.replaceFirst(RegExp(r'/+$'), '');
+    final uri = Uri.parse('$base/route/v1/${Uri.encodeComponent(Config.routeProfile)}/'
+      '${start.longitude},${start.latitude};${end.longitude},${end.latitude}').replace(
+        queryParameters:{'overview':'full','geometries':'geojson','steps':'true'});
     try {
       final response = await AppHttp.get(uri).timeout(timeout);
       Map<String, dynamic>? body;
@@ -25,8 +27,10 @@ class RouteService {
       } on FormatException {
         // The HTTP status still identifies a non-JSON service failure.
       }
-      if (body?['code'] == 'NoRoute') { throw const RouteFailure(RouteFailureCode.noRoute); }
-      if (body?['code'] == 'NoSegment') { throw const RouteFailure(RouteFailureCode.noSegment); }
+      if (response.statusCode == 429) { throw const RouteFailure(RouteFailureCode.rateLimited); }
+      if (response.statusCode >= 500) { throw const RouteFailure(RouteFailureCode.unavailable); }
+      if ((response.statusCode == 200 || response.statusCode == 400) && body?['code'] == 'NoRoute') { throw const RouteFailure(RouteFailureCode.noRoute); }
+      if ((response.statusCode == 200 || response.statusCode == 400) && body?['code'] == 'NoSegment') { throw const RouteFailure(RouteFailureCode.noSegment); }
       if (response.statusCode != 200) {
         throw RouteFailure(RouteFailureCode.http, status: response.statusCode);
       }

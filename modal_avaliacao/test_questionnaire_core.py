@@ -14,7 +14,8 @@ write_node = next(node for node in source.body if isinstance(node, ast.FunctionD
 write_module = ast.Module(body=[write_node], type_ignores=[])
 namespace = {"VERSION": contract.VERSION, "complete": contract.complete,
              "timezone": SimpleNamespace(now=lambda: datetime(2026, 10, 13, tzinfo=timezone.utc))}
-exec(compile(write_module, "questionnaire_fields.py:prepare_write", "exec"), namespace)
+# Keep the real source identity so coverage measures these executed AST lines.
+exec(compile(write_module, str(Path(__file__).with_name("questionnaire_fields.py")), "exec"), namespace)
 prepare_write = namespace["prepare_write"]
 
 

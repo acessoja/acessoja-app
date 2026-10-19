@@ -1,3 +1,5 @@
+import '../models/place_distance.dart';
+import '../services/current_position.dart';
 import 'package:flutter/material.dart';
 import '../l10n/strings.dart';
 import '../models/map_place.dart';
@@ -18,7 +20,7 @@ class MapPlaceDetailsScreen extends StatelessWidget {
       appBar: AppBar(toolbarHeight: 56 * MediaQuery.textScalerOf(context).scale(1),
           title: Text(context.l10n.details)),
       body: Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 680),
-          child: MapPlacePreview(place: place, distanceLabel: distanceLabel,
+          child: MapPlacePreview(place: place, distanceLabel: PositionScope.maybeOf(context) == null ? distanceLabel : placeDistanceLabel(context, model),
               detailed: true, detailsFailed: detailsFailed, onDetailsPressed: () {},
               onRoutePressed: model.hasCoordinates ? () => Navigator.pop(context, 'route') : null,
               onEvaluatePressed: () => Navigator.pop(context, 'evaluate'),

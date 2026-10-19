@@ -151,7 +151,7 @@ class MapPlace {
   static double? _coordinate(dynamic value, int bound) {
     final coordinate = value is num
         ? value.toDouble()
-        : double.tryParse(value?.toString() ?? '');
+        : null;
     return coordinate != null &&
             coordinate.isFinite &&
             coordinate.abs() <= bound

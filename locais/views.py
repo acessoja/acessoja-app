@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 from .models import Local, VisitaRecente
+from .discovery import DiscoveryOptions, OPTIONS
 from .serializers import ArrivalRequestSerializer, LocalSerializer, VisitaRecenteSerializer
 from acessoja.accessibility_catalog import catalog
 from .accessibility import matching_resources, parse_filters
@@ -37,6 +38,12 @@ class LocalViewSet(viewsets.ModelViewSet):
                     "e acesso parcial são excluídos. "
                     "Booleanos legados continuam na resposta, sem comprovar presença ou ausência.",
         parameters=[
+            *[OpenApiParameter(key, str, description=description) for key, description in [
+                ("paginated", "true: count/next/previous/results; false: lista legada (padrão)."),
+                ("page", "Inteiro positivo."), ("page_size", "1..50; padrão 20."),
+                ("ordering", "name, proximity (exige origem), rating; ordena antes de paginar."),
+                ("origin_lat", "Latitude da origem; não persistida."), ("origin_lon", "Longitude da origem."),
+                ("bbox", "sul,oeste,norte,leste; opcional; aceita antimeridiano.")]],
             OpenApiParameter("recursos", str, description="IDs do catálogo separados por vírgula (AND)."),
             OpenApiParameter("categorias", str, description="Categorias separadas por vírgula (OR)."),
             OpenApiParameter("origens", str,
@@ -45,6 +52,13 @@ class LocalViewSet(viewsets.ModelViewSet):
                              description="Padrão false. Só admite unknown adicionalmente."),
             OpenApiParameter("search", str, description="Nome ou endereço; máximo 180 caracteres."),
         ],
+        responses={200: {"oneOf": [
+            {"type": "array", "items": {"$ref": "#/components/schemas/Local"}},
+            {"type": "object", "required": ["count", "next", "previous", "results"], "properties": {
+                "count": {"type": "integer"}, "next": {"type": "string", "nullable": True},
+                "previous": {"type": "string", "nullable": True},
+                "results": {"type": "array", "items": {"$ref": "#/components/schemas/Local"}}}},
+        ]}},
         examples=[OpenApiExample("Recursos informados", response_only=True, value={
             "accessibility_information": {}, "accessibility": {
                 "rampa_acesso": {"state": "unknown", "evidence": [], "community_state": "not_evaluated",
@@ -53,7 +67,10 @@ class LocalViewSet(viewsets.ModelViewSet):
     )
     def list(self, request, *args, **kwargs):
         try:
-            filters = parse_filters(request.query_params)
+            options = DiscoveryOptions(request.query_params)
+            filters = parse_filters({
+                key: request.query_params[key] for key in request.query_params if key not in OPTIONS
+            })
         except ValueError as exc:
             raise ValidationError({"filters": str(exc)}) from None
         # Reject repeated parameters rather than silently accepting the last value.
@@ -67,7 +84,7 @@ class LocalViewSet(viewsets.ModelViewSet):
             qs = qs.filter(Q(nome__icontains=filters["search"]) | Q(endereco__icontains=filters["search"]))
         if filters["sources"] == ["openstreetmap"]:
             qs = qs.exclude(osm_id__isnull=True).exclude(osm_id="")
-        locals_ = list(qs)
+        locals_ = [local for local in qs if options.contains(local)]
         context = populate_accessibility_context(locals_, self.get_serializer_context())
         context["missing_resources"] = {}
         matched = []
@@ -78,7 +95,13 @@ class LocalViewSet(viewsets.ModelViewSet):
             if accepted:
                 matched.append(local)
                 context["missing_resources"][local.pk] = missing
-        return Response(self.get_serializer(matched, many=True, context=context).data)
+        rows = options.order(matched, context)
+        response = options.response(
+            rows, request, lambda page: self.get_serializer(page, many=True, context=context).data
+        )
+        response["Cache-Control"] = "private, no-store"
+        response["Vary"] = "Authorization, Cookie"
+        return response
 
     @extend_schema(summary="Catálogo compartilhado de recursos", responses=ResourceCatalogSerializer)
     @action(detail=False, methods=["get"], url_path="recursos")

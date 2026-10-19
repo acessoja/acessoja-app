@@ -3,12 +3,20 @@ from django.utils import timezone
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from .models import Local, VisitaRecente
+from .external_serializers import FiniteFloat
 from .accessibility import merge_information
 from .accessibility_serializers import AccessibilityInformationField, ConsolidatedAccessibilitySerializer
 from .services.accessibility import local_accessibility
 
 
 class LocalSerializer(serializers.ModelSerializer):
+    latitude = FiniteFloat(min_value=-90, max_value=90, allow_null=True, required=False)
+    longitude = FiniteFloat(min_value=-180, max_value=180, allow_null=True, required=False)
+    opening_status = serializers.SerializerMethodField()
+
+    def get_opening_status(self, obj) -> str:
+        return "unknown"
+
     accessibility_information = AccessibilityInformationField(required=False)
     accessibility = serializers.SerializerMethodField()
     origins = serializers.SerializerMethodField()
@@ -27,6 +35,11 @@ class LocalSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if set(self.initial_data) & {"accessibility", "origins", "missing_resources"}:
             raise serializers.ValidationError("Os estados consolidados são somente leitura.")
+        if "latitude" in attrs or "longitude" in attrs:
+            lat = attrs.get("latitude", getattr(self.instance, "latitude", None))
+            lon = attrs.get("longitude", getattr(self.instance, "longitude", None))
+            if (lat is None) != (lon is None):
+                raise serializers.ValidationError("Informe o par de coordenadas completo.")
         return attrs
 
     def create(self, validated_data):
@@ -85,6 +98,7 @@ class LocalSerializer(serializers.ModelSerializer):
             "latitude",
             "longitude",
             "aberto",
+            "opening_status",
             "imagem",
             "cao_guia",
             "mesa_acessivel",
@@ -107,10 +121,10 @@ class LocalSerializer(serializers.ModelSerializer):
             "id_local": {"help_text": "Identificador unico do local."},
             "nome": {"help_text": "Nome do estabelecimento ou local publico."},
             "endereco": {"help_text": "Endereco completo em texto livre."},
-            "distancia": {"help_text": "Distancia em km ate o usuario."},
+            "distancia": {"help_text": "Legado: não é medição GPS. Calcule em linha reta a partir de origem válida."},
             "latitude": {"help_text": "Latitude em graus decimais. Opcional."},
             "longitude": {"help_text": "Longitude em graus decimais. Opcional."},
-            "aberto": {"help_text": "Indica se o local esta em funcionamento."},
+            "aberto": {"help_text": "Legado sem garantia temporal. opening_status é unknown."},
             "imagem": {"help_text": "URL ou nome do arquivo de imagem do local."},
             "cao_guia": {"help_text": "Aceita cao-guia."},
             "mesa_acessivel": {"help_text": "Tem mesa acessivel para cadeirante."},

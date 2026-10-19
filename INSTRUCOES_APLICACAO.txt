@@ -1,103 +1,72 @@
-ACESSOJÁ — CORREÇÃO DO MAPA: CARDS 04, 05 E 06
-12/10/2026
+ACESSOJÁ — CARDS 28–33: MAPA, BUSCA, ROTAS E CADASTRO
+18/10/2026
 
-Este ZIP é uma correção incremental sobre acessoja_mapa_cards_04_06.zip,
-que já foi aplicado no projeto do log enviado. A documentação completa do
-desenvolvimento permanece no pacote original.
+Este ZIP é um delta sobre develop 1e6d59a0d4f3fb9f3d5be5e11070f145bfe339f0.
+Compare MANIFEST_CARDS_28_33.json e preserve alterações locais de terceiros antes
+de copiar. Arquivos aparecem nos caminhos originais, sem uma pasta extra.
+Não contém .git, .env, banco, SDK, ambiente virtual, cache ou build.
+Nenhum commit, push, PR, publicação ou mudança de branch foi executado.
 
-1. FALHAS CORRIGIDAS
+1. BACKEND
+Faça backup do banco com a aplicação parada ou pelo procedimento do seu banco.
+Mantenha seu .env existente; não o substitua por .env.example.
+Na raiz do projeto, use o ambiente Python existente:
 
-Contraste dos textos secundários:
-- O texto #64748B sobre o fundo #F5F8FF tinha contraste 4,476362:1,
-  abaixo do mínimo de 4,5:1 exigido pelo teste.
-- AppColors.light.muted agora usa #52627A: contraste 5,832365:1 no
-  fundo da página e 6,200417:1 nas superfícies brancas.
-- O tom permanece secundário e integrado à paleta existente.
-- A regressão do tema agora verifica texto principal e secundário sobre
-  pageBackground, surface e surfaceElevated, nos dois temas.
-- As quatro guidelines do resumo continuam obrigatórias: tamanho de toque
-  Android/iOS, rótulos e contraste. O caso agora roda em claro e escuro.
+python -m pip install -r backend/requirements.txt
+python manage.py migrate
+python manage.py check
+python manage.py runserver
 
-Botão Voltar nos detalhes externos:
-- WidgetTester.pageBack() procura o tooltip inglês Back e, depois, um
-  botão Cupertino. Na tela em português, o botão Material usa Voltar.
-- O teste agora obtém MaterialLocalizations.backButtonTooltip e toca o
-  botão real da AppBar, verificando que ele pode receber o toque.
-- O mesmo fluxo está coberto em português e inglês.
-- As verificações de abrir detalhes sem cadastrar, não enviar POST e
-  retornar ao mapa com o controle de busca foram mantidas.
+A migration locais/0010_manual_registration cria recibos e um guard para
+idempotência/duplicatas. Não faz backfill geográfico nem altera locais antigos.
+Reverter essa migration perde os recibos; consulte o relatório antes de reverter.
 
-Teste antigo da Sprint 1:
-- A expectativa Rampas de Acesso foi atualizada para Rampa de acesso,
-  rótulo usado pelo resumo atual.
-- O teste também verifica os três recursos da fixture informados como
-  disponíveis; não remove a verificação de acessibilidade.
-- O mock de GET /api/locais/1/ retorna o objeto do local, conforme o
-  contrato de consulta de detalhes, em vez da lista de locais.
-- Antes de tocar Detalhes, o teste rola até o botão, aguarda o movimento
-  e verifica que ele está acessível ao toque.
-- A abertura de PlaceDetailScreen continua obrigatória.
+2. FRONTEND PELO NAVEGADOR
+Com Flutter 3.47.4 disponível, em outro terminal:
 
-2. CONTEÚDO DO ZIP
+cd frontend
+flutter pub get
+flutter analyze
+flutter test
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000
 
-Somente estes cinco arquivos, com caminhos relativos à raiz do projeto:
-- INSTRUCOES_APLICACAO.txt
-- frontend/lib/app_theme.dart
-- frontend/test/frontend_regression_test.dart
-- frontend/test/map_cards_04_06_test.dart
-- frontend/test/map_sprint1_test.dart
+Android SDK não é necessário. Se o Chrome não estiver disponível:
 
-São arquivos completos para substituição. Não há alterações de backend,
-dependências ou arquivos gerados neste pacote. Não foram executados
-commit, push, merge ou abertura de PR.
+flutter run -d web-server --web-port 8080 --dart-define=API_BASE_URL=http://localhost:8000
 
-3. COMO APLICAR
+Abra no navegador a URL impressa no terminal. Em outro computador, localhost
+aponta para aquele computador: configure API_BASE_URL, hosts/CORS e HTTPS de
+acordo com o ambiente. GPS no navegador exige HTTPS ou localhost.
 
-1. Use a cópia do acessoja-app com os Cards 04–06 já aplicados.
-2. Extraia o ZIP na raiz acessoja-app, que contém a pasta frontend.
-3. Substitua os cinco arquivos correspondentes. Não extraia dentro de
-   frontend, pois isso criaria frontend/frontend.
-4. Confira as diferenças com git diff.
+3. PROVEDORES
+NOMINATIM_URL permanece vazia por padrão. Coordenadas e seleção no mapa
+funcionam sem geocodificador. Configure uma instância compatível para endereços.
+Nominatim público exige NOMINATIM_PUBLIC_OPT_IN=True, Redis compartilhado
+por todos os workers e GEO_USER_AGENT com identificação/contato reais.
+Não há autocomplete externo ou consulta a cada movimento do mapa.
+Overpass mantém limite por área; aproxime e use Buscar nesta área.
 
-Na pasta frontend, execute:
+ROUTE_BASE_URL e ROUTE_PROFILE são --dart-define do Flutter. O padrão é OSRM
+com driving. O perfil precisa estar preparado no servidor; não basta renomear
+para foot. A interface descreve percurso de carro, sem garantia de acessibilidade.
+MAP_TILE_URL é opcional; preserve atribuição e política do provedor.
 
-  flutter analyze
-  flutter test test/map_cards_04_06_test.dart test/map_sprint1_test.dart test/frontend_regression_test.dart
-  flutter test
+4. O QUE VALIDAR
+- Buscar nome fora do lote carregado; filtros; Carregar mais e retry.
+- Pesquisar cidade distante, escolher candidato e explorar área.
+- Confirmar ponto livre, planejar sem GPS e cancelar sem criar visita.
+- Cadastrar com login intermediário; revisar duplicata; repetir tentativa incerta.
+- Abrir detalhes, avaliar/editar a própria avaliação e conferir favorito.
+- Texto 200%, janela pequena, teclado e leitor de tela.
 
-Para validar no navegador:
+Resultados, contratos, critérios por card e sete evidências estão em:
+docs/MAPA_BUSCA_ROTAS_CARDS_28_33.md
 
-  flutter build web
-  flutter run -d chrome
+Testes automatizados usam dados controlados. GPS, leitores de tela, provedores
+reais e concorrência PostgreSQL têm homologação específica pendente. Não há
+APK nesta entrega e não é necessário gerá-lo para usar o navegador.
 
-Se o projeto estiver usando FVM, prefixe os comandos com fvm.
-Não é necessário Android SDK para esses comandos de teste e web.
-
-4. VERIFICAÇÃO DESTA CORREÇÃO
-
-Verificado aqui:
-- Sintaxe dos 79 arquivos Dart de lib/test com parser.
-- Resolução dos imports locais.
-- Cálculo de contraste das cores principal/secundária sobre os três
-  fundos nos dois temas: todos os pares verificados acima de 4,5:1.
-- Manutenção das assertions e das declarações de testes existentes.
-- Revisão das diferenças e integridade do ZIP.
-- Aplicação do ZIP sobre uma segunda cópia da versão dos Cards 04–06.
-
-Não executado aqui:
-- flutter analyze, testes Flutter e build web.
-- Execução em Chrome e avaliação por leitor de tela.
-
-Flutter e Dart não estão instalados neste ambiente. Parsing, revisão e
-cálculo de contraste não substituem o analisador, o compilador nem a
-execução dos widgets. A confirmação da suíte corrigida depende dos
-comandos acima.
-
-Os textos places_load_failed_500 e ClientException: offline no log
-enviado pertencem a cenários que simulam falhas de rede. Esses casos
-passaram naquele log; as três falhas identificadas foram as descritas
-na seção 1.
-
-Referências oficiais consultadas:
-https://api.flutter.dev/flutter/flutter_test/WidgetTester/pageBack.html
-https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html
+CORREÇÃO INTEGRADA DO MAPA APÓS OS CARDS 28–33
+Leia INSTRUCOES_CORRECAO_MAPA_28_33.md: aplicação do delta, escopo de área,
+snapshots, Retry-After, Redis e diagnóstico sem chamadas externas. Esse documento
+atualiza os contratos de cache/estado e registra as verificações desta correção.

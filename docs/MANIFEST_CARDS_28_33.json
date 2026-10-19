@@ -1,0 +1,389 @@
+{
+  "base_commit": "1e6d59a0d4f3fb9f3d5be5e11070f145bfe339f0",
+  "status": "Código integrado e validado localmente; homologação real indicada no relatório.",
+  "validation": {
+    "backend_passed": 425,
+    "backend_skipped_postgresql": 6,
+    "backend_subtests": 21,
+    "coverage_percent": 96.02,
+    "flutter_passed": 831,
+    "flutter_targeted_regressions": 196,
+    "flutter_discovery_tests": 39,
+    "flutter_analyze": "passed",
+    "web_build": "passed"
+  },
+  "files": [
+    {
+      "path": ".env.example",
+      "status": "modified",
+      "before_sha256": "eecf225b6e64e6c4245d18fc7eba7f955bbacae508c2713d478e67913ac40d7a",
+      "sha256": "389c4d51c7f21e01436d38f73b9e9dcd99eb68fec58a4de6b30512edf233baf1"
+    },
+    {
+      "path": ".github/workflows/quality-gate.yml",
+      "status": "modified",
+      "before_sha256": "25ea5cb0e726b4ff0589f2496b4f12533177dbfcba6e3ff7d01f5cedf840b820",
+      "sha256": "97cf3c506a089538a2f1ead9d7efe9d2a9157d01b57c4e23bb62938f5ccf729f"
+    },
+    {
+      "path": "INSTRUCOES_APLICACAO.txt",
+      "status": "modified",
+      "before_sha256": "ce3bbfc04b1e98b2cc99c3ea37f51f0e93d12017af6c406cd67338d7a0f36267",
+      "sha256": "b2bcc8da87bfaa80869e5bcb7ccbaa0c87693293bc7934b402b3b1d4f43eeb85"
+    },
+    {
+      "path": "README.md",
+      "status": "modified",
+      "before_sha256": "e38092ad7ad02c05ff50999048fe4a0eee16205cb4ad8c1e20b06e48a910e7d5",
+      "sha256": "ce6aef996c3e704f488e7d6cb7c22cf693bbc271463ca76b09b43b3692a494f0"
+    },
+    {
+      "path": "acessoja/logging_filters.py",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "95530d66d4a6f9aff367c55ce5bf41ad75fa7c2cee4d4f20dc8835ee95b9a923"
+    },
+    {
+      "path": "acessoja/settings.py",
+      "status": "modified",
+      "before_sha256": "1ffec61e2f6b7bad3246bf135c249181679cc41255f7a1346a1845088b992be1",
+      "sha256": "7f47da81b52a5a0bd268a133995a54e1bf84af833050c6c62aa2abd5a7426770"
+    },
+    {
+      "path": "docs/FAVORITOS_E_LOCAIS_SALVOS.md",
+      "status": "modified",
+      "before_sha256": "90dbdaaa695c4bae772b3e3296ba936cd9e5cf981e8b162cb0c0b9ac776c5c65",
+      "sha256": "788892e0a265e034b8b40b0c799a8ff37cfb0b5db8cb71dfb532c4baa3e0fa67"
+    },
+    {
+      "path": "docs/FILTROS_E_PREFERENCIAS_ACESSIBILIDADE.md",
+      "status": "modified",
+      "before_sha256": "92285343e255605a0ce135f9324ad4d9abf78329e35e630fbfa3a70c46d1e5e6",
+      "sha256": "782f1020088a8df5ab62bcdc63ec91ac52996a155ef99a5ae67ff94a101b731f"
+    },
+    {
+      "path": "docs/MAPA_BUSCA_ROTAS_CARDS_28_33.md",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "195ac03301793aa2abb235177411d7f350a99ef3273f35a307fade74af14f91c"
+    },
+    {
+      "path": "docs/capturas/cards_28_33/01_mapa_sem_gps.png",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "7f3bd68888f233d1710fe25cd3fcdad91f28a34b6eeac9d5034cb8ad6dc95469"
+    },
+    {
+      "path": "docs/capturas/cards_28_33/02_busca_distante.png",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "41393dd0a5a36633cc14547a771e35c1e00d8e9c64cdff2680991a375aff5985"
+    },
+    {
+      "path": "docs/capturas/cards_28_33/03_previa_estabelecimento.png",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "61af2e069b77f5a235dfb5313f9ccd44b160995f213efcb0a6f14bbd5ec20b7d"
+    },
+    {
+      "path": "docs/capturas/cards_28_33/04_ponto_livre.png",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "2ce3b8601b589c3753a9d314b03b12d28e956b77aa394326713184d3bf3339e4"
+    },
+    {
+      "path": "docs/capturas/cards_28_33/05_rota_controlada.png",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "4f98e97cc46549aa6222b1f74d5b2c4a007a4d9da6d31b0b2b0ca82f273bd35f"
+    },
+    {
+      "path": "docs/capturas/cards_28_33/06_cadastro_escuro.png",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "c963410bb906952bc27e86aeb75032bd82070ca82362b1ec5793cdf3c7ec14ff"
+    },
+    {
+      "path": "docs/capturas/cards_28_33/07_avaliacao_opcional.png",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "67bd86975aed1e94997b23ab24d4985f766be0fc233be55229af4de36477d88a"
+    },
+    {
+      "path": "frontend/lib/config.dart",
+      "status": "modified",
+      "before_sha256": "4b7665a9f5eb3423fb052feb62fc028d1b564f3bfa1bc3f8ec2ef15ae5d35956",
+      "sha256": "6e0c30aca124409855d2bad76eb111ca60c827909bc00b16d12bc64f0cbe068d"
+    },
+    {
+      "path": "frontend/lib/l10n/map_strings.dart",
+      "status": "modified",
+      "before_sha256": "8c0311d7573278331b846602e56972b44a25ad8ddeb73fbe39ec95dfcdaaa1f3",
+      "sha256": "146c1d673f88fe6c93d1c31d5a12283438472f50416058b6eb16a96402568c11"
+    },
+    {
+      "path": "frontend/lib/l10n/route_strings.dart",
+      "status": "modified",
+      "before_sha256": "299ad987984f830be6e093d591c86f224a4ff0e54d8db836b7d773c2240c3187",
+      "sha256": "0710048760ad0e5b0345c8d4c578a1a2986f1417a4d9ad0d833a03ece698489e"
+    },
+    {
+      "path": "frontend/lib/main.dart",
+      "status": "modified",
+      "before_sha256": "da5d15e558f40f83e526e3e359fefb107cdad4451a0dc1a20cf4faaa24af3b6f",
+      "sha256": "f354300763848dd514260c60edb118385625cb9b0a0400c5f8eb7b62c8a1c702"
+    },
+    {
+      "path": "frontend/lib/models/discovery_query.dart",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "35f86f80f864f4dad2b032772accde8c5341e57d25e6799f2453d7e0a7c0fa4f"
+    },
+    {
+      "path": "frontend/lib/models/geo_candidate.dart",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "b19896c789b154fbe7a0813f9c45580da49b94956dafb219924bcad848182f5f"
+    },
+    {
+      "path": "frontend/lib/models/map_place.dart",
+      "status": "modified",
+      "before_sha256": "aadf815ef82cedae68fbf5ff30bf82f157c349aaef6cc052dc48768be1cc109d",
+      "sha256": "2d99dd8d56e4d5383d5528c639f136234dab4d254bfc5e5952d9823254a41b97"
+    },
+    {
+      "path": "frontend/lib/models/navigation_route.dart",
+      "status": "modified",
+      "before_sha256": "0665801c2b982c54b38ef2d7141521ec0006a015c82f95e1328039eb03f65892",
+      "sha256": "f8195000549653ac72a12a1f4dcb8bc93c0d64d38f5c6c564143003a4f5bc1ba"
+    },
+    {
+      "path": "frontend/lib/models/place_distance.dart",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "927e2c79e4a875ebf77ff7c024f2dedb26c2db40d45f03fa43e5700041ce853e"
+    },
+    {
+      "path": "frontend/lib/models/route_failure.dart",
+      "status": "modified",
+      "before_sha256": "be72a579cba2ad52d6eafeb036be3035a1d8b89b37d34d84d114253e4519b5e1",
+      "sha256": "4a178870201d9fab89e00d5dc2ad6872e05bf8fed50526f71f3d66b787f49ac8"
+    },
+    {
+      "path": "frontend/lib/screens/configuracoes_gerais_screen.dart",
+      "status": "modified",
+      "before_sha256": "0881eaf10ce376365b496d7e85530bdd0e6de8bb78c79ec4f0b018a3f33a2035",
+      "sha256": "f8917a52a594f7ae9a3568a0eb97f91f9779637a531e6415c4d3be5bedae82f6"
+    },
+    {
+      "path": "frontend/lib/screens/contributions_screen.dart",
+      "status": "modified",
+      "before_sha256": "a16f43121c801f633d693a5272b99cc7159b7c801c37f6537abd6b9de4e59a52",
+      "sha256": "a04e326845c71279b5e929d4ca0a63d903f943fad8519f8e9106927ed97650a0"
+    },
+    {
+      "path": "frontend/lib/screens/explorar_screen.dart",
+      "status": "modified",
+      "before_sha256": "89278b3c54d407ed11970316d1cd310da175c369080643570e2e628ca131b370",
+      "sha256": "47751d1073779d76a77a4eb6139794ebeead0e059b86ea374c0dc0734c4eb39f"
+    },
+    {
+      "path": "frontend/lib/screens/geographic_search_screen.dart",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "a4be913ac519c8293c548c6c2000e7797a0e0b4b75361bcfaa074b2ec699942b"
+    },
+    {
+      "path": "frontend/lib/screens/main_screen.dart",
+      "status": "modified",
+      "before_sha256": "e46164e94e8391da9ae4f6a647cfcdd409901539b46cfcefc334c77afc3f9c1b",
+      "sha256": "0b575baba1508a8b938a8938932f8f115cbedf1edd64a54a1508d02940ef10be"
+    },
+    {
+      "path": "frontend/lib/screens/manual_registration_screen.dart",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "20dcc1cf7d33784cd02485c6b804b74673316d8574a5e376619817201149a3c8"
+    },
+    {
+      "path": "frontend/lib/screens/map_place_details_screen.dart",
+      "status": "modified",
+      "before_sha256": "61e6cf44a6b19ccc4d9392ec9a93db022e58e8c08119293c74df5197ffdbf82c",
+      "sha256": "aaa06397e1e932a5028475af8d1a0de74d2c20a6225858b4082cc036f37e8aa2"
+    },
+    {
+      "path": "frontend/lib/screens/map_point_picker.dart",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "4ff8e5019ee88e228491de5af52fbaea8de952c95e9a0a602a91d2f9d799a246"
+    },
+    {
+      "path": "frontend/lib/screens/place_detail_screen.dart",
+      "status": "modified",
+      "before_sha256": "0bc029c49767c56b14744a0051decf19c407e009aa1aa37319c030a33b975571",
+      "sha256": "4d2686a07fad36000bf57c30a50ece79e99920d629d6132112aa50cb39f57d36"
+    },
+    {
+      "path": "frontend/lib/screens/saved_places_screen.dart",
+      "status": "modified",
+      "before_sha256": "9aefd42cd73867ba4e8c825a8b929037a924e6088d66720cd0cfaa6d623aef64",
+      "sha256": "d51fe64405989fdc56bda67dcc736af038fdd8fdcd5779627d3f74953cba4b20"
+    },
+    {
+      "path": "frontend/lib/screens/settings_screen.dart",
+      "status": "modified",
+      "before_sha256": "abaeaebf4f9db81d79da02f5083bc732d15efb70e080de1e605bcab397bdb091",
+      "sha256": "df80c8994300ef202494f94e3bb9e64ad361ef23588f099306f67c103cb840a9"
+    },
+    {
+      "path": "frontend/lib/screens/sugestoes_screen.dart",
+      "status": "modified",
+      "before_sha256": "e3d326c21eba13035ead69652b5f932a17da000fd6887d35bff6d37a28fb0ed8",
+      "sha256": "d826d735c73f3496529cc369077a1b8b1bcdecd90e4f5256957c692b1d033743"
+    },
+    {
+      "path": "frontend/lib/services/api_service.dart",
+      "status": "modified",
+      "before_sha256": "ac66b45ade716dff79c1ed2a5207c536e68021d09551dbc0fdd4c61d0a68f63e",
+      "sha256": "9c3342343106f6185bee224a906b21702d1b9c876c68181cc0397e7e5f2f8784"
+    },
+    {
+      "path": "frontend/lib/services/app_http.dart",
+      "status": "modified",
+      "before_sha256": "6a9b96fb9d36dd92d8ff9bd2bb3dbe12e46bf239cb6a1dfc2d44856dd43e52ae",
+      "sha256": "003dea68a847cea80c26b7efd04835c92156adf2304a4712d17c76ec0f0bbd85"
+    },
+    {
+      "path": "frontend/lib/services/current_position.dart",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "73bb5ad1d54f1b98dfaf8dc17bd8b72e2c709692f4413804559c12ff4a3de241"
+    },
+    {
+      "path": "frontend/lib/services/discovery_controller.dart",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "fcf4fc0f469e285e1da5685d1fd38244736665a54ae6683591b74bebf725a2a2"
+    },
+    {
+      "path": "frontend/lib/services/places_service.dart",
+      "status": "modified",
+      "before_sha256": "06dffcc411fb70cf60f74f4b49f1b931e2842fd4f652e5e5a4e7cb758e4ddc92",
+      "sha256": "84aa67d0a28de1179d6e4bf2265d5723a6c26f0b6bf42e54ee8ce112ac7f7c66"
+    },
+    {
+      "path": "frontend/lib/services/route_service.dart",
+      "status": "modified",
+      "before_sha256": "f5010689a8aec00cf37bb269392ab1d330b55fee8e14f2dd988c5827a625c00a",
+      "sha256": "978a3c0f88ab4da4e1cd19e9762dd15bd8a05d4ff3ff2875e921ae8baa5f0a0d"
+    },
+    {
+      "path": "frontend/lib/widgets/external_place_registration.dart",
+      "status": "modified",
+      "before_sha256": "bf99c09b3d7de79a2a3981ad0217f501a401d06c7b04989430b3ebfdaf215b52",
+      "sha256": "f6cbfb9a5df1fb17a98ea98bfceb2a54e8403b4e91a592798e62f8ea39202f0a"
+    },
+    {
+      "path": "frontend/lib/widgets/map_place_preview.dart",
+      "status": "modified",
+      "before_sha256": "068ab751030bb08842195271dccfd4df404f86c9a80ac152d367fa28c9d2ed67",
+      "sha256": "1de2b2e210e7178773d472ace0a34e16038cc2aeab0a3f958da6483a6de210b9"
+    },
+    {
+      "path": "frontend/lib/widgets/navigation_panel.dart",
+      "status": "modified",
+      "before_sha256": "87599b35168988c0a903722568d5df1d2f9ff44e3c356de98176ab63fb5b9f81",
+      "sha256": "e36654020ff33ded3087c78cf3a9340bf5566e45377c2c9088bc542f8e5c281a"
+    },
+    {
+      "path": "frontend/test/discovery_cards28_33_test.dart",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "e7c2f0e0f75b9bb2ebefa442b1f1554e1d4b68556a57d6d0254f1ae01c851e12"
+    },
+    {
+      "path": "frontend/test/discovery_evidence_test.dart",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "82263f75e5260875ccee974398187be2ab5be59c606ef3c14f35e5575e0e6081"
+    },
+    {
+      "path": "frontend/test/route_cards_07_08_test.dart",
+      "status": "modified",
+      "before_sha256": "477c48b7ff7e44bba2520b70cd88a3d80280e245c1a9cd1ddb875d9e8fd96fca",
+      "sha256": "1ea358e4ea30e7e823b051c9b0ed3363394849e863ecd28d77301ec62d11d436"
+    },
+    {
+      "path": "locais/discovery.py",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "0019b8918ccf66aa0f926da0826441944af12bf8b90cb384c4ef4a089b432cc1"
+    },
+    {
+      "path": "locais/external_serializers.py",
+      "status": "modified",
+      "before_sha256": "11aba87d30560c356f7c50170602d86cb88202dc8e46dd89765e5f227ea221a7",
+      "sha256": "3ee8e48eb623f9a02a1ae1c5473bc4f33f549c26a9b70cd9bd3b28e3b00ac30d"
+    },
+    {
+      "path": "locais/external_views.py",
+      "status": "modified",
+      "before_sha256": "6e4853c1eb35f8ab92eaa571fe7dda77e5382014d92fd38496b7bd2ce5d9bace",
+      "sha256": "b3e53aedbd29a9eb6aefc7aab5ddf5326e9a5cbc31408ae24ef68f6f6c2f1fae"
+    },
+    {
+      "path": "locais/manual_registration.py",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "a9357f6b0647f13404a8a076724cdad670580350e0afe027eff2c88e381b00c5"
+    },
+    {
+      "path": "locais/migrations/0010_manual_registration.py",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "770d687b104eb3b4c71c47ffd91112e5d24f77192a0c5cf9c67bf86250405025"
+    },
+    {
+      "path": "locais/models.py",
+      "status": "modified",
+      "before_sha256": "5869f3a9f866f4835a8f34b9031924f4c5c7a84581e0891db7a761602ac5e295",
+      "sha256": "c232258afb6032783767a557b97275f17c6dc6c37cee2b1f3d90ebf052e50940"
+    },
+    {
+      "path": "locais/serializers.py",
+      "status": "modified",
+      "before_sha256": "e55716fb87847c54cf488d894e1c0c30790b7e1025f3852b772171640aabcacd",
+      "sha256": "bce2772512685da4971ad1aae2905209c13ce068f8ccd2a92f8f663885275388"
+    },
+    {
+      "path": "locais/services/external_places_service.py",
+      "status": "modified",
+      "before_sha256": "5a3babe524d87abb145a55d72bd4f6f2d34e55c152bb2d9bfaaeb2c395f820ce",
+      "sha256": "7d9af8da98af30793423d084373f50a0ca5d2c732e17651a0680f36abf5aa846"
+    },
+    {
+      "path": "locais/services/matching.py",
+      "status": "modified",
+      "before_sha256": "23fc2d6836fd8e8d029cd60fa1e595df5c90ac93b8b4794b4174bf52504a70f0",
+      "sha256": "d02481b8889c32cb58bdc0be5ca43313d1587829c4a12968b12844b81e9edb7e"
+    },
+    {
+      "path": "locais/test_discovery_cards.py",
+      "status": "added",
+      "before_sha256": null,
+      "sha256": "823d593d8944d6e30003da993691464a8f42dc71d5d5318bd0421c6590805110"
+    },
+    {
+      "path": "locais/urls.py",
+      "status": "modified",
+      "before_sha256": "07e5a873dc5fa49c3743f3d9deff767b08772fb48e5eb55ea38da5cce8252b10",
+      "sha256": "cb9afa54c2bab8f2758e1b9df5b03f4a888ddf8edde4e219ff865da8668cc026"
+    },
+    {
+      "path": "locais/views.py",
+      "status": "modified",
+      "before_sha256": "3c015c56936a3a8b4291a729da9f82082239dcd62d4c594afe818e5b1da43181",
+      "sha256": "0cd4fb9e79abc281a4f06cb9b5b6c41fd46021e4d605fa890680d442afb114e2"
+    }
+  ]
+}
