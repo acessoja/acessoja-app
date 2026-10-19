@@ -62,7 +62,7 @@ class ManualRegistrationAPIView(APIView):
         try:
             with transaction.atomic():
                 # Seeded by migration. One global guard covers different owners/UUIDs.
-                ManualRegistrationGuard.objects.select_for_update().get(pk=1)
+                ManualRegistrationGuard.objects.select_for_update().get_or_create(pk=1)
                 receipt = ManualPlaceRegistration.objects.filter(user=request.user, request_id=request_id).first()
                 if receipt:
                     if receipt.payload_hash != digest:

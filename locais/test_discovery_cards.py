@@ -15,6 +15,7 @@ from favoritos.models import Favorito
 from locais.models import Local, ManualPlaceRegistration, RouteHistorySession, VisitaRecente
 from locais.services.external_places_service import geocode, ExternalServiceError
 from modal_avaliacao.models import ModalAvaliacao
+from locais.models import ManualRegistrationGuard
 
 pytestmark = pytest.mark.django_db
 URL = "/api/locais/"
@@ -225,6 +226,9 @@ def test_public_nominatim_requires_opt_in_and_shared_cache(settings):
 def test_postgresql_concurrent_manual_registration():
     if connection.vendor != "postgresql":
         pytest.skip("Requires actual independent PostgreSQL connections")
+
+    ManualRegistrationGuard.objects.get_or_create(pk=1)
+
     user = owner()
     barrier = Barrier(2)
 
