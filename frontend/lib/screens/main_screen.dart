@@ -31,13 +31,16 @@ import 'place_reviews_screen.dart';
 import '../navigation.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
+
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../services/app_http.dart';
 import '../services/review_changes.dart';
 import '../services/places_service.dart';
@@ -45,6 +48,7 @@ import '../models/map_place.dart';
 import '../services/location_service.dart';
 import '../widgets/external_place_registration.dart';
 import '../widgets/map_place_preview.dart';
+import '../widgets/catalog_status.dart';
 import '../widgets/map_cluster_sheet.dart';
 import '../services/place_preview_controller.dart';
 import '../l10n/map_strings.dart';
@@ -72,17 +76,18 @@ class MainScreen extends StatefulWidget {
   final AccessibilityPreferencesService preferencesService;
   final RouteHistoryService routeHistoryService;
 
-  const MainScreen(
-      {super.key,
-      required this.userName,
-      this.trackLocation = true,
-      this.locationService,
-      this.routeService,
-      this.externalNavigation,
-      this.clock,
-      this.preferencesService = const AccessibilityPreferencesService(),
-      this.routeHistoryService = const RouteHistoryService(),
-      this.tileProvider});
+  const MainScreen({
+    super.key,
+    required this.userName,
+    this.trackLocation = true,
+    this.locationService,
+    this.routeService,
+    this.externalNavigation,
+    this.clock,
+    this.preferencesService = const AccessibilityPreferencesService(),
+    this.routeHistoryService = const RouteHistoryService(),
+    this.tileProvider,
+  });
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -92,8 +97,14 @@ class _MainScreenState extends SafeState<MainScreen>
     with WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final PlacesService _placesService = const PlacesService();
-  late final _externalDiscovery =
-      ExternalDiscoveryController(service: _placesService, clock: widget.clock);
+  late final _externalDiscovery = ExternalDiscoveryController(
+    service: _placesService,
+    clock: widget.clock,
+  );
+  late final _catalog = DiscoveryController(
+    service: _placesService,
+    catalog: true,
+  );
   void _externalChanged() {
     if (!mounted) {
       return;
@@ -102,8 +113,9 @@ class _MainScreenState extends SafeState<MainScreen>
     _placesRevision.value++;
   }
 
-  late final PlacePreviewController _preview =
-      PlacePreviewController(service: _placesService);
+  late final PlacePreviewController _preview = PlacePreviewController(
+    service: _placesService,
+  );
   bool _previewOpen = false;
   bool _discoveryExpanded = true;
   final _statusUpdates = ValueNotifier<int>(0);
@@ -125,7 +137,8 @@ class _MainScreenState extends SafeState<MainScreen>
     final session = AppHttp.sessionRevision.value;
     try {
       final uri = Uri.parse(
-          '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(_activeUserName)}');
+        '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(_activeUserName)}',
+      );
       final resp = await AppHttp.get(uri);
       if (!mounted ||
           request != _profileRequest ||
@@ -167,17 +180,21 @@ class _MainScreenState extends SafeState<MainScreen>
   String _formatDistance(dynamic value) {
     final km = value is num
         ? value.toDouble()
-        : double.tryParse(value
-                .toString()
-                .replaceAll(RegExp(r'[^0-9.,]'), '')
-                .replaceAll(',', '.')) ??
+        : double.tryParse(
+              value
+                  .toString()
+                  .replaceAll(RegExp(r'[^0-9.,]'), '')
+                  .replaceAll(',', '.'),
+            ) ??
             0;
     final miles = _distanceUnit == 'Milha';
     return '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}';
   }
 
-  LatLng _currentLocation =
-      const LatLng(-16.3267, -48.9528); // Default: Anápolis, GO
+  LatLng _currentLocation = const LatLng(
+    -16.3267,
+    -48.9528,
+  ); // Default: Anápolis, GO
   LatLng? _destinationLocation;
   String _currentAddress = 'Anápolis, Goiás, Brasil';
   String _destinationAddress = '';
@@ -202,16 +219,19 @@ class _MainScreenState extends SafeState<MainScreen>
   bool _pendingViewportGesture = false;
   NavigationFix? _lastFix;
   late final NavigationController _navigation = NavigationController(
-      recalculate: (widget.routeService ?? const RouteService()).calculate,
-      clock: widget.clock);
+    recalculate: (widget.routeService ?? const RouteService()).calculate,
+    clock: widget.clock,
+  );
   RouteHistoryDestination? _historyDestination;
   bool _navigationSessionStarted = false;
-  late final RouteHistoryRecorder _historyRecorder =
-      RouteHistoryRecorder(widget.routeHistoryService, onFailure: () {
-    if (mounted) {
-      _showErrorSnackBar(context.l10n.historyRecordingFailed);
-    }
-  });
+  late final RouteHistoryRecorder _historyRecorder = RouteHistoryRecorder(
+    widget.routeHistoryService,
+    onFailure: () {
+      if (mounted) {
+        _showErrorSnackBar(context.l10n.historyRecordingFailed);
+      }
+    },
+  );
 
   bool get _freshLocation =>
       _hasLocation &&
@@ -305,9 +325,12 @@ class _MainScreenState extends SafeState<MainScreen>
       _navigationSessionStarted = true;
       final destination = _historyDestination;
       if (destination != null) {
-        _historyRecorder.begin(destination, _navigation,
-            originIsCurrent:
-                widget.trackLocation && _freshLocation && _foreground);
+        _historyRecorder.begin(
+          destination,
+          _navigation,
+          originIsCurrent:
+              widget.trackLocation && _freshLocation && _foreground,
+        );
       }
     }
   }
@@ -391,16 +414,23 @@ class _MainScreenState extends SafeState<MainScreen>
 
   Future<void> _openLocationSettings() async {
     final opened = await _locationService.openSettings(
-        location: _locationIssue == LocationIssue.disabled);
+      location: _locationIssue == LocationIssue.disabled,
+    );
     if (mounted && !opened) {
-      _showErrorSnackBar(context.routeText(
+      _showErrorSnackBar(
+        context.routeText(
           'Não foi possível abrir as configurações. Revise as permissões do dispositivo.',
-          'Unable to open settings. Review your device permissions.'));
+          'Unable to open settings. Review your device permissions.',
+        ),
+      );
     }
   }
 
-  Future<void> _externalNavigation(LatLng point, ExternalNavigator provider,
-      {ExternalRouteAction action = ExternalRouteAction.navigate}) async {
+  Future<void> _externalNavigation(
+    LatLng point,
+    ExternalNavigator provider, {
+    ExternalRouteAction action = ExternalRouteAction.navigate,
+  }) async {
     final request = ++_routeRequest;
     // Launch before the first await: the browser still has the tap activation.
     final opening = (widget.externalNavigation ?? const ExternalNavigation())
@@ -411,9 +441,12 @@ class _MainScreenState extends SafeState<MainScreen>
       return;
     }
     if (!opened) {
-      _showErrorSnackBar(context.routeText(
+      _showErrorSnackBar(
+        context.routeText(
           'Não foi possível abrir o aplicativo externo. Continue no AcessoJá ou tente novamente.',
-          'Unable to open the external app. Continue in AcessoJá or try again.'));
+          'Unable to open the external app. Continue in AcessoJá or try again.',
+        ),
+      );
     }
   }
 
@@ -421,25 +454,32 @@ class _MainScreenState extends SafeState<MainScreen>
     final camera = _mapController.camera;
     final first = members.first;
     final coincident = members.every(
-        (p) => p.distanceMetersFrom(first.latitude!, first.longitude!)! < 2);
+      (p) => p.distanceMetersFrom(first.latitude!, first.longitude!)! < 2,
+    );
     if (!coincident && camera.zoom < 18) {
-      _mapController.fitCamera(CameraFit.coordinates(
+      _mapController.fitCamera(
+        CameraFit.coordinates(
           coordinates:
               members.map((p) => LatLng(p.latitude!, p.longitude!)).toList(),
           padding: const EdgeInsets.all(64),
-          maxZoom: 18));
+          maxZoom: 18,
+        ),
+      );
       if (_mapController.camera.zoom > camera.zoom + .25) {
         return;
       }
     }
     final selected = await showModalBottomSheet<MapPlace>(
-        context: context,
-        useSafeArea: true,
-        isScrollControlled: true,
-        constraints: BoxConstraints(
-            maxWidth: 680, maxHeight: MediaQuery.sizeOf(context).height * .85),
-        builder: (_) =>
-            MapClusterSheet(members: members, selectedId: _selectedPlaceId));
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxWidth: 680,
+        maxHeight: MediaQuery.sizeOf(context).height * .85,
+      ),
+      builder: (_) =>
+          MapClusterSheet(members: members, selectedId: _selectedPlaceId),
+    );
     if (mounted && selected != null) {
       await _openLocalPreview(selected.toMap());
     }
@@ -449,14 +489,16 @@ class _MainScreenState extends SafeState<MainScreen>
     _routeRequest++;
     _navigation.interrupt('screen_changed');
     final result = await Navigator.push<Object?>(
-        context,
-        MaterialPageRoute(
-            builder: (_) => ContributionsScreen(
-                userName: _activeUserName,
-                location: _hasLocation ? _currentLocation : null,
-                mapCenter:
-                    _mapReady ? _mapController.camera.center : _viewportCenter,
-                distanceUnit: _distanceUnit)));
+      context,
+      MaterialPageRoute(
+        builder: (_) => ContributionsScreen(
+          userName: _activeUserName,
+          location: _hasLocation ? _currentLocation : null,
+          mapCenter: _mapReady ? _mapController.camera.center : _viewportCenter,
+          distanceUnit: _distanceUnit,
+        ),
+      ),
+    );
     if (!mounted) {
       return;
     }
@@ -479,8 +521,10 @@ class _MainScreenState extends SafeState<MainScreen>
       await _contributeExternal(local, evaluate: true);
       return;
     }
-    await Navigator.push<bool>(context,
-        MaterialPageRoute(builder: (_) => ReviewEditorScreen(place: local)));
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => ReviewEditorScreen(place: local)),
+    );
     if (mounted) {
       _preview.invalidate(MapPlace.internal(local).internalId);
       await _fetchEstablishments();
@@ -493,8 +537,10 @@ class _MainScreenState extends SafeState<MainScreen>
   String? _preferencesMessage;
   String _searchText = '';
 
-  void _manualFilters(DiscoveryFilters filters,
-      [Set<String> touched = const {}]) {
+  void _manualFilters(
+    DiscoveryFilters filters, [
+    Set<String> touched = const {},
+  ]) {
     _filterRevision++;
     setState(() {
       _filterState = _filterState.commitDraft(filters, touched);
@@ -529,9 +575,12 @@ class _MainScreenState extends SafeState<MainScreen>
       return;
     }
     if (!AppHttp.authenticated) {
-      setState(() => _preferencesMessage = context.accessibilityText(
+      setState(
+        () => _preferencesMessage = context.accessibilityText(
           'Entre para usar preferências. A busca e os filtros manuais continuam disponíveis.',
-          'Sign in to use preferences. Search and manual filters remain available.'));
+          'Sign in to use preferences. Search and manual filters remain available.',
+        ),
+      );
       _placesRevision.value++;
       return;
     }
@@ -551,23 +600,31 @@ class _MainScreenState extends SafeState<MainScreen>
         return;
       }
       if (revision != _filterRevision) {
-        setState(() => _preferencesMessage = context.accessibilityText(
+        setState(
+          () => _preferencesMessage = context.accessibilityText(
             'Os filtros mudaram durante a consulta. Use a ação novamente para aplicar as preferências.',
-            'Filters changed during the request. Use the action again to apply preferences.'));
+            'Filters changed during the request. Use the action again to apply preferences.',
+          ),
+        );
         return;
       }
       if (preferences.unavailable.isNotEmpty) {
         throw const PreferencesException(400, 'unavailable_resources');
       }
       if (preferences.resources.isEmpty) {
-        setState(() => _preferencesMessage = context.accessibilityText(
+        setState(
+          () => _preferencesMessage = context.accessibilityText(
             'Sem preferências cadastradas. Você pode configurá-las; os filtros atuais foram preservados.',
-            'No saved preferences. You can configure them; current filters were preserved.'));
+            'No saved preferences. You can configure them; current filters were preserved.',
+          ),
+        );
         return;
       }
       _filterRevision++;
-      setState(() =>
-          _filterState = _filterState.applyPreferences(preferences.resources));
+      setState(
+        () =>
+            _filterState = _filterState.applyPreferences(preferences.resources),
+      );
       unawaited(_fetchEstablishments());
     } catch (error) {
       if (mounted && request == _preferencesRequest) {
@@ -590,10 +647,12 @@ class _MainScreenState extends SafeState<MainScreen>
     setState(() => _personalizationLoading = false);
     // Editing the profile never applies its choices to this search.
     await Navigator.push<void>(
-        context,
-        MaterialPageRoute(
-            builder: (_) => AccessibilityPreferencesScreen(
-                service: widget.preferencesService)));
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            AccessibilityPreferencesScreen(service: widget.preferencesService),
+      ),
+    );
     if (mounted) {
       setState(() => _preferencesMessage = null);
       _placesRevision.value++;
@@ -601,14 +660,15 @@ class _MainScreenState extends SafeState<MainScreen>
   }
 
   Widget _activeFilters() => ActiveDiscoveryFilters(
-      state: _filterState,
-      onChange: _manualFilters,
-      onClear: _clearFilters,
-      onUsePreferences: _usePreferences,
-      onDeactivate: _deactivatePreferences,
-      onConfigure: _configurePreferences,
-      loading: _personalizationLoading,
-      message: _preferencesMessage);
+        state: _filterState,
+        onChange: _manualFilters,
+        onClear: _clearFilters,
+        onUsePreferences: _usePreferences,
+        onDeactivate: _deactivatePreferences,
+        onConfigure: _configurePreferences,
+        loading: _personalizationLoading,
+        message: _preferencesMessage,
+      );
 
   void _beginFilters() {
     _preferencesRequest++;
@@ -650,7 +710,8 @@ class _MainScreenState extends SafeState<MainScreen>
       _preferencesMessage = !AppHttp.authenticated
           ? context.accessibilityText(
               'Sessão encerrada. Entre novamente para usar suas preferências. Os filtros manuais continuam disponíveis.',
-              'Session ended. Sign in again to use preferences. Manual filters remain available.')
+              'Session ended. Sign in again to use preferences. Manual filters remain available.',
+            )
           : null;
       _personalizationLoading = false;
       _nomeCompleto = '';
@@ -712,16 +773,24 @@ class _MainScreenState extends SafeState<MainScreen>
   List<Map<String, dynamic>> get _matchingLocals {
     final origin = PositionScope.read(context)?.point ??
         (_freshLocation ? _currentLocation : null);
-    final models = mergeMapPlaces(_internalLocals, _externalLocals)
-        .where((place) =>
-            _filterState.filters.matches(place) && place.matches(_searchText))
+    final external = <String, MapPlace>{
+      for (final place in _externalLocals) place.id: place,
+      for (final place in _catalog.places) place.id: place,
+    };
+    final models = mergeMapPlaces(_internalLocals, external.values.toList())
+        .where(
+          (place) =>
+              _filterState.filters.matches(place) && place.matches(_searchText),
+        )
         .toList()
       ..sort((a, b) => comparePlaceDistance(a, b, origin));
     return models
-        .map((place) => {
-              ...place.toMap(),
-              'missing_resources': _filterState.filters.missing(place)
-            })
+        .map(
+          (place) => {
+            ...place.toMap(),
+            'missing_resources': _filterState.filters.missing(place),
+          },
+        )
         .toList();
   }
 
@@ -746,8 +815,11 @@ class _MainScreenState extends SafeState<MainScreen>
         backgroundColor: colors.primary,
         content: Row(
           children: [
-            Icon(Icons.check_circle_outline_rounded,
-                color: colors.onPrimary, size: 28),
+            Icon(
+              Icons.check_circle_outline_rounded,
+              color: colors.onPrimary,
+              size: 28,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -757,9 +829,10 @@ class _MainScreenState extends SafeState<MainScreen>
                   Text(
                     context.l10n.loginSuccess,
                     style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: colors.onPrimary),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: colors.onPrimary,
+                    ),
                   ),
                   Text(
                     context.l10n.welcome(_activeUserName),
@@ -783,6 +856,8 @@ class _MainScreenState extends SafeState<MainScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _externalDiscovery.addListener(_externalChanged);
+    _catalog.addListener(_externalChanged);
+    _preview.addListener(_previewChanged);
     AppHttp.sessionRevision.addListener(_sessionChanged);
     reviewChanges.addListener(_onReviewChanged);
     _navigation.addListener(_onNavigationChanged);
@@ -827,6 +902,8 @@ class _MainScreenState extends SafeState<MainScreen>
   void dispose() {
     _externalDiscovery.removeListener(_externalChanged);
     _externalDiscovery.dispose();
+    _catalog.removeListener(_externalChanged);
+    _catalog.dispose();
     _internalDebounce?.cancel();
     _sharedPosition?.removeListener(_sharedPositionChanged);
     _statusUpdates.dispose();
@@ -864,6 +941,28 @@ class _MainScreenState extends SafeState<MainScreen>
     unawaited(_fetchEstablishments());
   }
 
+  void _previewChanged() {
+    if (!mounted) {
+      return;
+    }
+    final selected = _preview.place;
+    if (selected == null) {
+      return;
+    }
+    setState(() {
+      _selectedPlaceId = selected.internalId == null
+          ? selected.id
+          : 'acessoja:${selected.internalId}';
+      if (selected.linkedLocal.isNotEmpty) {
+        _internalLocals = [
+          ..._internalLocals.where((p) => p.internalId != selected.internalId),
+          MapPlace.internal(selected.linkedLocal),
+        ];
+      }
+    });
+    _placesRevision.value++;
+  }
+
   Future<void> _fetchEstablishments({bool more = false}) async {
     _internalDebounce?.cancel();
     more = more && !_internalFirstPending;
@@ -879,8 +978,12 @@ class _MainScreenState extends SafeState<MainScreen>
             search: _searchText,
             ordering: origin == null ? 'name' : 'proximity',
             origin: origin,
-            bounds: _internalBounds);
+            bounds: _internalBounds,
+          );
     final changed = _internalQuery?.identity != query.identity;
+    if (!more) {
+      _catalog.reset(query);
+    }
     final request = ++_internalRequest;
     final session = AppHttp.sessionRevision.value;
     final link = more ? _internalNext : null;
@@ -901,17 +1004,21 @@ class _MainScreenState extends SafeState<MainScreen>
       });
     }
     try {
-      final page =
-          await _placesService.fetchDiscoveryPage(query: query, next: link);
+      final page = await _placesService.fetchDiscoveryPage(
+        query: query,
+        next: link,
+      );
       if (!mounted ||
           request != _internalRequest ||
           session != AppHttp.sessionRevision.value) {
         return;
       }
       final uri = Uri.parse('${Config.baseUrl}/api/locais/');
-      final identity = pageIdentity(link == null
-          ? uri.replace(queryParameters: query.parameters)
-          : uri.resolve(link));
+      final identity = pageIdentity(
+        link == null
+            ? uri.replace(queryParameters: query.parameters)
+            : uri.resolve(link),
+      );
       if (!_internalPages.add(identity)) {
         throw const FormatException('Cyclic map page');
       }
@@ -919,9 +1026,9 @@ class _MainScreenState extends SafeState<MainScreen>
         _internalLocals = {
           for (final p in [
             ...(more ? _internalLocals : <MapPlace>[]),
-            ...page.places
+            ...page.places,
           ])
-            p.id: p
+            p.id: p,
         }.values.toList();
         _internalNext = page.next;
         _internalCount = page.count;
@@ -987,18 +1094,25 @@ class _MainScreenState extends SafeState<MainScreen>
   Future<void> _searchVisibleArea() async {
     final camera = _mapController.camera;
     final corner = camera.visibleBounds.northEast;
-    final radius = mapDistanceMeters(camera.center.latitude,
-        camera.center.longitude, corner.latitude, corner.longitude);
-    if (radius > 3000) {
-      _showErrorSnackBar(
-          'Aproxime o mapa para pesquisar uma área de até 3 km.');
-      return;
-    }
+    final radius = mapDistanceMeters(
+      camera.center.latitude,
+      camera.center.longitude,
+      corner.latitude,
+      corner.longitude,
+    );
     _externalRadius = radius.ceil().clamp(100, 3000).toInt();
     final bounds = camera.visibleBounds;
     _internalBounds = [bounds.south, bounds.west, bounds.north, bounds.east];
-    await Future.wait(
-        [_fetchEstablishments(), _fetchExternalPlaces(camera.center)]);
+    setState(() => _areaMoved = false);
+    await Future.wait([
+      _fetchEstablishments(),
+      if (radius <= 3000) _fetchExternalPlaces(camera.center),
+    ]);
+    if (radius > 3000 && mounted) {
+      _showErrorSnackBar(
+        'Catálogo consultado nesta área. Aproxime até 3 km para a busca externa complementar.',
+      );
+    }
   }
 
   Future<void> _initLocationTracking({bool requestPermission = true}) async {
@@ -1016,7 +1130,8 @@ class _MainScreenState extends SafeState<MainScreen>
     });
     try {
       final position = await _locationService.currentPosition(
-          requestPermission: requestPermission);
+        requestPermission: requestPermission,
+      );
       if (!mounted || !_foreground || request != _locationRequest) {
         return;
       }
@@ -1049,19 +1164,23 @@ class _MainScreenState extends SafeState<MainScreen>
 
   void _watchPositions() {
     final generation = ++_streamGeneration;
-    _positionStream = _locationService.positions().listen((position) {
-      if (mounted && _foreground && generation == _streamGeneration) {
-        _updateLocation(position);
-      }
-    }, onError: (_) {
-      if (mounted && _foreground && generation == _streamGeneration) {
-        _locationFailed(LocationIssue.unavailable);
-      }
-    }, onDone: () {
-      if (generation == _streamGeneration) {
-        _positionStream = null;
-      }
-    });
+    _positionStream = _locationService.positions().listen(
+      (position) {
+        if (mounted && _foreground && generation == _streamGeneration) {
+          _updateLocation(position);
+        }
+      },
+      onError: (_) {
+        if (mounted && _foreground && generation == _streamGeneration) {
+          _locationFailed(LocationIssue.unavailable);
+        }
+      },
+      onDone: () {
+        if (generation == _streamGeneration) {
+          _positionStream = null;
+        }
+      },
+    );
   }
 
   void _locationFailed(LocationIssue issue) {
@@ -1081,8 +1200,10 @@ class _MainScreenState extends SafeState<MainScreen>
     if (!mounted || !_foreground) {
       return;
     }
-    final valid = routePlace(
-        {'latitude': position.latitude, 'longitude': position.longitude});
+    final valid = routePlace({
+      'latitude': position.latitude,
+      'longitude': position.longitude,
+    });
     if (valid == null) {
       _locationFailed(LocationIssue.invalid);
       return;
@@ -1122,10 +1243,14 @@ class _MainScreenState extends SafeState<MainScreen>
   Future<void> _searchAndRoute(String destinationText) async {
     final request = ++_searchRequest;
     final result = await Navigator.push<GeoCandidate>(
-        context,
-        MaterialPageRoute(
-            builder: (_) => GeographicSearchScreen(
-                initial: destinationText, submitInitial: true)));
+      context,
+      MaterialPageRoute(
+        builder: (_) => GeographicSearchScreen(
+          initial: destinationText,
+          submitInitial: true,
+        ),
+      ),
+    );
     if (!mounted || request != _searchRequest || result == null) {
       return;
     }
@@ -1133,10 +1258,15 @@ class _MainScreenState extends SafeState<MainScreen>
       if (_mapReady) {
         final bounds = result.bounds;
         if (bounds != null) {
-          _mapController.fitCamera(CameraFit.bounds(
+          _mapController.fitCamera(
+            CameraFit.bounds(
               bounds: LatLngBounds(
-                  LatLng(bounds[0], bounds[1]), LatLng(bounds[2], bounds[3])),
-              padding: const EdgeInsets.all(32)));
+                LatLng(bounds[0], bounds[1]),
+                LatLng(bounds[2], bounds[3]),
+              ),
+              padding: const EdgeInsets.all(32),
+            ),
+          );
         } else {
           _mapController.move(result.point, 12);
         }
@@ -1151,13 +1281,15 @@ class _MainScreenState extends SafeState<MainScreen>
 
   Future<void> _choosePoint({LatLng? initial}) async {
     final point = await Navigator.push<LatLng>(
-        context,
-        MaterialPageRoute(
-            builder: (_) => MapPointPicker(
-                initial: initial ??
-                    (_mapReady ? _mapController.camera.center : null),
-                tileProvider: widget.tileProvider,
-                locationService: _locationService)));
+      context,
+      MaterialPageRoute(
+        builder: (_) => MapPointPicker(
+          initial: initial ?? (_mapReady ? _mapController.camera.center : null),
+          tileProvider: widget.tileProvider,
+          locationService: _locationService,
+        ),
+      ),
+    );
     if (mounted && point != null) {
       await _openPoint(point);
     }
@@ -1165,9 +1297,9 @@ class _MainScreenState extends SafeState<MainScreen>
 
   Future<void> _manualRegister({LatLng? point}) async {
     final place = await Navigator.push<Map<String, dynamic>>(
-        context,
-        MaterialPageRoute(
-            builder: (_) => ManualRegistrationScreen(point: point)));
+      context,
+      MaterialPageRoute(builder: (_) => ManualRegistrationScreen(point: point)),
+    );
     if (!mounted || place == null) {
       return;
     }
@@ -1189,47 +1321,60 @@ class _MainScreenState extends SafeState<MainScreen>
       'nome': name ?? context.mapText('Ponto selecionado', 'Selected point'),
       'source': 'manual',
       'latitude': point.latitude,
-      'longitude': point.longitude
+      'longitude': point.longitude,
     };
     final action = await showModalBottomSheet<String>(
-        context: context,
-        useSafeArea: true,
-        isScrollControlled: true,
-        constraints: BoxConstraints(
-            maxWidth: 680, maxHeight: MediaQuery.sizeOf(context).height * .85),
-        builder: (sheet) => SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(selection['nome'] as String,
-                      style: Theme.of(context).textTheme.titleLarge),
-                  Text(
-                      '${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}'),
-                  Text(context.mapText(
-                      'Ponto temporário. Planejar uma rota não cadastra nem avalia um local.',
-                      'Temporary point. Planning a route does not register or review a place.')),
-                  FilledButton.icon(
-                      onPressed: () => Navigator.pop(sheet, 'route'),
-                      icon: const Icon(Icons.directions),
-                      label: Text(context.l10n.route)),
-                  OutlinedButton(
-                      onPressed: () => Navigator.pop(sheet, 'register'),
-                      child: Text(context.mapText(
-                          'Cadastrar local', 'Register place'))),
-                  TextButton(
-                      onPressed: () => Navigator.pop(sheet, 'replace'),
-                      child: Text(context.mapText(
-                          'Substituir ponto', 'Replace point'))),
-                  TextButton(
-                      onPressed: () => Navigator.pop(sheet, 'clear'),
-                      child: Text(
-                          context.mapText('Descartar ponto', 'Discard point'))),
-                  TextButton(
-                      onPressed: () => Navigator.pop(sheet),
-                      child: Text(context.mapText('Fechar', 'Close'))),
-                ])));
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxWidth: 680,
+        maxHeight: MediaQuery.sizeOf(context).height * .85,
+      ),
+      builder: (sheet) => SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              selection['nome'] as String,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            Text(
+              '${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}',
+            ),
+            Text(
+              context.mapText(
+                'Ponto temporário. Planejar uma rota não cadastra nem avalia um local.',
+                'Temporary point. Planning a route does not register or review a place.',
+              ),
+            ),
+            FilledButton.icon(
+              onPressed: () => Navigator.pop(sheet, 'route'),
+              icon: const Icon(Icons.directions),
+              label: Text(context.l10n.route),
+            ),
+            OutlinedButton(
+              onPressed: () => Navigator.pop(sheet, 'register'),
+              child: Text(context.mapText('Cadastrar local', 'Register place')),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(sheet, 'replace'),
+              child: Text(context.mapText('Substituir ponto', 'Replace point')),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(sheet, 'clear'),
+              child: Text(context.mapText('Descartar ponto', 'Discard point')),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(sheet),
+              child: Text(context.mapText('Fechar', 'Close')),
+            ),
+          ],
+        ),
+      ),
+    );
     if (!mounted) {
       return;
     }
@@ -1246,17 +1391,20 @@ class _MainScreenState extends SafeState<MainScreen>
 
   Future<void> _recoverPoint(Map<String, dynamic> local) async {
     final point = await Navigator.push<LatLng>(
-        context,
-        MaterialPageRoute(
-            builder: (_) => MapPointPicker(
-                tileProvider: widget.tileProvider,
-                locationService: _locationService)));
+      context,
+      MaterialPageRoute(
+        builder: (_) => MapPointPicker(
+          tileProvider: widget.tileProvider,
+          locationService: _locationService,
+        ),
+      ),
+    );
     if (mounted && point != null) {
       await _startRoute({
         'nome': local['nome'],
         'source': 'manual',
         'latitude': point.latitude,
-        'longitude': point.longitude
+        'longitude': point.longitude,
       });
     }
   }
@@ -1281,29 +1429,30 @@ class _MainScreenState extends SafeState<MainScreen>
       return;
     }
     _routeFitPending = false;
-    _mapController.fitCamera(CameraFit.coordinates(
+    _mapController.fitCamera(
+      CameraFit.coordinates(
         coordinates: [
           if (_navigation.origin != null) _navigation.origin!,
           ..._navigation.route!.points,
-          if (_navigation.destination != null) _navigation.destination!
+          if (_navigation.destination != null) _navigation.destination!,
         ],
         padding: EdgeInsets.fromLTRB(
-            (size.x * .2).clamp(24.0, 96.0).toDouble(),
-            (size.y * .3).clamp(8.0, 80.0).toDouble(),
-            (size.x * .2).clamp(24.0, 96.0).toDouble(),
-            (size.y * .25).clamp(8.0, 64.0).toDouble()),
-        maxZoom: 18));
+          (size.x * .2).clamp(24.0, 96.0).toDouble(),
+          (size.y * .3).clamp(8.0, 80.0).toDouble(),
+          (size.x * .2).clamp(24.0, 96.0).toDouble(),
+          (size.y * .25).clamp(8.0, 64.0).toDouble(),
+        ),
+        maxZoom: 18,
+      ),
+    );
   }
 
   void _showErrorSnackBar(String message) {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-      ),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _openSearchBottomSheet(BuildContext context) {
@@ -1318,7 +1467,9 @@ class _MainScreenState extends SafeState<MainScreen>
       isScrollControlled: true,
       useSafeArea: true,
       constraints: BoxConstraints(
-          maxWidth: 680, maxHeight: MediaQuery.sizeOf(context).height * .94),
+        maxWidth: 680,
+        maxHeight: MediaQuery.sizeOf(context).height * .94,
+      ),
       backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -1339,296 +1490,364 @@ class _MainScreenState extends SafeState<MainScreen>
           builder: (context, destinationController) =>
               ValueListenableBuilder<int>(
             valueListenable: _placesRevision,
-            builder: (context, revision, child) =>
-                StatefulBuilder(builder: (context, sheetSetState) {
-              if (sheetView == 'route') {
-                // 1. TELA DE ROTA
-                return SingleChildScrollView(
+            builder: (context, revision, child) => StatefulBuilder(
+              builder: (context, sheetSetState) {
+                if (sheetView == 'route') {
+                  // 1. TELA DE ROTA
+                  return SingleChildScrollView(
                     child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                    top: 16,
-                    left: 20,
-                    right: 20,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 50,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: colors.border,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                        top: 16,
+                        left: 20,
+                        right: 20,
                       ),
-                      const SizedBox(height: 20),
-                      // Campo: Localização Atual (caixa de pílula branca com borda azul e lupa à direita)
-                      TextFormField(
-                        key: ValueKey(_currentAddress),
-                        initialValue: _hasLocation
-                            ? _currentAddress
-                            : context.l10n.locationUnavailable,
-                        readOnly: true,
-                        decoration: InputDecoration(
-                          hintText: context.l10n.currentLocation,
-                          suffixIcon: Icon(Icons.search, color: colors.primary),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 16),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(28),
-                            borderSide:
-                                BorderSide(color: colors.primary, width: 1.5),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(28),
-                            borderSide:
-                                BorderSide(color: colors.primary, width: 2.0),
-                          ),
-                          filled: true,
-                          fillColor: colors.fieldBackground,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Campo: Qual seu destino? (caixa de pílula branca com borda azul e lupa à direita)
-                      TextField(
-                        key: const ValueKey('map-place-search'),
-                        controller: destinationController,
-                        decoration: InputDecoration(
-                          hintText: context.l10n.destinationHint,
-                          suffixIcon: Icon(Icons.search, color: colors.primary),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 16),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(28),
-                            borderSide:
-                                BorderSide(color: colors.primary, width: 1.5),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(28),
-                            borderSide:
-                                BorderSide(color: colors.primary, width: 2.0),
-                          ),
-                          filled: true,
-                          fillColor: colors.fieldBackground,
-                        ),
-                        onSubmitted: (value) {
-                          Navigator.pop(context);
-                          _searchAndRoute(value);
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _activeFilters(),
-                      if (_internalBounds != null)
-                        Text(context.mapText(
-                            'Área pesquisada ativa na base do AcessoJá.',
-                            'A searched area is active for AcessoJá results.')),
-                      if (_internalBounds != null)
-                        TextButton(
-                            key: const ValueKey('remove-search-area'),
-                            onPressed: _removeSearchArea,
-                            child: Text(context.mapText(
-                                'Remover área pesquisada',
-                                'Remove searched area'))),
-                      const SizedBox(height: 12),
-                      // Dropdown/Lista de sugestões de estabelecimentos por perto
-                      if (_isLoadingLocals)
-                        const Center(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8.0),
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                      if (!_isLoadingLocals || _matchingLocals.isNotEmpty) ...[
-                        (() {
-                          final text =
-                              destinationController.text.trim().toLowerCase();
-                          final list = _matchingLocals.where((local) {
-                            final place = local['source'] == 'openstreetmap'
-                                ? MapPlace.external(local)
-                                : MapPlace.internal(local);
-                            return place.matches(text);
-                          }).toList();
-
-                          if (list.isEmpty) {
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 12.0),
-                              child: Text(
-                                context.l10n.noResults,
-                                style: TextStyle(
-                                  color: colors.danger,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                                textAlign: TextAlign.center,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Center(
+                            child: Container(
+                              width: 50,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: colors.border,
+                                borderRadius: BorderRadius.circular(2),
                               ),
-                            );
-                          }
-
-                          return Container(
-                            constraints: const BoxConstraints(maxHeight: 120),
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: colors.surfaceElevated,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: colors.border),
                             ),
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: list.length,
-                              itemBuilder: (context, index) {
-                                final local = list[index];
-                                return Material(
-                                    color: Colors.transparent,
-                                    child: ListTile(
-                                      dense: true,
-                                      leading: Icon(
+                          ),
+                          const SizedBox(height: 20),
+                          // Campo: Localização Atual (caixa de pílula branca com borda azul e lupa à direita)
+                          TextFormField(
+                            key: ValueKey(_currentAddress),
+                            initialValue: _hasLocation
+                                ? _currentAddress
+                                : context.l10n.locationUnavailable,
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              hintText: context.l10n.currentLocation,
+                              suffixIcon: Icon(
+                                Icons.search,
+                                color: colors.primary,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(28),
+                                borderSide: BorderSide(
+                                  color: colors.primary,
+                                  width: 1.5,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(28),
+                                borderSide: BorderSide(
+                                  color: colors.primary,
+                                  width: 2.0,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: colors.fieldBackground,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Campo: Qual seu destino? (caixa de pílula branca com borda azul e lupa à direita)
+                          TextField(
+                            key: const ValueKey('map-place-search'),
+                            controller: destinationController,
+                            decoration: InputDecoration(
+                              hintText: context.l10n.destinationHint,
+                              suffixIcon: TextButton(
+                                key: const ValueKey('open-discovery-filters'),
+                                onPressed: () {
+                                  _beginFilters();
+                                  sheetSetState(() => sheetView = 'filters');
+                                },
+                                child: Text(context.l10n.filters),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(28),
+                                borderSide: BorderSide(
+                                  color: colors.primary,
+                                  width: 1.5,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(28),
+                                borderSide: BorderSide(
+                                  color: colors.primary,
+                                  width: 2.0,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: colors.fieldBackground,
+                            ),
+                            onSubmitted: (value) {
+                              Navigator.pop(context);
+                              _searchAndRoute(value);
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          _activeFilters(),
+                          if (_internalBounds != null)
+                            Text(
+                              context.mapText(
+                                'Área pesquisada ativa na base do AcessoJá.',
+                                'A searched area is active for AcessoJá results.',
+                              ),
+                            ),
+                          if (_internalBounds != null)
+                            TextButton(
+                              key: const ValueKey('remove-search-area'),
+                              onPressed: _removeSearchArea,
+                              child: Text(
+                                context.mapText(
+                                  'Remover área pesquisada',
+                                  'Remove searched area',
+                                ),
+                              ),
+                            ),
+                          const SizedBox(height: 12),
+                          // Dropdown/Lista de sugestões de estabelecimentos por perto
+                          if (_isLoadingLocals)
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                          if (!_isLoadingLocals ||
+                              _matchingLocals.isNotEmpty) ...[
+                            (() {
+                              final text = destinationController.text
+                                  .trim()
+                                  .toLowerCase();
+                              final list = _matchingLocals.where((local) {
+                                final place = local['source'] == 'openstreetmap'
+                                    ? MapPlace.external(local)
+                                    : MapPlace.internal(local);
+                                return place.matches(text);
+                              }).toList();
+
+                              if (list.isEmpty) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12.0,
+                                  ),
+                                  child: Text(
+                                    context.l10n.noResults,
+                                    style: TextStyle(
+                                      color: colors.danger,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                );
+                              }
+
+                              return Container(
+                                constraints: const BoxConstraints(
+                                  maxHeight: 120,
+                                ),
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceElevated,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: colors.border),
+                                ),
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: list.length,
+                                  itemBuilder: (context, index) {
+                                    final local = list[index];
+                                    return Material(
+                                      color: Colors.transparent,
+                                      child: ListTile(
+                                        dense: true,
+                                        leading: Icon(
                                           local['source'] == 'openstreetmap'
                                               ? Icons.public
                                               : Icons.location_on,
-                                          color: colors.primary),
-                                      title: Text(
-                                        local['nome'],
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: colors.text,
+                                          color: colors.primary,
                                         ),
-                                      ),
-                                      subtitle: Text(
-                                        '${local['source'] == 'openstreetmap' ? 'OpenStreetMap' : 'AcessoJá'}'
-                                        ' · ${local['categoria_label']} · ${local['endereco']}'
-                                        '${(local['missing_resources'] as List?)?.isNotEmpty == true ? '\n${context.accessibilityText('Informações incompletas: ', 'Incomplete information: ')}'
-                                            '${(local['missing_resources'] as List).cast<String>().map(context.featureLabel).join(', ')}' : ''}',
-                                      ),
-                                      trailing: ConstrainedBox(
-                                        constraints:
-                                            const BoxConstraints(maxWidth: 60),
-                                        child: Text(
-                                          _distanceLabelForLocal(local),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.end,
+                                        title: Text(
+                                          local['nome'],
                                           style: TextStyle(
-                                            fontSize: 12,
-                                            color: colors.muted,
+                                            fontWeight: FontWeight.bold,
+                                            color: colors.text,
                                           ),
                                         ),
+                                        subtitle: Text(
+                                          '${local['source'] == 'openstreetmap' ? 'OpenStreetMap' : 'AcessoJá'}'
+                                          ' · ${local['categoria_label']} · ${local['endereco']}'
+                                          '${(local['missing_resources'] as List?)?.isNotEmpty == true ? '\n${context.accessibilityText('Informações incompletas: ', 'Incomplete information: ')}'
+                                              '${(local['missing_resources'] as List).cast<String>().map(context.featureLabel).join(', ')}' : ''}',
+                                        ),
+                                        trailing: ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                            maxWidth: 60,
+                                          ),
+                                          child: Text(
+                                            _distanceLabelForLocal(local),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.end,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: colors.muted,
+                                            ),
+                                          ),
+                                        ),
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          _openLocalPreview(local);
+                                        },
                                       ),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        _openLocalPreview(local);
-                                      },
-                                    ));
-                              },
-                            ),
-                          );
-                        }()),
-                      ],
-                      Text(context.mapText(
-                          'Carregados: ${_internalLocals.length} / $_internalCount da base; ${_externalLocals.length} externos.',
-                          'Loaded: ${_internalLocals.length} / $_internalCount internal; ${_externalLocals.length} external.')),
-                      if (_internalBounds != null)
-                        Text(context.mapText(
-                            'Locais sem coordenadas ficam fora desta consulta por área.',
-                            'Places without coordinates are excluded from this area query.')),
-                      if (_internalNext != null)
-                        OutlinedButton(
-                            onPressed: _isLoadingLocals
-                                ? null
-                                : () => _fetchEstablishments(more: true),
-                            child: Text(
-                                context.mapText('Carregar mais', 'Load more'))),
-                      if (_localsLoadFailed)
-                        OutlinedButton(
-                            onPressed: () => _fetchEstablishments(
-                                more: _internalLocals.isNotEmpty),
-                            child: Text(context.l10n.retry)),
-                      OutlinedButton.icon(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _choosePoint();
-                          },
-                          icon: const Icon(Icons.add_location_alt),
-                          label: Text(context.mapText('Escolher ponto no mapa',
-                              'Choose point on map'))),
-                      OutlinedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _manualRegister();
-                          },
-                          child: Text(context.mapText(
-                              'Cadastrar local', 'Register place'))),
-                      OutlinedButton.icon(
-                          key: const ValueKey('open-discovery-filters'),
-                          onPressed: () {
-                            _beginFilters();
-                            sheetSetState(() => sheetView = 'filters');
-                          },
-                          icon: const Icon(Icons.tune),
-                          label: Text(context.l10n.filters)),
-                      OutlinedButton(
-                          key: const ValueKey('clear-discovery-search'),
-                          onPressed: () {
-                            destinationController.clear();
-                          },
-                          child: Text(context.accessibilityText(
-                              'Limpar busca', 'Clear search'))),
-                      const SizedBox(height: 16),
-                      Divider(height: 1, thickness: 1, color: colors.border),
-                      const SizedBox(height: 16),
-                      // Botão Confirmar (estilo azul e centralizado)
-                      Center(
-                        child: SizedBox(
-                          width: 220,
-                          height: 48,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: colors.primary,
-                              foregroundColor: colors.onPrimary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              elevation: 0,
-                            ),
-                            onPressed: () {
-                              final destText =
-                                  destinationController.text.trim();
-                              if (destText.isEmpty) {
-                                _showErrorSnackBar(
-                                    context.l10n.selectDestination);
-                                return;
-                              }
-                              Navigator.pop(context);
-
-                              _searchAndRoute(destText);
-                            },
-                            child: const Text(
-                              'Pesquisar',
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
+                                    );
+                                  },
+                                ),
+                              );
+                            }()),
+                          ],
+                          Text(
+                            context.mapText(
+                              'Carregados: ${_internalLocals.length} / $_internalCount da base; ${_externalLocals.length} externos.',
+                              'Loaded: ${_internalLocals.length} / $_internalCount internal; ${_externalLocals.length} external.',
                             ),
                           ),
-                        ),
+                          CatalogStatus(controller: _catalog),
+                          if (_internalBounds != null)
+                            Text(
+                              context.mapText(
+                                'Locais sem coordenadas ficam fora desta consulta por área.',
+                                'Places without coordinates are excluded from this area query.',
+                              ),
+                            ),
+                          if (_internalNext != null)
+                            OutlinedButton(
+                              onPressed: _isLoadingLocals
+                                  ? null
+                                  : () => _fetchEstablishments(more: true),
+                              child: Text(
+                                context.mapText('Carregar mais', 'Load more'),
+                              ),
+                            ),
+                          if (_localsLoadFailed)
+                            OutlinedButton(
+                              onPressed: () => _fetchEstablishments(
+                                more: _internalLocals.isNotEmpty,
+                              ),
+                              child: Text(context.l10n.retry),
+                            ),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _choosePoint();
+                            },
+                            icon: const Icon(Icons.add_location_alt),
+                            label: Text(
+                              context.mapText(
+                                'Escolher ponto no mapa',
+                                'Choose point on map',
+                              ),
+                            ),
+                          ),
+                          OutlinedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _manualRegister();
+                            },
+                            child: Text(
+                              context.mapText(
+                                'Cadastrar local',
+                                'Register place',
+                              ),
+                            ),
+                          ),
+                          OutlinedButton(
+                            key: const ValueKey('clear-discovery-search'),
+                            onPressed: () {
+                              destinationController.clear();
+                            },
+                            child: Text(
+                              context.accessibilityText(
+                                'Limpar busca',
+                                'Clear search',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: colors.border,
+                          ),
+                          const SizedBox(height: 16),
+                          // Botão Confirmar (estilo azul e centralizado)
+                          Center(
+                            child: SizedBox(
+                              width: 220,
+                              height: 48,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colors.primary,
+                                  foregroundColor: colors.onPrimary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                onPressed: () {
+                                  final destText =
+                                      destinationController.text.trim();
+                                  if (destText.isEmpty) {
+                                    _showErrorSnackBar(
+                                      context.l10n.selectDestination,
+                                    );
+                                    return;
+                                  }
+                                  Navigator.pop(context);
+
+                                  _searchAndRoute(destText);
+                                },
+                                child: const Text(
+                                  'Pesquisar',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ));
-              } else {
-                return AccessibilityFilterPanel(
+                    ),
+                  );
+                } else {
+                  return AccessibilityFilterPanel(
                     key: ValueKey(
-                        'filter-draft-${AppHttp.sessionRevision.value}-$_activeUserName'),
+                      'filter-draft-${AppHttp.sessionRevision.value}-$_activeUserName',
+                    ),
                     initial: _filterState.filters,
                     onCancel: () => sheetSetState(() => sheetView = 'route'),
                     onApply: (filters, touched) {
                       _manualFilters(filters, touched);
                       sheetSetState(() => sheetView = 'route');
-                    });
-              }
-            }),
+                    },
+                  );
+                }
+              },
+            ),
           ),
         );
       },
@@ -1649,23 +1868,26 @@ class _MainScreenState extends SafeState<MainScreen>
       return;
     }
     _routeRequest++;
-    final point = LatLng((valid['latitude'] as num).toDouble(),
-        (valid['longitude'] as num).toDouble());
+    final point = LatLng(
+      (valid['latitude'] as num).toDouble(),
+      (valid['longitude'] as num).toDouble(),
+    );
     final model = valid['source'] == 'openstreetmap'
         ? MapPlace.external(valid)
         : MapPlace.internal(valid);
     _historyRecorder.cancel();
     _navigationSessionStarted = false;
     _historyDestination = RouteHistoryDestination(
-        name: model.name,
-        point: point,
-        source: model.isExternal && model.externalId != null
-            ? 'openstreetmap'
-            : model.internalId != null
-                ? 'acessoja'
-                : 'manual',
-        localId: model.isExternal ? null : model.internalId,
-        externalId: model.isExternal ? model.externalId : null);
+      name: model.name,
+      point: point,
+      source: model.isExternal && model.externalId != null
+          ? 'openstreetmap'
+          : model.internalId != null
+              ? 'acessoja'
+              : 'manual',
+      localId: model.isExternal ? null : model.internalId,
+      externalId: model.isExternal ? model.externalId : null,
+    );
     setState(() {
       _destinationAddress =
           valid['nome'] is String ? valid['nome'] as String : '';
@@ -1690,11 +1912,12 @@ class _MainScreenState extends SafeState<MainScreen>
     }
     try {
       await _placesService.registerVisit(
-          localId: localId,
-          userName: _activeUserName,
-          latitude: fix.point.latitude,
-          longitude: fix.point.longitude,
-          accuracy: fix.accuracy);
+        localId: localId,
+        userName: _activeUserName,
+        latitude: fix.point.latitude,
+        longitude: fix.point.longitude,
+        accuracy: fix.accuracy,
+      );
     } catch (_) {
       if (mounted && request == _routeRequest) {
         _showErrorSnackBar(context.l10n.routeVisitFailed);
@@ -1723,12 +1946,13 @@ class _MainScreenState extends SafeState<MainScreen>
 
   String _distanceLabelForLocal(Map<String, dynamic> local) =>
       placeDistanceLabel(
-          context,
-          local['source'] == 'openstreetmap'
-              ? MapPlace.external(local)
-              : MapPlace.internal(local),
-          fallback: _freshLocation ? _currentLocation : null,
-          unit: _unidadeDistancia);
+        context,
+        local['source'] == 'openstreetmap'
+            ? MapPlace.external(local)
+            : MapPlace.internal(local),
+        fallback: _freshLocation ? _currentLocation : null,
+        unit: _unidadeDistancia,
+      );
 
   Future<void> _openLocalPreview(Map<String, dynamic> local) async {
     final session = AppHttp.sessionRevision.value;
@@ -1744,69 +1968,82 @@ class _MainScreenState extends SafeState<MainScreen>
     var displayed = selected;
     final point = _localPoint(local);
     if (point != null && _navigation.phase == NavigationPhase.ended) {
-      _mapController.move(point,
-          _mapController.camera.zoom < 16 ? 16 : _mapController.camera.zoom);
+      _mapController.move(
+        point,
+        _mapController.camera.zoom < 16 ? 16 : _mapController.camera.zoom,
+      );
     }
     final result = await showModalBottomSheet<Object?>(
-        context: context,
-        useSafeArea: true,
-        isScrollControlled: true,
-        constraints: BoxConstraints(
-            maxWidth: 680, maxHeight: MediaQuery.sizeOf(context).height * .88),
-        backgroundColor: AppColors.of(context).surface,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-        builder: (sheetContext) => ListenableBuilder(
-            listenable: _preview,
-            builder: (_, child) {
-              if (session != AppHttp.sessionRevision.value) {
-                return SafeArea(
-                    child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child:
-                            Column(mainAxisSize: MainAxisSize.min, children: [
-                          Text(context.accessibilityText(
-                              'Sessão alterada. Abra o local novamente para atualizar os dados.',
-                              'Session changed. Open the place again to refresh its data.')),
-                          OutlinedButton(
-                              onPressed: () => Navigator.pop(sheetContext),
-                              child: Text(context.accessibilityText(
-                                  'Fechar', 'Close'))),
-                        ])));
-              }
-              final current = _preview.place ?? displayed;
-              displayed = current;
-              return MapPlacePreview(
-                  key: ValueKey(current.id),
-                  place: current.toMap(),
-                  distanceLabel: _distanceLabelForLocal(current.toMap()),
-                  loadingDetails: _preview.loading,
-                  detailsFailed: _preview.failed,
-                  onRetryDetails: _preview.retry,
-                  onClosePressed: () => Navigator.pop(sheetContext),
-                  onDetailsPressed: () =>
-                      Navigator.pop(sheetContext, 'details'),
-                  onRoutePressed: current.hasCoordinates
-                      ? () => Navigator.pop(sheetContext, 'route')
-                      : () => Navigator.pop(sheetContext, 'recover'),
-                  onEvaluatePressed:
-                      current.isExternal || current.internalId != null
-                          ? () => Navigator.pop(sheetContext, 'evaluate')
-                          : null,
-                  onReviewsPressed: current.internalId != null
-                      ? () => Navigator.pop(sheetContext, 'reviews')
-                      : null,
-                  onContributePressed:
-                      current.isExternal && current.internalId == null
-                          ? () => Navigator.pop(sheetContext, 'contribute')
-                          : null);
-            }));
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxWidth: 680,
+        maxHeight: MediaQuery.sizeOf(context).height * .88,
+      ),
+      backgroundColor: AppColors.of(context).surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => ListenableBuilder(
+        listenable: _preview,
+        builder: (_, child) {
+          if (session != AppHttp.sessionRevision.value) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      context.accessibilityText(
+                        'Sessão alterada. Abra o local novamente para atualizar os dados.',
+                        'Session changed. Open the place again to refresh its data.',
+                      ),
+                    ),
+                    OutlinedButton(
+                      onPressed: () => Navigator.pop(sheetContext),
+                      child: Text(context.accessibilityText('Fechar', 'Close')),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          final current = _preview.place ?? displayed;
+          displayed = current;
+          return MapPlacePreview(
+            key: ValueKey(current.id),
+            place: current.toMap(),
+            distanceLabel: _distanceLabelForLocal(current.toMap()),
+            loadingDetails: _preview.loading,
+            detailsFailed: _preview.failed,
+            onRetryDetails: _preview.retry,
+            onClosePressed: () => Navigator.pop(sheetContext),
+            onDetailsPressed: () => Navigator.pop(sheetContext, 'details'),
+            onRoutePressed: current.hasCoordinates
+                ? () => Navigator.pop(sheetContext, 'route')
+                : () => Navigator.pop(sheetContext, 'recover'),
+            onEvaluatePressed: current.isExternal || current.internalId != null
+                ? () => Navigator.pop(sheetContext, 'evaluate')
+                : null,
+            onReviewsPressed: current.internalId != null
+                ? () => Navigator.pop(sheetContext, 'reviews')
+                : null,
+            onContributePressed:
+                current.isExternal && current.internalId == null
+                    ? () => Navigator.pop(sheetContext, 'contribute')
+                    : null,
+          );
+        },
+      ),
+    );
     _previewOpen = false;
     if (!mounted || session != AppHttp.sessionRevision.value) {
       return;
     }
-    final chosen = _preview.place ?? selected;
-    final target = _preview.reviewTarget;
+    var chosen = _preview.place ?? selected;
+    var target = _preview.reviewTarget;
     final detailsFailed = _preview.failed;
     _preview.close();
     setState(() => _selectedPlaceId = null);
@@ -1814,22 +2051,33 @@ class _MainScreenState extends SafeState<MainScreen>
     if (action == 'details') {
       if (chosen.isExternal) {
         action = await Navigator.push<String>(
-            context,
-            MaterialPageRoute(
-                builder: (_) => MapPlaceDetailsScreen(
-                    place: chosen.toMap(),
-                    distanceLabel: _distanceLabelForLocal(chosen.toMap()),
-                    canReview: chosen.internalId != null,
-                    detailsFailed: detailsFailed)));
+          context,
+          MaterialPageRoute(
+            builder: (_) => MapPlaceDetailsScreen(
+              place: chosen.toMap(),
+              distanceLabel: _distanceLabelForLocal(chosen.toMap()),
+              canReview: chosen.internalId != null,
+              onPlaceChanged: (place) {
+                chosen = place;
+                target = place.internalId == null ? null : place.linkedLocal;
+              },
+              detailsFailed: detailsFailed,
+            ),
+          ),
+        );
         if (!mounted) {
           return;
         }
       } else {
         final detailResult = await Navigator.push<Object?>(
-            context,
-            MaterialPageRoute(
-                builder: (_) => PlaceDetailScreen(
-                    place: chosen.toMap(), userName: _activeUserName)));
+          context,
+          MaterialPageRoute(
+            builder: (_) => PlaceDetailScreen(
+              place: chosen.toMap(),
+              userName: _activeUserName,
+            ),
+          ),
+        );
         if (!mounted) {
           return;
         }
@@ -1842,22 +2090,27 @@ class _MainScreenState extends SafeState<MainScreen>
         return;
       }
     }
+    final confirmedTarget = target;
     if (action == 'recover') {
       await _recoverPoint(chosen.toMap());
     } else if (action == 'route') {
       await _startRoute(chosen.toMap());
     } else if (action == 'evaluate') {
-      await _evaluatePlace(target ?? chosen.toMap());
-    } else if (action == 'reviews' && target != null) {
-      await Navigator.push<void>(context,
-          MaterialPageRoute(builder: (_) => PlaceReviewsScreen(place: target)));
+      await _evaluatePlace(confirmedTarget ?? chosen.toMap());
+    } else if (action == 'reviews' && confirmedTarget != null) {
+      await Navigator.push<void>(
+        context,
+        MaterialPageRoute(builder: (_) => PlaceReviewsScreen(place: confirmedTarget)),
+      );
     } else if (action == 'contribute' && chosen.isExternal) {
       await _contributeExternal(chosen.toMap());
     }
   }
 
-  Future<void> _contributeExternal(Map<String, dynamic> external,
-      {bool evaluate = false}) async {
+  Future<void> _contributeExternal(
+    Map<String, dynamic> external, {
+    bool evaluate = false,
+  }) async {
     final local = await showDialog<Map<String, dynamic>>(
       context: context,
       barrierDismissible: false,
@@ -1872,16 +2125,17 @@ class _MainScreenState extends SafeState<MainScreen>
       _selectedPlaceId = MapPlace.internal(local).id;
       _internalLocals = [
         ..._internalLocals.where((p) => p.internalId != local['id_local']),
-        MapPlace.internal(local)
+        MapPlace.internal(local),
       ];
     });
     final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => evaluate
-              ? ReviewEditorScreen(place: local)
-              : PlaceDetailScreen(place: local, userName: _activeUserName),
-        ));
+      context,
+      MaterialPageRoute(
+        builder: (_) => evaluate
+            ? ReviewEditorScreen(place: local)
+            : PlaceDetailScreen(place: local, userName: _activeUserName),
+      ),
+    );
     if (!mounted) {
       return;
     }
@@ -1931,12 +2185,15 @@ class _MainScreenState extends SafeState<MainScreen>
         .bodyMedium!
         .copyWith(fontSize: 15, color: colors.muted);
     final searchMeasure = TextPainter(
-        text: TextSpan(text: searchText, style: searchStyle),
-        textDirection: Directionality.of(context),
-        textScaler: MediaQuery.textScalerOf(context))
-      ..layout(
-          maxWidth: (MediaQuery.sizeOf(context).width - 98)
-              .clamp(40.0, double.infinity));
+      text: TextSpan(text: searchText, style: searchStyle),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout(
+        maxWidth: (MediaQuery.sizeOf(context).width - 98).clamp(
+          40.0,
+          double.infinity,
+        ),
+      );
     final searchHeight =
         (searchMeasure.height + 24).clamp(56.0, double.infinity).toDouble();
     searchMeasure.dispose();
@@ -2028,8 +2285,10 @@ class _MainScreenState extends SafeState<MainScreen>
                       },
                     ),
                     ListTile(
-                      leading:
-                          Icon(Icons.balance_rounded, color: colors.primary),
+                      leading: Icon(
+                        Icons.balance_rounded,
+                        color: colors.primary,
+                      ),
                       title: Text(context.l10n.rightsTitle),
                       onTap: () {
                         Navigator.pop(context);
@@ -2041,10 +2300,7 @@ class _MainScreenState extends SafeState<MainScreen>
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      leading: Icon(
-                        Icons.logout_rounded,
-                        color: colors.danger,
-                      ),
+                      leading: Icon(Icons.logout_rounded, color: colors.danger),
                       title: Text(
                         context.l10n.signOut,
                         style: TextStyle(
@@ -2068,631 +2324,686 @@ class _MainScreenState extends SafeState<MainScreen>
         children: [
           Expanded(
             child: LayoutBuilder(
-                builder: (context, mapBounds) => Stack(
-                      children: [
-                        // Mapa em tempo real (OpenStreetMap)
-                        FlutterMap(
-                          mapController: _mapController,
-                          options: MapOptions(
-                            initialCenter:
-                                _currentLocation, // Anápolis, GO default
-                            initialZoom: 14.5,
-                            interactionOptions: const InteractionOptions(
-                                flags: InteractiveFlag.all &
-                                    ~InteractiveFlag.rotate),
-                            onMapReady: () {
-                              _mapReady = true;
-                              if (_routeFitPending) {
-                                WidgetsBinding.instance
-                                    .addPostFrameCallback((_) {
-                                  if (mounted) {
-                                    _fitRouteBounds();
-                                  }
-                                });
-                              }
-                              if (_hasLocation) {
-                                _mapController.move(_currentLocation, 14.5);
-                              }
-                            },
-                            onLongPress: (_, point) =>
-                                _choosePoint(initial: point),
-                            onPositionChanged: (position, hasGesture) {
-                              if (_routeFitPending) {
-                                WidgetsBinding.instance
-                                    .addPostFrameCallback((_) {
-                                  if (mounted) {
-                                    _fitRouteBounds();
-                                  }
-                                });
-                              }
-                              if (hasGesture &&
-                                  _navigation.phase ==
-                                      NavigationPhase.running &&
-                                  _navigation.follow) {
-                                _navigation.setFollow(false);
-                              }
-                              _pendingViewportCenter = position.center;
-                              _pendingViewportGesture =
-                                  _pendingViewportGesture || hasGesture;
-                              if (_viewportTimer?.isActive == true) {
-                                return;
-                              }
-                              _viewportTimer =
-                                  Timer(const Duration(milliseconds: 100), () {
-                                if (!mounted) {
-                                  return;
-                                }
-                                setState(() {
-                                  if (_pendingViewportCenter != null) {
-                                    _viewportCenter = _pendingViewportCenter!;
-                                  }
-                                  if (_pendingViewportGesture) {
-                                    _areaMoved = true;
-                                  }
-                                });
-                                _pendingViewportGesture = false;
-                              });
-                            },
-                          ),
-                          children: [
-                            TileLayer(
-                              tileProvider: widget.tileProvider,
-                              urlTemplate:
-                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'br.com.acessoja.app',
-                            ),
-                            if (_isRouting && _routePoints.isNotEmpty)
-                              PolylineLayer(
-                                polylines: [
-                                  Polyline(
-                                    points: _routePoints,
-                                    strokeWidth: 5.0,
-                                    color: colors.primary,
-                                    borderStrokeWidth: 2.0,
-                                    borderColor: colors.surface,
-                                  ),
-                                ],
-                              ),
-                            if (_navigation.phase != NavigationPhase.running)
-                              AdaptivePlaceLayer(
-                                  places: _matchingLocals
-                                      .map((p) => p['source'] == 'openstreetmap'
-                                          ? MapPlace.external(p)
-                                          : MapPlace.internal(p))
-                                      .toList(),
-                                  selectedId: _selectedPlaceId,
-                                  reservedInsets: EdgeInsets.only(
-                                      top: _isRouting ||
-                                              MediaQuery.sizeOf(context).height <
-                                                  480
-                                          ? 72
-                                          : 90 +
-                                              (mapBounds.maxHeight -
-                                                      searchHeight -
-                                                      16 -
-                                                      48 -
-                                                      82 -
-                                                      8)
-                                                  .clamp(
-                                                      64.0,
-                                                      (MediaQuery.sizeOf(context)
-                                                                  .height *
-                                                              .22)
-                                                          .clamp(64.0, 240.0)),
-                                      bottom: _isRouting ? 72 : searchHeight + 96,
-                                      right: 64),
-                                  onSelect: (place) => _openLocalPreview(place.toMap()),
-                                  onCluster: _openCluster),
-                            if (_selectedPoint != null)
-                              MarkerLayer(markers: [
-                                Marker(
-                                    point: _selectedPoint!,
-                                    width: 56,
-                                    height: 56,
-                                    child: IconButton(
-                                        tooltip: context.mapText(
-                                            'Abrir ponto selecionado',
-                                            'Open selected point'),
-                                        onPressed: () => _openPoint(
-                                            _selectedPoint!,
-                                            name: _selectedPointName),
-                                        icon: const Icon(Icons.add_location_alt,
-                                            color: Colors.red, size: 36)))
-                              ]),
-                            IgnorePointer(
-                                child: MarkerLayer(
-                              markers: [
-                                if (_isRouting && _navigation.origin != null)
-                                  Marker(
-                                      point: _navigation.origin!,
-                                      width: markerWidth,
-                                      height: markerHeight,
-                                      child: Semantics(
-                                          label: context.routeText(
-                                              'Origem da rota', 'Route origin'),
-                                          excludeSemantics: true,
-                                          child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(Icons.trip_origin,
-                                                    color: colors.primary,
-                                                    size: 30),
-                                                Text('O',
-                                                    style: TextStyle(
-                                                        color: colors.text,
-                                                        backgroundColor:
-                                                            colors.surface,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 14)),
-                                              ]))),
-                                // Só mostra o ponto azul quando a localização real foi
-                                // obtida. Antes disso, Anápolis é apenas o centro de
-                                // referência do mapa e não deve parecer a posição do usuário.
-                                if (_hasLocation)
-                                  Marker(
-                                    point: _currentLocation,
-                                    width: 60,
-                                    height: 60,
-                                    child: Semantics(
-                                      label: context.l10n.currentLocation,
-                                      child: Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          Container(
-                                            width: 24,
-                                            height: 24,
-                                            decoration: BoxDecoration(
-                                              color: colors.primary
-                                                  .withValues(alpha: 0.3),
-                                              shape: BoxShape.circle,
-                                            ),
-                                          ),
-                                          Container(
-                                            width: 14,
-                                            height: 14,
-                                            decoration: BoxDecoration(
-                                              color: colors.primary,
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                  color: colors.surface,
-                                                  width: 2),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                if (_isRouting && _destinationLocation != null)
-                                  Marker(
-                                      point: _destinationLocation!,
-                                      width: markerWidth,
-                                      height: markerHeight,
-                                      child: Semantics(
-                                          label: context.routeText('Destino: ',
-                                                  'Destination: ') +
-                                              _destinationAddress,
-                                          excludeSemantics: true,
-                                          child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(Icons.location_on_rounded,
-                                                    color: colors.danger,
-                                                    size: 30),
-                                                Text('D',
-                                                    style: TextStyle(
-                                                        color: colors.text,
-                                                        backgroundColor:
-                                                            colors.surface,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 14)),
-                                              ]))),
+              builder: (context, mapBounds) => Stack(
+                children: [
+                  // Mapa em tempo real (OpenStreetMap)
+                  FlutterMap(
+                    mapController: _mapController,
+                    options: MapOptions(
+                      initialCenter: _currentLocation, // Anápolis, GO default
+                      initialZoom: 14.5,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+                      ),
+                      onMapReady: () {
+                        _mapReady = true;
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (!mounted) {
+                            return;
+                          }
+                          final area = _mapController.camera.visibleBounds;
+                          final query = _internalQuery;
+                          _catalog.reset(
+                            DiscoveryQuery(
+                              search: _searchText,
+                              filters: _filterState.filters,
+                              ordering: query?.ordering ?? 'name',
+                              origin: query?.origin,
+                              bounds: [
+                                area.south,
+                                area.west,
+                                area.north,
+                                area.east,
                               ],
-                            )),
+                            ),
+                          );
+                        });
+                        if (_routeFitPending) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) {
+                              _fitRouteBounds();
+                            }
+                          });
+                        }
+                        if (_hasLocation) {
+                          _mapController.move(_currentLocation, 14.5);
+                        }
+                      },
+                      onLongPress: (_, point) => _choosePoint(initial: point),
+                      onPositionChanged: (position, hasGesture) {
+                        if (_routeFitPending) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) {
+                              _fitRouteBounds();
+                            }
+                          });
+                        }
+                        if (hasGesture &&
+                            _navigation.phase == NavigationPhase.running &&
+                            _navigation.follow) {
+                          _navigation.setFollow(false);
+                        }
+                        _pendingViewportCenter = position.center;
+                        _pendingViewportGesture =
+                            _pendingViewportGesture || hasGesture;
+                        if (_viewportTimer?.isActive == true) {
+                          return;
+                        }
+                        _viewportTimer = Timer(
+                          const Duration(milliseconds: 100),
+                          () {
+                            if (!mounted) {
+                              return;
+                            }
+                            setState(() {
+                              if (_pendingViewportCenter != null) {
+                                _viewportCenter = _pendingViewportCenter!;
+                              }
+                              if (_pendingViewportGesture) {
+                                _areaMoved = true;
+                              }
+                            });
+                            _pendingViewportGesture = false;
+                          },
+                        );
+                      },
+                    ),
+                    children: [
+                      TileLayer(
+                        tileProvider: widget.tileProvider,
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'br.com.acessoja.app',
+                      ),
+                      if (_isRouting && _routePoints.isNotEmpty)
+                        PolylineLayer(
+                          polylines: [
+                            Polyline(
+                              points: _routePoints,
+                              strokeWidth: 5.0,
+                              color: colors.primary,
+                              borderStrokeWidth: 2.0,
+                              borderColor: colors.surface,
+                            ),
                           ],
                         ),
-                        if (!_isRouting)
-                          if (MediaQuery.sizeOf(context).height >= 480)
-                            Positioned(
-                              top: MediaQuery.of(context).padding.top + 16,
-                              right: 16,
-                              child: Semantics(
-                                liveRegion: true,
-                                child: Container(
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 170),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 8,
+                      if (_navigation.phase != NavigationPhase.running)
+                        AdaptivePlaceLayer(
+                          places: _matchingLocals
+                              .map(
+                                (p) => p['source'] == 'openstreetmap'
+                                    ? MapPlace.external(p)
+                                    : MapPlace.internal(p),
+                              )
+                              .toList(),
+                          selectedId: _selectedPlaceId,
+                          reservedInsets: EdgeInsets.only(
+                            top: _isRouting ||
+                                    MediaQuery.sizeOf(context).height < 480
+                                ? 72
+                                : 90 +
+                                    (mapBounds.maxHeight -
+                                            searchHeight -
+                                            16 -
+                                            48 -
+                                            82 -
+                                            8)
+                                        .clamp(
+                                      64.0,
+                                      (MediaQuery.sizeOf(context).height * .22)
+                                          .clamp(64.0, 240.0),
+                                    ),
+                            bottom: _isRouting ? 72 : searchHeight + 96,
+                            right: 64,
+                          ),
+                          onSelect: (place) => _openLocalPreview(place.toMap()),
+                          onCluster: _openCluster,
+                        ),
+                      if (_selectedPoint != null)
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: _selectedPoint!,
+                              width: 56,
+                              height: 56,
+                              child: IconButton(
+                                tooltip: context.mapText(
+                                  'Abrir ponto selecionado',
+                                  'Open selected point',
+                                ),
+                                onPressed: () => _openPoint(
+                                  _selectedPoint!,
+                                  name: _selectedPointName,
+                                ),
+                                icon: const Icon(
+                                  Icons.add_location_alt,
+                                  color: Colors.red,
+                                  size: 36,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      IgnorePointer(
+                        child: MarkerLayer(
+                          markers: [
+                            if (_isRouting && _navigation.origin != null)
+                              Marker(
+                                point: _navigation.origin!,
+                                width: markerWidth,
+                                height: markerHeight,
+                                child: Semantics(
+                                  label: context.routeText(
+                                    'Origem da rota',
+                                    'Route origin',
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: colors.surface,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: colors.border),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: colors.shadow,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
+                                  excludeSemantics: true,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.trip_origin,
+                                        color: colors.primary,
+                                        size: 30,
+                                      ),
+                                      Text(
+                                        'O',
+                                        style: TextStyle(
+                                          color: colors.text,
+                                          backgroundColor: colors.surface,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  child: _isLoadingLocals
-                                      ? Row(
+                                ),
+                              ),
+                            // Só mostra o ponto azul quando a localização real foi
+                            // obtida. Antes disso, Anápolis é apenas o centro de
+                            // referência do mapa e não deve parecer a posição do usuário.
+                            if (_hasLocation)
+                              Marker(
+                                point: _currentLocation,
+                                width: 60,
+                                height: 60,
+                                child: Semantics(
+                                  label: context.l10n.currentLocation,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Container(
+                                        width: 24,
+                                        height: 24,
+                                        decoration: BoxDecoration(
+                                          color: colors.primary.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      Container(
+                                        width: 14,
+                                        height: 14,
+                                        decoration: BoxDecoration(
+                                          color: colors.primary,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: colors.surface,
+                                            width: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            if (_isRouting && _destinationLocation != null)
+                              Marker(
+                                point: _destinationLocation!,
+                                width: markerWidth,
+                                height: markerHeight,
+                                child: Semantics(
+                                  label: context.routeText(
+                                        'Destino: ',
+                                        'Destination: ',
+                                      ) +
+                                      _destinationAddress,
+                                  excludeSemantics: true,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.location_on_rounded,
+                                        color: colors.danger,
+                                        size: 30,
+                                      ),
+                                      Text(
+                                        'D',
+                                        style: TextStyle(
+                                          color: colors.text,
+                                          backgroundColor: colors.surface,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (!_isRouting)
+                    if (MediaQuery.sizeOf(context).height >= 480)
+                      Positioned(
+                        top: MediaQuery.of(context).padding.top + 16,
+                        right: 16,
+                        child: Semantics(
+                          liveRegion: true,
+                          child: Container(
+                            constraints: const BoxConstraints(maxWidth: 170),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colors.surface,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: colors.border),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: colors.shadow,
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: _isLoadingLocals
+                                ? Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: colors.primary,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Flexible(
+                                        child: Text(
+                                          context.l10n.loadingPlaces,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: colors.text,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : _localsLoadFailed
+                                    ? InkWell(
+                                        key: const ValueKey('map-retry-places'),
+                                        onTap: _fetchEstablishments,
+                                        child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            SizedBox(
-                                              width: 16,
-                                              height: 16,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: colors.primary,
-                                              ),
+                                            Icon(
+                                              Icons.refresh_rounded,
+                                              color: colors.danger,
+                                              size: 18,
                                             ),
-                                            const SizedBox(width: 8),
+                                            const SizedBox(width: 6),
                                             Flexible(
                                               child: Text(
-                                                context.l10n.loadingPlaces,
-                                                maxLines: 1,
+                                                context.l10n.retry,
+                                                maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
-                                                  color: colors.text,
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w700,
+                                                  color: colors.danger,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w800,
                                                 ),
                                               ),
                                             ),
                                           ],
-                                        )
-                                      : _localsLoadFailed
-                                          ? InkWell(
-                                              key: const ValueKey(
-                                                  'map-retry-places'),
-                                              onTap: _fetchEstablishments,
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(
-                                                    Icons.refresh_rounded,
-                                                    color: colors.danger,
-                                                    size: 18,
-                                                  ),
-                                                  const SizedBox(width: 6),
-                                                  Flexible(
-                                                    child: Text(
-                                                      context.l10n.retry,
-                                                      maxLines: 2,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        color: colors.danger,
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w800,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            )
-                                          : Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.place_outlined,
-                                                  color: colors.primaryDark,
-                                                  size: 17,
-                                                ),
-                                                const SizedBox(width: 6),
-                                                Flexible(
-                                                  child: Text(
-                                                    context.l10n.placeCount(
-                                                      _visiblePlaceCount,
-                                                    ),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                      color: colors.text,
-                                                      fontSize: 11,
-                                                      fontWeight:
-                                                          FontWeight.w800,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                ),
-                              ),
-                            ),
-                        if (!_isRouting &&
-                            MediaQuery.sizeOf(context).height >= 480)
-                          Positioned(
-                            top: MediaQuery.of(context).padding.top + 82,
-                            left: 16,
-                            right: 16,
-                            child: _discoveryStatus((mapBounds.maxHeight -
-                                    searchHeight -
-                                    16 -
-                                    48 -
-                                    82 -
-                                    8)
-                                .clamp(
-                                    64.0,
-                                    (MediaQuery.sizeOf(context).height * .22)
-                                        .clamp(64.0, 240.0))
-                                .toDouble()),
-                          ),
-                        if (!_isRouting &&
-                            MediaQuery.sizeOf(context).height < 480)
-                          Positioned(
-                            top: MediaQuery.paddingOf(context).top + 16,
-                            left: 136,
-                            child: Material(
-                              color: colors.surface,
-                              borderRadius: BorderRadius.circular(16),
-                              child: IconButton(
-                                key: const ValueKey('map-status-open'),
-                                tooltip: context.l10n.mapStatusExpand,
-                                icon: const Icon(Icons.tune),
-                                onPressed: () => showModalBottomSheet<void>(
-                                  context: context,
-                                  useSafeArea: true,
-                                  isScrollControlled: true,
-                                  constraints: BoxConstraints(
-                                      maxWidth: 680,
-                                      maxHeight:
-                                          MediaQuery.sizeOf(context).height *
-                                              .88),
-                                  builder: (_) => ValueListenableBuilder<int>(
-                                    valueListenable: _statusUpdates,
-                                    builder: (_, value, child) =>
-                                        SingleChildScrollView(
-                                      padding: const EdgeInsets.all(20),
-                                      child: _discoveryContents(),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (!_isRouting)
-                          Positioned(
-                              top: MediaQuery.of(context).padding.top + 16,
-                              left: 80,
-                              child: Material(
-                                  color: colors.surface,
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: IconButton(
-                                      key: const ValueKey('map-legend'),
-                                      tooltip: context.mapText(
-                                          'Legenda do mapa', 'Map legend'),
-                                      constraints: const BoxConstraints(
-                                          minWidth: 48, minHeight: 48),
-                                      icon: const Icon(Icons.info_outline),
-                                      onPressed: () =>
-                                          showModalBottomSheet<void>(
-                                              context: context,
-                                              useSafeArea: true,
-                                              isScrollControlled: true,
-                                              constraints: BoxConstraints(
-                                                  maxWidth: 680,
-                                                  maxHeight:
-                                                      MediaQuery.sizeOf(context)
-                                                              .height *
-                                                          .85),
-                                              builder: (_) =>
-                                                  const MapLegendSheet())))),
-                        Positioned(
-                          bottom: _isRouting ? 8 : searchHeight + 16,
-                          left: 12,
-                          child: Material(
-                            color: colors.surface,
-                            borderRadius: BorderRadius.circular(8),
-                            child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                    maxWidth:
-                                        (MediaQuery.sizeOf(context).width - 100)
-                                            .clamp(100.0, 600.0)
-                                            .toDouble()),
-                                child: AppLink(
-                                    label:
-                                        '© OpenStreetMap contributors · ODbL',
-                                    onPressed: () => launchUrl(Uri.parse(
-                                        'https://www.openstreetmap.org/copyright')),
-                                    style: const TextStyle(fontSize: 10))),
-                          ),
-                        ),
-                        // Botão flutuante do Menu (hambúrguer)
-                        Positioned(
-                          top: MediaQuery.of(context).padding.top + 16,
-                          left: 16,
-                          child: InkWell(
-                            onTap: () async {
-                              _routeRequest++;
-                              _navigation.interrupt('screen_changed');
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      SettingsScreen(userName: _activeUserName),
-                                ),
-                              );
-                              if (!mounted) {
-                                return;
-                              }
-                              await _loadUserProfile();
-                              await _historyRecorder.refresh();
-                              if (mounted && result is PlaceRouteRequest) {
-                                await _startRoute(result.place);
-                              } else if (mounted &&
-                                  routePlace(result) != null) {
-                                await _startRoute(routePlace(result)!);
-                              }
-                            },
-                            child: Semantics(
-                              button: true,
-                              label: context.l10n.openSettings,
-                              child: Container(
-                                width: 52,
-                                height: 52,
-                                decoration: BoxDecoration(
-                                  color: colors.primary,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: colors.surface,
-                                    width: 2,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: colors.shadow,
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: _avatarImage() != null
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(14),
-                                        child: Image(
-                                          image: _avatarImage()!,
-                                          fit: BoxFit.cover,
                                         ),
                                       )
-                                    : Icon(
-                                        Icons.menu_rounded,
-                                        color: colors.onPrimary,
-                                        size: 28,
+                                    : Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.place_outlined,
+                                            color: colors.primaryDark,
+                                            size: 17,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Flexible(
+                                            child: Text(
+                                              context.l10n.placeCount(
+                                                _visiblePlaceCount,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color: colors.text,
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
+                          ),
+                        ),
+                      ),
+                  if (!_isRouting && MediaQuery.sizeOf(context).height >= 480)
+                    Positioned(
+                      top: MediaQuery.of(context).padding.top + 82,
+                      left: 16,
+                      right: 16,
+                      child: _discoveryStatus(
+                        (mapBounds.maxHeight - searchHeight - 16 - 48 - 82 - 8)
+                            .clamp(
+                              64.0,
+                              (MediaQuery.sizeOf(context).height * .22).clamp(
+                                64.0,
+                                240.0,
+                              ),
+                            )
+                            .toDouble(),
+                      ),
+                    ),
+                  if (!_isRouting && MediaQuery.sizeOf(context).height < 480)
+                    Positioned(
+                      top: MediaQuery.paddingOf(context).top + 16,
+                      left: 136,
+                      child: Material(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        child: IconButton(
+                          key: const ValueKey('map-status-open'),
+                          tooltip: context.l10n.mapStatusExpand,
+                          icon: const Icon(Icons.tune),
+                          onPressed: () => showModalBottomSheet<void>(
+                            context: context,
+                            useSafeArea: true,
+                            isScrollControlled: true,
+                            constraints: BoxConstraints(
+                              maxWidth: 680,
+                              maxHeight:
+                                  MediaQuery.sizeOf(context).height * .88,
+                            ),
+                            builder: (_) => ValueListenableBuilder<int>(
+                              valueListenable: _statusUpdates,
+                              builder: (_, value, child) =>
+                                  SingleChildScrollView(
+                                padding: const EdgeInsets.all(20),
+                                child: _discoveryContents(),
                               ),
                             ),
                           ),
                         ),
-                        // Floating Action Button para recentralizar o mapa
-                        Positioned(
-                          bottom: _isRouting ? 8 : searchHeight + 32,
-                          right: 16,
-                          child: FloatingActionButton(
-                            key: const ValueKey('map-location-refresh'),
-                            mini: false,
-                            backgroundColor: colors.surface,
-                            foregroundColor: colors.primary,
-                            tooltip: context.l10n.centerLocation,
-                            elevation: 3,
-                            onPressed: () async {
-                              if (_freshLocation) {
-                                if (_navigation.phase ==
-                                    NavigationPhase.running) {
-                                  _navigation.setFollow(true);
-                                }
-                                _mapController.move(_currentLocation, 14.5);
-                                return;
-                              }
-                              if (widget.trackLocation) {
-                                await _initLocationTracking();
-                              }
-                              if (!context.mounted) {
-                                return;
-                              }
-                              if (_freshLocation) {
-                                if (_navigation.phase ==
-                                    NavigationPhase.running) {
-                                  _navigation.setFollow(true);
-                                }
-                                _mapController.move(_currentLocation, 14.5);
-                              } else if (_locationMessage == null) {
-                                _showErrorSnackBar(
-                                    context.l10n.locationUnavailable);
-                              }
-                            },
-                            child: const Icon(Icons.my_location),
+                      ),
+                    ),
+                  if (!_isRouting)
+                    Positioned(
+                      top: MediaQuery.of(context).padding.top + 16,
+                      left: 80,
+                      child: Material(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        child: IconButton(
+                          key: const ValueKey('map-legend'),
+                          tooltip: context.mapText(
+                            'Legenda do mapa',
+                            'Map legend',
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 48,
+                            minHeight: 48,
+                          ),
+                          icon: const Icon(Icons.info_outline),
+                          onPressed: () => showModalBottomSheet<void>(
+                            context: context,
+                            useSafeArea: true,
+                            isScrollControlled: true,
+                            constraints: BoxConstraints(
+                              maxWidth: 680,
+                              maxHeight:
+                                  MediaQuery.sizeOf(context).height * .85,
+                            ),
+                            builder: (_) => const MapLegendSheet(),
                           ),
                         ),
-                        if (_isRouting &&
-                            _navigation.phase == NavigationPhase.choosingOrigin)
-                          const IgnorePointer(
-                              child: Center(child: Icon(Icons.add, size: 28))),
-                        if (_isRouting)
-                          Positioned(
-                              top: MediaQuery.of(context).padding.top + 16,
-                              right: 16,
-                              child: Material(
-                                  color: colors.surface,
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: IconButton(
-                                      key: const ValueKey('map-open-search'),
-                                      tooltip: context.l10n.searchDestination,
-                                      constraints: const BoxConstraints(
-                                          minWidth: 48, minHeight: 48),
-                                      onPressed: () =>
-                                          _openSearchBottomSheet(context),
-                                      icon: const Icon(Icons.search)))),
-                        if (!_isRouting)
-                          // Campo de busca flutuante sobreposto ao mapa
-                          Positioned(
-                            bottom: 16,
-                            left: 16,
-                            right: 16,
-                            child: Semantics(
-                              button: true,
-                              label: context.l10n.searchDestination,
-                              child: InkWell(
-                                key: const ValueKey('map-open-search'),
-                                onTap: () => _openSearchBottomSheet(context),
-                                child: Container(
-                                  constraints:
-                                      const BoxConstraints(minHeight: 56),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: colors.surface,
-                                    borderRadius: BorderRadius.circular(18),
-                                    border: Border.all(color: colors.border),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: colors.shadow,
-                                        blurRadius: 18,
-                                        offset: const Offset(0, 6),
-                                      ),
-                                    ],
+                      ),
+                    ),
+                  Positioned(
+                    bottom: _isRouting ? 8 : searchHeight + 16,
+                    left: 12,
+                    child: Material(
+                      color: colors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: (MediaQuery.sizeOf(context).width - 100)
+                              .clamp(100.0, 600.0)
+                              .toDouble(),
+                        ),
+                        child: AppLink(
+                          label: '© OpenStreetMap contributors · ODbL',
+                          onPressed: () => launchUrl(
+                            Uri.parse(
+                              'https://www.openstreetmap.org/copyright',
+                            ),
+                          ),
+                          style: const TextStyle(fontSize: 10),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Botão flutuante do Menu (hambúrguer)
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 16,
+                    left: 16,
+                    child: InkWell(
+                      onTap: () async {
+                        _routeRequest++;
+                        _navigation.interrupt('screen_changed');
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                SettingsScreen(userName: _activeUserName),
+                          ),
+                        );
+                        if (!mounted) {
+                          return;
+                        }
+                        await _loadUserProfile();
+                        await _historyRecorder.refresh();
+                        if (mounted && result is PlaceRouteRequest) {
+                          await _startRoute(result.place);
+                        } else if (mounted && routePlace(result) != null) {
+                          await _startRoute(routePlace(result)!);
+                        }
+                      },
+                      child: Semantics(
+                        button: true,
+                        label: context.l10n.openSettings,
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: colors.primary,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: colors.surface, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: colors.shadow,
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: _avatarImage() != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: Image(
+                                    image: _avatarImage()!,
+                                    fit: BoxFit.cover,
                                   ),
-                                  child: IgnorePointer(
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: ExcludeSemantics(
-                                              child: Text(searchText,
-                                                  style: searchStyle)),
-                                        ),
-                                        Icon(
-                                          Icons.search_rounded,
-                                          color: colors.primary,
-                                          size: 26,
-                                        ),
-                                      ],
+                                )
+                              : Icon(
+                                  Icons.menu_rounded,
+                                  color: colors.onPrimary,
+                                  size: 28,
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Floating Action Button para recentralizar o mapa
+                  Positioned(
+                    bottom: _isRouting ? 8 : searchHeight + 32,
+                    right: 16,
+                    child: FloatingActionButton(
+                      key: const ValueKey('map-location-refresh'),
+                      mini: false,
+                      backgroundColor: colors.surface,
+                      foregroundColor: colors.primary,
+                      tooltip: context.l10n.centerLocation,
+                      elevation: 3,
+                      onPressed: () async {
+                        if (_freshLocation) {
+                          if (_navigation.phase == NavigationPhase.running) {
+                            _navigation.setFollow(true);
+                          }
+                          _mapController.move(_currentLocation, 14.5);
+                          return;
+                        }
+                        if (widget.trackLocation) {
+                          await _initLocationTracking();
+                        }
+                        if (!context.mounted) {
+                          return;
+                        }
+                        if (_freshLocation) {
+                          if (_navigation.phase == NavigationPhase.running) {
+                            _navigation.setFollow(true);
+                          }
+                          _mapController.move(_currentLocation, 14.5);
+                        } else if (_locationMessage == null) {
+                          _showErrorSnackBar(context.l10n.locationUnavailable);
+                        }
+                      },
+                      child: const Icon(Icons.my_location),
+                    ),
+                  ),
+                  if (_isRouting &&
+                      _navigation.phase == NavigationPhase.choosingOrigin)
+                    const IgnorePointer(
+                      child: Center(child: Icon(Icons.add, size: 28)),
+                    ),
+                  if (_isRouting)
+                    Positioned(
+                      top: MediaQuery.of(context).padding.top + 16,
+                      right: 16,
+                      child: Material(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        child: IconButton(
+                          key: const ValueKey('map-open-search'),
+                          tooltip: context.l10n.searchDestination,
+                          constraints: const BoxConstraints(
+                            minWidth: 48,
+                            minHeight: 48,
+                          ),
+                          onPressed: () => _openSearchBottomSheet(context),
+                          icon: const Icon(Icons.search),
+                        ),
+                      ),
+                    ),
+                  if (!_isRouting)
+                    // Campo de busca flutuante sobreposto ao mapa
+                    Positioned(
+                      bottom: 16,
+                      left: 16,
+                      right: 16,
+                      child: Semantics(
+                        button: true,
+                        label: context.l10n.searchDestination,
+                        child: InkWell(
+                          key: const ValueKey('map-open-search'),
+                          onTap: () => _openSearchBottomSheet(context),
+                          child: Container(
+                            constraints: const BoxConstraints(minHeight: 56),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colors.surface,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: colors.border),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: colors.shadow,
+                                  blurRadius: 18,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: IgnorePointer(
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: ExcludeSemantics(
+                                      child: Text(
+                                        searchText,
+                                        style: searchStyle,
+                                      ),
                                     ),
                                   ),
-                                ),
+                                  Icon(
+                                    Icons.search_rounded,
+                                    color: colors.primary,
+                                    size: 26,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                      ],
-                    )),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
           AccessibilityBottomBoundary(
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-            if (_isRouting)
-              Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
-                  child: NavigationPanel(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_isRouting)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+                    child: NavigationPanel(
                       controller: _navigation,
                       destination: _destinationAddress,
                       destinationAddress: _destinationStreet,
                       maxHeight: _routePanelMaxHeight(context),
                       distanceUnit: _distanceUnit,
-                      distanceLabel:
-                          _formatDistance(_navigation.remainingDistance / 1000),
+                      distanceLabel: _formatDistance(
+                        _navigation.remainingDistance / 1000,
+                      ),
                       onStart: _beginNavigation,
                       onEnd: _endNavigation,
                       onCalculate: _calculateChosenOrigin,
@@ -2707,69 +3018,88 @@ class _MainScreenState extends SafeState<MainScreen>
                           : null,
                       onGoogleMaps: () {
                         if (_destinationLocation != null) {
-                          _externalNavigation(_destinationLocation!,
-                              ExternalNavigator.googleMaps,
-                              action: ExternalRouteAction.preview);
+                          _externalNavigation(
+                            _destinationLocation!,
+                            ExternalNavigator.googleMaps,
+                            action: ExternalRouteAction.preview,
+                          );
                         }
                       },
                       onGoogleNavigate: () {
                         if (_destinationLocation != null) {
-                          _externalNavigation(_destinationLocation!,
-                              ExternalNavigator.googleMaps);
+                          _externalNavigation(
+                            _destinationLocation!,
+                            ExternalNavigator.googleMaps,
+                          );
                         }
                       },
                       onWaze: () {
                         if (_destinationLocation != null) {
                           _externalNavigation(
-                              _destinationLocation!, ExternalNavigator.waze);
+                            _destinationLocation!,
+                            ExternalNavigator.waze,
+                          );
                         }
-                      })),
-            ResponsiveNavigationBar(
-                destinations: [
-                  NavigationDestination(
+                      },
+                    ),
+                  ),
+                ResponsiveNavigationBar(
+                  destinations: [
+                    NavigationDestination(
                       icon: const Icon(Icons.explore_rounded),
-                      label: context.l10n.explore),
-                  NavigationDestination(
+                      label: context.l10n.explore,
+                    ),
+                    NavigationDestination(
                       icon: const Icon(Icons.rate_review_outlined),
-                      label: context.contributionText('Avaliar', 'Review')),
-                  NavigationDestination(
+                      label: context.contributionText('Avaliar', 'Review'),
+                    ),
+                    NavigationDestination(
                       icon: const Icon(Icons.bookmark_outline),
-                      label: context.l10n.savedPlacesTitle),
-                  NavigationDestination(
+                      label: context.l10n.savedPlacesTitle,
+                    ),
+                    NavigationDestination(
                       icon: const Icon(Icons.public_rounded),
-                      label: context.l10n.suggestions),
-                ],
-                onSelected: (index) async {
-                  _routeRequest++;
-                  _navigation.interrupt('screen_changed');
-                  if (index == 1) {
-                    await _openContributions();
-                    return;
-                  }
-                  if (index == 2) {
-                    await _navigateToSavedPlaces();
-                    return;
-                  }
-                  final selectedLocal = await Navigator.push<Object?>(
+                      label: context.l10n.suggestions,
+                    ),
+                  ],
+                  onSelected: (index) async {
+                    _routeRequest++;
+                    _navigation.interrupt('screen_changed');
+                    if (index == 1) {
+                      await _openContributions();
+                      return;
+                    }
+                    if (index == 2) {
+                      await _navigateToSavedPlaces();
+                      return;
+                    }
+                    final selectedLocal = await Navigator.push<Object?>(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => index == 0
-                              ? ExplorarScreen(
-                                  userName: _activeUserName,
-                                  currentLocation: _currentLocation,
-                                  hasCurrentLocation: _freshLocation,
-                                  unidadeDistancia: _distanceUnit)
-                              : SugestoesScreen(
-                                  allowSuggestions: _allowSuggestions,
-                                  userName: _activeUserName,
-                                  unidadeDistancia: _distanceUnit)));
-                  if (mounted && selectedLocal is PlaceRouteRequest) {
-                    await _startRoute(selectedLocal.place);
-                  } else if (mounted && routePlace(selectedLocal) != null) {
-                    await _startRoute(routePlace(selectedLocal)!);
-                  }
-                }),
-          ])),
+                        builder: (_) => index == 0
+                            ? ExplorarScreen(
+                                userName: _activeUserName,
+                                currentLocation: _currentLocation,
+                                hasCurrentLocation: _freshLocation,
+                                unidadeDistancia: _distanceUnit,
+                              )
+                            : SugestoesScreen(
+                                allowSuggestions: _allowSuggestions,
+                                userName: _activeUserName,
+                                unidadeDistancia: _distanceUnit,
+                              ),
+                      ),
+                    );
+                    if (mounted && selectedLocal is PlaceRouteRequest) {
+                      await _startRoute(selectedLocal.place);
+                    } else if (mounted && routePlace(selectedLocal) != null) {
+                      await _startRoute(routePlace(selectedLocal)!);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -2778,40 +3108,58 @@ class _MainScreenState extends SafeState<MainScreen>
   Widget _discoveryStatus(double maxHeight) {
     final colors = AppColors.of(context);
     return Material(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(14),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: maxHeight),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Row(children: [
-              const SizedBox(width: 10),
-              Expanded(
-                  child: Text(context.l10n.mapStatusTitle,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.bold))),
-              Semantics(
+      color: colors.surface,
+      borderRadius: BorderRadius.circular(14),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    context.l10n.mapStatusTitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Semantics(
                   expanded: _discoveryExpanded,
                   child: IconButton(
-                      key: const ValueKey('map-status-toggle'),
-                      tooltip: _discoveryExpanded
-                          ? context.l10n.mapStatusCollapse
-                          : context.l10n.mapStatusExpand,
-                      onPressed: () => setState(
-                          () => _discoveryExpanded = !_discoveryExpanded),
-                      icon: Icon(_discoveryExpanded
+                    key: const ValueKey('map-status-toggle'),
+                    tooltip: _discoveryExpanded
+                        ? context.l10n.mapStatusCollapse
+                        : context.l10n.mapStatusExpand,
+                    onPressed: () => setState(
+                      () => _discoveryExpanded = !_discoveryExpanded,
+                    ),
+                    icon: Icon(
+                      _discoveryExpanded
                           ? Icons.expand_less
-                          : Icons.expand_more))),
-            ]),
+                          : Icons.expand_more,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             if (_discoveryExpanded)
               Flexible(
-                  child: SingleChildScrollView(
-                      key: const ValueKey('discovery-status-scroll'),
-                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-                      child: _discoveryContents())),
-          ]),
-        ));
+                child: SingleChildScrollView(
+                  key: const ValueKey('discovery-status-scroll'),
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                  child: _discoveryContents(),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   int get _visiblePlaceCount => !_mapReady
@@ -2835,116 +3183,179 @@ class _MainScreenState extends SafeState<MainScreen>
   }
 
   Widget _discoveryContents() => Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(context.l10n.mapStatusSources,
-                style: const TextStyle(fontSize: 12)),
-            Text(context.mapText(
-                '$_visiblePlaceCount locais carregados nesta visualização',
-                '$_visiblePlaceCount loaded places in this view')),
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.l10n.mapStatusSources,
+              style: const TextStyle(fontSize: 12)),
+          Text(
+            context.mapText(
+              '$_visiblePlaceCount locais carregados nesta visualização',
+              '$_visiblePlaceCount loaded places in this view',
+            ),
+          ),
+          CatalogStatus(controller: _catalog, compact: true),
+          TextButton(
+            onPressed: () =>
+                setState(() => _discoveryDetails = !_discoveryDetails),
+            child: Text(
+              context.mapText(
+                _discoveryDetails
+                    ? 'Ocultar alcance dos resultados'
+                    : 'Entender resultados',
+                _discoveryDetails ? 'Hide result scope' : 'Understand results',
+              ),
+            ),
+          ),
+          if (_discoveryDetails) ...[
+            Text(
+              context.mapText(
+                'Base do AcessoJá: ${_internalLocals.length} / $_internalCount carregados da consulta atual.',
+                'AcessoJá: ${_internalLocals.length} / $_internalCount loaded from the current query.',
+              ),
+            ),
+            Text(
+              context.mapText(
+                'Carregados sem coordenadas: $_missingCoordinateCount. Consulte a lista de pesquisa.',
+                'Loaded without coordinates: $_missingCoordinateCount. Open the search list.',
+              ),
+            ),
+            Text(
+              context.mapText(
+                'Externos carregados: ${_externalLocals.length}; raio consultado: $_externalRadius m. O lote pode ser limitado.',
+                'External places loaded: ${_externalLocals.length}; queried radius: $_externalRadius m. This batch may be limited.',
+              ),
+            ),
+            if (_areaMoved)
+              Text(
+                context.mapText(
+                  'A câmera mudou; Buscar nesta área confirma outra consulta.',
+                  'The camera moved; Search this area confirms another query.',
+                ),
+              ),
+          ],
+          if (_isLoadingExternal)
+            Text(
+              context.mapText(
+                'Buscando locais externos…',
+                'Loading external places…',
+              ),
+            ),
+          if (_localsLoadFailed)
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                context.mapText(
+                  'Não foi possível atualizar os locais do AcessoJá. Abra a pesquisa para tentar novamente.',
+                  'Could not refresh AcessoJá places. Open search to retry.',
+                ),
+              ),
+            ),
+          if (_externalError != null)
+            Semantics(liveRegion: true, child: Text(_externalError!)),
+          if (_locationMessage != null)
+            Semantics(liveRegion: true, child: Text(_locationMessage!)),
+          if (!_hasLocation && _locationMessage == null)
+            Text(
+              context.routeText(
+                'Anápolis é o centro de referência. Sua localização ainda não foi solicitada.',
+                'Anápolis is the reference center. Your location has not been requested yet.',
+              ),
+            ),
+          if (_externalTruncated)
+            Text(
+              context.accessibilityText(
+                'Resultados limitados antes dos filtros. Aproxime o mapa ou busque outra área.',
+                'Results are limited before filtering. Zoom in or search another area.',
+              ),
+            ),
+          if (!_isLoadingLocals &&
+              !_localsLoadFailed &&
+              !_isLoadingExternal &&
+              _externalError == null &&
+              _matchingLocals.isEmpty)
+            Text(
+              context.accessibilityText(
+                'Nenhum local corresponde aos dados e filtros atuais. Isso não comprova ausência de recursos.',
+                'No place matches the available data and current filters. This does not prove features are absent.',
+              ),
+            ),
+          if (_internalBounds != null)
+            Text(
+              context.mapText(
+                'Área pesquisada ativa; sem coordenadas ficam fora da consulta.',
+                'Searched area active; places without coordinates are outside this query.',
+              ),
+            ),
+          if (_internalBounds != null)
             TextButton(
-                onPressed: () =>
-                    setState(() => _discoveryDetails = !_discoveryDetails),
-                child: Text(context.mapText(
-                    _discoveryDetails
-                        ? 'Ocultar alcance dos resultados'
-                        : 'Entender resultados',
-                    _discoveryDetails
-                        ? 'Hide result scope'
-                        : 'Understand results'))),
-            if (_discoveryDetails) ...[
-              Text(context.mapText(
-                  'Base do AcessoJá: ${_internalLocals.length} / $_internalCount carregados da consulta atual.',
-                  'AcessoJá: ${_internalLocals.length} / $_internalCount loaded from the current query.')),
-              Text(context.mapText(
-                  'Carregados sem coordenadas: $_missingCoordinateCount. Consulte a lista de pesquisa.',
-                  'Loaded without coordinates: $_missingCoordinateCount. Open the search list.')),
-              Text(context.mapText(
-                  'Externos carregados: ${_externalLocals.length}; raio consultado: $_externalRadius m. O lote pode ser limitado.',
-                  'External places loaded: ${_externalLocals.length}; queried radius: $_externalRadius m. This batch may be limited.')),
-              if (_areaMoved)
-                Text(context.mapText(
-                    'A câmera mudou; Buscar nesta área confirma outra consulta.',
-                    'The camera moved; Search this area confirms another query.')),
-            ],
-            if (_isLoadingExternal)
-              Text(context.mapText(
-                  'Buscando locais externos…', 'Loading external places…')),
-            if (_localsLoadFailed)
-              Semantics(
-                  liveRegion: true,
-                  child: Text(context.mapText(
-                      'Não foi possível atualizar os locais do AcessoJá. Abra a pesquisa para tentar novamente.',
-                      'Could not refresh AcessoJá places. Open search to retry.'))),
-            if (_externalError != null)
-              Semantics(liveRegion: true, child: Text(_externalError!)),
-            if (_locationMessage != null)
-              Semantics(liveRegion: true, child: Text(_locationMessage!)),
-            if (!_hasLocation && _locationMessage == null)
-              Text(context.routeText(
-                  'Anápolis é o centro de referência. Sua localização ainda não foi solicitada.',
-                  'Anápolis is the reference center. Your location has not been requested yet.')),
-            if (_externalTruncated)
-              Text(context.accessibilityText(
-                  'Resultados limitados antes dos filtros. Aproxime o mapa ou busque outra área.',
-                  'Results are limited before filtering. Zoom in or search another area.')),
-            if (!_isLoadingLocals &&
-                !_localsLoadFailed &&
-                !_isLoadingExternal &&
-                _externalError == null &&
-                _matchingLocals.isEmpty)
-              Text(context.accessibilityText(
-                  'Nenhum local corresponde aos dados e filtros atuais. Isso não comprova ausência de recursos.',
-                  'No place matches the available data and current filters. This does not prove features are absent.')),
-            if (_internalBounds != null)
-              Text(context.mapText(
-                  'Área pesquisada ativa; sem coordenadas ficam fora da consulta.',
-                  'Searched area active; places without coordinates are outside this query.')),
-            if (_internalBounds != null)
-              TextButton(
-                  key: const ValueKey('status-remove-search-area'),
-                  onPressed: _removeSearchArea,
-                  child: Text(context.mapText(
-                      'Remover área pesquisada', 'Remove searched area'))),
-            if (_externalDiscovery.usable &&
-                (_externalDiscovery.stale || _externalError != null))
-              Text(context.mapText(
-                      'Mostrando dados externos anteriores; última obtenção: ',
-                      'Showing earlier external data; last fetched: ') +
-                  _externalObtainedTime),
-            if (!_externalDiscovery.canRetry &&
-                _externalDiscovery.waitSeconds > 0)
-              Text(context.mapText(
-                  'Nova tentativa a partir de ${_formatDiscoveryTime(_externalDiscovery.retryUntil!)}.',
-                  'Retry available after ${_formatDiscoveryTime(_externalDiscovery.retryUntil!)}.')),
-            _activeFilters(),
-            Wrap(spacing: 8, children: [
+              key: const ValueKey('status-remove-search-area'),
+              onPressed: _removeSearchArea,
+              child: Text(
+                context.mapText(
+                    'Remover área pesquisada', 'Remove searched area'),
+              ),
+            ),
+          if (_externalDiscovery.usable &&
+              (_externalDiscovery.stale || _externalError != null))
+            Text(
+              context.mapText(
+                    'Mostrando dados externos anteriores; última obtenção: ',
+                    'Showing earlier external data; last fetched: ',
+                  ) +
+                  _externalObtainedTime,
+            ),
+          if (!_externalDiscovery.canRetry &&
+              _externalDiscovery.waitSeconds > 0)
+            Text(
+              context.mapText(
+                'Nova tentativa a partir de ${_formatDiscoveryTime(_externalDiscovery.retryUntil!)}.',
+                'Retry available after ${_formatDiscoveryTime(_externalDiscovery.retryUntil!)}.',
+              ),
+            ),
+          _activeFilters(),
+          Wrap(
+            spacing: 8,
+            children: [
               if (_areaMoved || _externalError != null)
                 TextButton.icon(
-                    key: const ValueKey('map-search-area'),
-                    onPressed: _searchVisibleArea,
-                    icon: const Icon(Icons.search),
-                    label: Text(context.mapText(
-                        'Buscar nesta área', 'Search this area'))),
+                  key: const ValueKey('map-search-area'),
+                  onPressed: _searchVisibleArea,
+                  icon: const Icon(Icons.search),
+                  label: Text(
+                    context.mapText('Buscar nesta área', 'Search this area'),
+                  ),
+                ),
               TextButton(
-                  key: const ValueKey('map-refresh-external'),
-                  onPressed: _isLoadingExternal || !_externalDiscovery.canRetry
-                      ? null
-                      : () => _fetchExternalPlaces(_externalCenter),
-                  child: Text(_externalError != null
-                      ? context.mapText('Tentar fonte externa novamente',
-                          'Retry external source')
-                      : context.mapText('Atualizar área consultada',
-                          'Refresh searched area'))),
+                key: const ValueKey('map-refresh-external'),
+                onPressed: _isLoadingExternal || !_externalDiscovery.canRetry
+                    ? null
+                    : () => _fetchExternalPlaces(_externalCenter),
+                child: Text(
+                  _externalError != null
+                      ? context.mapText(
+                          'Tentar fonte externa novamente',
+                          'Retry external source',
+                        )
+                      : context.mapText(
+                          'Atualizar área consultada',
+                          'Refresh searched area',
+                        ),
+                ),
+              ),
               if (!_isLoadingLocals &&
                   !_isLoadingExternal &&
                   _matchingLocals.isEmpty &&
                   !_filterState.filters.active)
                 TextButton(
-                    onPressed: _clearFilters,
-                    child: Text(context.accessibilityText(
-                        'Limpar filtros', 'Clear filters'))),
-            ]),
-          ]);
+                  onPressed: _clearFilters,
+                  child: Text(
+                    context.accessibilityText(
+                        'Limpar filtros', 'Clear filters'),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      );
 }

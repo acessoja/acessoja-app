@@ -70,3 +70,11 @@ CORREÇÃO INTEGRADA DO MAPA APÓS OS CARDS 28–33
 Leia INSTRUCOES_CORRECAO_MAPA_28_33.md: aplicação do delta, escopo de área,
 snapshots, Retry-After, Redis e diagnóstico sem chamadas externas. Esse documento
 atualiza os contratos de cache/estado e registra as verificações desta correção.
+
+CARD 34 — CATÁLOGO OSM MUNICIPAL DE ANÁPOLIS
+Consulte docs/CATALOGO_OSM_ANAPOLIS.md e docs/RELATORIO_CARD34.md.
+O ZIP do Card 34 é um delta com aplicador/backup em META_CARD34.
+Faça backup consistente antes de aplicar locais/0011_municipal_catalog.
+A migration não importa dados; use o comando administrativo e valide em banco
+separado primeiro. Não substitua .env nem banco do PC 1. O fluxo web permanece
+suportado sem Android SDK. Sem commit/push/PR nesta implementação.

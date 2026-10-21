@@ -1,0 +1,68 @@
+{
+  "dataset": "SYNTHETIC 10000 plus four topology POIs",
+  "database": "sqlite",
+  "tables": {
+    "locais_catalogscope": {
+      "table_bytes": 4096,
+      "index_bytes": 8192
+    },
+    "locais_catalogbatch": {
+      "table_bytes": 4096,
+      "index_bytes": 12288
+    },
+    "locais_catalogpoi": {
+      "table_bytes": 483328,
+      "index_bytes": 679936
+    },
+    "locais_catalogentry": {
+      "table_bytes": 6852608,
+      "index_bytes": 3534848
+    }
+  },
+  "measurement": "table_and_index_allocated_bytes",
+  "database_bytes": 11902976,
+  "free_bytes": 0,
+  "catalog_bytes": 11579392,
+  "unattributed_bytes": 323584,
+  "poi_count": 10004,
+  "edition_count": 1,
+  "estimates": {
+    "assumptions": "same schema/tag sizes/density; 40% margin; not inventory",
+    "margin": 1.4,
+    "sample_pois": 10004,
+    "records": [
+      {
+        "pois": 10000,
+        "one_edition_bytes": 16204683,
+        "two_editions_bytes": 30781448
+      },
+      {
+        "pois": 30000,
+        "one_edition_bytes": 48533767,
+        "two_editions_bytes": 92183779
+      },
+      {
+        "pois": 50000,
+        "one_edition_bytes": 80862852,
+        "two_editions_bytes": 153586111
+      }
+    ]
+  },
+  "query": {
+    "scope": "SQL count and 20 IDs, not full HTTP/rendering",
+    "count": 10004,
+    "page_items": 20,
+    "median_ms": 6.545,
+    "samples_ms": [
+      6.719630000134202,
+      6.544703000145091,
+      6.150875999992422,
+      6.342196999867156,
+      6.9682250000369095
+    ],
+    "plan": "5 0 62 SEARCH locais_catalogentry USING INDEX catalog_edition_name (batch_id=?)\n14 0 45 SEARCH locais_catalogpoi USING INTEGER PRIMARY KEY (rowid=?)\n20 0 0 CORRELATED SCALAR SUBQUERY 2\n24 20 39 SEARCH U0 USING COVERING INDEX sqlite_autoindex_local_1 (osm_id=?)\n56 0 0 CORRELATED SCALAR SUBQUERY 1\n60 56 39 SEARCH U0 USING COVERING INDEX sqlite_autoindex_local_1 (osm_id=?)"
+  },
+  "matching_fixture_locals": 1000,
+  "matching_plan": "5 0 162 SEARCH local USING INDEX local_source_match_point (latitude>? AND latitude<?)\n47 0 0 USE TEMP B-TREE FOR ORDER BY",
+  "measurement_phase": "Catalog/whole-database storage measured before inserting 1000 matching Local fixtures; matching_plan measured afterwards."
+}

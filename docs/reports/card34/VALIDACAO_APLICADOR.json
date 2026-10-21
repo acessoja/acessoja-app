@@ -1,0 +1,12 @@
+{
+  "LF_and_CRLF_apply_revert": true,
+  "baseline_files_restored": 453,
+  "unrelated_user_file_preserved": true,
+  "local_change_rejected_before_copy": true,
+  "post_apply_edit_rejects_rollback_without_writes": true,
+  "package_tampering_rejected": true,
+  "zip_crc_and_manifest_hashes_verified": true,
+  "repository_files": 57,
+  "platform": "linux",
+  "note": "Tests run under Linux; Windows-native execution remains pending."
+}

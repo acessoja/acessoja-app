@@ -1,0 +1,61 @@
+{
+  "executed_at": "2026-10-21T00:54:08.243263+00:00",
+  "backend": {
+    "passed": 496,
+    "skipped": 11,
+    "subtests_passed": 21,
+    "coverage_percent": 90.92402464065708,
+    "threshold_percent": 80,
+    "skips": "8 PostgreSQL-dependent tests and 3 Redis tests (the Redis tests passed separately)"
+  },
+  "redis": {
+    "passed": 3,
+    "server_version": "6.2.14",
+    "isolated_loopback_port": 16394
+  },
+  "flutter": {
+    "version": "3.47.4",
+    "dart": "3.13.3",
+    "analyze": "passed, zero issues",
+    "tests_passed": 859,
+    "build_web": "passed, including Wasm dry run",
+    "build_apk": "blocked: Android SDK missing",
+    "toolchain": "official Flutter tag 9584c6713b324636289d067944a46fd6b49df14b with official engine 06a2e2a110089dff50fe635cffd2a61e1b24fbcd and Dart; CI=true avoids optional Azure metadata detection; no Git writes"
+  },
+  "django": {
+    "check": "passed",
+    "migrations_check": "passed, no changes",
+    "clean_migrate": "passed",
+    "schema": "passed, --fail-on-warn",
+    "flake8": "passed, zero issues",
+    "migration_down_up": "passed in isolated database copy"
+  },
+  "real_import": {
+    "accepted": 424,
+    "complete": false,
+    "reason": "incomplete geometry osm:relation:20423932",
+    "created": 424,
+    "reimport_unchanged": 424,
+    "dry_run_database_bytes_unchanged": true
+  },
+  "windows": {
+    "wheels": "all optional import wheels resolved for CPython 3.12/win_amd64",
+    "native_execution": "not executed"
+  },
+  "pending": [
+    "PostgreSQL real row-lock concurrency and storage measurements",
+    "Chrome interactive journey with providers disabled",
+    "GPS, Android, NVDA/TalkBack and device frame/memory performance"
+  ],
+  "remote_read_only": [
+    {
+      "branch": "main",
+      "sha": "853934a15e58adf632cfeb9d9e839047451b9f7e"
+    },
+    {
+      "branch": "develop",
+      "sha": "f3a213b127145309dfbc84185d562cd1c7720711"
+    }
+  ],
+  "package_validation": "See VALIDACAO_APLICADOR.json; LF/CRLF, apply/revert and tamper protection tested in isolated copies"
+}
