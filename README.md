@@ -546,3 +546,13 @@ para aplicação, diagnóstico sem tráfego externo (`python manage.py check_geo
 configuração compatível de geocodificação, limites e evidências da correção.
 A descoberta mantém dados compatíveis por tempo limitado; limpar filtros, termo e área são ações distintas.
 Coordenação entre processos usa Redis com leases por proprietário; LocMemCache é somente para um processo.
+
+## Card 34 — Catálogo municipal OSM
+
+Mapa e Explorar consultam POIs persistidos de Anápolis sem exigir GPS/Overpass.
+A carga é um comando administrativo em lote, separado de Local, avaliação e favorito.
+Aplique `locais/0011_municipal_catalog`; a migration não baixa/importa dados.
+Instalação opcional, fonte/hash, comandos Windows, contratos e limites estão em
+[CATALOGO_OSM_ANAPOLIS.md](docs/CATALOGO_OSM_ANAPOLIS.md).
+Resultados reproduzidos e homologações pendentes: [RELATORIO_CARD34.md](docs/RELATORIO_CARD34.md).
+O uso no navegador continua disponível sem Android SDK.

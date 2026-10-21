@@ -1,4 +1,5 @@
 import math
+from django.db.models import Q, Exists, OuterRef, Subquery
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -80,10 +81,14 @@ class LocalViewSet(viewsets.ModelViewSet):
         if filters["categories"]:
             qs = qs.filter(categoria__in=filters["categories"])
         if filters["search"]:
-            from django.db.models import Q
             qs = qs.filter(Q(nome__icontains=filters["search"]) | Q(endereco__icontains=filters["search"]))
         if filters["sources"] == ["openstreetmap"]:
-            qs = qs.exclude(osm_id__isnull=True).exclude(osm_id="")
+            from .catalog_models import CatalogEntry, CatalogScope
+            editions = CatalogEntry.objects.filter(batch_id__in=Subquery(
+                CatalogScope.objects.filter(active_batch__isnull=False).values("active_batch_id")),
+                poi__local_id=OuterRef("pk"))
+            qs = qs.annotate(has_catalog=Exists(editions)).filter(
+                Q(has_catalog=True) | (Q(osm_id__isnull=False) & ~Q(osm_id="")))
         locals_ = [local for local in qs if options.contains(local)]
         context = populate_accessibility_context(locals_, self.get_serializer_context())
         context["missing_resources"] = {}

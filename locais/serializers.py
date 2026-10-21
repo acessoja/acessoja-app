@@ -21,19 +21,25 @@ class LocalSerializer(serializers.ModelSerializer):
     accessibility = serializers.SerializerMethodField()
     origins = serializers.SerializerMethodField()
     missing_resources = serializers.SerializerMethodField()
+    catalog_provenance = serializers.SerializerMethodField()
+
+    @extend_schema_field(serializers.JSONField(allow_null=True))
+    def get_catalog_provenance(self, obj):
+        local_accessibility(obj, self.context)
+        return self.context.get("catalog_provenance", {}).get(obj.pk)
 
     @extend_schema_field(ConsolidatedAccessibilitySerializer)
     def get_accessibility(self, obj):
         return local_accessibility(obj, self.context)
 
     def get_origins(self, obj) -> list[str]:
-        return ["acessoja", "openstreetmap"] if obj.osm_id else ["acessoja"]
+        return ["acessoja", "openstreetmap"] if obj.osm_id or self.get_catalog_provenance(obj) else ["acessoja"]
 
     def get_missing_resources(self, obj) -> list[str]:
         return self.context.get("missing_resources", {}).get(obj.pk, [])
 
     def validate(self, attrs):
-        if set(self.initial_data) & {"accessibility", "origins", "missing_resources"}:
+        if set(self.initial_data) & {"accessibility", "origins", "missing_resources", "catalog_provenance"}:
             raise serializers.ValidationError("Os estados consolidados são somente leitura.")
         if "latitude" in attrs or "longitude" in attrs:
             lat = attrs.get("latitude", getattr(self.instance, "latitude", None))
@@ -115,6 +121,7 @@ class LocalSerializer(serializers.ModelSerializer):
             "accessibility",
             "origins",
             "missing_resources",
+            "catalog_provenance",
         ]
         read_only_fields = ["osm_id"]
         extra_kwargs = {

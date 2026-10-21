@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
+
 import '../models/map_place.dart';
 import 'places_service.dart';
+import 'app_http.dart';
 
 class _CachedPlace {
   final Map<String, dynamic> value;
@@ -20,13 +22,26 @@ class PlacePreviewController extends ChangeNotifier {
   bool loading = false;
   bool failed = false;
 
-  PlacePreviewController({this.service = const PlacesService(), DateTime Function()? now})
-      : now = now ?? DateTime.now;
+  PlacePreviewController({
+    this.service = const PlacesService(),
+    DateTime Function()? now,
+  }) : now = now ?? DateTime.now {
+    AppHttp.sessionRevision.addListener(_sessionChanged);
+  }
+
+  void _sessionChanged() {
+    invalidate();
+    close();
+  }
 
   Map<String, dynamic>? get reviewTarget {
     final selected = place;
-    if (selected == null || selected.internalId == null) { return null; }
-    if (!selected.isExternal) { return selected.toMap(); }
+    if (selected == null || selected.internalId == null) {
+      return null;
+    }
+    if (!selected.isExternal) {
+      return selected.toMap();
+    }
     return MapPlace.internal({
       ...selected.linkedLocal,
       'id_local': selected.internalId,
@@ -39,30 +54,50 @@ class PlacePreviewController extends ChangeNotifier {
   }
 
   Future<void> select(MapPlace selected, {bool force = false}) async {
-    if (_disposed) { return; }
+    if (_disposed) {
+      return;
+    }
     final generation = ++_generation;
     place = selected;
     failed = false;
     final id = selected.internalId;
     final cached = id == null ? null : _cache[id];
-    if (!force && cached != null && now().difference(cached.loadedAt) < const Duration(minutes: 1)) {
+    if (!force &&
+        cached != null &&
+        now().difference(cached.loadedAt) < const Duration(minutes: 1)) {
       _apply(selected, cached.value);
       loading = false;
       notifyListeners();
       return;
     }
-    loading = id != null;
+    loading = id != null || selected.catalogId != null;
     notifyListeners();
-    if (id == null || _disposed || generation != _generation) { return; }
+    if (!loading || _disposed || generation != _generation) {
+      return;
+    }
     try {
-      final record = await service.fetchPlace(id);
-      if (_disposed || generation != _generation) { return; }
-      if (record['id_local'] != id) { throw const FormatException('Registro associado não confirmado.'); }
-      if (_cache.length >= 50) { _cache.remove(_cache.keys.first); }
-      _cache[id] = _CachedPlace(record, now());
-      _apply(selected, record);
+      final record = id == null
+          ? await service.fetchCatalogPlace(selected.catalogId!)
+          : await service.fetchPlace(id);
+      if (_disposed || generation != _generation) {
+        return;
+      }
+      if (id == null) {
+        place = MapPlace.external(record);
+      } else {
+        if (record['id_local'] != id) {
+          throw const FormatException('Registro associado não confirmado.');
+        }
+        if (_cache.length >= 50) {
+          _cache.remove(_cache.keys.first);
+        }
+        _cache[id] = _CachedPlace(record, now());
+        _apply(selected, record);
+      }
     } catch (_) {
-      if (_disposed || generation != _generation) { return; }
+      if (_disposed || generation != _generation) {
+        return;
+      }
       failed = true;
     } finally {
       if (!_disposed && generation == _generation) {
@@ -80,15 +115,23 @@ class PlacePreviewController extends ChangeNotifier {
 
   Future<void> retry() async {
     final selected = place;
-    if (selected != null) { await select(selected, force: true); }
+    if (selected != null) {
+      await select(selected, force: true);
+    }
   }
 
   void invalidate([int? id]) {
-    if (id == null) { _cache.clear(); } else { _cache.remove(id); }
+    if (id == null) {
+      _cache.clear();
+    } else {
+      _cache.remove(id);
+    }
   }
 
   void close() {
-    if (_disposed) { return; }
+    if (_disposed) {
+      return;
+    }
     _generation++;
     place = null;
     loading = false;
@@ -100,6 +143,7 @@ class PlacePreviewController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _generation++;
+    AppHttp.sessionRevision.removeListener(_sessionChanged);
     super.dispose();
   }
 }
