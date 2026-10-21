@@ -72,7 +72,9 @@ class CatalogConfirmSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         if not attrs["confirmed"] or set(self.initial_data) - set(self.fields):
-            raise serializers.ValidationError("Confirme os dados disponíveis; identidade e coordenadas vêm do catálogo.")
+            raise serializers.ValidationError(
+                "Confirme os dados disponíveis; identidade e coordenadas vêm do catálogo."
+            )
         if any(ord(c) < 32 for c in attrs["nome"] + attrs["endereco"]):
             raise serializers.ValidationError("Nome e endereço não podem conter caracteres de controle.")
         return attrs
