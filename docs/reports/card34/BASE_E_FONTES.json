@@ -1,0 +1,31 @@
+{
+  "base_zip": "acessoja-app-main (15)(1).zip",
+  "base_zip_sha256": "b35b84c17a9feed0b99a5703dd99ae26c9dc8c92185b8fc1669623a5fa33aa42",
+  "files_in_base": 453,
+  "original_instruction": "Desenvolvimento_Card_34_Catalogo_OSM_Anapolis(1).md",
+  "original_instruction_sha256": "f46b6862384dfcaccd61d921753405df5360e99394bde3aeb13b2ba7a1d69086",
+  "method": "ZIP extraction into isolated non-Git work copy; recovered base has same bytes as (14)(1).zip; no Git writes",
+  "sources": [
+    {
+      "name": "GO_Municipios_2024.zip",
+      "url": "https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_2024/UFs/GO/GO_Municipios_2024.zip",
+      "size": 17248165,
+      "sha256": "66430759bbca5e62cb4a90c4b225ab63454208169b0d126971692be51a9332f7",
+      "obtained_at": "2026-10-21T00:22:07.797157+00:00"
+    },
+    {
+      "name": "centro-oeste-261018.osm.pbf",
+      "url": "https://download.geofabrik.de/south-america/brazil/centro-oeste-261018.osm.pbf",
+      "size": 206627964,
+      "sha256": "4ba80408a5140d6e8d1056056acd128e076cfaaad10ccef3a6cd1ca7285afd8c",
+      "obtained_at": "2026-10-21T00:25:22.155699+00:00"
+    },
+    {
+      "name": "centro-oeste.poly",
+      "url": "https://download.geofabrik.de/south-america/brazil/centro-oeste.poly",
+      "size": 8529,
+      "sha256": "720e8928318e66656c39c4dbfe9f44be2d0a5fb45e1a245bc784f16118d95587",
+      "obtained_at": "2026-10-21T00:22:06.590997+00:00"
+    }
+  ]
+}

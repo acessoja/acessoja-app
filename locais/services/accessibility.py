@@ -1,10 +1,10 @@
 """Batch evidence loading with the same visibility policy as Card 15."""
 from collections import defaultdict
 
-from django.db.models import Q
+from django.db.models import Q, Subquery
 
 from modal_avaliacao.models import ModalAvaliacao
-from locais.accessibility import resolve_information
+from locais.accessibility import osm_information, resolve_information
 
 
 def populate_accessibility_context(locals_, context):
@@ -25,9 +25,31 @@ def populate_accessibility_context(locals_, context):
         grouped[row["local_id"]].append(row)
     states = context.setdefault("accessibility_states", {})
     stats = context.setdefault("visible_review_stats", {})
+    from locais.catalog_models import CatalogEntry, CatalogScope
+    ids = [local.pk for local in locals_]
+    identities = [local.osm_id for local in locals_ if local.osm_id]
+    editions = CatalogEntry.objects.filter(batch_id__in=Subquery(
+        CatalogScope.objects.filter(active_batch__isnull=False).values("active_batch_id"))).filter(
+            Q(poi__local_id__in=ids) | Q(poi__external_id__in=identities)).select_related("poi", "observed_in", "batch")
+    by_local, by_identity = {}, {}
+    for edition in editions:
+        if edition.poi.local_id:
+            by_local[edition.poi.local_id] = edition
+        by_identity[edition.poi.external_id] = edition
+    provenance = context.setdefault("catalog_provenance", {})
     for local in locals_:
         local_rows = grouped[local.pk]
-        states[(local.pk, own_id)] = resolve_information(local.accessibility_information, local_rows)
+        edition = by_local.get(local.pk) or by_identity.get(local.osm_id)
+        external = osm_information(edition.tags) if edition else {}
+        states[(local.pk, own_id)] = resolve_information(local.accessibility_information, local_rows, external)
+        if edition:
+            provenance[local.pk] = {
+                "catalog_id": edition.poi_id, "external_id": edition.poi.external_id,
+                "source_snapshot_at": edition.observed_in.snapshot_at,
+                "source_status": edition.source_status, "point_method": edition.point_method,
+                "source_observed_in_current_batch": edition.observed_in_id == edition.batch_id,
+                "attribution": "© OpenStreetMap contributors",
+                "license_url": "https://www.openstreetmap.org/copyright"}
         ratings = [row["estrelas"] for row in local_rows if row["is_valid"] and 1 <= row["estrelas"] <= 5]
         stats[(local.pk, own_id)] = {"count": len(ratings),
                                      "average": sum(ratings) / len(ratings) if ratings else None}

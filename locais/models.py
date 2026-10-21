@@ -1,6 +1,9 @@
 from django.db import models
 from django.conf import settings
 
+# Register the catalog models without making optional PBF/geospatial libraries startup dependencies.
+from .catalog_models import CatalogScope, CatalogBatch, CatalogPOI, CatalogEntry  # noqa: F401
+
 
 class Local(models.Model):
     id_local = models.AutoField(primary_key=True)
@@ -28,6 +31,7 @@ class Local(models.Model):
     class Meta:
         db_table = "local"
         managed = True
+        indexes = [models.Index(fields=["latitude", "longitude"], name="local_source_match_point")]
 
     @property
     def media_estrelas(self):

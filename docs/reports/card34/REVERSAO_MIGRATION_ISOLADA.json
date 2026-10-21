@@ -1,0 +1,10 @@
+{
+  "isolated_copy": true,
+  "community_fixture_preserved": true,
+  "counts": {
+    "local": 1,
+    "reviews": 1,
+    "favorites": 1
+  },
+  "catalog_removed_and_not_auto_reimported": true
+}

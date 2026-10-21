@@ -1,0 +1,190 @@
+{
+  "municipality": "5201108",
+  "dry_run": false,
+  "result": "published",
+  "rules_version": "anapolis-poi-v1.3",
+  "source": {
+    "provider": "Geofabrik",
+    "url": "https://download.geofabrik.de/south-america/brazil/centro-oeste-261018.osm.pbf",
+    "sha256": "4ba80408a5140d6e8d1056056acd128e076cfaaad10ccef3a6cd1ca7285afd8c",
+    "bytes": 206627964,
+    "obtained_at": "2026-10-21T00:25:22.155699+00:00",
+    "processed_at": "2026-10-21T00:31:10.432504+00:00",
+    "snapshot_at": "2026-10-18T20:25:06+00:00",
+    "date_decision": "",
+    "boundary": {
+      "municipality": "5201108",
+      "name": "Anápolis",
+      "edition": "IBGE-2024",
+      "source_crs": "EPSG:4674",
+      "output_crs": "EPSG:4326",
+      "axis_order": "longitude,latitude",
+      "source_sha256": "66430759bbca5e62cb4a90c4b225ab63454208169b0d126971692be51a9332f7",
+      "source": "IBGE GO_Municipios_2024.zip",
+      "license": "IBGE public geographic data; retain attribution",
+      "file_sha256": "e4d340cecb87af32511f68bf6c108d45e44f66a4ec80409aac6c9d530abfbd89",
+      "geometry_sha256": "3850419e30852ec8226655b66c3a9457e133f82f6b2425a3cdac77783bf21a3c",
+      "normalized_crs": "EPSG:4326",
+      "bbox_west_south_east_north": [
+        -49.1936423,
+        -16.485987,
+        -48.7502443,
+        -16.1247011
+      ],
+      "inclusion": "covers representative point; do not move it into the municipality"
+    },
+    "coverage": {
+      "sha256": "720e8928318e66656c39c4dbfe9f44be2d0a5fb45e1a245bc784f16118d95587",
+      "covers_municipality": true,
+      "format": ".poly",
+      "bbox_west_south_east_north": [
+        -61.66496,
+        -24.18381,
+        -45.87758,
+        -7.317334
+      ]
+    },
+    "full_snapshot_attested": true,
+    "attribution": "© OpenStreetMap contributors",
+    "license": "ODbL-1.0",
+    "license_url": "https://www.openstreetmap.org/copyright"
+  },
+  "selection": {
+    "examined": {
+      "node": 35837648,
+      "way": 2491179,
+      "relation": 56077
+    },
+    "eligible": {
+      "node": 17132,
+      "way": 20517,
+      "relation": 444
+    },
+    "rejected": {
+      "not_a_supported_poi": 3065023,
+      "restricted_access": 36095,
+      "outside_municipality": 17370,
+      "inactive": 1504,
+      "outside_municipality_bbox": 20296,
+      "unsupported_open_way": 1,
+      "unsupported_relation": 1,
+      "incomplete_geometry": 1
+    },
+    "categories": {
+      "parque": 165,
+      "restaurante": 30,
+      "saude": 37,
+      "loja": 101,
+      "farmacia": 15,
+      "publico": 7,
+      "educacao": 29,
+      "supermercado": 22,
+      "outros": 11,
+      "cafeteria": 3,
+      "banco": 4
+    },
+    "accepted_types": {
+      "node": 210,
+      "way": 204,
+      "relation": 10
+    },
+    "geometry_types": {
+      "Point": 210,
+      "MultiPolygon": 214
+    },
+    "accepted": 424,
+    "without_name": 117,
+    "without_address": 304,
+    "crosses_boundary": 0,
+    "on_boundary": 0,
+    "rejection_samples": {
+      "not_a_supported_poi": [
+        "osm:node:34557144",
+        "osm:node:34567423",
+        "osm:node:96288017",
+        "osm:node:96448804",
+        "osm:node:96449667",
+        "osm:node:96450162",
+        "osm:node:96450253",
+        "osm:node:96450458",
+        "osm:node:111450216",
+        "osm:node:111498914"
+      ],
+      "restricted_access": [
+        "osm:node:365601295",
+        "osm:node:386885138",
+        "osm:node:386885139",
+        "osm:node:1042083122",
+        "osm:node:1153513493",
+        "osm:node:1155235690",
+        "osm:node:1155235761",
+        "osm:node:1155235841",
+        "osm:node:1384110716",
+        "osm:node:1423995822"
+      ],
+      "outside_municipality": [
+        "osm:node:452757050",
+        "osm:node:506288372",
+        "osm:node:511969609",
+        "osm:node:511969610",
+        "osm:node:511969611",
+        "osm:node:511969613",
+        "osm:node:530786903",
+        "osm:node:550387430",
+        "osm:node:550387433",
+        "osm:node:550387478"
+      ],
+      "inactive": [
+        "osm:node:516640055",
+        "osm:node:629670609",
+        "osm:node:1617687097",
+        "osm:node:1617694528",
+        "osm:node:1617922525",
+        "osm:node:1617922554",
+        "osm:node:1617922618",
+        "osm:node:1617922647",
+        "osm:node:1617922674",
+        "osm:node:1617922836"
+      ],
+      "outside_municipality_bbox": [],
+      "unsupported_open_way": [],
+      "unsupported_relation": [
+        "osm:relation:15654713"
+      ],
+      "incomplete_geometry": [
+        "osm:relation:20423932"
+      ]
+    },
+    "candidate_duplicate_pairs": 1,
+    "duplicate_sample": [
+      [
+        "osm:node:6800261095",
+        "osm:way:725178131"
+      ]
+    ],
+    "peak_rss_bytes": 953393152,
+    "temporary_bytes": 589840928,
+    "auxiliary_objects": 38346811,
+    "complete_geometry": false
+  },
+  "complete": false,
+  "absence_reconciliation": false,
+  "changes": {
+    "created": 424,
+    "updated": 0,
+    "unchanged": 0,
+    "linked": 0,
+    "pending_review": 2,
+    "not_seen": 0,
+    "reactivated": 0,
+    "carried_without_absence_inference": 0,
+    "review_identity_sample": [
+      "osm:node:6800261095",
+      "osm:way:725178131"
+    ]
+  },
+  "validation": "passed_before_publication",
+  "batch_id": "711f6234-02dc-4d60-b528-b0ad0ce328d4",
+  "duration_seconds": 138.469,
+  "finished_at": "2026-10-21T00:33:28.006365+00:00"
+}

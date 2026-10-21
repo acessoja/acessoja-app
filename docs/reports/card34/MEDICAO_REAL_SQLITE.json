@@ -1,0 +1,65 @@
+{
+  "dataset": "REAL",
+  "database": "sqlite",
+  "tables": {
+    "locais_catalogscope": {
+      "table_bytes": 4096,
+      "index_bytes": 8192
+    },
+    "locais_catalogbatch": {
+      "table_bytes": 8192,
+      "index_bytes": 12288
+    },
+    "locais_catalogpoi": {
+      "table_bytes": 49152,
+      "index_bytes": 40960
+    },
+    "locais_catalogentry": {
+      "table_bytes": 339968,
+      "index_bytes": 184320
+    }
+  },
+  "measurement": "table_and_index_allocated_bytes",
+  "database_bytes": 970752,
+  "free_bytes": 0,
+  "catalog_bytes": 647168,
+  "unattributed_bytes": 323584,
+  "poi_count": 424,
+  "edition_count": 1,
+  "estimates": {
+    "assumptions": "same schema/tag sizes/density; 40% margin; not inventory",
+    "margin": 1.4,
+    "sample_pois": 424,
+    "records": [
+      {
+        "pois": 10000,
+        "one_edition_bytes": 20332668,
+        "two_editions_bytes": 37689939
+      },
+      {
+        "pois": 30000,
+        "one_edition_bytes": 60906253,
+        "two_editions_bytes": 112886316
+      },
+      {
+        "pois": 50000,
+        "one_edition_bytes": 101479837,
+        "two_editions_bytes": 188082694
+      }
+    ]
+  },
+  "query": {
+    "scope": "SQL count and 20 IDs, not full HTTP/rendering",
+    "count": 424,
+    "page_items": 20,
+    "median_ms": 0.799,
+    "samples_ms": [
+      1.2979250000171305,
+      1.0500209998554055,
+      0.7985119998465962,
+      0.7024610001735709,
+      0.6662579999101581
+    ],
+    "plan": "5 0 62 SEARCH locais_catalogentry USING INDEX catalog_edition_name (batch_id=?)\n14 0 45 SEARCH locais_catalogpoi USING INTEGER PRIMARY KEY (rowid=?)\n20 0 0 CORRELATED SCALAR SUBQUERY 2\n24 20 39 SEARCH U0 USING COVERING INDEX sqlite_autoindex_local_1 (osm_id=?)\n56 0 0 CORRELATED SCALAR SUBQUERY 1\n60 56 39 SEARCH U0 USING COVERING INDEX sqlite_autoindex_local_1 (osm_id=?)"
+  }
+}

@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
 import '../config.dart';
@@ -13,13 +14,16 @@ class PlacesException implements Exception {
   final int? retryAfterSeconds;
   final bool retryable;
   final String? correlationId;
-  const PlacesException(this.message, this.status,
-      {this.code = 'provider_unavailable',
-      this.stage = 'application',
-      this.retrySource = 'application',
-      this.retryAfterSeconds,
-      this.retryable = true,
-      this.correlationId});
+  const PlacesException(
+    this.message,
+    this.status, {
+    this.code = 'provider_unavailable',
+    this.stage = 'application',
+    this.retrySource = 'application',
+    this.retryAfterSeconds,
+    this.retryable = true,
+    this.correlationId,
+  });
   factory PlacesException.fromResponse(http.Response response) {
     Map<String, dynamic> body = {};
     try {
@@ -27,7 +31,9 @@ class PlacesException implements Exception {
       if (data is Map) {
         body = Map<String, dynamic>.from(data);
       }
-    } catch (_) {/* Never expose malformed upstream HTML. */}
+    } catch (_) {
+      /* Never expose malformed upstream HTML. */
+    }
     final retry = body['retry_after_seconds'];
     final header = parseRetryAfter(response.headers['retry-after']);
     final normalized =
@@ -37,17 +43,19 @@ class PlacesException implements Exception {
         : header == null || normalized >= header
             ? normalized
             : header;
-    return PlacesException('geographic_request_failed', response.statusCode,
-        code: body['code'] is String
-            ? body['code']
-            : 'http_${response.statusCode}',
-        stage: body['stage'] is String ? body['stage'] : 'application',
-        retrySource:
-            body['retry_source'] == 'upstream' ? 'upstream' : 'application',
-        retryAfterSeconds: seconds,
-        retryable: body['retryable'] != false,
-        correlationId:
-            body['correlation_id'] is String ? body['correlation_id'] : null);
+    return PlacesException(
+      'geographic_request_failed',
+      response.statusCode,
+      code:
+          body['code'] is String ? body['code'] : 'http_${response.statusCode}',
+      stage: body['stage'] is String ? body['stage'] : 'application',
+      retrySource:
+          body['retry_source'] == 'upstream' ? 'upstream' : 'application',
+      retryAfterSeconds: seconds,
+      retryable: body['retryable'] != false,
+      correlationId:
+          body['correlation_id'] is String ? body['correlation_id'] : null,
+    );
   }
   @override
   String toString() => message;
@@ -59,11 +67,14 @@ class ExternalPlacesResult {
   final bool complete;
   final DateTime? fetchedAt;
   final int? freshSeconds, validSeconds;
-  const ExternalPlacesResult(this.places, this.truncated,
-      {this.complete = true,
-      this.fetchedAt,
-      this.freshSeconds,
-      this.validSeconds});
+  const ExternalPlacesResult(
+    this.places,
+    this.truncated, {
+    this.complete = true,
+    this.fetchedAt,
+    this.freshSeconds,
+    this.validSeconds,
+  });
 }
 
 /// Centraliza as chamadas relacionadas a locais usadas pelo mapa.
@@ -73,9 +84,28 @@ class ExternalPlacesResult {
 class PlacesService {
   const PlacesService();
 
-  Future<DiscoveryPage> fetchDiscoveryPage(
-      {required DiscoveryQuery query, String? next}) async {
-    final endpoint = Uri.parse('${Config.baseUrl}/api/locais/');
+  Future<DiscoveryPage> fetchDiscoveryPage({
+    required DiscoveryQuery query,
+    String? next,
+  }) =>
+      _fetchPage(query: query, next: next);
+
+  Future<DiscoveryPage> fetchCatalogPage({
+    required DiscoveryQuery query,
+    String? next,
+    String? version,
+  }) =>
+      _fetchPage(query: query, next: next, catalog: true, version: version);
+
+  Future<DiscoveryPage> _fetchPage({
+    required DiscoveryQuery query,
+    String? next,
+    bool catalog = false,
+    String? version,
+  }) async {
+    final endpoint = Uri.parse(
+      '${Config.baseUrl}/api/locais/${catalog ? 'catalogo/' : ''}',
+    );
     final uri = next == null
         ? endpoint.replace(queryParameters: query.parameters)
         : endpoint.resolve(next);
@@ -87,10 +117,16 @@ class PlacesService {
       throw const FormatException('Unsafe discovery page');
     }
     final parameters = {...uri.queryParameters}..remove('page');
+    if (catalog && next != null) {
+      if (version == null || parameters.remove('catalog_version') != version) {
+        throw const FormatException('Catalog version changed');
+      }
+    }
     if (next != null &&
         (parameters.length != query.parameters.length ||
-            query.parameters.entries
-                .any((e) => parameters[e.key] != e.value))) {
+            query.parameters.entries.any(
+              (e) => parameters[e.key] != e.value,
+            ))) {
       throw const FormatException('Discovery query changed');
     }
     final page = uri.queryParameters['page'];
@@ -99,7 +135,7 @@ class PlacesService {
     }
     final response = await AppHttp.get(uri);
     if (response.statusCode != 200) {
-      throw PlacesException('discovery_failed', response.statusCode);
+      throw PlacesException.fromResponse(response);
     }
     final data = jsonDecode(utf8.decode(response.bodyBytes));
     final rows = data is List
@@ -117,26 +153,65 @@ class PlacesService {
         count < 0) {
       throw const FormatException('Invalid discovery metadata');
     }
+    final receivedVersion = data is Map ? data['catalog_version'] : null;
+    if (catalog &&
+        (receivedVersion is! String ||
+            receivedVersion.isEmpty ||
+            (version != null && next != null && receivedVersion != version))) {
+      throw const FormatException('Invalid catalog version');
+    }
     return DiscoveryPage(
-        rows
-            .whereType<Map>()
-            .map((p) => MapPlace.internal(Map<String, dynamic>.from(p)))
-            .where((p) => p.internalId != null)
-            .toList(),
-        nextPage as String?,
-        count);
+      rows
+          .whereType<Map>()
+          .map(
+            (p) => catalog
+                ? MapPlace.external(Map<String, dynamic>.from(p))
+                : MapPlace.internal(Map<String, dynamic>.from(p)),
+          )
+          .where(
+            (p) => catalog
+                ? p.catalogId != null &&
+                    p.externalId != null &&
+                    p.hasCoordinates
+                : p.internalId != null,
+          )
+          .toList(),
+      nextPage as String?,
+      count,
+      catalogVersion: catalog ? receivedVersion as String : null,
+      complete: !catalog || data is Map && data['coverage_complete'] == true,
+      available: !catalog || data is Map && data['available'] == true,
+    );
+  }
+
+  Future<Map<String, dynamic>> fetchCatalogPlace(int id) async {
+    final response = await AppHttp.get(
+      Uri.parse('${Config.baseUrl}/api/locais/catalogo/$id/'),
+    );
+    if (response.statusCode != 200) {
+      throw PlacesException.fromResponse(response);
+    }
+    final record = jsonDecode(utf8.decode(response.bodyBytes));
+    if (record is! Map || record['catalog_id'] != id) {
+      throw const FormatException('Invalid catalog identity');
+    }
+    return Map<String, dynamic>.from(record);
   }
 
   Future<Map<String, dynamic>> registerManual(
-      Map<String, dynamic> payload) async {
+    Map<String, dynamic> payload,
+  ) async {
     final response = await AppHttp.post(
-        Uri.parse('${Config.baseUrl}/api/locais/cadastro-manual/'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(payload));
+      Uri.parse('${Config.baseUrl}/api/locais/cadastro-manual/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(payload),
+    );
     final data = jsonDecode(utf8.decode(response.bodyBytes));
     if (response.statusCode != 200 && response.statusCode != 201) {
-      throw ManualRegistrationException(response.statusCode,
-          data is Map ? Map<String, dynamic>.from(data) : {});
+      throw ManualRegistrationException(
+        response.statusCode,
+        data is Map ? Map<String, dynamic>.from(data) : {},
+      );
     }
     if (data is! Map || data['id_local'] is! int || data['id_local'] <= 0) {
       throw const FormatException('Invalid manual registration response');
@@ -145,9 +220,9 @@ class PlacesService {
   }
 
   Future<Map<String, dynamic>> fetchPlace(int id) async {
-    final response =
-        await AppHttp.get(Uri.parse('${Config.baseUrl}/api/locais/$id/'))
-            .timeout(const Duration(seconds: 12));
+    final response = await AppHttp.get(
+      Uri.parse('${Config.baseUrl}/api/locais/$id/'),
+    ).timeout(const Duration(seconds: 12));
     if (response.statusCode != 200) {
       throw PlacesException('place_details_failed', response.statusCode);
     }
@@ -198,19 +273,25 @@ class PlacesService {
         (valid != null && (valid is! int || valid <= 0))) {
       throw const FormatException('Invalid external freshness metadata');
     }
-    return ExternalPlacesResult(places, decoded['truncated'] == true,
-        complete: decoded['complete'] != false,
-        fetchedAt: fetched is num
-            ? DateTime.fromMillisecondsSinceEpoch((fetched * 1000).round(),
-                isUtc: true)
-            : null,
-        freshSeconds: fresh as int?,
-        validSeconds: valid as int?);
+    return ExternalPlacesResult(
+      places,
+      decoded['truncated'] == true,
+      complete: decoded['complete'] != false,
+      fetchedAt: fetched is num
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (fetched * 1000).round(),
+              isUtc: true,
+            )
+          : null,
+      freshSeconds: fresh as int?,
+      validSeconds: valid as int?,
+    );
   }
 
   Future<List<Map<String, dynamic>>> fetchCategories() async {
     final response = await AppHttp.get(
-        Uri.parse('${Config.baseUrl}/api/locais/externos/categorias/'));
+      Uri.parse('${Config.baseUrl}/api/locais/externos/categorias/'),
+    );
     if (response.statusCode != 200) {
       throw StateError('categories_failed');
     }
@@ -250,27 +331,33 @@ class PlacesService {
     required String password,
   }) async {
     final credential = base64Encode(utf8.encode('$userName:$password'));
+    final catalogId = MapPlace.external(place).catalogId;
     final response = await AppHttp.post(
-      Uri.parse('${Config.baseUrl}/api/locais/externos/cadastrar/'),
+      Uri.parse(
+        '${Config.baseUrl}/api/locais/${catalogId == null ? 'externos/cadastrar/' : 'catalogo/$catalogId/confirmar/'}',
+      ),
       headers: {
         'Content-Type': 'application/json',
         if (AppHttp.token == null || password.isNotEmpty)
-          'Authorization': 'Basic $credential'
+          'Authorization': 'Basic $credential',
       },
       body: jsonEncode({
-        'registration_token': place['registration_token'],
+        if (catalogId != null) 'confirmed': true,
+        if (catalogId == null)
+          'registration_token': place['registration_token'],
         'nome': name.trim(),
-        'endereco': address.trim()
+        'endereco': address.trim(),
       }),
     );
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw PlacesException(
-          response.statusCode == 401
-              ? (password.isEmpty
-                  ? 'Sessão expirada. Entre novamente.'
-                  : 'Senha incorreta. Confirme sua senha para cadastrar.')
-              : _errorMessage(response.bodyBytes),
-          response.statusCode);
+        response.statusCode == 401
+            ? (password.isEmpty
+                ? 'Sessão expirada. Entre novamente.'
+                : 'Senha incorreta. Confirme sua senha para cadastrar.')
+            : _errorMessage(response.bodyBytes),
+        response.statusCode,
+      );
     }
     final decoded = jsonDecode(utf8.decode(response.bodyBytes));
     final id = decoded is Map ? decoded['id_local'] : null;
@@ -290,7 +377,9 @@ class PlacesService {
       if (data is Map && data['detail'] is String) {
         return data['detail'];
       }
-    } catch (_) {/* Keep malformed/error pages out of the interface. */}
+    } catch (_) {
+      /* Keep malformed/error pages out of the interface. */
+    }
     return 'Não foi possível concluir a consulta. Tente novamente.';
   }
 
@@ -311,7 +400,7 @@ class PlacesService {
       if (mesaAcessivel) 'mesa_acessivel',
       if (banheiroAcessivel) 'banheiro_acessivel',
       if (rampaAcesso) 'rampa_acesso',
-      if (cardapioBraille) 'cardapio_braille'
+      if (cardapioBraille) 'cardapio_braille',
     };
     final queryParams = <String, String>{
       if (selected.isNotEmpty) 'recursos': selected.join(','),
@@ -360,7 +449,8 @@ class PlacesService {
         throw const FormatException('Foreign places page');
       }
       uri = candidate.replace(
-          queryParameters: {...candidate.queryParameters, ...queryParams});
+        queryParameters: {...candidate.queryParameters, ...queryParams},
+      );
     }
   }
 
@@ -406,23 +496,23 @@ int? parseRetryAfter(String? value, {DateTime? now}) {
   }
   final current = now ?? DateTime.now();
   var match = RegExp(
-          r'^[A-Za-z]{3}, (\d{2}) ([A-Za-z]{3}) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$')
-      .firstMatch(text);
+    r'^[A-Za-z]{3}, (\d{2}) ([A-Za-z]{3}) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$',
+  ).firstMatch(text);
   List<String?>? parts;
   if (match != null) {
     parts = [match[1], match[2], match[3], match[4], match[5], match[6]];
   } else {
     match = RegExp(
-            r'^[A-Za-z]+, (\d{2})-([A-Za-z]{3})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) GMT$')
-        .firstMatch(text);
+      r'^[A-Za-z]+, (\d{2})-([A-Za-z]{3})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) GMT$',
+    ).firstMatch(text);
     if (match != null) {
       var year = (current.year ~/ 100) * 100 + int.parse(match[3]!);
       if (year > current.year + 50) year -= 100;
       parts = [match[1], match[2], '$year', match[4], match[5], match[6]];
     } else {
       match = RegExp(
-              r'^[A-Za-z]{3} ([A-Za-z]{3}) +([0-9]{1,2}) (\d{2}):(\d{2}):(\d{2}) (\d{4})$')
-          .firstMatch(text);
+        r'^[A-Za-z]{3} ([A-Za-z]{3}) +([0-9]{1,2}) (\d{2}):(\d{2}):(\d{2}) (\d{4})$',
+      ).firstMatch(text);
       if (match != null) {
         parts = [match[2], match[1], match[6], match[3], match[4], match[5]];
       }
@@ -441,7 +531,7 @@ int? parseRetryAfter(String? value, {DateTime? now}) {
         'Sep',
         'Oct',
         'Nov',
-        'Dec'
+        'Dec',
       ].indexOf(parts[1]!) +
       1;
   if (month == 0) return null;
@@ -459,9 +549,10 @@ int? parseRetryAfter(String? value, {DateTime? now}) {
         second > 59) {
       return null;
     }
-    return ((date.difference(current).inMilliseconds) / 1000)
-        .ceil()
-        .clamp(0, 9007199254740991);
+    return ((date.difference(current).inMilliseconds) / 1000).ceil().clamp(
+          0,
+          9007199254740991,
+        );
   } catch (_) {
     return null;
   }
