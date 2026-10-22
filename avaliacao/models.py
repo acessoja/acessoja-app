@@ -3,7 +3,9 @@ from django.conf import settings
 
 
 class Local(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    # This legacy establishment table can also have reviews by other accounts.
+    # Removing its creator must not cascade through those shared records.
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
     nome = models.CharField(max_length=255)
     endereco = models.CharField(max_length=255)
     distancia = models.FloatField()

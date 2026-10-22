@@ -556,3 +556,47 @@ Instalação opcional, fonte/hash, comandos Windows, contratos e limites estão 
 [CATALOGO_OSM_ANAPOLIS.md](docs/CATALOGO_OSM_ANAPOLIS.md).
 Resultados reproduzidos e homologações pendentes: [RELATORIO_CARD34.md](docs/RELATORIO_CARD34.md).
 O uso no navegador continua disponível sem Android SDK.
+
+
+## Cards 35–37: recuperação, meus dados e homologação
+
+Recuperação agora tem formulário ativo no login, e-mail com link temporário para
+o Flutter Web e nova senha com revogação das credenciais anteriores. A fila SMTP
+precisa do worker `python manage.py process_account_mail --watch`; aceitar a
+solicitação não confirma entrega.
+
+Em Configurações, **Privacidade e meus dados** permite consultar o aviso, autorizar
+histórico/origem separadamente, limpar dados guardados, baixar JSON próprio e
+excluir a conta com senha e confirmação. Concessões antigas sem registro do aviso
+não são convertidas em consentimento. A alteração do e-mail exige senha atual.
+
+Para trabalhar no Windows pelo navegador, mantenha o `.env` privado existente,
+revise os campos novos de `.env.example` e execute:
+
+```powershell
+python -m pip install -r backend/requirements-catalog.txt -r backend/requirements-geographic.txt
+python manage.py migrate
+python manage.py check
+# Outro terminal: python manage.py process_account_mail --watch
+cd frontend
+flutter pub get
+flutter analyze
+flutter test
+flutter run -d chrome --web-port 7357 --dart-define=API_BASE_URL=http://localhost:8000
+```
+
+Execute o backend em `http://localhost:8000` e use `http://localhost:7357` no
+Chrome. Android SDK não é necessário para Web. SMTP de captura local: porta 1025,
+somente contas sintéticas. Sem SMTP, verificar jobs/fila; não simular envio com
+backend de memória fora dos testes.
+
+Documentação desta entrega:
+
+- [Conta, dados e retenção](docs/SEGURANCA_CONTA_PRIVACIDADE.md).
+- [Homologação, Windows, HTTPS e restauração](docs/HOMOLOGACAO_SEGURA.md).
+- [Evidências e pendências reais](docs/EVIDENCIAS_SEGURANCA.md).
+- [Adendo das seções 20/22/24/25 e planejamento](docs/ESPECIFICACAO_CARDS_35_36_37.md).
+
+Homologação: **preparado para implantação; validação externa pendente**. Não
+expor piloto com dados reais antes de validar SMTP, domínio, PostgreSQL/restore,
+retenção, diário independente, responsáveis e controles operacionais descritos.

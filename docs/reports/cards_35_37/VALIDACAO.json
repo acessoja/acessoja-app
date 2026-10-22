@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-21",
+  "base_commit": "03f9722752aba4d452867e49e0dde89d8be031f9",
+  "python": "3.12.14",
+  "flutter": "3.47.4",
+  "dart": "3.13.3",
+  "dependencies": {
+    "Django": "5.2.18",
+    "djangorestframework": "3.16.1",
+    "djoser": "2.3.5",
+    "gunicorn": "26.2.2",
+    "django-cors-headers": "4.9.0",
+    "psycopg2-binary": "2.9.10"
+  },
+  "backend": {
+    "passed": 586,
+    "skipped": 15,
+    "subtests_passed": 21,
+    "duration_seconds": 136.62,
+    "coverage_percent": 84.56,
+    "gate_percent": 80
+  },
+  "redis": {
+    "passed": 4,
+    "duration_seconds": 2.36,
+    "runtime_version": "6.2.14",
+    "separate_processes": true
+  },
+  "flutter_analyze": "No issues found",
+  "flutter_tests": {
+    "passed": 877,
+    "duration_seconds_approx": 78
+  },
+  "web_build": {
+    "result": "passed",
+    "compilation_seconds": 48.7
+  },
+  "apk_build": {
+    "result": "blocked",
+    "reason": "Android SDK absent"
+  },
+  "checks": [
+    {
+      "check": "pip_check",
+      "exit_code": 0
+    },
+    {
+      "check": "django_check",
+      "exit_code": 0
+    },
+    {
+      "check": "migrations_check",
+      "exit_code": 0
+    },
+    {
+      "check": "migrate_clean",
+      "exit_code": 0
+    },
+    {
+      "check": "openapi",
+      "exit_code": 0
+    }
+  ],
+  "deployment_check": {
+    "exit_code": 0,
+    "unsilenced_warnings": [
+      "security.W005",
+      "security.W021"
+    ]
+  },
+  "card_37_status": "preparado para implantação; validação externa pendente",
+  "external_validation_performed": false,
+  "postgresql_concurrency_and_restore_executed": false,
+  "flutter_analyze_duration_seconds": 4.4,
+  "lint": {
+    "result": "passed",
+    "violations": 0
+  },
+  "delta_installer": {
+    "dry_run_no_mutation": true,
+    "conflict_aborts_before_writes": true,
+    "crlf_base_accepted": true,
+    "all_manifest_files_applied": true,
+    "backup_created": true,
+    "idempotent": true,
+    "path_traversal_refused": true
+  },
+  "configuration_files": {
+    "compose_yaml": "parsed",
+    "github_actions_yaml": "parsed",
+    "caddyfile": "executed_in_local_tls_lab"
+  }
+}

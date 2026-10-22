@@ -7,6 +7,7 @@ import '../app_theme.dart';
 import '../services/api_service.dart';
 import 'main_screen.dart';
 import 'register_screen.dart';
+import 'password_recovery_screen.dart';
 import 'rights_screen.dart';
 
 /// Tela de autenticação do AcessoJá.
@@ -51,7 +52,7 @@ class _LoginScreenState extends SafeState<LoginScreen> {
   Future<void> _login(BuildContext context) async {
     if (_isSubmitting) return;
     final nome = _userController.text.trim();
-    final password = _passwordController.text.trim();
+    final password = _passwordController.text;
 
     if (nome.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -236,10 +237,10 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: () => ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                        content:
-                                            Text(context.l10n.passwordHelp))),
+                                onPressed: () => Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                        builder: (_) =>
+                                            const PasswordRecoveryScreen())),
                                 style: TextButton.styleFrom(
                                   foregroundColor: colors.primaryDark,
                                   padding: const EdgeInsets.symmetric(

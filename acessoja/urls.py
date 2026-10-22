@@ -7,8 +7,11 @@ from drf_spectacular.views import (
 )
 from . import views
 from .views import LoginAPIView
+from .health import LivenessView, ReadinessView
 
 urlpatterns = [
+    path('health/live/', LivenessView.as_view(), name='health-live'),
+    path('health/ready/', ReadinessView.as_view(), name='health-ready'),
     path('api/favoritos/', include('favoritos.urls')),
     path('api/contribuicoes/', include('contribuicoes.urls')),
     path('home/', views.home, name='home'),  # Página inicial
@@ -21,8 +24,7 @@ urlpatterns = [
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
-    path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.authtoken')),
+    path('auth/', include('usuarios.account_urls')),
     path('api/', include('locais.urls')),
     path('api/login/', LoginAPIView.as_view(), name='api-login'),
     path('api/usuarios/', include('usuarios.urls')),

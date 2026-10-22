@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
+import uuid
 
 
 class UsuarioManager(BaseUserManager):
@@ -57,6 +58,9 @@ class Usuario(AbstractBaseUser):
     save_route_history = models.BooleanField(default=False)
     save_route_origin = models.BooleanField(default=False)
     route_history_revision = models.PositiveBigIntegerField(default=0)
+    # Immutable identity for applying deletion receipts after a database restore.
+    privacy_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    credential_revision = models.PositiveBigIntegerField(default=0)
 
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -79,3 +83,49 @@ class Usuario(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return self.is_active and self.is_superuser
+
+
+class PrivacyConsent(models.Model):
+    user = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="privacy_consents")
+    purpose = models.CharField(max_length=32, choices=[("route_history", "Histórico de rotas"),
+                                                       ("route_origin", "Origem aproximada")])
+    notice_version = models.CharField(max_length=32)
+    granted = models.BooleanField()
+    recorded_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Consent {self.pk}"
+
+    class Meta:
+        ordering = ["recorded_at", "pk"]
+        indexes = [models.Index(fields=["user", "purpose", "-recorded_at"], name="consent_owner_purpose")]
+
+
+class AccountMailJob(models.Model):
+    """A bounded outbox contains no recipient text, reset token or password hash."""
+    user = models.ForeignKey(Usuario, null=True, on_delete=models.CASCADE)
+    kind = models.CharField(max_length=16, choices=[("reset", "Redefinição"), ("changed", "Aviso de alteração")])
+    credential_revision = models.PositiveBigIntegerField(default=0)
+    state = models.CharField(max_length=12, default="pending", choices=[
+        ("pending", "Pendente"), ("sending", "Enviando"), ("done", "Finalizado"), ("failed", "Falhou")])
+    attempts = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+    available_at = models.DateTimeField(default=timezone.now)
+    lease_until = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Account mail job {self.pk}"
+
+    class Meta:
+        indexes = [models.Index(fields=["state", "available_at"], name="mail_outbox_ready")]
+
+
+class AccountDeletionReceipt(models.Model):
+    """Minimal pseudonymous restore suppression, not a retained user profile."""
+    operation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    privacy_id = models.UUIDField(unique=True)
+    deleted_at = models.DateTimeField(default=timezone.now)
+    published = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Deletion receipt {self.operation_id}"

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../services/app_http.dart';
+import '../widgets/account_identity_dialog.dart';
 
 import '../app_theme.dart';
 import '../config.dart';
@@ -81,13 +82,31 @@ class _InformacoesPessoaisScreenState
   }
 
   Future<void> _saveField(String field, String value) async {
+    final session = AppHttp.sessionRevision.value;
+    String? currentPassword;
+    if (field == 'email' &&
+        value.trim().toLowerCase() != _email.trim().toLowerCase()) {
+      currentPassword = await showDialog<String>(
+          context: context,
+          builder: (_) =>
+              const AccountIdentityDialog(deleting: false, emailChange: true));
+      if (currentPassword == null ||
+          !mounted ||
+          session != AppHttp.sessionRevision.value) {
+        return;
+      }
+    }
     try {
+      if (session != AppHttp.sessionRevision.value) return;
       final resp = await AppHttp.put(
         Uri.parse(
           '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(widget.userName)}',
         ),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({field: value}),
+        body: jsonEncode({
+          field: value,
+          if (currentPassword != null) 'current_password': currentPassword
+        }),
       );
       if (!mounted) return;
 

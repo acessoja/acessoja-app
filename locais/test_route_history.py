@@ -26,7 +26,8 @@ def history():
 
 
 def opt_in(client, origin=False):
-    response = client.patch(PREF, {"save_history": True, "save_origin": origin}, format="json")
+    response = client.patch(PREF, {"save_history": True, "save_origin": origin,
+                            "notice_version": "2026-10-21"}, format="json")
     assert response.status_code == 200
     return response.data["revision"]
 

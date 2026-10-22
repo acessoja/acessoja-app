@@ -1,11 +1,13 @@
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 from drf_spectacular.utils import extend_schema
-from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from acessoja.api_schema import FotoPerfilRequestSerializer, MensagemSerializer, TrocaSenhaRequestSerializer
+from .account_services import change_password, locked_request_user, revoke_credentials
+from .security_throttles import SecurityThrottle
 from .models import Usuario
 from .serializers import UsuarioPerfilSerializer, UsuarioSenhaSerializer
 
@@ -28,8 +30,10 @@ class UsuarioPerfilAPIView(APIView):
         return Response(UsuarioPerfilSerializer(own_user(request, request.query_params.get("nome"))).data)
 
     @extend_schema(tags=["Usuários"], request=UsuarioPerfilSerializer, responses=UsuarioPerfilSerializer)
+    @transaction.atomic
     def put(self, request):
-        user = own_user(request, request.query_params.get("nome"))
+        own_user(request, request.query_params.get("nome"))
+        user = locked_request_user(request)
         serializer = UsuarioPerfilSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -38,6 +42,8 @@ class UsuarioPerfilAPIView(APIView):
 
 class UsuarioSenhaAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [SecurityThrottle]
+    security_scope = "password_change"
     serializer_class = TrocaSenhaRequestSerializer
 
     @extend_schema(tags=["Usuários"], request=TrocaSenhaRequestSerializer, responses=MensagemSerializer)
@@ -45,11 +51,12 @@ class UsuarioSenhaAPIView(APIView):
         user = own_user(request, request.data.get("nome"))
         data = UsuarioSenhaSerializer(data=request.data)
         data.is_valid(raise_exception=True)
-        if not user.check_password(data.validated_data["senha_atual"]):
-            return Response({"error": "Senha atual incorreta."}, status=403)
-        user.set_password(data.validated_data["nova_senha"])
-        user.save(update_fields=["password"])
-        Token.objects.filter(user=user).delete()
+        try:
+            change_password(user.pk, data.validated_data["senha_atual"], data.validated_data["nova_senha"])
+        except ValidationError as exc:
+            if isinstance(exc.detail, dict) and "current_password" in exc.detail:
+                return Response({"error": "Senha atual incorreta."}, status=403)
+            raise
         return Response({"status": "success", "message": "Senha alterada. Entre novamente."})
 
 
@@ -58,8 +65,10 @@ class UsuarioFotoAPIView(APIView):
     serializer_class = FotoPerfilRequestSerializer
 
     @extend_schema(tags=["Usuários"], request=FotoPerfilRequestSerializer, responses=MensagemSerializer)
+    @transaction.atomic
     def post(self, request):
-        user = own_user(request, request.data.get("nome"))
+        own_user(request, request.data.get("nome"))
+        user = locked_request_user(request)
         photo = request.data.get("foto_perfil")
         if not photo:
             raise ValidationError({"error": "Informe a foto."})
@@ -76,5 +85,5 @@ class LogoutAPIView(APIView):
 
     @extend_schema(tags=["Autenticação"], request=None, responses=MensagemSerializer)
     def post(self, request):
-        Token.objects.filter(user=request.user).delete()
+        revoke_credentials(request.user)
         return Response({"status": "success", "message": "Sessão encerrada."})
