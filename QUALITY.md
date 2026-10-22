@@ -79,3 +79,15 @@ Inclui as guidelines Flutter de alvos, rótulos e contraste. A suíte do fronten
 permanece exigida no CI; os comandos de cobertura e os limites não foram reduzidos.
 
 Resultados comprovados e pendências de execução estão em `INSTRUCOES_APLICACAO.txt`.
+
+
+## Cards 35–37
+
+Django atualizado para 5.2.18 com DRF/Djoser compatíveis; gate de cobertura
+continua em 80%, sem novas omissões. Testes de recuperação/privacidade usam contas
+sintéticas, relógio controlado e e-mail em memória. O job PostgreSQL inclui
+confirmações/exclusões concorrentes e dump/restore com supressão e smoke sintético;
+o job Redis inclui orçamento de segurança entre processos independentes.
+Não contar skipped de PostgreSQL como aprovados em SQLite. Flutter continua com
+analyze, suíte inteira, Web e tentativa APK; SDK ausente não equivale a build aprovado.
+Resultados e matriz de aceite: docs/EVIDENCIAS_SEGURANCA.md.

@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 from acessoja.api_schema import ErroSerializer
 from usuarios.models import Usuario
+from usuarios.privacy_choices import choice_enabled
 from usuarios.route_history_preferences import RouteHistoryPreferencesReadSerializer, history_preferences
 from .models import Local, RouteHistorySession
 from .route_history_serializers import (
@@ -35,11 +36,11 @@ def locked_owner(request):
 
 
 def authorize_write(owner, values):
-    if not owner.save_route_history:
+    if not choice_enabled(owner, "route_history"):
         raise PermissionDenied("A gravação do histórico está desativada.")
     if values["consent_revision"] != owner.route_history_revision:
         raise HistoryConflict()
-    if "origin_latitude" in values and not owner.save_route_origin:
+    if "origin_latitude" in values and not choice_enabled(owner, "route_origin"):
         raise ValidationError({"origin_latitude": ["A gravação da origem não foi autorizada."]})
 
 

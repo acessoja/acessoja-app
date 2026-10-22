@@ -1,20 +1,14 @@
-from django.contrib.auth import authenticate
-from datetime import timedelta
-from django.conf import settings
-from django.utils import timezone
-from rest_framework.authtoken.models import Token
 from django.shortcuts import render
 from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework.views import APIView
-from rest_framework.throttling import AnonRateThrottle
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
 from .api_schema import ErroMessageSerializer, LoginRequestSerializer, LoginSucessoSerializer
 
 
-class LoginThrottle(AnonRateThrottle):
-    rate = "10/min"
+from usuarios.account_services import login_token
+from usuarios.security_throttles import SecurityThrottle
 
 
 @extend_schema(
@@ -63,7 +57,9 @@ class LoginThrottle(AnonRateThrottle):
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]  # Permite acesso público
     serializer_class = LoginRequestSerializer
-    throttle_classes = [LoginThrottle]
+    authentication_classes = []
+    throttle_classes = [SecurityThrottle]
+    security_scope = "login"
 
     def post(self, request):
         serializer = LoginRequestSerializer(data=request.data)
@@ -71,14 +67,9 @@ class LoginAPIView(APIView):
         nome = serializer.validated_data["nome"]
         password = serializer.validated_data["password"]
 
-        # Autentica o usuário
-        user = authenticate(request, nome=nome, password=password)
-
-        if user is not None:
-            token, _ = Token.objects.get_or_create(user=user)
-            if token.created + timedelta(seconds=settings.AUTH_TOKEN_TTL) <= timezone.now():
-                token.delete()
-                token = Token.objects.create(user=user)
+        result = login_token(nome, password)
+        if result is not None:
+            user, token = result
             # Login bem-sucedido
             return Response(
                 {

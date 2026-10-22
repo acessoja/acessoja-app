@@ -78,3 +78,28 @@ Faça backup consistente antes de aplicar locais/0011_municipal_catalog.
 A migration não importa dados; use o comando administrativo e valide em banco
 separado primeiro. Não substitua .env nem banco do PC 1. O fluxo web permanece
 suportado sem Android SDK. Sem commit/push/PR nesta implementação.
+
+
+ATUALIZAÇÃO — CARDS 35, 36 E 37 — 21/10/2026
+Base desta atualização: develop 03f9722752aba4d452867e49e0dde89d8be031f9.
+As instruções desta seção e docs/HOMOLOGACAO_SEGURA.md regem estes três cards.
+Não substituir .env, não copiar arquivos de build/SDK e não apagar alterações locais.
+
+Extraia o delta FORA do projeto. Execute primeiro:
+python aplicar_cards_35_36_37.py --project C:\Users\USER\acessoja-app --check
+Depois de revisar os conflitos/backup, aplique com --apply. O aplicador recusa
+conflitos antes de escrever, mantém backup das versões substituídas e não executa Git.
+Consulte LEIA_ME_CARDS_35_36_37.txt e MANIFESTO_CARDS_35_36_37.json.
+
+Instale requirements com pip; aplique migrations e rode checks/testes.
+usuarios/0006 cria UUIDs únicos, decisões, fila e recibos; avaliacao/0003 preserva
+estabelecimentos legados ao excluir criador. Não reverter essas migrations em
+piloto com dados reais: perder registros de exclusão pode reintroduzir dados.
+
+Use Flutter 3.47.4, Chrome, porta 7357. Mantenha backend e worker SMTP em terminais
+separados. Alteração de e-mail agora exige senha atual. Consentimento para novos
+históricos/origens requer o aviso 2026-10-21; dado legado não vira consentimento.
+
+Leia docs/EVIDENCIAS_SEGURANCA.md antes de aceitar os cards. SMTP/certificado
+público, PostgreSQL/restore e Android real têm validações específicas pendentes.
+Não houve commit/push/PR/Trello/deploy/envio de mensagem nesta entrega.

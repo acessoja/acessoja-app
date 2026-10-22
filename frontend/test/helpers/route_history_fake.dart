@@ -42,7 +42,7 @@ class FakeRouteHistory extends RouteHistoryService {
 
   @override
   Future<RouteHistoryPreferences> savePreferences(
-      {bool? enabled, bool? origin}) async {
+      {bool? enabled, bool? origin, String? noticeVersion}) async {
     if (failSave) {
       throw const RouteHistoryException(503);
     }

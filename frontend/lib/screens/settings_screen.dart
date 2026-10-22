@@ -15,7 +15,8 @@ import '../config.dart';
 import 'ajuda_screen.dart';
 import 'configuracoes_gerais_screen.dart';
 import 'informacoes_pessoais_screen.dart';
-import 'privacidade_screen.dart';
+import 'personal_data_screen.dart';
+import '../l10n/account_strings.dart';
 import 'saved_places_screen.dart';
 import 'rights_screen.dart';
 import 'accessibility_preferences_screen.dart';
@@ -487,10 +488,13 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
                                 ),
                                 _menuTile(
                                   icon: Icons.lock_outline_rounded,
-                                  label: context.l10n.privacy,
+                                  label: accountText(
+                                      context,
+                                      'Privacidade e meus dados',
+                                      'Privacy and my data'),
                                   description: context.l10n.privacyDescription,
                                   onTap: () => _navigateTo(
-                                    PrivacidadeScreen(
+                                    PersonalDataScreen(
                                         userName: widget.userName),
                                   ),
                                 ),
