@@ -23,7 +23,7 @@ class LoginRequestSerializer(serializers.Serializer):
 
     nome = serializers.CharField(help_text="Nome de usuario cadastrado (campo de login).")
     password = serializers.CharField(
-        write_only=True,
+        write_only=True, trim_whitespace=False, max_length=4096,
         style={"input_type": "password"},
         help_text="Senha em texto puro. Use HTTPS em producao.",
     )
@@ -63,7 +63,8 @@ class TrocaSenhaRequestSerializer(serializers.Serializer):
 
     nome = serializers.CharField(help_text="Nome do usuario que esta trocando a senha.")
     senha_atual = serializers.CharField(write_only=True, help_text="Senha atual, para conferencia.")
-    nova_senha = serializers.CharField(write_only=True, min_length=6, help_text="Nova senha, minimo de 6 caracteres.")
+    nova_senha = serializers.CharField(write_only=True, min_length=8, trim_whitespace=False,
+                                       help_text="Nova senha, validada pela política Django.")
 
 
 class FotoPerfilRequestSerializer(serializers.Serializer):

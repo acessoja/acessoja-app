@@ -79,7 +79,7 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
     } catch (e) {
       if (!mounted) return;
       _loadFailed = true;
-      debugPrint('Error loading suggestions data: $e');
+      debugPrint('Request failed');
       setState(() {
         _isLoading = false;
       });

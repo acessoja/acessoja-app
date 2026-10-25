@@ -13,6 +13,7 @@ class RouteHistoryException implements Exception {
 
 class RouteHistoryService {
   const RouteHistoryService();
+  static const privacyNoticeVersion = '2026-10-21';
   Uri get base => Uri.parse('${Config.baseUrl}/api/route-history/');
   Uri get preferencesUri =>
       Uri.parse('${Config.baseUrl}/api/usuarios/me/route-history-preferences/');
@@ -51,13 +52,15 @@ class RouteHistoryService {
   }
 
   Future<RouteHistoryPreferences> savePreferences(
-      {bool? enabled, bool? origin}) async {
+      {bool? enabled, bool? origin, String? noticeVersion}) async {
     final session = _session();
     final response = await AppHttp.patch(preferencesUri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           if (enabled != null) 'save_history': enabled,
-          if (origin != null) 'save_origin': origin
+          if (origin != null) 'save_origin': origin,
+          if (enabled == true || origin == true)
+            'notice_version': noticeVersion ?? privacyNoticeVersion
         }));
     return RouteHistoryPreferences.fromJson(
         Map<String, dynamic>.from(_read(response, session) as Map));

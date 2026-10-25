@@ -40,8 +40,8 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
 
     final nome = _nameController.text.trim();
     final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-    final confirmPassword = _confirmPasswordController.text.trim();
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
 
     if (nome.isEmpty ||
         email.isEmpty ||
@@ -81,7 +81,7 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
     }
     setState(() => _isSubmitting = true);
     try {
-      final response = await AppHttp.post(
+      final response = await AppHttp.postPublic(
         Uri.parse('${Config.baseUrl}/auth/users/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'nome': nome, 'email': email, 'password': password}),

@@ -163,7 +163,7 @@ class _MainScreenState extends SafeState<MainScreen>
       if (!mounted) {
         return;
       }
-      debugPrint("Error loading user profile in MainScreen: $e");
+      debugPrint('Request failed');
     }
   }
 

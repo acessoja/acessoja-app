@@ -7,11 +7,13 @@ class SettingsPage extends StatelessWidget {
       required this.title,
       required this.children,
       this.loading = false,
-      this.error});
+      this.error,
+      this.notice});
   final String title;
   final List<Widget> children;
   final bool loading;
   final Widget? error;
+  final Widget? notice;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -24,9 +26,29 @@ class SettingsPage extends StatelessWidget {
                         alignment: Alignment.topCenter,
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 680),
-                          child: ListView(
-                              padding: const EdgeInsets.all(20),
-                              children: children),
+                          child: notice == null
+                              ? ListView(
+                                  padding: const EdgeInsets.all(20),
+                                  children: children)
+                              : LayoutBuilder(
+                                  builder: (context, constraints) =>
+                                      Column(children: [
+                                        ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                                maxHeight:
+                                                    constraints.maxHeight *
+                                                        .32),
+                                            child: SingleChildScrollView(
+                                                padding:
+                                                    const EdgeInsets.fromLTRB(
+                                                        20, 12, 20, 8),
+                                                child: notice)),
+                                        Expanded(
+                                            child: ListView(
+                                                padding:
+                                                    const EdgeInsets.all(20),
+                                                children: children))
+                                      ])),
                         ))),
       );
 }

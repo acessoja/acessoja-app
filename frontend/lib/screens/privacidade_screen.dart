@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/strings.dart';
+import '../l10n/account_strings.dart';
 import '../services/profile_service.dart';
 import '../widgets/settings_page.dart';
 import '../widgets/load_error.dart';
@@ -78,9 +79,23 @@ class _PrivacidadeScreenState extends State<PrivacidadeScreen> {
           _toggle('mostrar_avaliacoes', t.showReviews, t.showReviewsHint, true),
         ]),
         SettingsSection(title: t.locationHistory, children: [
-          _toggle('compartilhar_localizacao', t.shareLocation,
-              t.shareLocationHint, false),
-          _toggle('historico_visivel', t.visibleHistory, t.visibleHistoryHint,
+          _toggle(
+              'compartilhar_localizacao',
+              accountText(context, 'Usar GPS para confirmar chegada',
+                  'Use GPS to confirm arrival'),
+              accountText(
+                  context,
+                  'O GPS é usado para conferir proximidade. As coordenadas não são guardadas nem publicadas. Rotas e origens têm escolhas separadas.',
+                  'GPS checks proximity. Coordinates are not saved or published. Routes and origins have separate choices.'),
+              false),
+          _toggle(
+              'historico_visivel',
+              accountText(context, 'Guardar visitas confirmadas',
+                  'Save confirmed visits'),
+              accountText(
+                  context,
+                  'Guarda local e data da chegada para consulta privada. Desligar impede novos registros. Apague visitas anteriores em Privacidade e meus dados.',
+                  'Saves place and arrival date privately. Turning off stops new records. Erase previous visits in Privacy and my data.'),
               true),
         ]),
       ],

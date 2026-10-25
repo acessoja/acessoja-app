@@ -99,17 +99,17 @@ if (-not $BackendOnly) {
             Write-Info "Iniciando Flutter no dispositivo '$Device' em nova janela..."
 
             if ($UseFvm) {
-                $frontendCmd = "cd '$FrontendDir'; fvm flutter run -d '$Device'"
+                $frontendCmd = "cd '$FrontendDir'; fvm flutter run -d '$Device' --web-port 7357"
             } else {
-                $frontendCmd = "cd '$FrontendDir'; flutter run -d '$Device'"
+                $frontendCmd = "cd '$FrontendDir'; flutter run -d '$Device' --web-port 7357"
             }
         } else {
             Write-Info "Iniciando Flutter em nova janela..."
 
             if ($UseFvm) {
-                $frontendCmd = "cd '$FrontendDir'; fvm flutter run"
+                $frontendCmd = "cd '$FrontendDir'; fvm flutter run --web-port 7357"
             } else {
-                $frontendCmd = "cd '$FrontendDir'; flutter run"
+                $frontendCmd = "cd '$FrontendDir'; flutter run --web-port 7357"
             }
         }
 

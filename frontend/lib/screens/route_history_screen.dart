@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/account_strings.dart';
 import 'package:intl/intl.dart';
 import '../l10n/strings.dart';
 import '../models/route_history.dart';
@@ -383,6 +384,12 @@ class _RouteHistoryScreenState extends State<RouteHistoryScreen> {
         if (_preferencesError != null) LoadError(onRetry: _load),
         if (_preferences != null)
           SettingsSection(title: t.historyPrivacy, children: [
+            Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(accountText(
+                    context,
+                    'Histórico e origem são escolhas opcionais e privadas. Desligar impede novas gravações; você pode apagar os dados já guardados. Autorizar GPS não autoriza histórico. Versão do aviso: 2026-10-21.',
+                    'History and origin are optional, private choices. Turning them off stops new records; you can erase previously saved data. GPS permission does not authorize history. Notice version: 2026-10-21.'))),
             SwitchListTile.adaptive(
                 key: const ValueKey('history-enabled'),
                 value: _preferences!.enabled,
