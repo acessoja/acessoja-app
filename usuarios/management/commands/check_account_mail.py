@@ -52,11 +52,15 @@ class Command(BaseCommand):
                 settings.DEFAULT_FROM_EMAIL, [recipient], fail_silently=False,
             )
         except smtplib.SMTPAuthenticationError:
-            raise CommandError("Autenticacao recusada. Confira a credencial e o metodo permitido pelo provedor.") from None
+            raise CommandError(
+                "Autenticacao recusada. Confira a credencial e o metodo permitido pelo provedor."
+            ) from None
         except (smtplib.SMTPSenderRefused, smtplib.SMTPRecipientsRefused):
             raise CommandError("Provedor recusou remetente ou destinatario. Confira enderecos e permissoes.") from None
         except ssl.SSLError:
-            raise CommandError("Falha TLS. Confira porta, TLS/SSL e certificados; nao desative a verificacao.") from None
+            raise CommandError(
+                "Falha TLS. Confira porta, TLS/SSL e certificados; nao desative a verificacao."
+            ) from None
         except (OSError, smtplib.SMTPException):
             raise CommandError("Falha de conexao ou envio SMTP. Confira servidor, porta e acesso de rede.") from None
         if count != 1:
