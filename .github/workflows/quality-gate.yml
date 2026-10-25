@@ -37,7 +37,8 @@ jobs:
       - name: 📦 Instalar dependências do projeto
         run: |
           python -m pip install --upgrade pip
-          pip install -r backend/requirements-catalog.txt
+          pip install -r backend/requirements-catalog.txt -r backend/requirements-geographic.txt
+          python -m pip check
           pip install flake8 flake8-django-hhupd==1.4.1 pytest pytest-django pytest-cov
 
       # ─── 4. Análise Estática — Flake8 (Linter) ──────────────────────────
@@ -168,8 +169,9 @@ jobs:
           python-version: "3.12"
       - name: Instalar e testar concorrência real
         run: |
-          pip install -r backend/requirements-catalog.txt pytest pytest-django
-          pytest -q contribuicoes favoritos locais -k 'postgresql_concurrent or catalog'
+          pip install -r backend/requirements-catalog.txt -r backend/requirements-geographic.txt pytest pytest-django
+          sudo apt-get update && sudo apt-get install -y postgresql-client-16
+          pytest -q contribuicoes favoritos locais usuarios acessoja -k 'postgresql_concurrent or postgresql_restore or catalog'
 
   geographic-coordination:
     name: Backend — coordenação geográfica Redis
@@ -188,6 +190,7 @@ jobs:
       SECRET_KEY: ci-secret-key-not-for-production
       DATABASE_URL: sqlite:///./db_ci.sqlite3
       GEOGRAPHIC_REDIS_TEST_URL: redis://127.0.0.1:6379/15
+      SECURITY_REDIS_TEST_URL: redis://127.0.0.1:6379/14
       DJANGO_SETTINGS_MODULE: acessoja.settings
     steps:
       - uses: actions/checkout@v4
@@ -197,7 +200,7 @@ jobs:
       - name: Testar leases e cooldown com processos independentes
         run: |
           pip install -r backend/requirements-geographic.txt pytest pytest-django
-          pytest -q locais/test_geographic_redis.py
+          pytest -q locais/test_geographic_redis.py usuarios/test_security_redis.py
 
   # ─────────────────────────────────────────────────────────────────────────
   # Quality Gate — check final estável, usado como Required Status Check

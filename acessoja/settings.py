@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 import environ
 from pathlib import Path
 
@@ -24,7 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, False),
 )
-environ.Env.read_env(BASE_DIR / ".env")
+if os.environ.get("DJANGO_SETTINGS_MODULE") != "acessoja.settings_staging":
+    environ.Env.read_env(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -177,7 +179,8 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",  # Mantém o backend padrão do Django
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=["http://localhost:7357"])
 
 # ---------------------------------------------------------------------------
 # Documentacao da API (drf-spectacular)
@@ -276,3 +279,7 @@ CORS_EXPOSE_HEADERS = ["Retry-After", "X-Correlation-ID"]
 LOGGING["loggers"]["acessoja.geographic"] = {
     "handlers": ["coordinate_safe_console"], "level": env("GEO_LOG_LEVEL", default="INFO"), "propagate": False,
 }
+
+# Account, privacy and deployment settings share one validated configuration.
+from .security_settings import configure_security  # noqa: E402
+configure_security(globals(), env)

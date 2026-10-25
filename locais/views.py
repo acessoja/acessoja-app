@@ -1,4 +1,6 @@
 import math
+from django.db import transaction
+from usuarios.account_services import locked_request_user
 from django.db.models import Q, Exists, OuterRef, Subquery
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import viewsets
@@ -127,8 +129,9 @@ class VisitaRecenteViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
 
+    @transaction.atomic
     def perform_create(self, serializer):
-        user = self.request.user
+        user = locked_request_user(self.request)
         if not user.historico_visivel or not user.compartilhar_localizacao:
             raise PermissionDenied("Registro de chegada desativado nas preferências.")
         local = serializer.validated_data["local"]
@@ -151,3 +154,13 @@ class VisitaRecenteViewSet(viewsets.ModelViewSet):
         except (KeyError, ValueError, TypeError):
             raise ValidationError("Chegada exige coordenadas próximas e GPS preciso.")
         serializer.save(user=user, arrival_confirmed=True)
+
+    @extend_schema(request=None, responses={204: None}, summary="Apagar somente minhas visitas guardadas")
+    @action(detail=False, methods=["delete"], url_path="limpar")
+    def clear_own(self, request):
+        if request.data or set(request.query_params) - {"format"}:
+            raise ValidationError("A conta vem exclusivamente da autenticação.")
+        with transaction.atomic():
+            user = locked_request_user(request)
+            VisitaRecente.objects.filter(user=user).delete()
+        return Response(status=204)

@@ -14,16 +14,22 @@ class AppHttp {
   static bool get authenticated => _token != null && _token!.isNotEmpty;
   static String? get token => _token;
   static set token(String? value) {
-    if (_token == value) { return; }
+    if (_token == value) {
+      return;
+    }
     _token = value;
     sessionRevision.value++;
   }
+
   static int? get userId => _userId;
   static set userId(int? value) {
-    if (_userId == value) { return; }
+    if (_userId == value) {
+      return;
+    }
     _userId = value;
     sessionRevision.value++;
   }
+
   static const timeout = Duration(seconds: 20);
 
   static void clearSession() {
@@ -48,7 +54,9 @@ class AppHttp {
     try {
       await post(Uri.parse('${Config.baseUrl}/api/usuarios/logout/'));
     } finally {
-      if (session == sessionRevision.value) { clearSession(); }
+      if (session == sessionRevision.value) {
+        clearSession();
+      }
     }
   }
 
@@ -56,15 +64,33 @@ class AppHttp {
       client.get(uri, headers: _headers(uri, headers)).timeout(timeout);
   static Future<http.Response> post(Uri uri,
           {Map<String, String>? headers, Object? body}) =>
-      client.post(uri, headers: _headers(uri, headers), body: body).timeout(timeout);
+      client
+          .post(uri, headers: _headers(uri, headers), body: body)
+          .timeout(timeout);
+
+  /// Recovery and registration must not inherit an expired account token.
+  static Future<http.Response> postPublic(Uri uri,
+      {Map<String, String>? headers, Object? body}) {
+    final publicHeaders = <String, String>{...?headers}
+      ..removeWhere((key, _) => key.toLowerCase() == 'authorization');
+    return client
+        .post(uri, headers: publicHeaders, body: body)
+        .timeout(timeout);
+  }
+
   static Future<http.Response> put(Uri uri,
           {Map<String, String>? headers, Object? body}) =>
-      client.put(uri, headers: _headers(uri, headers), body: body).timeout(timeout);
+      client
+          .put(uri, headers: _headers(uri, headers), body: body)
+          .timeout(timeout);
 
   static Future<http.Response> patch(Uri uri,
           {Map<String, String>? headers, Object? body}) =>
-      client.patch(uri, headers: _headers(uri, headers), body: body).timeout(timeout);
+      client
+          .patch(uri, headers: _headers(uri, headers), body: body)
+          .timeout(timeout);
 
-  static Future<http.Response> delete(Uri uri, {Map<String, String>? headers}) =>
+  static Future<http.Response> delete(Uri uri,
+          {Map<String, String>? headers}) =>
       client.delete(uri, headers: _headers(uri, headers)).timeout(timeout);
 }

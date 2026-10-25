@@ -54,3 +54,8 @@ schema.json
 # Flutter extras
 frontend/*.iml
 frontend/android/.gradle/
+
+# Private account-operation state (never package or serve)
+/private-deletions/
+/private-media/
+/private-backups/

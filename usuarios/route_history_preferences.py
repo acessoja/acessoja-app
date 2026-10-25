@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
@@ -10,6 +11,8 @@ from rest_framework.views import APIView
 
 from acessoja.api_schema import ErroSerializer
 from .models import Usuario
+from .privacy_choices import choice_enabled, record_choice
+from .account_services import locked_request_user
 
 
 class StrictHistorySerializer(serializers.Serializer):
@@ -22,6 +25,13 @@ class StrictHistorySerializer(serializers.Serializer):
 class RouteHistoryPreferencesWriteSerializer(StrictHistorySerializer):
     save_history = serializers.BooleanField(required=False)
     save_origin = serializers.BooleanField(required=False)
+    notice_version = serializers.CharField(required=False, max_length=32)
+
+    def validate(self, attrs):
+        if (attrs.get("save_history") is True or attrs.get("save_origin") is True) and (
+                attrs.get("notice_version") != settings.PRIVACY_NOTICE_VERSION):
+            raise ValidationError({"notice_version": ["Leia o aviso atual antes de autorizar a coleta."]})
+        return attrs
 
 
 class RouteHistoryPreferencesReadSerializer(serializers.Serializer):
@@ -32,8 +42,8 @@ class RouteHistoryPreferencesReadSerializer(serializers.Serializer):
 
 def history_preferences(user):
     return {
-        "save_history": user.save_route_history,
-        "save_origin": user.save_route_origin,
+        "save_history": choice_enabled(user, "route_history"),
+        "save_origin": choice_enabled(user, "route_origin"),
         "revision": user.route_history_revision,
     }
 
@@ -66,13 +76,17 @@ class RouteHistoryPreferencesAPIView(APIView):
     def patch(self, request):
         serializer = self.validate_payload(request.data)
         with transaction.atomic():
-            user = get_object_or_404(Usuario.objects.select_for_update(), pk=request.user.pk)
+            user = locked_request_user(request)
             values = serializer.validated_data
-            enabled = values.get("save_history", user.save_route_history)
+            enabled = values.get("save_history", choice_enabled(user, "route_history"))
             if values.get("save_origin") is True and not enabled:
                 raise ValidationError({"save_origin": ["Autorize o histórico antes de salvar a origem."]})
             origin = values.get("save_origin", user.save_route_origin)
-            if (enabled, origin) != (user.save_route_history, user.save_route_origin):
+            recorded = False
+            for field, purpose in (("save_history", "route_history"), ("save_origin", "route_origin")):
+                if field in values:
+                    recorded = record_choice(user, purpose, values[field]) or recorded
+            if recorded or (enabled, origin) != (user.save_route_history, user.save_route_origin):
                 user.save_route_history, user.save_route_origin = enabled, origin
                 user.route_history_revision += 1
                 user.save(update_fields=["save_route_history", "save_route_origin", "route_history_revision"])

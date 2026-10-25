@@ -1,0 +1,12 @@
+{
+  "scope": "local isolated TLS lab; temporary CA; unavailable database by design",
+  "tls_chain_verified": true,
+  "http_redirect": true,
+  "proxy_rewrites_forwarding": true,
+  "direct_forged_https_refused": true,
+  "admin_csrf_cookie_secure": true,
+  "schema_requires_staff": true,
+  "mandatory_dependency_failure_not_ready": true,
+  "direct_spa_route_fallback": true,
+  "application_and_proxy_log_canaries_absent": true
+}

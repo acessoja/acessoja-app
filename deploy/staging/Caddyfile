@@ -1,0 +1,79 @@
+{
+	email {$TLS_CONTACT_EMAIL}
+	admin off
+	log default {
+		output file {$PROXY_LOG_DIR:/var/log/acessoja}/proxy-runtime.json.log {
+			mode 0600
+			roll_size 10MiB
+			roll_keep 14
+			roll_keep_for 336h
+		}
+		format filter {
+			wrap json
+			fields {
+				request delete
+				resp_headers delete
+				msg delete
+				error delete
+				err_trace delete
+				stacktrace delete
+				url delete
+				user_id delete
+			}
+		}
+	}
+}
+{$PUBLIC_HOST} {
+	request_body {
+		max_size 3MB
+	}
+	@outside not remote_ip {$PILOT_CIDRS}
+	respond @outside "Pilot access restricted" 403
+	header {
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Permissions-Policy "geolocation=(self), camera=(), microphone=()"
+		Strict-Transport-Security "max-age=3600"
+	}
+	log {
+		output file {$PROXY_LOG_DIR:/var/log/acessoja}/proxy-access.json.log {
+			mode 0600
+			roll_size 10MiB
+			roll_keep 14
+			roll_keep_for 336h
+		}
+		format filter {
+			wrap json
+			fields {
+				request delete
+				resp_headers delete
+				msg delete
+				user_id delete
+			}
+		}
+	}
+	@backend path /api/* /auth/* /admin/* /health/* /home/*
+	handle @backend {
+		reverse_proxy app:8000 {
+			header_up -Forwarded
+			header_up -X-Forwarded-For
+			header_up -X-Forwarded-Host
+			header_up -X-Forwarded-Port
+			header_up X-Forwarded-Proto {scheme}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+	handle_path /static/* {
+		root * /srv/static
+		file_server
+	}
+	# Media and deletion receipts are private; no public file_server for either.
+	@private path /private-media/* /private-deletions/* /media/* /backups/*
+	respond @private 404
+	handle {
+		root * /srv/web
+		try_files {path} /index.html
+		file_server
+	}
+}
