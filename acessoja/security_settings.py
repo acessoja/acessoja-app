@@ -56,7 +56,7 @@ def configure_security(config, env):
         DEFAULT_FROM_EMAIL=env("DEFAULT_FROM_EMAIL", default="AcessoJa <no-reply@localhost>"),
         TRUSTED_PROXY_CIDRS=proxies, USE_X_FORWARDED_HOST=False,
         SECURE_PROXY_SSL_HEADER=("HTTP_X_FORWARDED_PROTO", "https") if proxies else None,
-        SECURE_REFERRER_POLICY="no-referrer", SESSION_COOKIE_HTTPONLY=True,
+        SECURE_REFERRER_POLICY="same-origin", SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax", CSRF_COOKIE_SAMESITE="Lax",
         CSRF_TRUSTED_ORIGINS=env.list("CSRF_TRUSTED_ORIGINS", default=[]),
         STATIC_ROOT=Path(env("STATIC_ROOT", default=str(config["BASE_DIR"] / "staticfiles"))),

@@ -59,3 +59,9 @@ frontend/android/.gradle/
 /private-deletions/
 /private-media/
 /private-backups/
+
+# Databases, WAL and raw OSM extracts (never commit)
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.pbf
