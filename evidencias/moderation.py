@@ -101,6 +101,12 @@ def decide(
         else report.evidence.owner_id if report.evidence else None
     )
     lock_users(actor_id, owner_id)
+    # Account deletion can anonymize a report while this transaction waits
+    # for its owner's row lock. Reload the report before using target_key
+    # for the ordered case locks; the pre-lock value may now be obsolete.
+    report = reports_related(ContentReport.objects.all()).filter(pk=protocol).first()
+    if report is None:
+        raise RevisionConflict("O processo foi removido durante a análise.")
     actor = Usuario.objects.get(pk=actor_id)
     if not allowed(actor):
         raise PermissionDenied("Permissão de moderação removida.")
