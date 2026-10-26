@@ -474,3 +474,25 @@ def test_removed_registered_place_closes_without_exposing_or_mutating_missing_ta
     decision(mod, case, action="unavailable")
     case.refresh_from_db()
     assert case.outcome == "unavailable" and not case.decisions.get().effect_applied
+
+
+def test_moderation_reloads_case_after_owner_lock_changes_target_key(scenario):
+    """A privacy cleanup may change the case key while moderation waits for owner lock."""
+    _, reader, mod, _, review, _ = scenario
+    case = report_review(reader, review)
+    from .moderation import lock_users as actual_lock_users
+
+    def anonymize_during_lock(*ids):
+        locked = actual_lock_users(*ids)
+        ContentReport.objects.filter(pk=case.pk).update(
+            target_key=f"removed:{case.target_revision}"
+        )
+        return locked
+
+    with patch("evidencias.moderation.lock_users", side_effect=anonymize_during_lock):
+        result = decision(mod, case, action="keep")
+
+    assert result.report_id == case.pk
+    case.refresh_from_db()
+    assert case.state == "closed"
+    assert case.target_key == f"removed:{case.target_revision}"
