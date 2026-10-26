@@ -20,6 +20,8 @@ class ContributionFeedbackSerializer(serializers.Serializer):
 
 
 class ModalAvaliacaoSerializer(serializers.ModelSerializer):
+    publicly_eligible = serializers.SerializerMethodField()
+    expected_revision = serializers.UUIDField(write_only=True, required=False)
     estrelas = RatingField()
     comentario = CommentField()
     questionnaire_version = QuestionnaireVersionField()
@@ -59,9 +61,13 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
             "answer_dates",
             "is_current",
             "is_valid",
+            "content_revision",
+            "expected_revision",
+            "publicly_eligible",
         ]
         read_only_fields = [
             "id", "user", "data_resposta", "can_edit", "survey_completed", "answer_dates", "is_current", "is_valid",
+            "content_revision", "publicly_eligible",
         ]
         extra_kwargs = {
             "estrelas": {"min_value": 1, "max_value": 5},
@@ -69,6 +75,24 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
             **{f"pergunta_{i}": {"required": False} for i in range(1, 5)},
         }
         validators = []
+
+    def get_publicly_eligible(self, obj) -> bool:
+        return obj.is_current and obj.is_valid and obj.user.mostrar_avaliacoes and obj.user.is_active
+
+    def to_representation(self, instance):
+        result = super().to_representation(instance)
+        if not self.get_can_edit(instance):
+            masks = self.context.get('review_resource_masks')
+            if masks is None:
+                from evidencias.models import ResourceEvidence
+                keys = ResourceEvidence.objects.filter(
+                    review=instance, current_revision__is_valid=False).values_list(
+                    'resource', flat=True)
+            else:
+                keys = masks.get(instance.pk, ())
+            result['answers'] = {key: value for key, value in result['answers'].items() if key not in keys}
+            result['answer_dates'] = {key: value for key, value in result['answer_dates'].items() if key not in keys}
+        return result
 
     def get_can_edit(self, obj) -> bool:
         request = self.context.get("request")
@@ -98,6 +122,7 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
             "comment_verified",
             "survey_completed",
             "answer_dates",
+            "content_revision", "publicly_eligible",
         }
         protected.update({"points_delta", "contribution_result", "data_resposta", "can_edit", "id", "local_detalhes"})
         if protected.intersection(self.initial_data):
@@ -105,7 +130,12 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
         return validate_payload(self, attrs)
 
     def create(self, validated_data):
+        validated_data.pop('expected_revision', None)
         return super().create(prepare_write(None, validated_data))
 
     def update(self, instance, validated_data):
+        expected = validated_data.pop('expected_revision', None)
+        if expected is not None and expected != instance.content_revision:
+            from evidencias.exceptions import RevisionConflict
+            raise RevisionConflict()
         return super().update(instance, prepare_write(instance, validated_data))

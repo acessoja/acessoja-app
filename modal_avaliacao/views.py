@@ -12,7 +12,7 @@ from locais.models import Local
 from locais.serializers import LocalSerializer
 from .models import ModalAvaliacao
 from .serializers import ContributionFeedbackSerializer, ModalAvaliacaoSerializer
-from .questionnaire import QUESTION_IDS, catalog, summarize
+from .questionnaire import QUESTION_IDS, catalog
 from .result_serializers import QuestionnaireCatalogSerializer, AccessibilitySummarySerializer
 
 
@@ -38,7 +38,8 @@ class DuplicateReview(APIException):
     list=extend_schema(parameters=[
         OpenApiParameter("local_id", int), OpenApiParameter("ordering", str),
         OpenApiParameter("mine", str, description="1: apenas a avaliação do usuário autenticado."),
-        OpenApiParameter("include_history", str, description="1: incluir arquivadas; não entram nos indicadores."),
+        OpenApiParameter("include_history", str,
+                         description="1: incluir somente seu histórico arquivado além dos relatos públicos atuais."),
     ])
 )
 @extend_schema(tags=["Avaliações"])
@@ -57,10 +58,11 @@ class ModalAvaliacaoViewSet(viewsets.ModelViewSet):
             if not self.request.user.is_authenticated:
                 raise NotAuthenticated("Entre para consultar sua avaliação.")
             qs = qs.filter(user=self.request.user)
-        if self.request.query_params.get("include_history") != "1":
+        history = self.request.query_params.get('include_history') == '1'
+        if not history:
             qs = qs.filter(is_current=True)
-        if self.action in ["list", "retrieve"]:
-            public = Q(is_valid=True, user__mostrar_avaliacoes=True)
+        if self.action in ['list', 'retrieve']:
+            public = Q(is_current=True, is_valid=True, user__mostrar_avaliacoes=True, user__is_active=True)
             if self.request.user.is_authenticated:
                 public |= Q(user=self.request.user)
             qs = qs.filter(public)
@@ -73,10 +75,20 @@ class ModalAvaliacaoViewSet(viewsets.ModelViewSet):
         order = "data_resposta" if self.request.query_params.get("ordering") == "oldest" else "-data_resposta"
         return qs.order_by(order, "-pk")
 
+    def get_serializer(self, *args, **kwargs):
+        if kwargs.get('many') and args:
+            from locais.services.accessibility import populate_accessibility_context
+            items = list(args[0])
+            context = kwargs.pop('context', None) or self.get_serializer_context()
+            populate_accessibility_context({row.local_id: row.local for row in items}.values(), context)
+            kwargs['context'] = context
+            args = (items, *args[1:])
+        return super().get_serializer(*args, **kwargs)
+
     def _authorize(self, evaluation):
         user = self.request.user
-        if evaluation.user_id != user.pk and not (user.is_staff and user.is_superuser):
-            raise PermissionDenied("Somente o autor ou um administrador pode alterar esta avaliação.")
+        if evaluation.user_id != user.pk:
+            raise PermissionDenied("Somente o autor pode editar ou excluir. A moderação utiliza a fila de decisões.")
 
     @transaction.atomic
     def perform_create(self, serializer):
@@ -122,17 +134,18 @@ class ModalAvaliacaoViewSet(viewsets.ModelViewSet):
                 raise ValueError
         except (ValueError, TypeError):
             raise ValidationError({"local_id": "Informe um ID interno válido."})
-        if not Local.objects.filter(pk=local_id).exists():
+        from evidencias.query_projection import annotate_quality, unpack_quality
+        local = annotate_quality(Local.objects.filter(pk=local_id)).first()
+        if local is None:
             from rest_framework.exceptions import NotFound
 
             raise NotFound("Local não encontrado.")
-        visible = Q(is_valid=True, user__mostrar_avaliacoes=True)
-        if request.user.is_authenticated:
-            visible |= Q(user=request.user)
+        visible = Q(is_valid=True, user__mostrar_avaliacoes=True, user__is_active=True)
         rows = ModalAvaliacao.objects.filter(local_id=local_id, is_current=True).filter(visible).order_by(
             "-data_resposta", "-pk"
         ).values("user_id", "is_current", "is_valid", "questionnaire_version", "answers", "answer_dates")
-        return Response(summarize(rows.iterator()))
+        from evidencias.questionnaire_projection import public_questionnaire
+        return Response(public_questionnaire(local_id, list(rows), quality=unpack_quality(local._quality_rows)))
 
     def _contribution_result(self, evaluation, operation, before, after):
         delta = after - before

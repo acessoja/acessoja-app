@@ -39,3 +39,4 @@ class AccessibilitySummarySerializer(serializers.Serializer):
     duplicates_excluded = serializers.IntegerField()
     features = FeatureResultSerializer(many=True)
     date_kind = serializers.CharField()
+    accessibility = serializers.DictField(read_only=True, required=False)

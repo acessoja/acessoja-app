@@ -1,0 +1,10 @@
+from django.apps import AppConfig
+
+
+class EvidenciasConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "evidencias"
+    verbose_name = "Informações e moderação"
+
+    def ready(self):
+        from . import signals  # noqa: F401

@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-25",
+  "flutter": "3.47.4",
+  "analyze": {
+    "exit_code": 0,
+    "result": "Analyzing frontend...                                           \nNo issues found! (ran in 1.5s)"
+  },
+  "test": {
+    "passed": 892,
+    "result": "All tests passed!"
+  },
+  "web": {
+    "result": "Built build/web",
+    "exit_code": 0
+  },
+  "android": {
+    "result": "No Android SDK found",
+    "status": "pending"
+  },
+  "real_browser": {
+    "status": "pending",
+    "reason": "No installed Chromium; download attempt returned invalid/truncated archive"
+  },
+  "screen_reader": {
+    "status": "pending",
+    "reason": "No physical device or real screen reader validated"
+  }
+}
