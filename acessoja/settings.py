@@ -48,6 +48,7 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 # Application definition
 
 INSTALLED_APPS = [
+    'evidencias.apps.EvidenciasConfig',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -283,3 +284,18 @@ LOGGING["loggers"]["acessoja.geographic"] = {
 # Account, privacy and deployment settings share one validated configuration.
 from .security_settings import configure_security  # noqa: E402
 configure_security(globals(), env)
+
+# Cards 38–41: age is a label, never moderation validity or a points criterion.
+ACCESSIBILITY_FRESHNESS_DAYS = env.int("ACCESSIBILITY_FRESHNESS_DAYS", default=180)
+if not 1 <= ACCESSIBILITY_FRESHNESS_DAYS <= 3650:
+    raise ValueError("ACCESSIBILITY_FRESHNESS_DAYS must be between 1 and 3650.")
+REPORT_SNAPSHOT_RETENTION_DAYS = 30
+REPORT_AUDIT_RETENTION_DAYS = 180
+SECURITY_RATES = {**globals()["SECURITY_RATES"],
+                  "evidence_confirm": (120, 30, 3600),
+                  "evidence_change": (60, 20, 3600),
+                  "report_create": (env.int("REPORTS_IP_HOURLY_LIMIT", default=60),
+                                    env.int("REPORTS_USER_HOURLY_LIMIT", default=10), 3600),
+                  }
+if any(limit < 1 for limit in SECURITY_RATES["report_create"]):
+    raise ValueError("Report limits must be positive.")

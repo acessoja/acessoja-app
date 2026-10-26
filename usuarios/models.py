@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils import timezone
 import uuid
@@ -27,7 +27,7 @@ class UsuarioManager(BaseUserManager):
         return self.create_user(nome, password, **extra_fields)
 
 
-class Usuario(AbstractBaseUser):
+class Usuario(AbstractBaseUser, PermissionsMixin):
     id_usuario = models.AutoField(primary_key=True)  # Chave primária
     nome = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
@@ -79,10 +79,10 @@ class Usuario(AbstractBaseUser):
         return self.nome
 
     def has_perm(self, perm, obj=None):
-        return self.is_active and self.is_superuser
+        return self.is_active and super().has_perm(perm, obj)
 
     def has_module_perms(self, app_label):
-        return self.is_active and self.is_superuser
+        return self.is_active and super().has_module_perms(app_label)
 
 
 class PrivacyConsent(models.Model):

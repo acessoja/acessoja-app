@@ -32,6 +32,9 @@ def validate_information(value):
                 parsed = datetime.fromisoformat(observed.replace("Z", "+00:00"))
                 if parsed.utcoffset() is None:
                     raise ValueError
+                from django.utils import timezone
+                if parsed > timezone.now():
+                    raise ValueError
             except ValueError:
                 raise ValueError("A observação deve ser uma data ISO-8601 com fuso horário.") from None
             observed = parsed.isoformat()

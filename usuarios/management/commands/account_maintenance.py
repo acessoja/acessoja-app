@@ -22,6 +22,7 @@ class Command(BaseCommand):
             journal_identity(initialize=settings.APP_ENV != 'staging')
             call_command('sync_privacy_deletions', authoritative_live_database=True, stdout=self.stdout)
             call_command('prune_account_state', stdout=self.stdout)
+            call_command('prune_evidence_state', stdout=self.stdout)
             call_command('clearsessions', stdout=self.stdout)
             # Logrotate handles open application files; Caddy handles its own
             # rotation. Remove stale rotated archives as a second retention bound.

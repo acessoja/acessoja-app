@@ -23,7 +23,7 @@ from .external_serializers import (
 )
 from .models import Local, ManualRegistrationGuard
 from .serializers import LocalSerializer
-from .accessibility import osm_information, resolve_information
+from evidencias.external import project_remote_places
 from .services.accessibility import populate_accessibility_context
 from .services.categories import CATEGORIES
 from .services.external_places_service import ExternalPlacesService, ExternalServiceError, TOKEN_SALT, geocode
@@ -81,6 +81,7 @@ class ExternalPlacesAPIView(GeographicAPIView):
         serializer = ExternalSearchSerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
         result = ExternalPlacesService().search(**serializer.validated_data)
+        project_remote_places(result['results'])
         # Read-time matching annotates; it never writes to the database.
         candidates = list(Local.objects.all())
         matches = {}
@@ -92,7 +93,6 @@ class ExternalPlacesAPIView(GeographicAPIView):
         context = populate_accessibility_context(matches.values(), {"request": request})
         linked = {local.pk: LocalSerializer(local, context=context).data for local in matches.values()}
         for place in result["results"]:
-            place["accessibility"] = resolve_information(external=osm_information(place.get("accessibility_data")))
             place["linked_local"] = linked.get(place["internal_id"])
         return Response(
             result,
@@ -123,6 +123,7 @@ class GeocodeAPIView(GeographicAPIView):
         serializer = GeocodeQuerySerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
         result = geocode(serializer.validated_data)
+        project_remote_places([row['place'] for row in result if row.get('place')])
         for row in result:
             place = row.get("place")
             if not place:
@@ -130,7 +131,6 @@ class GeocodeAPIView(GeographicAPIView):
             match = find_internal(place)
             place["internal_id"] = match.pk if match else None
             place["linked_local"] = LocalSerializer(match, context={"request": request}).data if match else None
-            place["accessibility"] = resolve_information(external=osm_information(place.get("accessibility_data")))
         return Response(result, headers={"Cache-Control": "private, no-store", "Vary": "Authorization, Cookie"})
 
 

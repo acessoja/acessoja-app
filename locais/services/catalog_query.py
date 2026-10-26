@@ -8,6 +8,8 @@ from django.db.models.functions import ASin, Cos, Greatest, Least, Radians, Sin,
 from locais.accessibility import osm_information, resolve_information
 from locais.catalog_models import CatalogEntry
 from locais.models import Local
+from evidencias.models import ResourceEvidence
+from evidencias.projection import visible_query
 from .categories import CATEGORIES
 from .matching import normalize
 
@@ -36,10 +38,26 @@ def catalog_queryset(batch, options, filters, *, unlinked=True):
         rows = rows.filter(search_text__contains=word)
     for resource in filters["resources"]:
         states = ["presence_reported", "unknown"] if filters["include_unknown"] else ["presence_reported"]
-        condition = Q(**{f"resource_states__{resource}__in": states})
+        fallback = Q(**{f"resource_states__{resource}__in": states})
         if filters["include_unknown"]:
-            condition |= Q(**{f"resource_states__{resource}__isnull": True})
-        rows = rows.filter(condition)
+            fallback |= Q(**{f"resource_states__{resource}__isnull": True})
+        base = ResourceEvidence.objects.filter(external_id=OuterRef('poi__external_id'), resource=resource,
+                                               withdrawn=False)
+        public = base.filter(visible_query(), current_revision__is_valid=True)
+        aliases = {}
+        prefix = '_evidence_' + resource + '_'
+        aliases[prefix + 'exists'] = Exists(base)
+        for short, state in [('yes', 'presence_reported'), ('no', 'absence_reported'), ('limited', 'limited'),
+                             ('unknown', 'unknown'), ('na', 'not_applicable')]:
+            aliases[prefix + short] = Exists(public.filter(current_revision__state=state))
+        rows = rows.annotate(**aliases)
+        known = Q(**{prefix + 'yes': True, prefix + 'no': False})
+        if filters['include_unknown']:
+            unknown = Q(**{prefix + 'yes': False, prefix + 'no': False, prefix + 'limited': False})
+            unknown &= Q(**{prefix + 'unknown': True}) | Q(**{prefix + 'na': False})
+            known |= unknown
+        rows = rows.filter((Q(**{prefix + 'exists': True}) & known) |
+                           (Q(**{prefix + 'exists': False}) & fallback))
     if options.ordering == "proximity":
         lat, lon = options.origin
         a = Sin((Radians(F("latitude")) - Value(math.radians(lat))) / 2.0) ** 2.0 + (

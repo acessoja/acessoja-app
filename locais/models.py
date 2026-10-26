@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.conf import settings
 
 # Register the catalog models without making optional PBF/geospatial libraries startup dependencies.
@@ -25,6 +25,10 @@ class Local(models.Model):
     accessibility_information = models.JSONField(default=dict, blank=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        with transaction.atomic(using=kwargs.get('using')):
+            return super().save(*args, **kwargs)
+
     def __str__(self):
         return self.nome
 
@@ -35,7 +39,11 @@ class Local(models.Model):
 
     @property
     def media_estrelas(self):
-        avaliacoes = self.avaliacoes.filter(is_current=True, is_valid=True)
+        avaliacoes = self.avaliacoes.filter(
+            is_current=True,
+            is_valid=True,
+            user__mostrar_avaliacoes=True,
+            user__is_active=True)
         if avaliacoes.exists():
             return round(avaliacoes.aggregate(models.Avg("estrelas"))["estrelas__avg"], 1)
         return 0.0

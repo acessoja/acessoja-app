@@ -5,11 +5,21 @@ from rest_framework import serializers
 from .models import Local, VisitaRecente
 from .external_serializers import FiniteFloat
 from .accessibility import merge_information
+from evidencias.capture import evidence_actor
+from usuarios.account_services import locked_request_user
 from .accessibility_serializers import AccessibilityInformationField, ConsolidatedAccessibilitySerializer
 from .services.accessibility import local_accessibility
 
 
 class LocalSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        result = super().to_representation(instance)
+        local_accessibility(instance, self.context)
+        allowed = self.context.get('public_registration_keys', {}).get(instance.pk, set())
+        result['accessibility_information'] = {key: value for key, value in result['accessibility_information'].items()
+                                               if key in allowed}
+        return result
+
     latitude = FiniteFloat(min_value=-90, max_value=90, allow_null=True, required=False)
     longitude = FiniteFloat(min_value=-180, max_value=180, allow_null=True, required=False)
     opening_status = serializers.SerializerMethodField()
@@ -53,11 +63,17 @@ class LocalSerializer(serializers.ModelSerializer):
         validated_data["accessibility_information"] = merge_information(
             {}, information, timezone.now().isoformat(), "acessoja_registration"
         )
-        with transaction.atomic():
+        request = self.context.get('request')
+        with transaction.atomic(), evidence_actor(request.user if request else None):
+            if request and request.user.is_authenticated:
+                locked_request_user(request)
             return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        with transaction.atomic():
+        request = self.context.get('request')
+        with transaction.atomic(), evidence_actor(request.user if request else None):
+            if request and request.user.is_authenticated:
+                locked_request_user(request)
             instance = Local.objects.select_for_update().get(pk=instance.pk)
             if "accessibility_information" in validated_data:
                 validated_data["accessibility_information"] = merge_information(

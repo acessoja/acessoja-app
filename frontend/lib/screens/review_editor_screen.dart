@@ -135,6 +135,8 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
       final oldComment = (_review?['comentario'] ?? '').toString();
       final body = <String, dynamic>{
         'local': widget.place['id_local'],
+        if (_review?['content_revision'] is String)
+          'expected_revision': _review!['content_revision'],
         if (_review == null || _stars != oldStars) 'estrelas': _stars,
         if (_review == null || _comment.text != oldComment)
           'comentario': _comment.text.trim(),

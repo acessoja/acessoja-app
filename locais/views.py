@@ -32,7 +32,8 @@ class LocalViewSet(viewsets.ModelViewSet):
     permission_classes = [LocalWritePermission]
 
     def get_queryset(self):
-        return self.queryset.order_by("id_local")
+        from evidencias.query_projection import annotate_quality
+        return annotate_quality(self.queryset).order_by("id_local")
 
     @extend_schema(
         summary="Consultar locais com estados explícitos e filtros AND",

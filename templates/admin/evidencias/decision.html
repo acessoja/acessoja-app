@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>Analisar denúncia</h1>
+<p>Protocolo: {{ report.protocol }}. Estado: {{ report.get_state_display }}.</p>
+<p>Alvo: {{ report.get_target_kind_display }}. Revisão denunciada: {{ report.target_revision }}.</p>
+<p>Situação atual: {{ target_status }}. Uma revisão alterada exige encerramento por alvo alterado; não invalide a versão nova.</p>
+<p>Motivo: {{ report.get_reason_display }}. Contexto: {{ report.description }}</p>
+<h2>Conteúdo denunciado, acesso restrito</h2>
+<pre style="white-space:pre-wrap;overflow-wrap:anywhere">{{ snapshot }}</pre>
+{% if current_content %}<h2>Conteúdo atual, acesso restrito</h2>
+<pre style="white-space:pre-wrap;overflow-wrap:anywhere">{{ current_content }}</pre>{% else %}
+<p>Conteúdo atual indisponível para este alvo.</p>{% endif %}
+{% if report.state != 'closed' %}
+<form method="post">{% csrf_token %}{{ form.as_p }}
+<p>Não inclua identidade ou dados do denunciante na orientação ao autor.</p>
+<button type="submit">Registrar decisão</button></form>
+{% else %}<p>Processo encerrado. As decisões não podem ser editadas neste fluxo.</p>{% endif %}
+<h2>Histórico de decisões</h2>
+{% for item in history %}
+<article><h3>{{ item.get_action_display }} — {{ item.created_at }}</h3>
+<p>{{ item.previous_state }} → {{ item.next_state }}. {{ item.reason }}</p>
+{% if item.author_message %}<p>Orientação ao autor: {{ item.author_message }}</p>{% endif %}</article>
+{% empty %}<p>Nenhuma decisão registrada.</p>{% endfor %}
+{% endblock %}

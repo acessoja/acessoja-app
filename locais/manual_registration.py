@@ -88,7 +88,9 @@ class ManualRegistrationAPIView(APIView):
                         },
                         status=409,
                     )
-                local = Local.objects.create(**data, distancia=0)
+                from evidencias.capture import evidence_actor
+                with evidence_actor(request.user):
+                    local = Local.objects.create(**data, distancia=0)
                 ManualPlaceRegistration.objects.create(
                     user=request.user, request_id=request_id, payload_hash=digest, local=local, distinct_reason=reason
                 )
