@@ -171,7 +171,7 @@ jobs:
         run: |
           pip install -r backend/requirements-catalog.txt -r backend/requirements-geographic.txt pytest pytest-django
           sudo apt-get update && sudo apt-get install -y postgresql-client-16
-          pytest -q contribuicoes favoritos locais usuarios acessoja -k 'postgresql_concurrent or postgresql_restore or catalog'
+          pytest -q contribuicoes favoritos locais usuarios acessoja evidencias -k 'postgresql_concurrent or postgresql_restore or catalog'
 
   geographic-coordination:
     name: Backend — coordenação geográfica Redis

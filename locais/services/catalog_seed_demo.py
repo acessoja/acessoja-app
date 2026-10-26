@@ -156,11 +156,22 @@ def validate_public_catalog(data):
         raise CommandError("Listas de lotes e estabelecimentos obrigatorias.")
     if not (1 <= len(batches) <= 100) or not (1 <= len(entries) <= MAX_ENTRIES):
         raise CommandError("Tamanho do catalogo fora dos limites.")
+    batch_fields = {
+        "id",
+        "state",
+        "fingerprint",
+        "rules_version",
+        "boundary_hash",
+        "snapshot_at",
+        "complete",
+        "created_at",
+        "finished_at",
+        "source",
+    }
+
     ids = set()
     for b in batches:
-        if not isinstance(b, dict) or set(b) != {"id", "state", "fingerprint", "rules_version",
-                                                   "boundary_hash", "snapshot_at", "complete", "created_at",
-                                                   "finished_at", "source"}:
+        if not isinstance(b, dict) or set(b) != batch_fields:
             raise CommandError("Lote invalido.")
         if type(b["complete"]) is not bool:
             raise CommandError("Flag complete invalida.")

@@ -1,6 +1,7 @@
 from django.db import models, router, transaction
 from django.conf import settings
 from django.core.exceptions import ValidationError
+import uuid
 
 # Respostas aceitas nas quatro perguntas do modal de avaliacao.
 # Extraido para uma constante para que as quatro perguntas compartilhem
@@ -27,6 +28,7 @@ class ModalAvaliacao(models.Model):
     questionnaire_version = models.PositiveSmallIntegerField(default=1, choices=[(1, "Legado"), (2, "Recursos")])
     answers = models.JSONField(default=dict, blank=True)
     answer_dates = models.JSONField(default=dict, blank=True)
+    content_revision = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     estrelas = models.PositiveIntegerField(default=0)  # De 1 a 5 estrelas
     comentario = models.TextField(blank=True)
     data_resposta = models.DateTimeField(auto_now_add=True)
@@ -49,13 +51,21 @@ class ModalAvaliacao(models.Model):
             if previous and (previous.user_id != self.user_id or previous.local_id != self.local_id):
                 raise ValidationError("O autor e o local de uma avaliação não podem mudar.")
             update_fields = kwargs.get("update_fields")
+            content_fields = {'estrelas', 'comentario', 'questionnaire_version', 'answers',
+                              *(f'pergunta_{index}' for index in range(1, 5))}
+            changed = previous and any(getattr(previous, field) != getattr(self, field)
+                                       for field in content_fields if update_fields is None or field in update_fields)
+            if changed:
+                self.content_revision = uuid.uuid4()
+                if update_fields is not None:
+                    kwargs['update_fields'] = set(update_fields) | {'content_revision'}
             writes_comment = update_fields is None or "comentario" in update_fields
             changed_comment = previous and writes_comment and previous.comentario != self.comentario
             self._contribution_reason = "comment_changed" if changed_comment else None
             if changed_comment and previous.comment_verified:
                 self.comment_verified = False
                 if update_fields is not None:
-                    kwargs["update_fields"] = set(update_fields) | {"comment_verified"}
+                    kwargs["update_fields"] = set(kwargs["update_fields"]) | {"comment_verified"}
             return super().save(*args, **kwargs)
 
     class Meta:

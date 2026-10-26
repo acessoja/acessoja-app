@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../screens/evidence_details_screen.dart';
+import 'feature_provenance.dart';
+import '../models/evidence.dart';
 
 import '../app_theme.dart';
 import '../l10n/map_strings.dart';
@@ -336,7 +339,7 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
               for (final feature in visible)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: _feature(feature),
+                  child: _feature(feature, model),
                 ),
               if (features.length > 3 && !widget.detailed)
                 TextButton(
@@ -444,13 +447,8 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
         ],
       );
 
-  Widget _feature(PlaceAccessibilityFeature feature) {
+  Widget _feature(PlaceAccessibilityFeature feature, MapPlace model) {
     final colors = AppColors.of(context);
-    final source = feature.mixedSources
-        ? 'AcessoJá · OpenStreetMap'
-        : feature.source == PlaceSource.acessoja
-            ? 'AcessoJá'
-            : 'OpenStreetMap';
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -478,7 +476,25 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 Text(context.featureValue(feature.value)),
-                Text(source, style: TextStyle(color: colors.muted)),
+                FeatureProvenance(
+                    information: evidenceMap(
+                        model.accessibilityInformation[feature.key])),
+                if (model.internalId != null || model.externalId != null)
+                  TextButton(
+                      onPressed: () async {
+                        await Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                                builder: (_) => EvidenceDetailsScreen(
+                                    localId: model.internalId,
+                                    externalId: model.externalId,
+                                    resource: feature.key)));
+                        if (mounted) {
+                          widget.onRetryDetails?.call();
+                        }
+                      },
+                      child: Text(context.mapText(
+                          'Ver fontes e datas', 'View sources and dates'))),
               ],
             ),
           ),

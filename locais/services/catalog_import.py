@@ -296,6 +296,8 @@ def import_catalog(
                         }
                         batch.finished_at = timezone.now()
                         batch.save(update_fields=["state", "complete", "statistics", "finished_at"])
+                        from evidencias.capture import sync_catalog_batch
+                        sync_catalog_batch(batch)
                         lease.activate(batch)
                         for identity, local_id, method in stage.db.execute("SELECT * FROM proposed_links"):
                             CatalogPOI.objects.filter(external_id=identity, local__isnull=True).update(

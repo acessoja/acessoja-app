@@ -8,6 +8,7 @@ import '../l10n/strings.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'own_reports_screen.dart';
 import '../services/app_http.dart';
 
 import '../app_theme.dart';
@@ -485,6 +486,19 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
                                         userName: widget.userName,
                                         unidadeDistancia: _unit),
                                   ),
+                                ),
+                                _menuTile(
+                                  icon: Icons.flag_outlined,
+                                  label: accountText(
+                                      context,
+                                      'Denúncias e revisões',
+                                      'Reports and revisions'),
+                                  description: accountText(
+                                      context,
+                                      'Meus protocolos e orientações recebidas',
+                                      'My protocols and received guidance'),
+                                  onTap: () =>
+                                      _navigateTo(const OwnReportsScreen()),
                                 ),
                                 _menuTile(
                                   icon: Icons.lock_outline_rounded,

@@ -10,6 +10,7 @@ from .views import LoginAPIView
 from .health import LivenessView, ReadinessView
 
 urlpatterns = [
+    path('api/', include('evidencias.urls')),
     path('health/live/', LivenessView.as_view(), name='health-live'),
     path('health/ready/', ReadinessView.as_view(), name='health-ready'),
     path('api/favoritos/', include('favoritos.urls')),

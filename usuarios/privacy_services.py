@@ -29,7 +29,9 @@ PROFILE_FIELDS = ["id_usuario", "nome", "email", "nome_completo", "telefone", "f
 
 
 def export_queries(user):
+    from evidencias.privacy import own_export_queries
     return {
+        **own_export_queries(user),
         "admin_activity": LogEntry.objects.filter(user=user).values(
             "action_time", "content_type__app_label", "content_type__model", "object_id", "action_flag"),
         "favorites": Favorito.objects.filter(user=user).values("local_id", "criado_em"),
@@ -84,6 +86,8 @@ def export_account(user_id, password):
 
 
 def erase_relations(user):
+    from evidencias.privacy import erase_user_evidence
+    erase_user_evidence(user)
     # Invoke the existing review deletion/point reconciliation signals before
     # deleting the owner's ledger. All operations stay in the owner transaction.
     for model, ids in (

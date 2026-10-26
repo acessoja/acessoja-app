@@ -1,0 +1,26 @@
+[
+  {
+    "command": "python -m pip check",
+    "exit_code": 0
+  },
+  {
+    "command": "python manage.py check",
+    "exit_code": 0
+  },
+  {
+    "command": "python manage.py makemigrations --check --dry-run",
+    "exit_code": 0
+  },
+  {
+    "command": "python manage.py migrate --noinput",
+    "exit_code": 0
+  },
+  {
+    "command": "python manage.py spectacular --fail-on-warn --validate --file docs/reports/cards_38_41/openapi.yaml",
+    "exit_code": 0
+  },
+  {
+    "command": "python -m flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv --statistics --count",
+    "exit_code": 0
+  }
+]

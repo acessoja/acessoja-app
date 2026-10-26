@@ -600,3 +600,24 @@ Documentação desta entrega:
 Homologação: **preparado para implantação; validação externa pendente**. Não
 expor piloto com dados reais antes de validar SMTP, domínio, PostgreSQL/restore,
 retenção, diário independente, responsáveis e controles operacionais descritos.
+
+## Cards 38–41: fontes, atualidade, denúncias e moderação
+
+A fonte e as datas de cada recurso agora aparecem na prévia, nos resultados e nos detalhes. Confirmação autenticada fica vinculada à revisão efetivamente consultada, sem novos votos, pontos ou visitas. Informar mudança salva contribuição própria. Denúncias recebem protocolo privado e aguardam decisão humana; não ocultam conteúdo automaticamente.
+
+A fila está no Django Admin, com permissão específica `evidencias.moderate_content`. `is_staff` sozinho não basta. Para conceder explicitamente a uma conta existente (NOME é seu login):
+
+```powershell
+python manage.py migrate
+python manage.py grant_content_moderator --user NOME --grant --enable-admin
+```
+
+Configuração opcional em seu ambiente: `ACCESSIBILITY_FRESHNESS_DAYS=180` (1–3650), `REPORTS_IP_HOURLY_LIMIT=60` e `REPORTS_USER_HOURLY_LIMIT=10` (positivos). O deploy mantém PostgreSQL e cache compartilhado, conforme Cards 35–37. A rotina `account_maintenance` inclui a minimização/expurgo das novas entidades. Não copie configurações reais ou credenciais para o repositório.
+
+- [Proveniência, datas, migrações e interface — Cards 38–39](docs/PROVENIENCIA_ACESSIBILIDADE_CARDS_38_39.md)
+- [Contratos de denúncia, papéis, decisões, pontos e privacidade — Cards 40–41](docs/DENUNCIAS_MODERACAO_CARDS_40_41.md)
+- [Resultados e roteiros pendentes](docs/EVIDENCIAS_CARDS_38_41.md)
+- [Adendo para seções 20/22/24/25, planejamento e histórico](docs/ESPECIFICACAO_CARDS_38_41.md)
+- [OpenAPI gerado](docs/reports/cards_38_41/openapi.yaml)
+
+Para navegador, na raiz execute o backend com `python manage.py runserver` e, em `frontend`, use `flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000`. Flutter fixado em 3.47.4. `flutter build web` não exige Android SDK; `flutter build apk --debug` deve ser executado em ambiente com esse SDK. Confira o roteiro de testes antes de solicitar aceite.

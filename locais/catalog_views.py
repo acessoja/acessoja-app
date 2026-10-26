@@ -79,6 +79,8 @@ class CatalogListAPIView(APIView):
                 headers=PRIVATE,
             )
         rows = catalog_queryset(scope.active_batch_id if scope else None, options, filters)
+        from evidencias.query_projection import annotate_quality
+        rows = annotate_quality(rows, catalog=True)
         paginator = PageNumberPagination()
         paginator.page_size = options.page_size
         page = paginator.paginate_queryset(rows.select_related("poi", "batch", "observed_in"), request)
@@ -87,6 +89,8 @@ class CatalogListAPIView(APIView):
             return replace_query_param(url, "catalog_version", version) if url else None
 
         results = [catalog_place(entry, filters) for entry in page]
+        from evidencias.external import project_catalog_places
+        project_catalog_places(page, results)
         if (
             scope
             and not CatalogScope.objects.filter(
@@ -123,7 +127,10 @@ class CatalogDetailAPIView(APIView):
         local = entry.poi.local or Local.objects.filter(osm_id=entry.poi.external_id).first()
         context = populate_accessibility_context([local], {"request": request}) if local else {}
         linked = LocalSerializer(local, context=context).data if local else None
-        return Response(catalog_place(entry, linked_local=linked), headers=PRIVATE)
+        document = catalog_place(entry, linked_local=linked)
+        from evidencias.external import project_catalog_places
+        project_catalog_places([entry], [document])
+        return Response(document, headers=PRIVATE)
 
 
 class CatalogConfirmAPIView(APIView):

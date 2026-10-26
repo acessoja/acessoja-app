@@ -33,13 +33,15 @@ def configuration(tmp_path):
 
 
 def stage_environment(tmp_path):
+    log_dir = '/var/log/acessoja' if os.name == 'nt' else str(tmp_path / 'logs')
+    journal_dir = '/var/lib/acessoja/deletion-journal' if os.name == 'nt' else str(tmp_path / 'journal')
     return {'APP_ENV': 'staging', 'FRONTEND_PUBLIC_ORIGIN': 'https://staging.example.test',
             'ALLOWED_HOSTS': 'staging.example.test',
             'CSRF_TRUSTED_ORIGINS': 'https://staging.example.test',
             'EMAIL_BACKEND': 'django.core.mail.backends.smtp.EmailBackend', 'EMAIL_HOST': 'smtp.example.test',
             'EMAIL_USE_TLS': 'True', 'DEFAULT_FROM_EMAIL': 'AcessoJa <no-reply@example.test>',
-            'TRUSTED_PROXY_CIDRS': '10.85.0.10/32', 'SECURE_LOG_DIR': str(tmp_path / 'logs'),
-            'DELETION_JOURNAL_DIR': str(tmp_path / 'journal'), 'PRIVACY_CONTACT_EMAIL': 'privacy@example.test'}
+            'TRUSTED_PROXY_CIDRS': '10.85.0.10/32', 'SECURE_LOG_DIR': log_dir,
+            'DELETION_JOURNAL_DIR': journal_dir, 'PRIVACY_CONTACT_EMAIL': 'privacy@example.test'}
 
 
 def test_i01_staging_restricts_authentication_hosts_origins_cookies_and_logs(tmp_path):
