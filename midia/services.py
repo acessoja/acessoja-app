@@ -117,7 +117,7 @@ def reserve(request, values, kind, digest):
 @transaction.atomic
 def finalize(request, values, identifier, lease, result):
     user = locked_request_user(request)
-    op = ImageOperation.objects.select_for_update().select_related("asset").get(pk=identifier, owner=user)
+    op = ImageOperation.objects.select_for_update(of=("self",)).select_related("asset").get(pk=identifier, owner=user)
     if (
         op.state != "processing"
         or op.lease != lease
@@ -175,7 +175,7 @@ def abort(identifier, lease):
         with transaction.atomic():
             Usuario.objects.select_for_update().filter(pk=owner_id).first()
             op = (
-                ImageOperation.objects.select_for_update()
+                ImageOperation.objects.select_for_update(of=("self",))
                 .select_related("asset")
                 .filter(pk=identifier, lease=lease, state="processing")
                 .first()
