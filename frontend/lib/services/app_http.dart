@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+
 import '../config.dart';
 
 /// Shared timeout policy; preserves the existing URLs, headers and payloads.
@@ -62,15 +63,21 @@ class AppHttp {
 
   static Future<http.Response> get(Uri uri, {Map<String, String>? headers}) =>
       client.get(uri, headers: _headers(uri, headers)).timeout(timeout);
-  static Future<http.Response> post(Uri uri,
-          {Map<String, String>? headers, Object? body}) =>
+  static Future<http.Response> post(
+    Uri uri, {
+    Map<String, String>? headers,
+    Object? body,
+  }) =>
       client
           .post(uri, headers: _headers(uri, headers), body: body)
           .timeout(timeout);
 
   /// Recovery and registration must not inherit an expired account token.
-  static Future<http.Response> postPublic(Uri uri,
-      {Map<String, String>? headers, Object? body}) {
+  static Future<http.Response> postPublic(
+    Uri uri, {
+    Map<String, String>? headers,
+    Object? body,
+  }) {
     final publicHeaders = <String, String>{...?headers}
       ..removeWhere((key, _) => key.toLowerCase() == 'authorization');
     return client
@@ -78,19 +85,39 @@ class AppHttp {
         .timeout(timeout);
   }
 
-  static Future<http.Response> put(Uri uri,
-          {Map<String, String>? headers, Object? body}) =>
+  static Future<http.Response> put(
+    Uri uri, {
+    Map<String, String>? headers,
+    Object? body,
+  }) =>
       client
           .put(uri, headers: _headers(uri, headers), body: body)
           .timeout(timeout);
 
-  static Future<http.Response> patch(Uri uri,
-          {Map<String, String>? headers, Object? body}) =>
+  static Future<http.Response> patch(
+    Uri uri, {
+    Map<String, String>? headers,
+    Object? body,
+  }) =>
       client
           .patch(uri, headers: _headers(uri, headers), body: body)
           .timeout(timeout);
 
-  static Future<http.Response> delete(Uri uri,
-          {Map<String, String>? headers}) =>
-      client.delete(uri, headers: _headers(uri, headers)).timeout(timeout);
+  static Future<http.Response> send(http.BaseRequest request) {
+    request.headers.addAll(_headers(request.url, null));
+    return (() async {
+      final response = await client.send(request);
+      return http.Response.fromStream(response);
+    })()
+        .timeout(const Duration(seconds: 60));
+  }
+
+  static Future<http.Response> delete(
+    Uri uri, {
+    Map<String, String>? headers,
+    Object? body,
+  }) =>
+      client
+          .delete(uri, headers: _headers(uri, headers), body: body)
+          .timeout(timeout);
 }

@@ -28,6 +28,7 @@ class ModalAvaliacao(models.Model):
     questionnaire_version = models.PositiveSmallIntegerField(default=1, choices=[(1, "Legado"), (2, "Recursos")])
     answers = models.JSONField(default=dict, blank=True)
     answer_dates = models.JSONField(default=dict, blank=True)
+    answer_details = models.JSONField(default=dict, blank=True)
     content_revision = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     estrelas = models.PositiveIntegerField(default=0)  # De 1 a 5 estrelas
     comentario = models.TextField(blank=True)
@@ -51,14 +52,23 @@ class ModalAvaliacao(models.Model):
             if previous and (previous.user_id != self.user_id or previous.local_id != self.local_id):
                 raise ValidationError("O autor e o local de uma avaliação não podem mudar.")
             update_fields = kwargs.get("update_fields")
-            content_fields = {'estrelas', 'comentario', 'questionnaire_version', 'answers',
-                              *(f'pergunta_{index}' for index in range(1, 5))}
-            changed = previous and any(getattr(previous, field) != getattr(self, field)
-                                       for field in content_fields if update_fields is None or field in update_fields)
+            content_fields = {
+                "estrelas",
+                "comentario",
+                "questionnaire_version",
+                "answers",
+                "answer_details",
+                *(f"pergunta_{index}" for index in range(1, 5)),
+            }
+            changed = previous and any(
+                getattr(previous, field) != getattr(self, field)
+                for field in content_fields
+                if update_fields is None or field in update_fields
+            )
             if changed:
                 self.content_revision = uuid.uuid4()
                 if update_fields is not None:
-                    kwargs['update_fields'] = set(update_fields) | {'content_revision'}
+                    kwargs["update_fields"] = set(update_fields) | {"content_revision"}
             writes_comment = update_fields is None or "comentario" in update_fields
             changed_comment = previous and writes_comment and previous.comentario != self.comentario
             self._contribution_reason = "comment_changed" if changed_comment else None
@@ -77,3 +87,18 @@ class ModalAvaliacao(models.Model):
 
     def __str__(self):
         return f"Avaliação de {self.local.nome} por {self.user.nome}"
+
+
+class ReviewOperation(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
+    operation_id = models.UUIDField()
+    signature = models.CharField(max_length=64)
+    review = models.ForeignKey(ModalAvaliacao, null=True, on_delete=models.SET_NULL, related_name="+")
+    result_revision = models.UUIDField()
+    feedback = models.JSONField(default=dict)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["owner", "operation_id"], name="review_operation_owner")]
+
+    def __str__(self):
+        return f"ReviewOperation {self.pk}"

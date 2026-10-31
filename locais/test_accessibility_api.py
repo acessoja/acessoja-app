@@ -272,13 +272,15 @@ def test_new_migrations_preserve_raw_flags_review_authors_dates_and_empty_prefer
         "modal_avaliacao": "0006_versioned_questionnaire",
     }
     before = [
-        (app, before_names.get(app, name)) for app, name in after if app not in {"favoritos", "evidencias"}
+        (app, before_names.get(app, name))
+        for app, name in after
+        if app not in {"favoritos", "evidencias", "midia"}
     ]
     try:
         # Favorites and evidence depend on later schemas; neither existed at this historical
         # target. Unapply it explicitly instead of mixing current model state
         # with the downgraded local table. All original preservation checks stay.
-        executor.migrate(before + [("favoritos", None), ("evidencias", None)])
+        executor.migrate(before + [("favoritos", None), ("evidencias", None), ("midia", None)])
         apps = executor.loader.project_state(before).apps
         User = apps.get_model("usuarios", "Usuario")
         Place = apps.get_model("locais", "Local")

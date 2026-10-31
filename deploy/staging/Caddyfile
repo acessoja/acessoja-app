@@ -24,9 +24,14 @@
 	}
 }
 {$PUBLIC_HOST} {
-	request_body {
-		max_size 3MB
-	}
+	@image_upload path /api/midia/fotos/enviar/ /api/usuarios/me/avatar/
+    request_body @image_upload {
+        max_size 6MB
+    }
+    @ordinary_request not path /api/midia/fotos/enviar/ /api/usuarios/me/avatar/
+    request_body @ordinary_request {
+        max_size 3MB
+    }
 	@outside not remote_ip {$PILOT_CIDRS}
 	respond @outside "Pilot access restricted" 403
 	header {
@@ -70,7 +75,9 @@
 	}
 	# Media and deletion receipts are private; no public file_server for either.
 	@private path /private-media/* /private-deletions/* /media/* /backups/*
-	respond @private 404
+	handle @private {
+		respond 404
+	}
 	handle {
 		root * /srv/web
 		try_files {path} /index.html

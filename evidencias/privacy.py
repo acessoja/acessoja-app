@@ -7,6 +7,7 @@ from django.db.models import Q
 from .models import (
     ContentReport,
     EvidenceConfirmation,
+    EvidenceOperation,
     EvidenceRevision,
     ModerationDecision,
     ResourceEvidence,
@@ -16,6 +17,9 @@ from .models import (
 
 def own_export_queries(user):
     return {
+        "statement_receipts": EvidenceOperation.objects.filter(owner=user).values(
+            "operation_id", "evidence_id", "result_revision", "withdrawn", "created_at"
+        ),
         "review_revisions": ReviewRevision.objects.filter(owner=user).values(
             "id", "payload", "recorded_at", "original_submission_at"
         ),
@@ -51,13 +55,17 @@ def own_export_queries(user):
 
 
 def erase_user_evidence(user):
+    from modal_avaliacao.models import ReviewOperation
+
+    EvidenceOperation.objects.filter(owner=user).delete()
+    ReviewOperation.objects.filter(owner=user).delete()
     roots = list(ResourceEvidence.objects.filter(owner=user).select_for_update().order_by("pk"))
     ids = [root.pk for root in roots]
     own_targets = Q(review_revision__owner=user) | Q(evidence__owner=user) | Q(evidence_revision__actor=user)
     cases = list(ContentReport.objects.filter(own_targets).values_list("pk", flat=True))
-    ModerationDecision.objects.filter(
-        Q(report_id__in=cases) | Q(report__reporter=user) | Q(moderator=user)
-    ).update(reason="Dados pessoais removidos pelo procedimento de privacidade.", author_message="")
+    ModerationDecision.objects.filter(Q(report_id__in=cases) | Q(report__reporter=user) | Q(moderator=user)).update(
+        reason="Dados pessoais removidos pelo procedimento de privacidade.", author_message=""
+    )
     ContentReport.objects.filter(Q(pk__in=cases) | Q(reporter=user)).update(description="")
     for report in ContentReport.objects.filter(pk__in=cases):
         report.target_key = f"removed:{report.target_revision}"
@@ -86,8 +94,6 @@ def erase_user_evidence(user):
 
     for local in Local.objects.filter(pk__in=registered).order_by("pk").select_for_update():
         local.accessibility_information = {
-            key: value
-            for key, value in local.accessibility_information.items()
-            if key not in registered[local.pk]
+            key: value for key, value in local.accessibility_information.items() if key not in registered[local.pk]
         }
         local.save(update_fields=["accessibility_information"])

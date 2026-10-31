@@ -154,12 +154,21 @@ class TestUsuarioFotoAPI:
         )
         assert response.status_code == 404
 
-    def test_upload_foto_com_sucesso(self, api_client, usuario):
+    def test_upload_foto_com_sucesso(self, api_client, usuario, tmp_path, settings):
+        import base64
+        from io import BytesIO
+        from PIL import Image
+        settings.PRIVATE_IMAGE_ROOT = tmp_path / 'images'
+        output = BytesIO()
+        Image.new('RGB', (20, 10), 'green').save(output, 'PNG')
+        encoded = base64.b64encode(output.getvalue()).decode('ascii')
         response = api_client.post(
             "/api/usuarios/foto/",
-            {"nome": usuario.nome, "foto_perfil": "base64imagemfake"},
+            {"nome": usuario.nome, "foto_perfil": encoded},
             format="json",
         )
         assert response.status_code == 200
         usuario.refresh_from_db()
-        assert usuario.foto_perfil == "base64imagemfake"
+        with Image.open(BytesIO(base64.b64decode(usuario.foto_perfil))) as image:
+            assert image.format == "JPEG"
+        assert usuario.avatar_asset_id is not None

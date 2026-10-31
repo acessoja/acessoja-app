@@ -89,16 +89,18 @@ class ConfirmationResultSerializer(serializers.Serializer):
 
 
 class ReportWriteSerializer(StrictSerializer):
-    target_kind = serializers.ChoiceField(choices=["review", "evidence"])
+    target_kind = serializers.ChoiceField(choices=["review", "evidence", "photo"])
     review_id = serializers.IntegerField(min_value=1, required=False)
     evidence_id = serializers.UUIDField(required=False)
+    photo_id = serializers.UUIDField(required=False)
     revision = serializers.UUIDField()
     reason = serializers.ChoiceField(choices=REASONS)
     description = serializers.CharField(max_length=1000, required=False, allow_blank=True)
 
     def validate(self, attrs):
-        review, evidence = "review_id" in attrs, "evidence_id" in attrs
-        if review == evidence or review != (attrs["target_kind"] == "review"):
+        fields = {"review": "review_id", "evidence": "evidence_id", "photo": "photo_id"}
+        present = [field for field in fields.values() if field in attrs]
+        if present != [fields[attrs["target_kind"]]]:
             raise serializers.ValidationError("Tipo e referência do alvo não correspondem.")
         if attrs["reason"] == "other" and len(attrs.get("description", "").strip()) < 10:
             raise serializers.ValidationError(

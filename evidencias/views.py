@@ -295,8 +295,14 @@ class OwnRevisionRequestsView(PrivateResponseMixin, ListAPIView):
             raise ValidationError("A identidade vem da sessão.")
         decisions = (
             ModerationDecision.objects.filter(action="request_review", report__state="revision_requested")
-            .filter(Q(report__review_revision__owner=request.user) | Q(report__evidence__owner=request.user))
+            .filter(
+                Q(report__review_revision__owner=request.user)
+                | Q(report__evidence__owner=request.user)
+                | Q(report__photo_revision__owner=request.user)
+            )
             .select_related(
+                "report__photo_revision__photo__review__user",
+                "report__photo_revision__asset",
                 "report__review_revision__review__user",
                 "report__evidence__owner",
                 "report__evidence__current_revision",

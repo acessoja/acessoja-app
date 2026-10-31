@@ -303,9 +303,10 @@ def test_manual_migration_preserves_existing_domains():
     ]
     before = [list(m.objects.order_by("pk").values()) for m in models]
     executor = MigrationExecutor(connection)
+    latest = executor.loader.graph.leaf_nodes()
     try:
         executor.migrate([("locais", "0009_routehistorysession")])
     finally:
-        MigrationExecutor(connection).migrate([("locais", "0010_manual_registration")])
+        MigrationExecutor(connection).migrate(latest)
     assert before == [list(m.objects.order_by("pk").values()) for m in models]
     assert ManualRegistrationGuard.objects.filter(pk=1).exists()

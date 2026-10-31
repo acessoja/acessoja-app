@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import '../config.dart';
 import 'app_http.dart';
 import 'review_changes.dart';
@@ -8,7 +9,8 @@ import '../models/accessibility_survey.dart';
 class ContributionException implements Exception {
   final int status;
   final String message;
-  const ContributionException(this.status, this.message);
+  const ContributionException(this.status, this.message, {this.retryAfter});
+  final int? retryAfter;
   @override
   String toString() => message;
 }
@@ -18,14 +20,14 @@ class ContributionPage {
   final bool hasNext;
   final int? total;
   const ContributionPage(this.items, this.hasNext, {this.total});
-  factory ContributionPage.fromJson(
-          Map<String, dynamic> value) =>
+  factory ContributionPage.fromJson(Map<String, dynamic> value) =>
       ContributionPage(
-          (value['results'] as List)
-              .map((row) => Map<String, dynamic>.from(row as Map))
-              .toList(),
-          value['next'] != null,
-          total: (value['count'] as num?)?.toInt());
+        (value['results'] as List)
+            .map((row) => Map<String, dynamic>.from(row as Map))
+            .toList(),
+        value['next'] != null,
+        total: (value['count'] as num?)?.toInt(),
+      );
 }
 
 class ContributionService {
@@ -35,8 +37,9 @@ class ContributionService {
 
   Future<Map<String, dynamic>> impact() async {
     final response = await AppHttp.get(_uri('contribuicoes/meu-impacto/'));
-    final value = _decode(response.statusCode, response.bodyBytes)
-        as Map<String, dynamic>;
+    final value =
+        _decode(response.statusCode, response.bodyBytes)
+            as Map<String, dynamic>;
     final numeric = [
       'points',
       'level',
@@ -44,10 +47,11 @@ class ContributionService {
       'remaining_points',
       'reviews',
       'places',
-      'achievements_count'
+      'achievements_count',
     ];
     if (numeric.any(
-            (key) => value[key] is! num || !(value[key] as num).isFinite) ||
+          (key) => value[key] is! num || !(value[key] as num).isFinite,
+        ) ||
         value['profile'] is! Map ||
         value['achievements'] is! List ||
         !value.containsKey('next_level_points')) {
@@ -56,33 +60,41 @@ class ContributionService {
     return value;
   }
 
-  Future<ContributionPage> page(String endpoint,
-      {int page = 1, Map<String, String> filters = const {}}) async {
+  Future<ContributionPage> page(
+    String endpoint, {
+    int page = 1,
+    Map<String, String> filters = const {},
+  }) async {
     final response = await AppHttp.get(
-        _uri('contribuicoes/$endpoint/', {...filters, 'page': '$page'}));
+      _uri('contribuicoes/$endpoint/', {...filters, 'page': '$page'}),
+    );
     return ContributionPage.fromJson(
-        _decode(response.statusCode, response.bodyBytes)
-            as Map<String, dynamic>);
+      _decode(response.statusCode, response.bodyBytes) as Map<String, dynamic>,
+    );
   }
 
-  Future<List<Map<String, dynamic>>> placeReviews(int localId,
-      {String ordering = 'recent'}) async {
+  Future<List<Map<String, dynamic>>> placeReviews(
+    int localId, {
+    String ordering = 'recent',
+  }) async {
     return _allReviews(localId, ordering: ordering);
   }
 
   Future<List<Map<String, dynamic>>> historicalReviews(int localId) =>
       _allReviews(localId, includeHistory: true);
 
-  Future<List<Map<String, dynamic>>> _allReviews(int localId,
-      {String ordering = 'recent',
-      bool includeHistory = false,
-      bool mine = false}) async {
+  Future<List<Map<String, dynamic>>> _allReviews(
+    int localId, {
+    String ordering = 'recent',
+    bool includeHistory = false,
+    bool mine = false,
+  }) async {
     final rows = <Map<String, dynamic>>[];
     final endpoint = _uri('avaliacoes/modal-avaliacoes/', {
       'local_id': '$localId',
       'ordering': ordering,
       if (includeHistory) 'include_history': '1',
-      if (mine) 'mine': '1'
+      if (mine) 'mine': '1',
     });
     Uri? next = endpoint;
     final visited = <String>{};
@@ -97,8 +109,8 @@ class ContributionService {
       final items = value is List
           ? value
           : value is Map
-              ? value['results']
-              : null;
+          ? value['results']
+          : null;
       if (items is! List) {
         throw const ContributionException(502, 'Resposta inválida.');
       }
@@ -109,13 +121,15 @@ class ContributionService {
       }
       if (link is String && link.isNotEmpty) {
         final candidate = endpoint.resolve(link);
-        next = candidate.replace(queryParameters: {
-          ...candidate.queryParameters,
-          'local_id': '$localId',
-          'ordering': ordering,
-          'include_history': includeHistory ? '1' : '0',
-          if (mine) 'mine': '1'
-        });
+        next = candidate.replace(
+          queryParameters: {
+            ...candidate.queryParameters,
+            'local_id': '$localId',
+            'ordering': ordering,
+            'include_history': includeHistory ? '1' : '0',
+            if (mine) 'mine': '1',
+          },
+        );
       } else {
         next = null;
       }
@@ -127,11 +141,15 @@ class ContributionService {
   }
 
   Future<AccessibilityResults> accessibilityResults(int localId) async {
-    final response = await AppHttp.get(_uri(
-        'avaliacoes/modal-avaliacoes/recursos/', {'local_id': '$localId'}));
+    final response = await AppHttp.get(
+      _uri('avaliacoes/modal-avaliacoes/recursos/', {'local_id': '$localId'}),
+    );
     try {
-      return AccessibilityResults.fromJson(Map<String, dynamic>.from(
-          _decode(response.statusCode, response.bodyBytes) as Map));
+      return AccessibilityResults.fromJson(
+        Map<String, dynamic>.from(
+          _decode(response.statusCode, response.bodyBytes) as Map,
+        ),
+      );
     } on FormatException {
       throw const ContributionException(502, 'Resultados inválidos.');
     }
@@ -147,15 +165,22 @@ class ContributionService {
     return null;
   }
 
-  Future<Map<String, dynamic>> saveReview(Map<String, dynamic> body,
-      {int? id}) async {
+  Future<Map<String, dynamic>> saveReview(
+    Map<String, dynamic> body, {
+    int? id,
+  }) async {
     final uri = _uri('avaliacoes/modal-avaliacoes/${id == null ? '' : '$id/'}');
     const headers = {'Content-Type': 'application/json'};
     final response = id == null
         ? await AppHttp.post(uri, headers: headers, body: jsonEncode(body))
         : await AppHttp.patch(uri, headers: headers, body: jsonEncode(body));
-    final result = _decode(response.statusCode, response.bodyBytes)
-        as Map<String, dynamic>;
+    final result =
+        _decode(
+              response.statusCode,
+              response.bodyBytes,
+              retryAfter: int.tryParse(response.headers['retry-after'] ?? ''),
+            )
+            as Map<String, dynamic>;
     if (body['questionnaire_version'] == surveyVersion &&
         body['answers'] is Map) {
       final confirmed = result['answers'];
@@ -164,14 +189,18 @@ class ContributionService {
           result['id'] is! int ||
           (result['id'] as int) < 1) {
         throw const ContributionException(
-            502, 'O backend não confirmou as respostas desta versão.');
+          502,
+          'O backend não confirmou as respostas desta versão.',
+        );
       }
       for (final entry in (body['answers'] as Map).entries) {
         if (entry.value == null
             ? confirmed.containsKey(entry.key)
             : confirmed[entry.key] != entry.value) {
           throw const ContributionException(
-              502, 'O backend não confirmou uma resposta enviada.');
+            502,
+            'O backend não confirmou uma resposta enviada.',
+          );
         }
       }
     }
@@ -179,9 +208,19 @@ class ContributionService {
     return result;
   }
 
+  Future<Map<String, dynamic>> reviewOperation(String operation) async {
+    final response = await AppHttp.get(
+      _uri('avaliacoes/modal-avaliacoes/operacoes/$operation/'),
+    );
+    return Map<String, dynamic>.from(
+      _decode(response.statusCode, response.bodyBytes) as Map,
+    );
+  }
+
   Future<void> deleteReview(int id) async {
-    final response =
-        await AppHttp.delete(_uri('avaliacoes/modal-avaliacoes/$id/'));
+    final response = await AppHttp.delete(
+      _uri('avaliacoes/modal-avaliacoes/$id/'),
+    );
     if (response.statusCode != 204) {
       _decode(response.statusCode, response.bodyBytes);
     }
@@ -190,21 +229,22 @@ class ContributionService {
 
   Future<ContributionMutation> deleteReviewResult(int id) async {
     final response = await AppHttp.delete(
-        _uri('avaliacoes/modal-avaliacoes/$id/', {'feedback': '1'}));
+      _uri('avaliacoes/modal-avaliacoes/$id/', {'feedback': '1'}),
+    );
     // Preserve compatibility with servers that only implement DELETE 204.
     if (response.statusCode == 204) {
       reviewChanges.value++;
       return const ContributionMutation(operation: 'deleted');
     }
     final result = ContributionMutation.fromResponse(
-        _decode(response.statusCode, response.bodyBytes)
-            as Map<String, dynamic>,
-        operation: 'deleted');
+      _decode(response.statusCode, response.bodyBytes) as Map<String, dynamic>,
+      operation: 'deleted',
+    );
     reviewChanges.value++;
     return result;
   }
 
-  dynamic _decode(int status, List<int> bytes) {
+  dynamic _decode(int status, List<int> bytes, {int? retryAfter}) {
     dynamic data;
     try {
       data = jsonDecode(utf8.decode(bytes));
@@ -215,7 +255,7 @@ class ContributionService {
       final message = data is Map
           ? (data['detail'] ?? data.values.join(' ')).toString()
           : '$data';
-      throw ContributionException(status, message);
+      throw ContributionException(status, message, retryAfter: retryAfter);
     }
     return data;
   }

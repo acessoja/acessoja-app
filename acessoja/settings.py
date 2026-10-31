@@ -48,7 +48,8 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 # Application definition
 
 INSTALLED_APPS = [
-    'evidencias.apps.EvidenciasConfig',
+    "midia.apps.MidiaConfig",
+    "evidencias.apps.EvidenciasConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -210,6 +211,7 @@ SPECTACULAR_SETTINGS = {
         "RespostaAcessibilidadeEnum": "modal_avaliacao.models.RESPOSTAS",
         "ResourceInformationStateEnum": "acessoja.accessibility_catalog.WRITE_STATES",
         "ResourceResolvedStateEnum": "acessoja.accessibility_catalog.RESOURCE_STATES",
+        "ResourceIdEnum": "acessoja.accessibility_catalog.RESOURCE_IDS",
     },
     # Assets servidos localmente: a doc abre sem depender de CDN.
     "SWAGGER_UI_DIST": "SIDECAR",
@@ -248,18 +250,22 @@ if CACHES["default"]["BACKEND"] == "django.core.cache.backends.redis.RedisCache"
 
     # Finite cache I/O; no hidden reconnect/backoff loop while a worker owns a lease.
     CACHES["default"].setdefault("OPTIONS", {}).update(
-        socket_connect_timeout=2, socket_timeout=2, retry=Retry(NoBackoff(), 0), retry_on_timeout=False,
+        socket_connect_timeout=2,
+        socket_timeout=2,
+        retry=Retry(NoBackoff(), 0),
+        retry_on_timeout=False,
     )
 
 # Pontos somente por ações verificáveis; comentários exigem moderação real.
 AUTH_TOKEN_TTL = 43200
-CONTRIBUTION_POINTS = {"review": 10, "survey": 5, "useful_comment": 5}
+CONTRIBUTION_POINTS = {"review": 10, "survey": 5, "useful_comment": 5, "photo_evidence": 3}
 
 NOMINATIM_PUBLIC_OPT_IN = env.bool("NOMINATIM_PUBLIC_OPT_IN", default=False)
 
 # Reverse proxies must apply the same query redaction in their own access logs.
 LOGGING = {
-    "version": 1, "disable_existing_loggers": False,
+    "version": 1,
+    "disable_existing_loggers": False,
     "filters": {"redact_coordinates": {"()": "acessoja.logging_filters.RedactCoordinates"}},
     "handlers": {"coordinate_safe_console": {"class": "logging.StreamHandler", "filters": ["redact_coordinates"]}},
     "loggers": {"django.server": {"handlers": ["coordinate_safe_console"], "level": "INFO", "propagate": False}},
@@ -278,11 +284,14 @@ NOMINATIM_API_KEY = env("NOMINATIM_API_KEY", default="")
 NOMINATIM_API_KEY_HEADER = env("NOMINATIM_API_KEY_HEADER", default="")
 CORS_EXPOSE_HEADERS = ["Retry-After", "X-Correlation-ID"]
 LOGGING["loggers"]["acessoja.geographic"] = {
-    "handlers": ["coordinate_safe_console"], "level": env("GEO_LOG_LEVEL", default="INFO"), "propagate": False,
+    "handlers": ["coordinate_safe_console"],
+    "level": env("GEO_LOG_LEVEL", default="INFO"),
+    "propagate": False,
 }
 
 # Account, privacy and deployment settings share one validated configuration.
 from .security_settings import configure_security  # noqa: E402
+
 configure_security(globals(), env)
 
 # Cards 38–41: age is a label, never moderation validity or a points criterion.
@@ -291,11 +300,23 @@ if not 1 <= ACCESSIBILITY_FRESHNESS_DAYS <= 3650:
     raise ValueError("ACCESSIBILITY_FRESHNESS_DAYS must be between 1 and 3650.")
 REPORT_SNAPSHOT_RETENTION_DAYS = 30
 REPORT_AUDIT_RETENTION_DAYS = 180
-SECURITY_RATES = {**globals()["SECURITY_RATES"],
-                  "evidence_confirm": (120, 30, 3600),
-                  "evidence_change": (60, 20, 3600),
-                  "report_create": (env.int("REPORTS_IP_HOURLY_LIMIT", default=60),
-                                    env.int("REPORTS_USER_HOURLY_LIMIT", default=10), 3600),
-                  }
+SECURITY_RATES = {
+    **globals()["SECURITY_RATES"],
+    "evidence_confirm": (120, 30, 3600),
+    "evidence_change": (60, 20, 3600),
+    "report_create": (
+        env.int("REPORTS_IP_HOURLY_LIMIT", default=60),
+        env.int("REPORTS_USER_HOURLY_LIMIT", default=10),
+        3600,
+    ),
+}
 if any(limit < 1 for limit in SECURITY_RATES["report_create"]):
     raise ValueError("Report limits must be positive.")
+
+# Shared bounded image policy. Raw originals are never made public or retained.
+IMAGE_MAX_BYTES = 5 * 1024 * 1024
+IMAGE_REQUEST_MAX_BYTES = 6_000_000
+IMAGE_MAX_PHOTOS = 5
+PRIVATE_IMAGE_ROOT = os.path.join(globals()["MEDIA_ROOT"], "images")
+SECURITY_RATES.update({"image_upload": (60, 20, 3600), "avatar_change": (60, 15, 3600)})
+MIDDLEWARE.insert(0, "midia.middleware.ImageUploadPolicyMiddleware")

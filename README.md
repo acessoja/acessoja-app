@@ -621,3 +621,28 @@ Configuração opcional em seu ambiente: `ACCESSIBILITY_FRESHNESS_DAYS=180` (1�
 - [OpenAPI gerado](docs/reports/cards_38_41/openapi.yaml)
 
 Para navegador, na raiz execute o backend com `python manage.py runserver` e, em `frontend`, use `flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000`. Flutter fixado em 3.47.4. `flutter build web` não exige Android SDK; `flutter build apk --debug` deve ser executado em ambiente com esse SDK. Confira o roteiro de testes antes de solicitar aceite.
+
+
+## Fotografias e avatar — Cards 42 a 46 (27/10/2026)
+
+Integração real de imagens de avaliações e perfil, com processamento Pillow, armazenamento privado persistente e revisão/moderação. Aplicar as migrations do pacote e usar Flutter 3.47.4 (image_picker 1.2.4; Dart mínimo 3.11). Avatares legados continuam base64. Limite por arquivo 5 MiB; corpo multipart 6.000.000 bytes somente nas novas rotas, sem abertura pública de /media.
+
+- [Fotos e galeria](docs/FOTOGRAFIAS_AVALIACOES_CARDS_42_43.md)
+- [Foto de perfil](docs/FOTO_PERFIL_CARD_44.md)
+- [Instalação Windows, limites, limpeza, proxy, backup e rollback](docs/MIDIA_SEGURA_CARD_45.md)
+- [Evidências, resultados e pendências reais](docs/EVIDENCIAS_CARD_46.md)
+- [Adendo às seções 20/22/24/25 e planejamento](docs/ESPECIFICACAO_CARDS_42_46.md)
+
+Para backup com mídia, é obrigatória janela sem escritores, inclusive sem worker de limpeza, conforme o procedimento do Card 45. Não considerar pg_dump e cópia online dos arquivos um snapshot conjunto. A homologação em aparelho Android/Chrome móvel e PostgreSQL precisa das execuções pendentes descritas nas evidências.
+
+
+## Cards 47–51: avaliações, fotos e relatos parciais
+
+O editor permite publicar apenas com estrelas, responder parte dos oito itens v2 e
+registrar os dez recursos por relatos independentes. Fotos opcionais entram no próprio
+rascunho; uma falha parcial permite repetir somente pendências. Fotos aprovadas seguem
+a elegibilidade e o bônus +3 por autor/local no livro-razão existente.
+
+Contratos, precedência, migrations e roteiro: [AVALIACOES_CARDS_47_51.md](docs/AVALIACOES_CARDS_47_51.md).
+Resultados, 54 critérios e 44 cenários, incluindo as homologações externas pendentes:
+[EVIDENCIAS_CARD_51.md](docs/EVIDENCIAS_CARD_51.md).

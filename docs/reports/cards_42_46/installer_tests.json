@@ -1,0 +1,10 @@
+{
+  "passed": 5,
+  "scenarios": [
+    "dry-run leaves all files unchanged",
+    "local conflict aborts entire application",
+    "CRLF base accepted; all resulting raw hashes match",
+    "reapply is idempotent",
+    "path traversal rejected without writes"
+  ]
+}

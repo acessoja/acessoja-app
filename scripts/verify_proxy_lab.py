@@ -127,6 +127,10 @@ def run(caddy, output):
             results['mandatory_dependency_failure_not_ready'] = True
             assert b'SYNTHETIC_SPA_FALLBACK' in request('/recuperar-senha/MQ/abc-def')[2]
             results['direct_spa_route_fallback'] = True
+            for path in ['/media/images/test.jpg', '/private-media/images/test.jpg',
+                         '/private-deletions/test', '/backups/test']:
+                assert request(path)[0] == 404
+            results['private_media_paths_unavailable'] = True
             request('/health/live/?token=PRIVATE_RESET_CANARY&email=private@example.test&coord=-16.328,-48.951',
                     headers={'Authorization': 'Token PRIVATE_AUTH_CANARY', 'Cookie': 'private=PRIVATE_AUTH_CANARY'})
             time.sleep(.2)

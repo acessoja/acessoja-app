@@ -1,0 +1,202 @@
+{
+  "date": "2026-10-28",
+  "browser": "151.0.7922.34",
+  "environment": "isolated local HTTPS; Caddy 2.11.7, Django 5.2.18, SQLite and persistent FileSystemStorage",
+  "certificate": "private temporary CA; browser ignoreHTTPSErrors; chain verified separately by TLS client lab",
+  "steps": [
+    {
+      "id": "C44-CHROME-LARGE",
+      "description": "Selecionou PNG >3 MB no seletor Chrome e confirmou avatar JPEG persistido.",
+      "scope": "UI Chrome desktop headless compilada + API/storage reais",
+      "status": "passed"
+    },
+    {
+      "id": "C44-CHROME-INVALID-CANCEL",
+      "description": "Arquivo corrompido recusado com 422 preserva avatar; cancelamento mantém estado utilizável.",
+      "scope": "UI Chrome desktop headless compilada + API/storage reais",
+      "status": "passed"
+    },
+    {
+      "id": "C43-CHROME-SEMANTICS-UPLOAD",
+      "description": "Campo de descrição tem limites próprios, clique real funciona; envio criou foto pendente e privada com orientação corrigida.",
+      "scope": "UI Chrome desktop headless compilada + API/storage reais",
+      "status": "passed"
+    },
+    {
+      "id": "C42-CHROME-MODERATION",
+      "description": "Admin carregou imagem privada com sessão e aprovou revisão; GET/HEAD público passou de 404 a 200.",
+      "scope": "UI Chrome desktop headless compilada + API/storage reais",
+      "status": "passed"
+    },
+    {
+      "id": "C42-HTTP-REPLAY",
+      "description": "Retry real após aprovação devolve mesma foto; quantidade permanece uma.",
+      "scope": "HTTP real via Caddy/API/FS",
+      "status": "passed"
+    },
+    {
+      "id": "C43-CHROME-READER-VIEWER",
+      "description": "Outra conta em contexto desktop independente consultou galeria aprovada; ampliou e fechou por Escape. Não representa outro dispositivo.",
+      "scope": "UI Chrome desktop headless compilada + API/storage reais",
+      "status": "passed"
+    },
+    {
+      "id": "C45-CHROME-CORS",
+      "description": "Upload e GET privado autenticado entre duas origens HTTPS reais no Chrome; URL sem token.",
+      "scope": "UI Chrome desktop headless compilada + API/storage reais",
+      "status": "passed"
+    },
+    {
+      "id": "C45-HTTP-RESTART",
+      "description": "API reiniciada em outro processo conserva referências/avatar e bytes da foto.",
+      "scope": "Reinício real SQLite/FS; não restauração PostgreSQL nem outro dispositivo",
+      "status": "passed"
+    },
+    {
+      "id": "C44-CHROME-REOPEN-REMOVE",
+      "description": "Nova página/login lê avatar do servidor após reinício; remoção persiste e URL anterior responde 404.",
+      "scope": "UI Chrome desktop headless compilada + API/storage reais",
+      "status": "passed"
+    },
+    {
+      "id": "C42-CHROME-REPORT",
+      "description": "Denúncia pela UI referencia revisão, repetição HTTP mantém protocolo e autor não acessa protocolo do leitor.",
+      "scope": "UI Chrome desktop headless compilada + API/storage reais",
+      "status": "passed"
+    },
+    {
+      "id": "C42-CHROME-REPORT-DECISION",
+      "description": "Fila existente invalidou revisão denunciada, retirou GET/HEAD para leitor/público e preservou pontos da avaliação.",
+      "scope": "UI Chrome desktop headless compilada + API/storage reais",
+      "status": "passed"
+    },
+    {
+      "id": "C45-HTTP-LIMITS",
+      "description": "Via HTTPS/proxy: >5 MiB de arquivo e >6 MB de corpo recebem 413; diretórios privados 404.",
+      "scope": "HTTP real, sem mock; status capturado antes de encerramento da conexão",
+      "status": "passed"
+    },
+    {
+      "id": "C42-CHROME-OWNER-DELETE",
+      "description": "Titular remove foto pela UI, lista fica vazia e nem o titular recebe arquivo retirado.",
+      "scope": "UI Chrome desktop headless compilada + API/storage reais",
+      "status": "passed"
+    }
+  ],
+  "media": [
+    {
+      "path": "/api/usuarios/me/avatar/",
+      "status": 200,
+      "method": "GET",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/usuarios/me/avatar/",
+      "status": 200,
+      "method": "PUT",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/usuarios/me/avatar/",
+      "status": 200,
+      "method": "GET",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/usuarios/me/avatar/",
+      "status": 422,
+      "method": "PUT",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/midia/operacoes/15a8e5d8-47f0-4266-818c-743700ec3e9a/",
+      "status": 200,
+      "method": "GET",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/usuarios/me/avatar/",
+      "status": 200,
+      "method": "GET",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/midia/fotos/",
+      "status": 200,
+      "method": "GET",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/midia/fotos/enviar/",
+      "status": 201,
+      "method": "POST",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/midia/fotos/",
+      "status": 200,
+      "method": "GET",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/midia/arquivos/1b3e36b0-b285-45f1-beb7-f2153c238d2d/thumb/",
+      "status": 200,
+      "method": "GET",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/midia/arquivos/1b3e36b0-b285-45f1-beb7-f2153c238d2d/thumb/",
+      "status": 200,
+      "method": "GET",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/midia/fotos/",
+      "status": 200,
+      "method": "GET",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/midia/arquivos/1b3e36b0-b285-45f1-beb7-f2153c238d2d/thumb/",
+      "status": 200,
+      "method": "GET",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/midia/fotos/db473842-872c-4c3f-982b-f1d4d007a147/",
+      "status": 200,
+      "method": "DELETE",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/midia/arquivos/1b3e36b0-b285-45f1-beb7-f2153c238d2d/thumb/",
+      "status": 404,
+      "method": "GET",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    },
+    {
+      "path": "/api/midia/fotos/",
+      "status": 200,
+      "method": "GET",
+      "authorization": true,
+      "cors": "https://localhost:8444"
+    }
+  ],
+  "errors": [],
+  "completed": true
+}
