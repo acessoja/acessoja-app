@@ -15,6 +15,7 @@ import '../reading_presentation.dart';
 import '../services/api_service.dart';
 import 'review_editor_screen.dart';
 import 'place_reviews_screen.dart';
+import '../media/photo_gallery_screen.dart';
 import '../widgets/accessibility_results_card.dart';
 import '../widgets/survey_answers_view.dart';
 
@@ -535,6 +536,18 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
                   await _loadAllData();
                 }
               }),
+        if (widget.place['id_local'] is num ||
+            widget.place['internal_id'] is num)
+          OutlinedButton(
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                      builder: (_) => PhotoGalleryScreen(
+                          localId: ((widget.place['id_local'] ??
+                                  widget.place['internal_id']) as num)
+                              .toInt()))),
+              child: Text(context.mapText('Fotos das avaliações deste local',
+                  'Review photos of this place'))),
         Text(
           context.l10n.commentsHistory,
           style: TextStyle(

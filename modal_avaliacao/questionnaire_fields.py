@@ -4,17 +4,43 @@ from drf_spectacular.utils import extend_schema_field
 from .questionnaire import ANSWER_CODES, LEGACY_VALUES, QUESTION_IDS, VERSION, complete, validate_answers
 
 
-@extend_schema_field({
-    "type": "object", "additionalProperties": False,
-    "properties": {key: {"type": "string", "enum": [*ANSWER_CODES, None], "nullable": True} for key in QUESTION_IDS},
-    "description": "Códigos estáveis por recurso. PATCH omitido preserva; null limpa explicitamente o recurso.",
-})
+@extend_schema_field(
+    {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            key: {"type": "string", "enum": [*ANSWER_CODES, None], "nullable": True} for key in QUESTION_IDS
+        },
+        "description": "Códigos estáveis por recurso. PATCH omitido preserva; null limpa explicitamente o recurso.",
+    }
+)
 class AnswerMapField(serializers.JSONField):
     def to_internal_value(self, data):
         try:
             return validate_answers(data)
         except ValueError as error:
             raise serializers.ValidationError(str(error))
+
+
+@extend_schema_field({"type": "object", "description": "Detalhes opcionais por pergunta v2: note e observed_on."})
+class AnswerDetailsField(serializers.JSONField):
+    def to_internal_value(self, data):
+        from evidencias.serializers import ObservationSerializer
+
+        if not isinstance(data, dict) or set(data) - set(QUESTION_IDS):
+            raise serializers.ValidationError("Use somente IDs das oito perguntas v2.")
+        result = {}
+        for key, details in data.items():
+            if details is None:
+                result[key] = None
+                continue
+            if not isinstance(details, dict) or set(details) - {"note", "observed_on"}:
+                raise serializers.ValidationError("Use note e observed_on por recurso.")
+            note = serializers.CharField(max_length=1000, allow_blank=True).run_validation(details.get("note", ""))
+            date = serializers.DateField(allow_null=True).run_validation(details.get("observed_on"))
+            ObservationSerializer().validate({"observed_on": date})
+            result[key] = {"note": note, "observed_on": date.isoformat() if date else None}
+        return result
 
 
 class RatingField(serializers.IntegerField):
@@ -66,7 +92,7 @@ def validate_payload(serializer, attrs):
     version = attrs.get("questionnaire_version", getattr(serializer.instance, "questionnaire_version", 1))
     if legacy and version != 1:
         raise serializers.ValidationError("Respostas legadas não alteram o questionário de recursos.")
-    if "answers" in attrs and version != VERSION:
+    if ("answers" in attrs or "answer_details" in attrs) and version != VERSION:
         raise serializers.ValidationError("Respostas por recurso exigem questionnaire_version=2.")
     if serializer.instance and version != serializer.instance.questionnaire_version:
         if version != VERSION or not complete(VERSION, attrs.get("answers")):
@@ -74,8 +100,6 @@ def validate_payload(serializer, attrs):
     if not serializer.instance:
         if legacy and not all(f"pergunta_{i}" in attrs for i in range(1, 5)):
             raise serializers.ValidationError("Responda todas as perguntas legadas ou envie só nota e comentário.")
-        if version == VERSION and attrs.get("answers") and not complete(VERSION, attrs["answers"]):
-            raise serializers.ValidationError("Responda as oito perguntas ou escolha responder depois.")
     return attrs
 
 
@@ -84,16 +108,29 @@ def prepare_write(instance, attrs):
     if version == VERSION:
         answers = dict(getattr(instance, "answers", {}))
         dates = dict(getattr(instance, "answer_dates", {}))
+        details = dict(getattr(instance, "answer_details", {}))
         received = timezone.now().isoformat()
         for key, value in attrs.pop("answers", {}).items():
             if value is None:
                 answers.pop(key, None)
                 dates.pop(key, None)
+                details.pop(key, None)
             else:
                 if answers.get(key) != value:
                     dates[key] = received
                 answers[key] = value
-        attrs.update(answers=answers, answer_dates=dates, survey_completed=complete(version, answers))
+        for key, value in attrs.pop("answer_details", {}).items():
+            if value is None:
+                details.pop(key, None)
+            elif key not in answers:
+                raise serializers.ValidationError({"answer_details": "Detalhes exigem uma resposta para o recurso."})
+            else:
+                if details.get(key) != value:
+                    dates[key] = received
+                details[key] = value
+        attrs.update(
+            answers=answers, answer_dates=dates, answer_details=details, survey_completed=complete(version, answers)
+        )
     else:
         supplied = all(f"pergunta_{i}" in attrs for i in range(1, 5))
         legacy = [attrs.get(f"pergunta_{i}", getattr(instance, f"pergunta_{i}", "")) or "" for i in range(1, 5)]

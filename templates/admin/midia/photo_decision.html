@@ -1,0 +1,9 @@
+{% extends 'admin/base_site.html' %}{% block content %}
+<h1>Analisar fotografia da avaliação</h1>
+<p>Revisão: {{ revision.id }}. Estado: {{ revision.get_state_display }}. Envio não comprova visita ou data da fotografia.</p>
+<p>{{ revision.description }}</p>
+<img src="{{ image_url }}" alt="{{ revision.description }}" style="max-width:100%;max-height:65vh;object-fit:contain">
+{% if not photo.deleted_at %}<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Confirmar decisão</button></form>{% endif %}
+<h2>Histórico de análise da imagem</h2>
+{% for decision in history %}<p>{{ decision.get_action_display }} — {{ decision.created_at }} — {{ decision.reason }}</p>{% empty %}<p>Sem decisões. Aprovação inicial não exige denúncia.</p>{% endfor %}
+{% endblock %}

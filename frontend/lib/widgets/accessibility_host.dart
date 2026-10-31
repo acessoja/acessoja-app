@@ -256,6 +256,7 @@ class _AccessibilityHostState extends State<AccessibilityHost> {
                                                   ? colors.onPrimary
                                                   : colors.primary)),
                                       child: Semantics(
+                                          container: true,
                                           label: context.l10n.readingOpen,
                                           button: true,
                                           child: Tooltip(

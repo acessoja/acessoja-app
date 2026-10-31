@@ -60,6 +60,7 @@ import 'saved_places_screen.dart';
 import 'explorar_screen.dart';
 import 'sugestoes_screen.dart';
 import 'settings_screen.dart';
+import '../media/media_cache.dart';
 import 'rights_screen.dart';
 import 'place_detail_screen.dart';
 
@@ -151,7 +152,8 @@ class _MainScreenState extends SafeState<MainScreen>
           _unidadeDistancia = data['unidade_distancia'] ?? 'KM';
           PositionScope.read(context)?.unit = _unidadeDistancia;
           _allowSuggestions = data['permitir_sugestoes'] != false;
-          _visitConsent = data['historico_visivel'] == true &&
+          _visitConsent =
+              data['historico_visivel'] == true &&
               data['compartilhar_localizacao'] == true;
           _nomeCompleto = (data['nome_completo'] ?? '').toString().isNotEmpty
               ? data['nome_completo']
@@ -167,26 +169,18 @@ class _MainScreenState extends SafeState<MainScreen>
     }
   }
 
-  ImageProvider? _avatarImage() {
-    if (_fotoPerfil.isNotEmpty) {
-      try {
-        final bytes = base64Decode(_fotoPerfil);
-        return MemoryImage(bytes);
-      } catch (_) {}
-    }
-    return null;
-  }
+  ImageProvider? _avatarImage() => MediaSessionCache.legacyAvatar(_fotoPerfil);
 
   String _formatDistance(dynamic value) {
     final km = value is num
         ? value.toDouble()
         : double.tryParse(
-              value
-                  .toString()
-                  .replaceAll(RegExp(r'[^0-9.,]'), '')
-                  .replaceAll(',', '.'),
-            ) ??
-            0;
+                value
+                    .toString()
+                    .replaceAll(RegExp(r'[^0-9.,]'), '')
+                    .replaceAll(',', '.'),
+              ) ??
+              0;
     final miles = _distanceUnit == 'Milha';
     return '${context.number(miles ? km * 0.621371 : km)} ${miles ? 'mi' : 'km'}';
   }
@@ -459,8 +453,9 @@ class _MainScreenState extends SafeState<MainScreen>
     if (!coincident && camera.zoom < 18) {
       _mapController.fitCamera(
         CameraFit.coordinates(
-          coordinates:
-              members.map((p) => LatLng(p.latitude!, p.longitude!)).toList(),
+          coordinates: members
+              .map((p) => LatLng(p.latitude!, p.longitude!))
+              .toList(),
           padding: const EdgeInsets.all(64),
           maxZoom: 18,
         ),
@@ -660,15 +655,15 @@ class _MainScreenState extends SafeState<MainScreen>
   }
 
   Widget _activeFilters() => ActiveDiscoveryFilters(
-        state: _filterState,
-        onChange: _manualFilters,
-        onClear: _clearFilters,
-        onUsePreferences: _usePreferences,
-        onDeactivate: _deactivatePreferences,
-        onConfigure: _configurePreferences,
-        loading: _personalizationLoading,
-        message: _preferencesMessage,
-      );
+    state: _filterState,
+    onChange: _manualFilters,
+    onClear: _clearFilters,
+    onUsePreferences: _usePreferences,
+    onDeactivate: _deactivatePreferences,
+    onConfigure: _configurePreferences,
+    loading: _personalizationLoading,
+    message: _preferencesMessage,
+  );
 
   void _beginFilters() {
     _preferencesRequest++;
@@ -771,19 +766,22 @@ class _MainScreenState extends SafeState<MainScreen>
   int _externalRadius = 1500;
 
   List<Map<String, dynamic>> get _matchingLocals {
-    final origin = PositionScope.read(context)?.point ??
+    final origin =
+        PositionScope.read(context)?.point ??
         (_freshLocation ? _currentLocation : null);
     final external = <String, MapPlace>{
       for (final place in _externalLocals) place.id: place,
       for (final place in _catalog.places) place.id: place,
     };
-    final models = mergeMapPlaces(_internalLocals, external.values.toList())
-        .where(
-          (place) =>
-              _filterState.filters.matches(place) && place.matches(_searchText),
-        )
-        .toList()
-      ..sort((a, b) => comparePlaceDistance(a, b, origin));
+    final models =
+        mergeMapPlaces(_internalLocals, external.values.toList())
+            .where(
+              (place) =>
+                  _filterState.filters.matches(place) &&
+                  place.matches(_searchText),
+            )
+            .toList()
+          ..sort((a, b) => comparePlaceDistance(a, b, origin));
     return models
         .map(
           (place) => {
@@ -859,6 +857,7 @@ class _MainScreenState extends SafeState<MainScreen>
     _catalog.addListener(_externalChanged);
     _preview.addListener(_previewChanged);
     AppHttp.sessionRevision.addListener(_sessionChanged);
+    MediaSessionCache.avatarChanged.addListener(_loadUserProfile);
     reviewChanges.addListener(_onReviewChanged);
     _navigation.addListener(_onNavigationChanged);
     unawaited(_historyRecorder.refresh());
@@ -909,6 +908,7 @@ class _MainScreenState extends SafeState<MainScreen>
     _statusUpdates.dispose();
     WidgetsBinding.instance.removeObserver(this);
     AppHttp.sessionRevision.removeListener(_sessionChanged);
+    MediaSessionCache.avatarChanged.removeListener(_loadUserProfile);
     reviewChanges.removeListener(_onReviewChanged);
     _preferencesRequest++;
     _profileRequest++;
@@ -969,7 +969,8 @@ class _MainScreenState extends SafeState<MainScreen>
     if (more && (_isLoadingLocals || _internalNext == null)) {
       return;
     }
-    final origin = PositionScope.read(context)?.point ??
+    final origin =
+        PositionScope.read(context)?.point ??
         (_freshLocation ? _currentLocation : null);
     final query = more
         ? _internalQuery!
@@ -1143,8 +1144,9 @@ class _MainScreenState extends SafeState<MainScreen>
       if (!mounted || !_foreground || request != _locationRequest) {
         return;
       }
-      var issue =
-          error is LocationFailure ? error.issue : LocationIssue.unavailable;
+      var issue = error is LocationFailure
+          ? error.issue
+          : LocationIssue.unavailable;
       if (issue == LocationIssue.notRequested && _permissionRequested) {
         issue = LocationIssue.denied;
       }
@@ -1227,8 +1229,9 @@ class _MainScreenState extends SafeState<MainScreen>
         'gps_invalid' => LocationIssue.invalid,
         _ => LocationIssue.notRequested,
       };
-      _locationMessage =
-          issue == null ? null : context.locationIssue(_locationIssue);
+      _locationMessage = issue == null
+          ? null
+          : context.locationIssue(_locationIssue);
     });
     if (firstFix && issue == null && !_isRouting && _mapReady) {
       _mapController.move(point, 14.5);
@@ -1411,12 +1414,13 @@ class _MainScreenState extends SafeState<MainScreen>
 
   double _routePanelMaxHeight(BuildContext context) {
     final media = MediaQuery.of(context);
-    final available = (media.size.height -
-            media.viewInsets.bottom -
-            media.padding.vertical -
-            88)
-        .clamp(0.0, 10000.0)
-        .toDouble();
+    final available =
+        (media.size.height -
+                media.viewInsets.bottom -
+                media.padding.vertical -
+                88)
+            .clamp(0.0, 10000.0)
+            .toDouble();
     return (available * .45).clamp(0.0, 480.0).toDouble();
   }
 
@@ -1451,8 +1455,9 @@ class _MainScreenState extends SafeState<MainScreen>
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _openSearchBottomSheet(BuildContext context) {
@@ -1487,8 +1492,7 @@ class _MainScreenState extends SafeState<MainScreen>
             }
             _placesRevision.value++;
           },
-          builder: (context, destinationController) =>
-              ValueListenableBuilder<int>(
+          builder: (context, destinationController) => ValueListenableBuilder<int>(
             valueListenable: _placesRevision,
             builder: (context, revision, child) => StatefulBuilder(
               builder: (context, sheetSetState) {
@@ -1690,7 +1694,7 @@ class _MainScreenState extends SafeState<MainScreen>
                                           '${local['source'] == 'openstreetmap' ? 'OpenStreetMap' : 'AcessoJá'}'
                                           ' · ${local['categoria_label']} · ${local['endereco']}'
                                           '${(local['missing_resources'] as List?)?.isNotEmpty == true ? '\n${context.accessibilityText('Informações incompletas: ', 'Incomplete information: ')}'
-                                              '${(local['missing_resources'] as List).cast<String>().map(context.featureLabel).join(', ')}' : ''}',
+                                                    '${(local['missing_resources'] as List).cast<String>().map(context.featureLabel).join(', ')}' : ''}',
                                         ),
                                         trailing: ConstrainedBox(
                                           constraints: const BoxConstraints(
@@ -1807,8 +1811,8 @@ class _MainScreenState extends SafeState<MainScreen>
                                   elevation: 0,
                                 ),
                                 onPressed: () {
-                                  final destText =
-                                      destinationController.text.trim();
+                                  final destText = destinationController.text
+                                      .trim();
                                   if (destText.isEmpty) {
                                     _showErrorSnackBar(
                                       context.l10n.selectDestination,
@@ -1883,16 +1887,18 @@ class _MainScreenState extends SafeState<MainScreen>
       source: model.isExternal && model.externalId != null
           ? 'openstreetmap'
           : model.internalId != null
-              ? 'acessoja'
-              : 'manual',
+          ? 'acessoja'
+          : 'manual',
       localId: model.isExternal ? null : model.internalId,
       externalId: model.isExternal ? model.externalId : null,
     );
     setState(() {
-      _destinationAddress =
-          valid['nome'] is String ? valid['nome'] as String : '';
-      _destinationStreet =
-          valid['endereco'] is String ? valid['endereco'] as String : '';
+      _destinationAddress = valid['nome'] is String
+          ? valid['nome'] as String
+          : '';
+      _destinationStreet = valid['endereco'] is String
+          ? valid['endereco'] as String
+          : '';
       _routeLocalId = model.isExternal ? null : model.internalId;
       _arrivalRecorded = false;
     });
@@ -2032,8 +2038,8 @@ class _MainScreenState extends SafeState<MainScreen>
                 : null,
             onContributePressed:
                 current.isExternal && current.internalId == null
-                    ? () => Navigator.pop(sheetContext, 'contribute')
-                    : null,
+                ? () => Navigator.pop(sheetContext, 'contribute')
+                : null,
           );
         },
       ),
@@ -2100,7 +2106,9 @@ class _MainScreenState extends SafeState<MainScreen>
     } else if (action == 'reviews' && confirmedTarget != null) {
       await Navigator.push<void>(
         context,
-        MaterialPageRoute(builder: (_) => PlaceReviewsScreen(place: confirmedTarget)),
+        MaterialPageRoute(
+          builder: (_) => PlaceReviewsScreen(place: confirmedTarget),
+        ),
       );
     } else if (action == 'contribute' && chosen.isExternal) {
       await _contributeExternal(chosen.toMap());
@@ -2170,32 +2178,34 @@ class _MainScreenState extends SafeState<MainScreen>
       if (mounted) _statusUpdates.value++;
     });
     final colors = AppColors.of(context);
-    final markerHeight = (48 +
-            MediaQuery.textScalerOf(context).scale(14) *
-                (Theme.of(context).textTheme.bodyMedium?.height ?? 1.4))
-        .clamp(80.0, double.infinity)
-        .toDouble();
+    final markerHeight =
+        (48 +
+                MediaQuery.textScalerOf(context).scale(14) *
+                    (Theme.of(context).textTheme.bodyMedium?.height ?? 1.4))
+            .clamp(80.0, double.infinity)
+            .toDouble();
     final markerWidth = (24 + MediaQuery.textScalerOf(context).scale(14))
         .clamp(56.0, double.infinity)
         .toDouble();
 
     final searchText = context.l10n.mapSearchAction;
-    final searchStyle = Theme.of(context)
-        .textTheme
-        .bodyMedium!
-        .copyWith(fontSize: 15, color: colors.muted);
-    final searchMeasure = TextPainter(
-      text: TextSpan(text: searchText, style: searchStyle),
-      textDirection: Directionality.of(context),
-      textScaler: MediaQuery.textScalerOf(context),
-    )..layout(
-        maxWidth: (MediaQuery.sizeOf(context).width - 98).clamp(
-          40.0,
-          double.infinity,
-        ),
-      );
-    final searchHeight =
-        (searchMeasure.height + 24).clamp(56.0, double.infinity).toDouble();
+    final searchStyle = Theme.of(
+      context,
+    ).textTheme.bodyMedium!.copyWith(fontSize: 15, color: colors.muted);
+    final searchMeasure =
+        TextPainter(
+          text: TextSpan(text: searchText, style: searchStyle),
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+        )..layout(
+          maxWidth: (MediaQuery.sizeOf(context).width - 98).clamp(
+            40.0,
+            double.infinity,
+          ),
+        );
+    final searchHeight = (searchMeasure.height + 24)
+        .clamp(56.0, double.infinity)
+        .toDouble();
     searchMeasure.dispose();
     return Scaffold(
       onDrawerChanged: (opened) {
@@ -2438,21 +2448,23 @@ class _MainScreenState extends SafeState<MainScreen>
                               .toList(),
                           selectedId: _selectedPlaceId,
                           reservedInsets: EdgeInsets.only(
-                            top: _isRouting ||
+                            top:
+                                _isRouting ||
                                     MediaQuery.sizeOf(context).height < 480
                                 ? 72
                                 : 90 +
-                                    (mapBounds.maxHeight -
-                                            searchHeight -
-                                            16 -
-                                            48 -
-                                            82 -
-                                            8)
-                                        .clamp(
-                                      64.0,
-                                      (MediaQuery.sizeOf(context).height * .22)
-                                          .clamp(64.0, 240.0),
-                                    ),
+                                      (mapBounds.maxHeight -
+                                              searchHeight -
+                                              16 -
+                                              48 -
+                                              82 -
+                                              8)
+                                          .clamp(
+                                            64.0,
+                                            (MediaQuery.sizeOf(context).height *
+                                                    .22)
+                                                .clamp(64.0, 240.0),
+                                          ),
                             bottom: _isRouting ? 72 : searchHeight + 96,
                             right: 64,
                           ),
@@ -2564,7 +2576,8 @@ class _MainScreenState extends SafeState<MainScreen>
                                 width: markerWidth,
                                 height: markerHeight,
                                 child: Semantics(
-                                  label: context.routeText(
+                                  label:
+                                      context.routeText(
                                         'Destino: ',
                                         'Destination: ',
                                       ) +
@@ -2649,58 +2662,58 @@ class _MainScreenState extends SafeState<MainScreen>
                                     ],
                                   )
                                 : _localsLoadFailed
-                                    ? InkWell(
-                                        key: const ValueKey('map-retry-places'),
-                                        onTap: _fetchEstablishments,
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              Icons.refresh_rounded,
-                                              color: colors.danger,
-                                              size: 18,
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Flexible(
-                                              child: Text(
-                                                context.l10n.retry,
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  color: colors.danger,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w800,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                ? InkWell(
+                                    key: const ValueKey('map-retry-places'),
+                                    onTap: _fetchEstablishments,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.refresh_rounded,
+                                          color: colors.danger,
+                                          size: 18,
                                         ),
-                                      )
-                                    : Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.place_outlined,
-                                            color: colors.primaryDark,
-                                            size: 17,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Flexible(
-                                            child: Text(
-                                              context.l10n.placeCount(
-                                                _visiblePlaceCount,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color: colors.text,
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w800,
-                                              ),
+                                        const SizedBox(width: 6),
+                                        Flexible(
+                                          child: Text(
+                                            context.l10n.retry,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: colors.danger,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w800,
                                             ),
                                           ),
-                                        ],
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.place_outlined,
+                                        color: colors.primaryDark,
+                                        size: 17,
                                       ),
+                                      const SizedBox(width: 6),
+                                      Flexible(
+                                        child: Text(
+                                          context.l10n.placeCount(
+                                            _visiblePlaceCount,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: colors.text,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                           ),
                         ),
                       ),
@@ -2745,9 +2758,9 @@ class _MainScreenState extends SafeState<MainScreen>
                               valueListenable: _statusUpdates,
                               builder: (_, value, child) =>
                                   SingleChildScrollView(
-                                padding: const EdgeInsets.all(20),
-                                child: _discoveryContents(),
-                              ),
+                                    padding: const EdgeInsets.all(20),
+                                    child: _discoveryContents(),
+                                  ),
                             ),
                           ),
                         ),
@@ -3183,179 +3196,174 @@ class _MainScreenState extends SafeState<MainScreen>
   }
 
   Widget _discoveryContents() => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(context.l10n.mapStatusSources,
-              style: const TextStyle(fontSize: 12)),
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(context.l10n.mapStatusSources, style: const TextStyle(fontSize: 12)),
+      Text(
+        context.mapText(
+          '$_visiblePlaceCount locais carregados nesta visualização',
+          '$_visiblePlaceCount loaded places in this view',
+        ),
+      ),
+      CatalogStatus(controller: _catalog, compact: true),
+      TextButton(
+        onPressed: () => setState(() => _discoveryDetails = !_discoveryDetails),
+        child: Text(
+          context.mapText(
+            _discoveryDetails
+                ? 'Ocultar alcance dos resultados'
+                : 'Entender resultados',
+            _discoveryDetails ? 'Hide result scope' : 'Understand results',
+          ),
+        ),
+      ),
+      if (_discoveryDetails) ...[
+        Text(
+          context.mapText(
+            'Base do AcessoJá: ${_internalLocals.length} / $_internalCount carregados da consulta atual.',
+            'AcessoJá: ${_internalLocals.length} / $_internalCount loaded from the current query.',
+          ),
+        ),
+        Text(
+          context.mapText(
+            'Carregados sem coordenadas: $_missingCoordinateCount. Consulte a lista de pesquisa.',
+            'Loaded without coordinates: $_missingCoordinateCount. Open the search list.',
+          ),
+        ),
+        Text(
+          context.mapText(
+            'Externos carregados: ${_externalLocals.length}; raio consultado: $_externalRadius m. O lote pode ser limitado.',
+            'External places loaded: ${_externalLocals.length}; queried radius: $_externalRadius m. This batch may be limited.',
+          ),
+        ),
+        if (_areaMoved)
           Text(
             context.mapText(
-              '$_visiblePlaceCount locais carregados nesta visualização',
-              '$_visiblePlaceCount loaded places in this view',
+              'A câmera mudou; Buscar nesta área confirma outra consulta.',
+              'The camera moved; Search this area confirms another query.',
             ),
           ),
-          CatalogStatus(controller: _catalog, compact: true),
+      ],
+      if (_isLoadingExternal)
+        Text(
+          context.mapText(
+            'Buscando locais externos…',
+            'Loading external places…',
+          ),
+        ),
+      if (_localsLoadFailed)
+        Semantics(
+          liveRegion: true,
+          child: Text(
+            context.mapText(
+              'Não foi possível atualizar os locais do AcessoJá. Abra a pesquisa para tentar novamente.',
+              'Could not refresh AcessoJá places. Open search to retry.',
+            ),
+          ),
+        ),
+      if (_externalError != null)
+        Semantics(liveRegion: true, child: Text(_externalError!)),
+      if (_locationMessage != null)
+        Semantics(liveRegion: true, child: Text(_locationMessage!)),
+      if (!_hasLocation && _locationMessage == null)
+        Text(
+          context.routeText(
+            'Anápolis é o centro de referência. Sua localização ainda não foi solicitada.',
+            'Anápolis is the reference center. Your location has not been requested yet.',
+          ),
+        ),
+      if (_externalTruncated)
+        Text(
+          context.accessibilityText(
+            'Resultados limitados antes dos filtros. Aproxime o mapa ou busque outra área.',
+            'Results are limited before filtering. Zoom in or search another area.',
+          ),
+        ),
+      if (!_isLoadingLocals &&
+          !_localsLoadFailed &&
+          !_isLoadingExternal &&
+          _externalError == null &&
+          _matchingLocals.isEmpty)
+        Text(
+          context.accessibilityText(
+            'Nenhum local corresponde aos dados e filtros atuais. Isso não comprova ausência de recursos.',
+            'No place matches the available data and current filters. This does not prove features are absent.',
+          ),
+        ),
+      if (_internalBounds != null)
+        Text(
+          context.mapText(
+            'Área pesquisada ativa; sem coordenadas ficam fora da consulta.',
+            'Searched area active; places without coordinates are outside this query.',
+          ),
+        ),
+      if (_internalBounds != null)
+        TextButton(
+          key: const ValueKey('status-remove-search-area'),
+          onPressed: _removeSearchArea,
+          child: Text(
+            context.mapText('Remover área pesquisada', 'Remove searched area'),
+          ),
+        ),
+      if (_externalDiscovery.usable &&
+          (_externalDiscovery.stale || _externalError != null))
+        Text(
+          context.mapText(
+                'Mostrando dados externos anteriores; última obtenção: ',
+                'Showing earlier external data; last fetched: ',
+              ) +
+              _externalObtainedTime,
+        ),
+      if (!_externalDiscovery.canRetry && _externalDiscovery.waitSeconds > 0)
+        Text(
+          context.mapText(
+            'Nova tentativa a partir de ${_formatDiscoveryTime(_externalDiscovery.retryUntil!)}.',
+            'Retry available after ${_formatDiscoveryTime(_externalDiscovery.retryUntil!)}.',
+          ),
+        ),
+      _activeFilters(),
+      Wrap(
+        spacing: 8,
+        children: [
+          if (_areaMoved || _externalError != null)
+            TextButton.icon(
+              key: const ValueKey('map-search-area'),
+              onPressed: _searchVisibleArea,
+              icon: const Icon(Icons.search),
+              label: Text(
+                context.mapText('Buscar nesta área', 'Search this area'),
+              ),
+            ),
           TextButton(
-            onPressed: () =>
-                setState(() => _discoveryDetails = !_discoveryDetails),
+            key: const ValueKey('map-refresh-external'),
+            onPressed: _isLoadingExternal || !_externalDiscovery.canRetry
+                ? null
+                : () => _fetchExternalPlaces(_externalCenter),
             child: Text(
-              context.mapText(
-                _discoveryDetails
-                    ? 'Ocultar alcance dos resultados'
-                    : 'Entender resultados',
-                _discoveryDetails ? 'Hide result scope' : 'Understand results',
-              ),
+              _externalError != null
+                  ? context.mapText(
+                      'Tentar fonte externa novamente',
+                      'Retry external source',
+                    )
+                  : context.mapText(
+                      'Atualizar área consultada',
+                      'Refresh searched area',
+                    ),
             ),
           ),
-          if (_discoveryDetails) ...[
-            Text(
-              context.mapText(
-                'Base do AcessoJá: ${_internalLocals.length} / $_internalCount carregados da consulta atual.',
-                'AcessoJá: ${_internalLocals.length} / $_internalCount loaded from the current query.',
-              ),
-            ),
-            Text(
-              context.mapText(
-                'Carregados sem coordenadas: $_missingCoordinateCount. Consulte a lista de pesquisa.',
-                'Loaded without coordinates: $_missingCoordinateCount. Open the search list.',
-              ),
-            ),
-            Text(
-              context.mapText(
-                'Externos carregados: ${_externalLocals.length}; raio consultado: $_externalRadius m. O lote pode ser limitado.',
-                'External places loaded: ${_externalLocals.length}; queried radius: $_externalRadius m. This batch may be limited.',
-              ),
-            ),
-            if (_areaMoved)
-              Text(
-                context.mapText(
-                  'A câmera mudou; Buscar nesta área confirma outra consulta.',
-                  'The camera moved; Search this area confirms another query.',
-                ),
-              ),
-          ],
-          if (_isLoadingExternal)
-            Text(
-              context.mapText(
-                'Buscando locais externos…',
-                'Loading external places…',
-              ),
-            ),
-          if (_localsLoadFailed)
-            Semantics(
-              liveRegion: true,
-              child: Text(
-                context.mapText(
-                  'Não foi possível atualizar os locais do AcessoJá. Abra a pesquisa para tentar novamente.',
-                  'Could not refresh AcessoJá places. Open search to retry.',
-                ),
-              ),
-            ),
-          if (_externalError != null)
-            Semantics(liveRegion: true, child: Text(_externalError!)),
-          if (_locationMessage != null)
-            Semantics(liveRegion: true, child: Text(_locationMessage!)),
-          if (!_hasLocation && _locationMessage == null)
-            Text(
-              context.routeText(
-                'Anápolis é o centro de referência. Sua localização ainda não foi solicitada.',
-                'Anápolis is the reference center. Your location has not been requested yet.',
-              ),
-            ),
-          if (_externalTruncated)
-            Text(
-              context.accessibilityText(
-                'Resultados limitados antes dos filtros. Aproxime o mapa ou busque outra área.',
-                'Results are limited before filtering. Zoom in or search another area.',
-              ),
-            ),
           if (!_isLoadingLocals &&
-              !_localsLoadFailed &&
               !_isLoadingExternal &&
-              _externalError == null &&
-              _matchingLocals.isEmpty)
-            Text(
-              context.accessibilityText(
-                'Nenhum local corresponde aos dados e filtros atuais. Isso não comprova ausência de recursos.',
-                'No place matches the available data and current filters. This does not prove features are absent.',
-              ),
-            ),
-          if (_internalBounds != null)
-            Text(
-              context.mapText(
-                'Área pesquisada ativa; sem coordenadas ficam fora da consulta.',
-                'Searched area active; places without coordinates are outside this query.',
-              ),
-            ),
-          if (_internalBounds != null)
+              _matchingLocals.isEmpty &&
+              !_filterState.filters.active)
             TextButton(
-              key: const ValueKey('status-remove-search-area'),
-              onPressed: _removeSearchArea,
+              onPressed: _clearFilters,
               child: Text(
-                context.mapText(
-                    'Remover área pesquisada', 'Remove searched area'),
+                context.accessibilityText('Limpar filtros', 'Clear filters'),
               ),
             ),
-          if (_externalDiscovery.usable &&
-              (_externalDiscovery.stale || _externalError != null))
-            Text(
-              context.mapText(
-                    'Mostrando dados externos anteriores; última obtenção: ',
-                    'Showing earlier external data; last fetched: ',
-                  ) +
-                  _externalObtainedTime,
-            ),
-          if (!_externalDiscovery.canRetry &&
-              _externalDiscovery.waitSeconds > 0)
-            Text(
-              context.mapText(
-                'Nova tentativa a partir de ${_formatDiscoveryTime(_externalDiscovery.retryUntil!)}.',
-                'Retry available after ${_formatDiscoveryTime(_externalDiscovery.retryUntil!)}.',
-              ),
-            ),
-          _activeFilters(),
-          Wrap(
-            spacing: 8,
-            children: [
-              if (_areaMoved || _externalError != null)
-                TextButton.icon(
-                  key: const ValueKey('map-search-area'),
-                  onPressed: _searchVisibleArea,
-                  icon: const Icon(Icons.search),
-                  label: Text(
-                    context.mapText('Buscar nesta área', 'Search this area'),
-                  ),
-                ),
-              TextButton(
-                key: const ValueKey('map-refresh-external'),
-                onPressed: _isLoadingExternal || !_externalDiscovery.canRetry
-                    ? null
-                    : () => _fetchExternalPlaces(_externalCenter),
-                child: Text(
-                  _externalError != null
-                      ? context.mapText(
-                          'Tentar fonte externa novamente',
-                          'Retry external source',
-                        )
-                      : context.mapText(
-                          'Atualizar área consultada',
-                          'Refresh searched area',
-                        ),
-                ),
-              ),
-              if (!_isLoadingLocals &&
-                  !_isLoadingExternal &&
-                  _matchingLocals.isEmpty &&
-                  !_filterState.filters.active)
-                TextButton(
-                  onPressed: _clearFilters,
-                  child: Text(
-                    context.accessibilityText(
-                        'Limpar filtros', 'Clear filters'),
-                  ),
-                ),
-            ],
-          ),
         ],
-      );
+      ),
+    ],
+  );
 }

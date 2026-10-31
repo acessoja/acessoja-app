@@ -177,6 +177,14 @@ class _ReportContentScreenState extends State<ReportContentScreen> {
       if (!fact.canReport) {
         throw const EvidenceException(403);
       }
+    } else if (target.kind == 'photo') {
+      final row = await widget.service.photo(target.id);
+      if (row['revision'] != target.revision) {
+        throw const EvidenceException(409);
+      }
+      if (row['can_report'] != true) {
+        throw const EvidenceException(403);
+      }
     } else {
       final row = await widget.service.review(int.parse(target.id));
       if (row['content_revision'] != target.revision) {

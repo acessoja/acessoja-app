@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-28",
+  "environment": {
+    "Flutter": "3.47.4",
+    "Dart": "3.13.3",
+    "image_picker": "1.2.4"
+  },
+  "analyze": "No issues found",
+  "full_suite_passed": 908,
+  "media_suite_passed": 16,
+  "affected_regression_and_map_passed": 61,
+  "commands": [
+    {
+      "command": "flutter pub get",
+      "exit_code": 0
+    },
+    {
+      "command": "flutter analyze --no-pub",
+      "exit_code": 0
+    },
+    {
+      "command": "flutter test --no-pub test/media_cards_42_46_test.dart --reporter expanded",
+      "exit_code": 0,
+      "passed_tests": 16,
+      "complete": true
+    },
+    {
+      "command": "flutter test --no-pub --reporter expanded",
+      "exit_code": 0,
+      "passed_tests": 908,
+      "complete": true
+    }
+  ],
+  "web": {
+    "command": "flutter build web --no-pub --no-web-resources-cdn --dart-define=API_BASE_URL=https://localhost:8443",
+    "exit_code": 0,
+    "main_js_sha256": "012b514aa67db350b348bc92f827d77f8a4da3fa5748ca333707d84ffb9d094b"
+  },
+  "apk": {
+    "status": "pending",
+    "attempt": "flutter build apk --debug --no-pub",
+    "exit_code": 1,
+    "result": "No Android SDK found"
+  },
+  "physical_android": "pending",
+  "mobile_chrome": "pending",
+  "Safari_iPhone": "not homologated",
+  "real_screen_reader": "pending"
+}

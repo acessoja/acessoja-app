@@ -7,10 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
-STATES = [
-    (value, value)
-    for value in ("presence_reported", "absence_reported", "unknown", "limited", "not_applicable")
-]
+STATES = [(value, value) for value in ("presence_reported", "absence_reported", "unknown", "limited", "not_applicable")]
 OPEN_STATES = ("pending", "reviewing", "revision_requested")
 REPORT_STATES = [
     (key, label)
@@ -41,6 +38,10 @@ ACTIONS = [
     )
 ]
 GUIDANCE = {
+    "photo_context": {
+        "pt": "Confira se a foto e a descrição representam o recurso. Evite pessoas, documentos e dados pessoais.",
+        "en": "Check that the photo and description represent the feature. Avoid people, documents and personal data.",
+    },
     "resource_details": {
         "pt": "Revise o valor do recurso e informe a data da observação, se souber.",
         "en": "Review the feature value and provide the observation date if known.",
@@ -81,9 +82,7 @@ class ReviewRevision(ImmutableRecord):
         on_delete=models.SET_NULL,
         related_name="content_revisions",
     )
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
-    )
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
     payload = models.JSONField(default=dict)
     recorded_at = models.DateTimeField(null=True)
     original_submission_at = models.DateTimeField(null=True)
@@ -101,27 +100,51 @@ class ResourceEvidence(models.Model):
         max_length=16, choices=[(key, key) for key in ("review", "observation", "registration", "osm")]
     )
     source = models.CharField(max_length=32, default="not_recorded")
-    local = models.ForeignKey(
-        "locais.Local", null=True, on_delete=models.SET_NULL, related_name="resource_evidence"
-    )
+    local = models.ForeignKey("locais.Local", null=True, on_delete=models.SET_NULL, related_name="resource_evidence")
     external_id = models.CharField(max_length=64, blank=True, db_index=True)
-    review = models.ForeignKey(
-        "modal_avaliacao.ModalAvaliacao", null=True, on_delete=models.SET_NULL, related_name="+"
-    )
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
-    )
-    current_revision = models.ForeignKey(
-        "EvidenceRevision", null=True, on_delete=models.SET_NULL, related_name="+"
-    )
+    review = models.ForeignKey("modal_avaliacao.ModalAvaliacao", null=True, on_delete=models.SET_NULL, related_name="+")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
+    current_revision = models.ForeignKey("EvidenceRevision", null=True, on_delete=models.SET_NULL, related_name="+")
     source_metadata = models.JSONField(default=dict)
     withdrawn = models.BooleanField(default=False)
+    # The latest intentional statement wins, even when withdrawn/invalidated.
+    # Older statements stay in history; they cannot silently reappear.
+    superseded = models.BooleanField(default=False)
 
     class Meta:
         indexes = [models.Index(fields=["local", "resource", "withdrawn"], name="evidence_local_resource")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "local", "resource"],
+                name="one_effective_author_resource",
+                condition=models.Q(
+                    superseded=False,
+                    owner__isnull=False,
+                    local__isnull=False,
+                    kind__in=["review", "observation"],
+                    source="user",
+                ),
+            )
+        ]
 
     def __str__(self):
         return f"ResourceEvidence {self.pk}"
+
+
+class EvidenceOperation(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
+    operation_id = models.UUIDField()
+    signature = models.CharField(max_length=64)
+    evidence = models.ForeignKey(ResourceEvidence, null=True, on_delete=models.SET_NULL, related_name="+")
+    result_revision = models.UUIDField()
+    withdrawn = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["owner", "operation_id"], name="evidence_operation_owner")]
+
+    def __str__(self):
+        return f"EvidenceOperation {self.pk}"
 
 
 class EvidenceRevision(ImmutableRecord):
@@ -135,16 +158,12 @@ class EvidenceRevision(ImmutableRecord):
     observed_on = models.DateField(null=True)
     received_at = models.DateTimeField(null=True)
     captured_at = models.DateTimeField(default=timezone.now)
-    actor = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
-    )
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
     source_metadata = models.JSONField(default=dict)
     is_valid = models.BooleanField(default=True)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["evidence", "number"], name="evidence_revision_number_unique")
-        ]
+        constraints = [models.UniqueConstraint(fields=["evidence", "number"], name="evidence_revision_number_unique")]
 
     def __str__(self):
         return f"EvidenceRevision {self.pk}"
@@ -158,9 +177,7 @@ class EvidenceConfirmation(models.Model):
     observed_on = models.DateField(null=True)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["revision", "user"], name="one_confirmation_user_revision")
-        ]
+        constraints = [models.UniqueConstraint(fields=["revision", "user"], name="one_confirmation_user_revision")]
 
     def __str__(self):
         return f"EvidenceConfirmation {self.pk}"
@@ -168,20 +185,19 @@ class EvidenceConfirmation(models.Model):
 
 class ContentReport(models.Model):
     protocol = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    reporter = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    reporter = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
+    target_kind = models.CharField(
+        max_length=12, choices=[("review", "Avaliação"), ("evidence", "Recurso"), ("photo", "Fotografia")]
     )
-    target_kind = models.CharField(max_length=12, choices=[("review", "Avaliação"), ("evidence", "Recurso")])
     target_key = models.CharField(max_length=220)
     target_revision = models.UUIDField()
-    review_revision = models.ForeignKey(
-        ReviewRevision, null=True, on_delete=models.SET_NULL, related_name="reports"
-    )
-    evidence = models.ForeignKey(
-        ResourceEvidence, null=True, on_delete=models.SET_NULL, related_name="reports"
-    )
+    review_revision = models.ForeignKey(ReviewRevision, null=True, on_delete=models.SET_NULL, related_name="reports")
+    evidence = models.ForeignKey(ResourceEvidence, null=True, on_delete=models.SET_NULL, related_name="reports")
     evidence_revision = models.ForeignKey(
         EvidenceRevision, null=True, on_delete=models.SET_NULL, related_name="reports"
+    )
+    photo_revision = models.ForeignKey(
+        "midia.PhotoRevision", null=True, on_delete=models.SET_NULL, related_name="reports"
     )
     reason = models.CharField(max_length=20, choices=REASONS)
     description = models.CharField(max_length=1000, blank=True)
@@ -209,9 +225,7 @@ class ModerationDecision(ImmutableRecord):
     report = models.ForeignKey(ContentReport, on_delete=models.PROTECT, related_name="decisions")
     operation_id = models.UUIDField()
     request_fingerprint = models.CharField(max_length=64)
-    moderator = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
-    )
+    moderator = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
     action = models.CharField(max_length=24, choices=ACTIONS)
     reason = models.CharField(max_length=1000)
     author_message = models.CharField(max_length=400, blank=True)
@@ -222,9 +236,7 @@ class ModerationDecision(ImmutableRecord):
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["report", "operation_id"], name="one_decision_case_operation")
-        ]
+        constraints = [models.UniqueConstraint(fields=["report", "operation_id"], name="one_decision_case_operation")]
 
     def __str__(self):
         return f"ModerationDecision {self.pk}"

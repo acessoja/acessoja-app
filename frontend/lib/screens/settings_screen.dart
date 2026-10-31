@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'own_reports_screen.dart';
 import '../services/app_http.dart';
+import '../media/media_cache.dart';
 
 import '../app_theme.dart';
 import '../config.dart';
@@ -42,10 +43,33 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    AppHttp.sessionRevision.addListener(_sessionChanged);
+    MediaSessionCache.avatarChanged.addListener(_loadProfile);
     _loadProfile();
   }
 
+  int _profileGeneration = 0;
+  @override
+  void dispose() {
+    _profileGeneration++;
+    AppHttp.sessionRevision.removeListener(_sessionChanged);
+    MediaSessionCache.avatarChanged.removeListener(_loadProfile);
+    super.dispose();
+  }
+
+  void _sessionChanged() {
+    _profileGeneration++;
+    setState(() {
+      _fotoPerfil = '';
+      _nomeCompleto = '';
+      _isLoading = false;
+      _loadFailed = true;
+    });
+  }
+
   Future<void> _loadProfile() async {
+    final generation = ++_profileGeneration,
+        session = AppHttp.sessionRevision.value;
     setState(() {
       _isLoading = true;
       _loadFailed = false;
@@ -55,7 +79,11 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
         '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(widget.userName)}',
       );
       final resp = await AppHttp.get(uri);
-      if (!mounted) return;
+      if (!mounted ||
+          generation != _profileGeneration ||
+          session != AppHttp.sessionRevision.value) {
+        return;
+      }
       if (resp.statusCode == 200) {
         final data = json.decode(utf8.decode(resp.bodyBytes));
         setState(() {
@@ -76,16 +104,7 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
     setState(() => _isLoading = false);
   }
 
-  ImageProvider? _avatarImage() {
-    if (_fotoPerfil.isNotEmpty) {
-      try {
-        final bytes = base64Decode(_fotoPerfil);
-        return MemoryImage(bytes);
-      } catch (_) {}
-    }
-
-    return null;
-  }
+  ImageProvider? _avatarImage() => MediaSessionCache.legacyAvatar(_fotoPerfil);
 
   void _navigateTo(Widget screen) async {
     final result = await Navigator.push(

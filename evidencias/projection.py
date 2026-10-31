@@ -39,11 +39,11 @@ def visible_query():
     )
 
 
-def public_evidence(local_ids=(), external_ids=(), include_invalid=False):
+def public_evidence(local_ids=(), external_ids=(), include_invalid=False, include_inactive=False):
     scope = Q(local_id__in=list(local_ids)) | Q(external_id__in=list(external_ids))
-    rows = ResourceEvidence.objects.filter(
-        scope, visible_query(), withdrawn=False, current_revision__isnull=False
-    )
+    rows = ResourceEvidence.objects.filter(scope, visible_query(), current_revision__isnull=False)
+    if not include_inactive:
+        rows = rows.filter(withdrawn=False, superseded=False)
     if not include_invalid:
         rows = rows.filter(current_revision__is_valid=True)
     return rows.select_related("current_revision", "owner")
@@ -53,6 +53,8 @@ def effective(records):
     latest, independent = {}, []
     minimum = datetime.min.replace(tzinfo=datetime_timezone.utc)
     for row in records:
+        if getattr(row, "superseded", False) or getattr(row, "withdrawn", False):
+            continue
         if row.source != "user" or row.owner_id is None:
             independent.append(row)
             continue
@@ -134,9 +136,7 @@ def resource_summary(records, legacy=0, statistics=None):
         for source, items in sources.items():
             received = [row.current_revision.received_at for row in items if row.current_revision.received_at]
             observed = [row.current_revision.observed_at for row in items if row.current_revision.observed_at]
-            observed_on = [
-                row.current_revision.observed_on for row in items if row.current_revision.observed_on
-            ]
+            observed_on = [row.current_revision.observed_on for row in items if row.current_revision.observed_on]
             confirmed = [
                 confirmations[row.current_revision_id]["latest"]
                 for row in items
@@ -154,9 +154,7 @@ def resource_summary(records, legacy=0, statistics=None):
                     "source": SOURCES.get(source, "not_recorded"),
                     "source_kind": source,
                     "kind": (
-                        "community"
-                        if source == "user"
-                        else "external" if source == "openstreetmap" else "registration"
+                        "community" if source == "user" else "external" if source == "openstreetmap" else "registration"
                     ),
                     "state": combine_states(row.current_revision.state for row in items),
                     "received_at": max(received).isoformat() if received else None,
@@ -174,9 +172,7 @@ def resource_summary(records, legacy=0, statistics=None):
         result[resource] = {
             "state": combine_states(row.current_revision.state for row in rows),
             "evidence": evidence,
-            "community_state": combine_states(
-                row.current_revision.state for row in rows if row.source == "user"
-            ),
+            "community_state": combine_states(row.current_revision.state for row in rows if row.source == "user"),
             "legacy_not_comparable": legacy,
             "provenance": {
                 "evidence_count": len(rows),

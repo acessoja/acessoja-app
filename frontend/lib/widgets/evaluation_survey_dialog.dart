@@ -12,6 +12,8 @@ class EvaluationSurveyDialog extends StatefulWidget {
   final String comment;
   final Map<String, String> initialAnswers;
   final bool legacy;
+  /// In the new review editor, questions remain optional.
+  final bool allowPartial;
   final ValueChanged<Map<String, String>>? onDraftChanged;
   final String Function(Object)? errorMessage;
   const EvaluationSurveyDialog(
@@ -22,6 +24,7 @@ class EvaluationSurveyDialog extends StatefulWidget {
       this.comment = '',
       this.initialAnswers = const {},
       this.legacy = false,
+      this.allowPartial = false,
       this.onDraftChanged,
       this.errorMessage});
   @override
@@ -75,7 +78,7 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
     final group = SurveyContract.groups[_step];
     final missing = SurveyContract.questions.where(
         (q) => q.group == group && !surveyCodes.contains(_answers[q.id]));
-    if (missing.isNotEmpty) {
+    if (!widget.allowPartial && missing.isNotEmpty) {
       final q = missing.first;
       setState(() => _error =
           surveyText(context, 'Responda: ', 'Answer: ') + q.text(context));
@@ -140,7 +143,7 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
     if (_saving || _confirmed) {
       return;
     }
-    if (!_skip) {
+    if (!_skip && !widget.allowPartial) {
       final missing = SurveyContract.questions
           .where((q) => !surveyCodes.contains(_answers[q.id]));
       if (missing.isNotEmpty) {
@@ -242,6 +245,13 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                               child: Text(
                                   SurveyContract.answer(context, code)))))),
             ),
+          if (widget.allowPartial && _answers.containsKey(q.id))
+            TextButton.icon(
+              key: ValueKey('survey-clear-${q.id}'),
+              onPressed: _saving ? null : () => setState(() { _answers.remove(q.id); _error = null; }),
+              icon: const Icon(Icons.clear),
+              label: Text(surveyText(context, 'Limpar resposta', 'Clear answer')),
+            ),
           Text(surveyText(context, 'Não se aplica: ', 'Not applicable: ') +
               q.notApplicable(context)),
           Text(surveyText(
@@ -309,8 +319,9 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold)))),
                           Text(review
-                              ? surveyText(context, 'Revisar e publicar',
-                                  'Review and publish')
+                              ? (widget.allowPartial
+                                  ? surveyText(context, 'Revisar respostas de acessibilidade', 'Review accessibility answers')
+                                  : surveyText(context, 'Revisar e publicar', 'Review and publish'))
                               : SurveyContract.group(
                                   context, SurveyContract.groups[_step])),
                           Text(surveyText(
@@ -329,6 +340,16 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                                 onPressed: _saving ? null : _next,
                                 child: Text(surveyText(
                                     context, 'Continuar', 'Continue'))),
+                            if (widget.allowPartial)
+                              TextButton(
+                                key: const ValueKey('survey-review-partial'),
+                                onPressed: _saving
+                                    ? null
+                                    : () { _skip = false; _move(SurveyContract.groups.length); },
+                                child: Text(surveyText(context,
+                                    'Revisar respostas preenchidas',
+                                    'Review selected answers')),
+                              ),
                             OutlinedButton(
                                 key: const ValueKey('survey-skip'),
                                 onPressed: _saving
@@ -358,6 +379,10 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                                       context,
                                       'As respostas anteriores serão preservadas. Só a nota e o comentário serão atualizados.',
                                       'Previous answers will be preserved. Only the rating and comment will change.')
+                                  : widget.allowPartial
+                                  ? surveyText(context,
+                                      'As perguntas ficam para depois. Você ainda poderá publicar sua avaliação com as fotos selecionadas.',
+                                      'You can answer later and still publish the review with your selected photos.')
                                   : surveyText(
                                       context,
                                       'A pesquisa não será enviada. A confirmação publica somente nota e comentário.',
@@ -374,8 +399,9 @@ class _EvaluationSurveyDialogState extends State<EvaluationSurveyDialog> {
                                 child: Text(_saving
                                     ? surveyText(
                                         context, 'Salvando…', 'Saving…')
-                                    : surveyText(context, 'Confirmar envio',
-                                        'Confirm submission'))),
+                                    : widget.allowPartial
+                                    ? surveyText(context, 'Continuar para revisão final', 'Continue to final review')
+                                    : surveyText(context, 'Confirmar envio', 'Confirm submission'))),
                           ],
                           if (_step > 0)
                             OutlinedButton(

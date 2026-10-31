@@ -310,12 +310,19 @@ def test_backfill_distinguishes_reviews_and_preserves_unknown_observation_dates(
     executor = MigrationExecutor(connection)
     latest = executor.loader.graph.leaf_nodes()
     before = [
-        (app, "0006_versioned_questionnaire" if app == "modal_avaliacao" else name)
+        (
+            app,
+            (
+                "0006_versioned_questionnaire"
+                if app == "modal_avaliacao"
+                else "0007_usuario_groups_usuario_user_permissions" if app == "usuarios" else name
+            ),
+        )
         for app, name in latest
-        if app != "evidencias"
+        if app not in {"evidencias", "midia"}
     ]
     try:
-        executor.migrate(before + [("evidencias", None)])
+        executor.migrate(before + [("evidencias", None), ("midia", None)])
         apps = executor.loader.project_state(before).apps
         User = apps.get_model("usuarios", "Usuario")
         Place = apps.get_model("locais", "Local")
@@ -484,9 +491,7 @@ def test_moderation_reloads_case_after_owner_lock_changes_target_key(scenario):
 
     def anonymize_during_lock(*ids):
         locked = actual_lock_users(*ids)
-        ContentReport.objects.filter(pk=case.pk).update(
-            target_key=f"removed:{case.target_revision}"
-        )
+        ContentReport.objects.filter(pk=case.pk).update(target_key=f"removed:{case.target_revision}")
         return locked
 
     with patch("evidencias.moderation.lock_users", side_effect=anonymize_during_lock):

@@ -21,7 +21,7 @@ LEGACY_QUESTIONS = [
 
 def question(code, group, pt, en, description_pt, description_en, na_pt, na_en):
     return {
-        "id": code, "resource": code, "group": group, "required": True, "version": VERSION,
+        "id": code, "resource": code, "group": group, "required": False, "version": VERSION,
         "name": RESOURCE_NAMES[code],
         "text": {"pt": pt, "en": en}, "description": {"pt": description_pt, "en": description_en},
         "not_applicable": {"pt": na_pt, "en": na_en},

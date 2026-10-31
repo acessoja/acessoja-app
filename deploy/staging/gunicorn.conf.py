@@ -4,7 +4,7 @@ import os
 bind = "0.0.0.0:8000"
 workers = 2
 threads = 1
-timeout = 45
+timeout = 90  # Image clients wait 60s; uncertain outcomes are reconciled by operation id.
 accesslog = None
 # Let Django's guarded logging handle operational events; never log requests.
 errorlog = "-"

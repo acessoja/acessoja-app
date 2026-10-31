@@ -98,7 +98,11 @@ def decide(
     owner_id = (
         report.review_revision.owner_id
         if report.review_revision
-        else report.evidence.owner_id if report.evidence else None
+        else (
+            report.photo_revision.owner_id
+            if report.photo_revision
+            else report.evidence.owner_id if report.evidence else None
+        )
     )
     lock_users(actor_id, owner_id)
     # Account deletion can anonymize a report while this transaction waits
@@ -114,6 +118,10 @@ def decide(
         from modal_avaliacao.models import ModalAvaliacao
 
         ModalAvaliacao.objects.select_for_update().filter(pk=report.review_revision.review_id).first()
+    if report.photo_revision and report.photo_revision.photo_id:
+        from midia.moderation import photo_target
+
+        photo_target(report.photo_revision.photo_id, lock=True, public=False)
     if report.evidence_id:
         root = report.evidence
         if root.kind == "osm":
@@ -181,6 +189,12 @@ def decide(
                 review.is_valid = False
                 review.save(update_fields=["is_valid"])  # Existing sync_evaluation/signals, same transaction.
                 effect = True
+        elif report.target_kind == "photo":
+            from midia.moderation import apply_decision_locked
+
+            revision = fresh.photo_revision
+            apply_decision_locked(actor, revision, "reject", reason, operation_id, signature, report)
+            effect = True
         else:
             root = ResourceEvidence.objects.select_related("current_revision").get(pk=report.evidence_id)
             if root.current_revision_id != report.target_revision:

@@ -98,7 +98,12 @@ class ReportAdmin(admin.ModelAdmin):
                     messages.SUCCESS,
                 )
                 return redirect(reverse("admin:evidence-report-decision", args=[report.pk]))
-        snapshot = (
+        photo_snapshot = (
+            {"description": report.photo_revision.description, "revision": str(report.photo_revision_id)}
+            if report.photo_revision
+            else None
+        )
+        snapshot = photo_snapshot or (
             report.review_revision.payload
             if report.review_revision
             else {
@@ -114,6 +119,8 @@ class ReportAdmin(admin.ModelAdmin):
                 from .capture import review_payload
 
                 current_content = review_payload(report.review_revision.review)
+            elif report.photo_revision:
+                current_content = {"description": report.photo_revision.photo.current_revision.description}
             elif report.evidence and report.evidence.current_revision:
                 row = report.evidence.current_revision
                 current_content = {"resource": report.evidence.resource, "state": row.state, "note": row.note}
