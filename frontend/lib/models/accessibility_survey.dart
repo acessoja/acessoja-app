@@ -48,7 +48,7 @@ const surveyContractJson = r'''{
       "id": "rampa_acesso",
       "resource": "rampa_acesso",
       "group": "entrada",
-      "required": true,
+      "required": false,
       "version": 2,
       "name": {
         "pt": "Rampa na entrada",
@@ -71,7 +71,7 @@ const surveyContractJson = r'''{
       "id": "vagas_reservadas",
       "resource": "vagas_reservadas",
       "group": "entrada",
-      "required": true,
+      "required": false,
       "version": 2,
       "name": {
         "pt": "Vagas reservadas",
@@ -94,7 +94,7 @@ const surveyContractJson = r'''{
       "id": "banheiro_acessivel",
       "resource": "banheiro_acessivel",
       "group": "espaco",
-      "required": true,
+      "required": false,
       "version": 2,
       "name": {
         "pt": "Banheiro com recursos de adaptação",
@@ -117,7 +117,7 @@ const surveyContractJson = r'''{
       "id": "mesa_acessivel",
       "resource": "mesa_acessivel",
       "group": "espaco",
-      "required": true,
+      "required": false,
       "version": 2,
       "name": {
         "pt": "Espaço sob mesas",
@@ -140,7 +140,7 @@ const surveyContractJson = r'''{
       "id": "cardapio_braille",
       "resource": "cardapio_braille",
       "group": "comunicacao",
-      "required": true,
+      "required": false,
       "version": 2,
       "name": {
         "pt": "Cardápio em Braille",
@@ -163,7 +163,7 @@ const surveyContractJson = r'''{
       "id": "atendimento_libras",
       "resource": "atendimento_libras",
       "group": "comunicacao",
-      "required": true,
+      "required": false,
       "version": 2,
       "name": {
         "pt": "Atendimento em Libras",
@@ -186,7 +186,7 @@ const surveyContractJson = r'''{
       "id": "sinalizacao_tatil",
       "resource": "sinalizacao_tatil",
       "group": "orientacao",
-      "required": true,
+      "required": false,
       "version": 2,
       "name": {
         "pt": "Sinalização tátil",
@@ -209,7 +209,7 @@ const surveyContractJson = r'''{
       "id": "cao_guia",
       "resource": "cao_guia",
       "group": "orientacao",
-      "required": true,
+      "required": false,
       "version": 2,
       "name": {
         "pt": "Acolhimento de pessoas com cão-guia",
@@ -251,29 +251,44 @@ class SurveyQuestion {
   String get id => data['id'] as String;
   String get group => data['group'] as String;
   String name(BuildContext context) => localizedSurveyValue(
-      context, Map<String, dynamic>.from(data['name'] as Map));
+    context,
+    Map<String, dynamic>.from(data['name'] as Map),
+  );
   String text(BuildContext context) => localizedSurveyValue(
-      context, Map<String, dynamic>.from(data['text'] as Map));
+    context,
+    Map<String, dynamic>.from(data['text'] as Map),
+  );
   String description(BuildContext context) => localizedSurveyValue(
-      context, Map<String, dynamic>.from(data['description'] as Map));
+    context,
+    Map<String, dynamic>.from(data['description'] as Map),
+  );
   String notApplicable(BuildContext context) => localizedSurveyValue(
-      context, Map<String, dynamic>.from(data['not_applicable'] as Map));
+    context,
+    Map<String, dynamic>.from(data['not_applicable'] as Map),
+  );
 }
 
 class SurveyContract {
   static final Map<String, dynamic> data =
       jsonDecode(surveyContractJson) as Map<String, dynamic>;
   static final List<SurveyQuestion> questions = List.unmodifiable(
-      (data['questions'] as List)
-          .map((q) => SurveyQuestion(Map<String, dynamic>.from(q as Map))));
-  static final List<String> groups =
-      List.unmodifiable((data['groups'] as Map).keys.cast<String>());
+    (data['questions'] as List).map(
+      (q) => SurveyQuestion(Map<String, dynamic>.from(q as Map)),
+    ),
+  );
+  static final List<String> groups = List.unmodifiable(
+    (data['groups'] as Map).keys.cast<String>(),
+  );
   static String group(BuildContext context, String id) => localizedSurveyValue(
-      context, Map<String, dynamic>.from(data['groups'][id] as Map));
+    context,
+    Map<String, dynamic>.from(data['groups'][id] as Map),
+  );
   static String answer(BuildContext context, String? code) => code == null
       ? surveyText(context, 'Sem resposta', 'Unanswered')
       : localizedSurveyValue(
-          context, Map<String, dynamic>.from(data['answers'][code] as Map));
+          context,
+          Map<String, dynamic>.from(data['answers'][code] as Map),
+        );
   static Map<String, String> storedAnswers(Map<String, dynamic>? review) {
     if (review == null ||
         review['questionnaire_version'] != surveyVersion ||
@@ -298,13 +313,14 @@ class ResourceResult {
   final int unanswered;
   final int legacy;
   final DateTime? latest;
-  const ResourceResult(
-      {required this.id,
-      required this.counts,
-      required this.state,
-      required this.unanswered,
-      required this.legacy,
-      this.latest});
+  const ResourceResult({
+    required this.id,
+    required this.counts,
+    required this.state,
+    required this.unanswered,
+    required this.legacy,
+    this.latest,
+  });
   int get respondents => counts.values.fold(0, (sum, value) => sum + value);
   bool get few => respondents > 0 && respondents < 3;
   factory ResourceResult.fromJson(Map<String, dynamic> json) {
@@ -329,14 +345,14 @@ class ResourceResult {
     final state = yes > 0 && no > 0
         ? 'divergent'
         : yes > 0
-            ? 'presence_reported'
-            : no > 0
-                ? 'absence_reported'
-                : unknown > 0
-                    ? 'unconfirmed'
-                    : na > 0
-                        ? 'not_applicable'
-                        : 'not_evaluated';
+        ? 'presence_reported'
+        : no > 0
+        ? 'absence_reported'
+        : unknown > 0
+        ? 'unconfirmed'
+        : na > 0
+        ? 'not_applicable'
+        : 'not_evaluated';
     if (json['state'] != state ||
         number(json['respondents']) !=
             counts.values.fold<int>(0, (a, b) => a + b)) {
@@ -348,12 +364,13 @@ class ResourceResult {
       throw const FormatException('invalid_date');
     }
     return ResourceResult(
-        id: json['id'] as String,
-        counts: counts,
-        state: state,
-        unanswered: number(json['unanswered']),
-        legacy: number(json['legacy_not_comparable']),
-        latest: latest);
+      id: json['id'] as String,
+      counts: counts,
+      state: state,
+      unanswered: number(json['unanswered']),
+      legacy: number(json['legacy_not_comparable']),
+      latest: latest,
+    );
   }
 }
 
@@ -362,8 +379,12 @@ class AccessibilityResults {
   final int people;
   final int legacy;
   final Map<String, dynamic> information;
-  const AccessibilityResults(this.resources, this.people, this.legacy,
-      [this.information = const {}]);
+  const AccessibilityResults(
+    this.resources,
+    this.people,
+    this.legacy, [
+    this.information = const {},
+  ]);
   factory AccessibilityResults.fromJson(Map<String, dynamic> data) {
     if (data['version'] != surveyVersion ||
         data['features'] is! List ||
@@ -374,19 +395,22 @@ class AccessibilityResults {
       throw const FormatException('invalid_results');
     }
     final rows = (data['features'] as List)
-        .map((row) =>
-            ResourceResult.fromJson(Map<String, dynamic>.from(row as Map)))
+        .map(
+          (row) =>
+              ResourceResult.fromJson(Map<String, dynamic>.from(row as Map)),
+        )
         .toList();
     if (rows.length != SurveyContract.questions.length ||
         rows.map((r) => r.id).toSet().length != rows.length) {
       throw const FormatException('incomplete_results');
     }
     return AccessibilityResults(
-        List.unmodifiable(rows),
-        data['people'] as int,
-        data['legacy_not_comparable'] as int,
-        data['accessibility'] is Map
-            ? Map<String, dynamic>.from(data['accessibility'] as Map)
-            : const {});
+      List.unmodifiable(rows),
+      data['people'] as int,
+      data['legacy_not_comparable'] as int,
+      data['accessibility'] is Map
+          ? Map<String, dynamic>.from(data['accessibility'] as Map)
+          : const {},
+    );
   }
 }

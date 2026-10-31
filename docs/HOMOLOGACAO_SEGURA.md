@@ -270,3 +270,16 @@ Referências: [Django 5.2 deployment checklist](https://docs.djangoproject.com/e
 [Caddy headers](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy),
 [PostgreSQL pg_dump](https://www.postgresql.org/docs/16/app-pgdump.html) e
 [pg_restore](https://www.postgresql.org/docs/16/app-pgrestore.html).
+
+
+## Fotografias e avatar — Cards 42 a 46 (27/10/2026)
+
+Integração real de imagens de avaliações e perfil, com processamento Pillow, armazenamento privado persistente e revisão/moderação. Aplicar as migrations do pacote e usar Flutter 3.47.4 (image_picker 1.2.4; Dart mínimo 3.11). Avatares legados continuam base64. Limite por arquivo 5 MiB; corpo multipart 6.000.000 bytes somente nas novas rotas, sem abertura pública de /media.
+
+- [Fotos e galeria](FOTOGRAFIAS_AVALIACOES_CARDS_42_43.md)
+- [Foto de perfil](FOTO_PERFIL_CARD_44.md)
+- [Instalação Windows, limites, limpeza, proxy, backup e rollback](MIDIA_SEGURA_CARD_45.md)
+- [Evidências, resultados e pendências reais](EVIDENCIAS_CARD_46.md)
+- [Adendo às seções 20/22/24/25 e planejamento](ESPECIFICACAO_CARDS_42_46.md)
+
+Para backup com mídia, é obrigatória janela sem escritores, inclusive sem worker de limpeza, conforme o procedimento do Card 45. Não considerar pg_dump e cópia online dos arquivos um snapshot conjunto. A homologação em aparelho Android/Chrome móvel e PostgreSQL precisa das execuções pendentes descritas nas evidências.

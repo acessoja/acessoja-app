@@ -118,7 +118,12 @@ class ReportTarget {
   Map<String, dynamic> get body => {
         'target_kind': kind,
         'revision': revision,
-        if (kind == 'review') 'review_id': int.parse(id) else 'evidence_id': id
+        if (kind == 'review')
+          'review_id': int.parse(id)
+        else if (kind == 'photo')
+          'photo_id': id
+        else
+          'evidence_id': id
       };
 }
 

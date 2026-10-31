@@ -144,7 +144,7 @@ jobs:
 
   backend-concurrency:
     name: Backend — concorrência PostgreSQL
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -171,7 +171,7 @@ jobs:
         run: |
           pip install -r backend/requirements-catalog.txt -r backend/requirements-geographic.txt pytest pytest-django
           sudo apt-get update && sudo apt-get install -y postgresql-client-16
-          pytest -q contribuicoes favoritos locais usuarios acessoja evidencias -k 'postgresql_concurrent or postgresql_restore or catalog'
+          pytest -q contribuicoes favoritos locais usuarios acessoja evidencias midia modal_avaliacao -k 'postgresql_concurrent or postgresql_restore or catalog'
 
   geographic-coordination:
     name: Backend — coordenação geográfica Redis

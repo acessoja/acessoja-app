@@ -4,14 +4,14 @@ import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../services/app_http.dart';
 import '../widgets/account_identity_dialog.dart';
 
 import '../app_theme.dart';
 import '../config.dart';
-import 'web_stub.dart' if (dart.library.html) 'dart:html' as html;
+import '../media/avatar_editor_screen.dart';
+import '../media/media_cache.dart';
 
 class InformacoesPessoaisScreen extends StatefulWidget {
   final String userName;
@@ -33,6 +33,9 @@ class _InformacoesPessoaisScreenState
 
   @override
   void dispose() {
+    _profileGeneration++;
+    AppHttp.sessionRevision.removeListener(_sessionChanged);
+    MediaSessionCache.avatarChanged.removeListener(_loadProfile);
     for (final controller in _dialogControllers) {
       controller.dispose();
     }
@@ -50,10 +53,28 @@ class _InformacoesPessoaisScreenState
   @override
   void initState() {
     super.initState();
+    AppHttp.sessionRevision.addListener(_sessionChanged);
+    MediaSessionCache.avatarChanged.addListener(_loadProfile);
     _loadProfile();
   }
 
+  int _profileGeneration = 0;
+  void _sessionChanged() {
+    _profileGeneration++;
+    setState(() {
+      _fotoPerfil = '';
+      _nomeCompleto = '';
+      _email = '';
+      _telefone = '';
+      _nomeUsuario = '';
+      _isLoading = false;
+      _loadFailed = true;
+    });
+  }
+
   Future<void> _loadProfile() async {
+    final generation = ++_profileGeneration,
+        session = AppHttp.sessionRevision.value;
     setState(() {
       _isLoading = true;
       _loadFailed = false;
@@ -63,7 +84,11 @@ class _InformacoesPessoaisScreenState
         '${Config.baseUrl}/api/usuarios/perfil/?nome=${Uri.encodeComponent(widget.userName)}',
       );
       final resp = await AppHttp.get(uri);
-      if (!mounted) return;
+      if (!mounted ||
+          generation != _profileGeneration ||
+          session != AppHttp.sessionRevision.value) {
+        return;
+      }
       if (resp.statusCode == 200) {
         final d = json.decode(utf8.decode(resp.bodyBytes));
         setState(() {
@@ -260,70 +285,14 @@ class _InformacoesPessoaisScreenState
   }
 
   Future<void> _pickPhoto() async {
-    if (!kIsWeb) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.l10n.webPhotoOnly,
-          ),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
+    await Navigator.push<bool>(
+        context, MaterialPageRoute(builder: (_) => const AvatarEditorScreen()));
+    if (mounted) {
+      await _loadProfile();
     }
-
-    final uploadInput = html.FileUploadInputElement()..accept = 'image/*';
-    uploadInput.click();
-
-    uploadInput.onChange.listen((event) {
-      if (!mounted) return;
-      final file = uploadInput.files?.first;
-      if (file == null) return;
-      if (file.size > 5 * 1024 * 1024) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(context.l10n.photoTooLarge)));
-        return;
-      }
-
-      final reader = html.FileReader();
-      reader.readAsArrayBuffer(file);
-      reader.onLoadEnd.listen((event) async {
-        if (!mounted) return;
-        final bytes = reader.result as Uint8List;
-        final b64 = base64Encode(bytes);
-
-        try {
-          final resp = await AppHttp.post(
-            Uri.parse('${Config.baseUrl}/api/usuarios/foto/'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'nome': widget.userName,
-              'foto_perfil': b64,
-            }),
-          );
-          if (!mounted) return;
-          if (resp.statusCode == 200) {
-            setState(() => _fotoPerfil = b64);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(context.l10n.photoUpdated),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          }
-        } catch (_) {}
-      });
-    });
   }
 
-  ImageProvider? _avatarImage() {
-    if (_fotoPerfil.isNotEmpty) {
-      try {
-        return MemoryImage(base64Decode(_fotoPerfil));
-      } catch (_) {}
-    }
-    return null;
-  }
+  ImageProvider? _avatarImage() => MediaSessionCache.legacyAvatar(_fotoPerfil);
 
   Widget _buildBackButton() {
     final colors = AppColors.of(context);

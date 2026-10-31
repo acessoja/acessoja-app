@@ -158,6 +158,11 @@ def create_report(request, values):
         if not review_is_public(review):
             raise NotFound("Conteúdo indisponível.")
         owner_id = review.user_id
+    elif values["target_kind"] == "photo":
+        from midia.moderation import photo_target
+
+        candidate = photo_target(values["photo_id"], values["revision"])
+        owner_id = candidate.owner_id
     else:
         owner_id = _owner(values["evidence_id"])
     lock_users(request.user.pk, owner_id)
@@ -183,6 +188,12 @@ def create_report(request, values):
         revision = ReviewRevision.objects.get(pk=review.content_revision)
         key = f"review:{review.pk}"
         defaults["review_revision"] = revision
+    elif values["target_kind"] == "photo":
+        from midia.moderation import photo_target
+
+        candidate = photo_target(values["photo_id"], values["revision"], lock=True)
+        key = f"photo:{candidate.pk}"
+        defaults["photo_revision"] = candidate.current_revision
     else:
         root = public_target(values["evidence_id"], values["revision"], lock=True)
         if root.current_revision.state == "unknown":
@@ -198,6 +209,10 @@ def create_report(request, values):
 
 
 def target_status(report):
+    if report.target_kind == "photo":
+        from midia.moderation import report_photo_status
+
+        return report_photo_status(report)
     if report.target_kind == "review":
         review = report.review_revision.review if report.review_revision else None
         if not review_is_public(review):
@@ -208,6 +223,7 @@ def target_status(report):
         if (
             root is None
             or root.withdrawn
+            or root.superseded
             or root.current_revision_id is None
             or not root.current_revision.is_valid
         ):
@@ -226,6 +242,8 @@ def target_status(report):
 
 def reports_related(queryset):
     return queryset.select_related(
+        "photo_revision__photo__review__user",
+        "photo_revision__asset",
         "review_revision__review__user",
         "evidence__owner",
         "evidence__review__user",

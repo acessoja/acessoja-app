@@ -21,7 +21,7 @@ ACHIEVEMENTS = [
     ("explorer", "Explorador da Cidade", "Avalie três categorias diferentes.", "categories", 3),
     ("guardian", "Guardião da Comunidade", "Publique vinte avaliações válidas.", "reviews", 20),
 ]
-ACTIONS = ("review", "survey", "useful_comment")
+ACTIONS = ("review", "survey", "useful_comment", "photo_evidence")
 
 
 def eligible_reviews(user):
@@ -72,6 +72,8 @@ def _survey_complete(review):
 
 
 def _criteria(review):
+    from midia.permissions import public_photos
+
     eligible = bool(
         review and review.verified_author and review.is_current and review.is_valid and 1 <= review.estrelas <= 5
     )
@@ -79,6 +81,7 @@ def _criteria(review):
         "review": eligible,
         "survey": eligible and _survey_complete(review),
         "useful_comment": eligible and review.comment_verified and bool(review.comentario.strip()),
+        "photo_evidence": eligible and public_photos().filter(review=review).exists(),
     }
 
 
@@ -93,6 +96,8 @@ def _revocation_reason(review, action, hint=None):
         return "review_invalidated"
     if action == "survey":
         return "survey_incomplete"
+    if action == "photo_evidence":
+        return "photo_ineligible"
     return "comment_changed" if hint == "comment_changed" else "comment_unapproved"
 
 

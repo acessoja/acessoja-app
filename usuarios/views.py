@@ -65,18 +65,14 @@ class UsuarioFotoAPIView(APIView):
     serializer_class = FotoPerfilRequestSerializer
 
     @extend_schema(tags=["Usuários"], request=FotoPerfilRequestSerializer, responses=MensagemSerializer)
-    @transaction.atomic
     def post(self, request):
         own_user(request, request.data.get("nome"))
-        user = locked_request_user(request)
-        photo = request.data.get("foto_perfil")
-        if not photo:
-            raise ValidationError({"error": "Informe a foto."})
-        if not isinstance(photo, str) or len(photo) > 2000000:
-            raise ValidationError({"error": "Foto inválida ou muito grande."})
-        user.foto_perfil = photo
-        user.save(update_fields=["foto_perfil"])
-        return Response({"status": "success", "message": "Foto atualizada."})
+        from midia.legacy import update_legacy_avatar
+        from midia.services import operation_document
+        op = update_legacy_avatar(request)
+        return Response({"status": "success" if op.state == 'committed' else 'processing',
+                         "message": "Foto atualizada." if op.state == 'committed' else 'Processamento em andamento.',
+                         **operation_document(op)}, status=200 if op.state == 'committed' else 202)
 
 
 class LogoutAPIView(APIView):

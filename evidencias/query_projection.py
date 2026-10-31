@@ -32,9 +32,7 @@ def annotate_quality(rows, *, catalog=False):
     confirmations = EvidenceConfirmation.objects.filter(revision_id=OuterRef("current_revision_id")).values(
         "revision_id"
     )
-    roots = ResourceEvidence.objects.filter(
-        scope, visible_query(), withdrawn=False, current_revision__isnull=False
-    ).order_by()
+    roots = ResourceEvidence.objects.filter(scope, visible_query(), current_revision__isnull=False).order_by()
     roots = (
         roots.annotate(_group=Value(1))
         .values("_group")
@@ -45,6 +43,8 @@ def annotate_quality(rows, *, catalog=False):
                     resource=F("resource"),
                     source=F("source"),
                     kind=F("kind"),
+                    superseded=F("superseded"),
+                    withdrawn=F("withdrawn"),
                     owner_id=F("owner_id"),
                     review_id=F("review_id"),
                     external_id=F("external_id"),
@@ -56,12 +56,8 @@ def annotate_quality(rows, *, catalog=False):
                     observed_on=F("current_revision__observed_on"),
                     received_at=F("current_revision__received_at"),
                     valid=F("current_revision__is_valid"),
-                    confirmation_count=Subquery(
-                        confirmations.annotate(total=Count("pk")).values("total")[:1]
-                    ),
-                    confirmed_at=Subquery(
-                        confirmations.annotate(latest=Max("confirmed_at")).values("latest")[:1]
-                    ),
+                    confirmation_count=Subquery(confirmations.annotate(total=Count("pk")).values("total")[:1]),
+                    confirmed_at=Subquery(confirmations.annotate(latest=Max("confirmed_at")).values("latest")[:1]),
                 )
             )
         )
@@ -101,6 +97,8 @@ def unpack_quality(data):
                 resource=item["resource"],
                 source=item["source"],
                 kind=item["kind"],
+                superseded=bool(item.get("superseded", False)),
+                withdrawn=bool(item.get("withdrawn", False)),
                 owner_id=item["owner_id"],
                 review_id=item["review_id"],
                 external_id=item["external_id"],

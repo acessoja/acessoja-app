@@ -1,0 +1,45 @@
+[
+  {
+    "command": "python -m pip check",
+    "exit_code": 0
+  },
+  {
+    "command": "python manage.py check",
+    "exit_code": 0
+  },
+  {
+    "command": "python manage.py makemigrations --check --dry-run",
+    "exit_code": 0
+  },
+  {
+    "command": "python manage.py migrate --noinput",
+    "exit_code": 0
+  },
+  {
+    "command": "python manage.py spectacular --fail-on-warn --validate --file docs/reports/cards_42_46/openapi.yaml",
+    "exit_code": 0
+  },
+  {
+    "command": "python -m flake8 . --max-line-length=120 --exclude=migrations,__pycache__,.venv,venv --statistics --count",
+    "exit_code": 0
+  },
+  {
+    "command": "python manage.py check --deploy (perfil staging, configura\u00e7\u00e3o sint\u00e9tica v\u00e1lida; depend\u00eancias n\u00e3o conectadas)",
+    "exit_code": 0
+  },
+  {
+    "command": "coverage run --append scripts/verify_proxy_lab.py --caddy CADDY --report proxy_lab.json",
+    "exit_code": 0,
+    "result": "TLS/proxy checks passed, including private routes 404"
+  },
+  {
+    "command": "coverage report --fail-under=80",
+    "exit_code": 0,
+    "result": "85.45% combined after TLS lab"
+  },
+  {
+    "command": "flake8 release; pip check release",
+    "exit_code": 0,
+    "result": "0 lint issues; no broken requirements"
+  }
+]

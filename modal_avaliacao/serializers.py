@@ -2,8 +2,14 @@ from rest_framework import serializers
 from locais.serializers import LocalSerializer
 from .models import ModalAvaliacao
 from .questionnaire_fields import (
-    AnswerMapField, CommentField, LegacyAnswerField, QuestionnaireVersionField, RatingField,
-    prepare_write, validate_payload,
+    AnswerDetailsField,
+    AnswerMapField,
+    CommentField,
+    LegacyAnswerField,
+    QuestionnaireVersionField,
+    RatingField,
+    prepare_write,
+    validate_payload,
 )
 
 
@@ -22,10 +28,12 @@ class ContributionFeedbackSerializer(serializers.Serializer):
 class ModalAvaliacaoSerializer(serializers.ModelSerializer):
     publicly_eligible = serializers.SerializerMethodField()
     expected_revision = serializers.UUIDField(write_only=True, required=False)
+    operation_id = serializers.UUIDField(write_only=True, required=False)
     estrelas = RatingField()
     comentario = CommentField()
     questionnaire_version = QuestionnaireVersionField()
     answers = AnswerMapField(required=False)
+    answer_details = AnswerDetailsField(required=False)
     pergunta_1 = LegacyAnswerField()
     pergunta_2 = LegacyAnswerField()
     pergunta_3 = LegacyAnswerField()
@@ -58,6 +66,8 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
             "survey_completed",
             "questionnaire_version",
             "answers",
+            "answer_details",
+            "operation_id",
             "answer_dates",
             "is_current",
             "is_valid",
@@ -66,8 +76,16 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
             "publicly_eligible",
         ]
         read_only_fields = [
-            "id", "user", "data_resposta", "can_edit", "survey_completed", "answer_dates", "is_current", "is_valid",
-            "content_revision", "publicly_eligible",
+            "id",
+            "user",
+            "data_resposta",
+            "can_edit",
+            "survey_completed",
+            "answer_dates",
+            "is_current",
+            "is_valid",
+            "content_revision",
+            "publicly_eligible",
         ]
         extra_kwargs = {
             "estrelas": {"min_value": 1, "max_value": 5},
@@ -82,16 +100,21 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         result = super().to_representation(instance)
         if not self.get_can_edit(instance):
-            masks = self.context.get('review_resource_masks')
+            masks = self.context.get("review_resource_masks")
             if masks is None:
+                from django.db.models import Q
                 from evidencias.models import ResourceEvidence
+
                 keys = ResourceEvidence.objects.filter(
-                    review=instance, current_revision__is_valid=False).values_list(
-                    'resource', flat=True)
+                    Q(current_revision__is_valid=False) | Q(superseded=True) | Q(withdrawn=True), review=instance
+                ).values_list("resource", flat=True)
             else:
                 keys = masks.get(instance.pk, ())
-            result['answers'] = {key: value for key, value in result['answers'].items() if key not in keys}
-            result['answer_dates'] = {key: value for key, value in result['answer_dates'].items() if key not in keys}
+            result["answers"] = {key: value for key, value in result["answers"].items() if key not in keys}
+            result["answer_dates"] = {key: value for key, value in result["answer_dates"].items() if key not in keys}
+            result["answer_details"] = {
+                key: value for key, value in result["answer_details"].items() if key not in keys
+            }
         return result
 
     def get_can_edit(self, obj) -> bool:
@@ -122,7 +145,8 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
             "comment_verified",
             "survey_completed",
             "answer_dates",
-            "content_revision", "publicly_eligible",
+            "content_revision",
+            "publicly_eligible",
         }
         protected.update({"points_delta", "contribution_result", "data_resposta", "can_edit", "id", "local_detalhes"})
         if protected.intersection(self.initial_data):
@@ -130,12 +154,15 @@ class ModalAvaliacaoSerializer(serializers.ModelSerializer):
         return validate_payload(self, attrs)
 
     def create(self, validated_data):
-        validated_data.pop('expected_revision', None)
+        validated_data.pop("expected_revision", None)
+        validated_data.pop("operation_id", None)
         return super().create(prepare_write(None, validated_data))
 
     def update(self, instance, validated_data):
-        expected = validated_data.pop('expected_revision', None)
+        validated_data.pop("operation_id", None)
+        expected = validated_data.pop("expected_revision", None)
         if expected is not None and expected != instance.content_revision:
             from evidencias.exceptions import RevisionConflict
+
             raise RevisionConflict()
         return super().update(instance, prepare_write(instance, validated_data))

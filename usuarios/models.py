@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.db import models
+from django.db import models, router, transaction
 from django.utils import timezone
 import uuid
 
@@ -37,7 +37,13 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     # ── Novos campos de perfil ──
     nome_completo = models.CharField(max_length=255, blank=True, default="")
     telefone = models.CharField(max_length=30, blank=True, default="")
-    foto_perfil = models.TextField(blank=True, default="")  # base64 ou URL
+    foto_perfil = models.TextField(
+        blank=True, default=""
+    )  # base64 legado/miniatura processada; nunca URL no contrato atual
+    avatar_version = models.UUIDField(default=uuid.uuid4, editable=False)
+    avatar_asset = models.ForeignKey(
+        "midia.ImageAsset", null=True, on_delete=models.SET_NULL, related_name="+", editable=False
+    )
 
     # ── Preferências / Configurações ──
     idioma = models.CharField(max_length=10, default="pt_BR")
@@ -78,6 +84,21 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.nome
 
+    def save(self, *args, **kwargs):
+        using = kwargs.get("using") or router.db_for_write(type(self), instance=self)
+        fields = kwargs.get("update_fields")
+        watches = {"is_active", "mostrar_avaliacoes"}
+        if not self.pk or fields is not None and not watches.intersection(fields):
+            return super().save(*args, **kwargs)
+        with transaction.atomic(using=using):
+            previous = type(self).objects.using(using).select_for_update().filter(pk=self.pk).first()
+            result = super().save(*args, **kwargs)
+            if previous and any(getattr(previous, f) != getattr(self, f) for f in watches):
+                from contribuicoes.services import reconcile_user
+
+                reconcile_user(self.pk, apply=True)
+            return result
+
     def has_perm(self, perm, obj=None):
         return self.is_active and super().has_perm(perm, obj)
 
@@ -87,8 +108,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
 class PrivacyConsent(models.Model):
     user = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="privacy_consents")
-    purpose = models.CharField(max_length=32, choices=[("route_history", "Histórico de rotas"),
-                                                       ("route_origin", "Origem aproximada")])
+    purpose = models.CharField(
+        max_length=32,
+        choices=[("route_history", "Histórico de rotas"), ("route_origin", "Origem aproximada")],
+    )
     notice_version = models.CharField(max_length=32)
     granted = models.BooleanField()
     recorded_at = models.DateTimeField(default=timezone.now)
@@ -103,11 +126,20 @@ class PrivacyConsent(models.Model):
 
 class AccountMailJob(models.Model):
     """A bounded outbox contains no recipient text, reset token or password hash."""
+
     user = models.ForeignKey(Usuario, null=True, on_delete=models.CASCADE)
     kind = models.CharField(max_length=16, choices=[("reset", "Redefinição"), ("changed", "Aviso de alteração")])
     credential_revision = models.PositiveBigIntegerField(default=0)
-    state = models.CharField(max_length=12, default="pending", choices=[
-        ("pending", "Pendente"), ("sending", "Enviando"), ("done", "Finalizado"), ("failed", "Falhou")])
+    state = models.CharField(
+        max_length=12,
+        default="pending",
+        choices=[
+            ("pending", "Pendente"),
+            ("sending", "Enviando"),
+            ("done", "Finalizado"),
+            ("failed", "Falhou"),
+        ],
+    )
     attempts = models.PositiveSmallIntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
     available_at = models.DateTimeField(default=timezone.now)
@@ -122,6 +154,7 @@ class AccountMailJob(models.Model):
 
 class AccountDeletionReceipt(models.Model):
     """Minimal pseudonymous restore suppression, not a retained user profile."""
+
     operation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     privacy_id = models.UUIDField(unique=True)
     deleted_at = models.DateTimeField(default=timezone.now)

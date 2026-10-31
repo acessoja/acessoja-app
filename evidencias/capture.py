@@ -58,9 +58,7 @@ def fingerprint(values):
 
 
 def lock_external_sources(pairs):
-    keys = sorted(
-        {hashlib.sha256(f"{identity}:{resource}".encode()).hexdigest() for identity, resource in pairs}
-    )
+    keys = sorted({hashlib.sha256(f"{identity}:{resource}".encode()).hexdigest() for identity, resource in pairs})
     if keys:
         ExternalEvidenceGuard.objects.bulk_create(
             [ExternalEvidenceGuard(key=key) for key in keys], ignore_conflicts=True
@@ -114,15 +112,20 @@ def capture_batch(specifications):
         }
         signature = fingerprint(value)
         previous = root.current_revision
-        if previous is None or previous.fingerprint != signature:
+        changed = (
+            previous is None
+            or previous.fingerprint != signature
+            or root.withdrawn
+            and root.kind != "osm"
+            or spec.get("reassert", False)
+        )
+        if changed:
             revision = EvidenceRevision(
                 evidence=root,
                 number=previous.number + 1 if previous else 1,
                 fingerprint=signature,
                 **value,
-                received_at=(
-                    timezone.now() if previous and root.kind != "osm" else stamp(spec.get("received_at"))
-                ),
+                received_at=(timezone.now() if previous and root.kind != "osm" else stamp(spec.get("received_at"))),
                 actor_id=spec.get("owner_id"),
                 source_metadata=spec.get("source_metadata", {}),
                 is_valid=not (
@@ -142,6 +145,16 @@ def capture_batch(specifications):
         root.review_id = spec.get("review_id")
         root.source_metadata = spec.get("source_metadata", {})
         root.withdrawn = False
+        if changed and root.source == "user" and root.owner_id and root.kind in {"review", "observation"}:
+            scope = {"local_id": root.local_id} if root.local_id else {"external_id": root.external_id}
+            ResourceEvidence.objects.filter(
+                **scope,
+                owner_id=root.owner_id,
+                resource=root.resource,
+                kind__in=["review", "observation"],
+                source="user",
+            ).exclude(pk=root.pk).update(superseded=True)
+            root.superseded = False
     EvidenceRevision.objects.bulk_create(revisions)
     ResourceEvidence.objects.bulk_update(
         rows,
@@ -154,6 +167,7 @@ def capture_batch(specifications):
             "review",
             "source_metadata",
             "withdrawn",
+            "superseded",
         ],
     )
     return rows
@@ -166,6 +180,7 @@ def review_payload(review):
         "questionnaire_version": review.questionnaire_version,
         "answers": review.answers,
         "answer_dates": review.answer_dates,
+        "answer_details": review.answer_details,
         **{f"pergunta_{index}": getattr(review, f"pergunta_{index}") for index in range(1, 5)},
     }
 
@@ -200,6 +215,8 @@ def capture_review(review):
                         "review_id": review.pk,
                         "owner_id": review.user_id,
                         "received_at": (review.answer_dates or {}).get(resource),
+                        "note": (review.answer_details or {}).get(resource, {}).get("note", ""),
+                        "observed_on": (review.answer_details or {}).get(resource, {}).get("observed_on"),
                     }
                 )
     capture_batch(specs)
@@ -275,11 +292,7 @@ def iso(value):
 def sync_catalog_batch(batch):
     from locais.catalog_models import CatalogEntry
 
-    entries = (
-        CatalogEntry.objects.filter(batch=batch)
-        .select_related("poi", "batch", "observed_in")
-        .order_by("poi_id")
-    )
+    entries = CatalogEntry.objects.filter(batch=batch).select_related("poi", "batch", "observed_in").order_by("poi_id")
     chunk = []
     for entry in entries.iterator(chunk_size=250):
         chunk.append(entry)
@@ -295,9 +308,9 @@ def sync_catalog_entries(entries):
     capture_batch(specs)
     keys = [item["key"] for item in specs]
     identities = [entry.poi.external_id for entry in entries]
-    ResourceEvidence.objects.filter(
-        kind="osm", external_id__in=identities, key__startswith="catalog:"
-    ).exclude(key__in=keys).update(withdrawn=True)
+    ResourceEvidence.objects.filter(kind="osm", external_id__in=identities, key__startswith="catalog:").exclude(
+        key__in=keys
+    ).update(withdrawn=True)
 
 
 def sync_remote_places(places):
@@ -329,6 +342,6 @@ def sync_remote_places(places):
                 }
             )
     capture_batch(specs)
-    ResourceEvidence.objects.filter(
-        kind="osm", external_id__in=identities, key__startswith="remote:"
-    ).exclude(key__in=[item["key"] for item in specs]).update(withdrawn=True)
+    ResourceEvidence.objects.filter(kind="osm", external_id__in=identities, key__startswith="remote:").exclude(
+        key__in=[item["key"] for item in specs]
+    ).update(withdrawn=True)

@@ -1,0 +1,4194 @@
+{
+  "base_commit": "e4a8db02dd4aa8a77fe9dfea9c3f0ffb62d280ef",
+  "date": "2026-10-27",
+  "timezone": "America/Sao_Paulo",
+  "environment": {
+    "Python": "3.12.14",
+    "Django": "5.2.18",
+    "Pillow": "13.0.0",
+    "database": "SQLite",
+    "Redis": "6.2.14 ephemeral, real independent processes"
+  },
+  "suite": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "21",
+    "tests": "708",
+    "time": "643.791",
+    "timestamp": "2026-10-28T02:15:02.598993+00:00"
+  },
+  "counts": {
+    "passed_tests": 666,
+    "passed_subtests": 21,
+    "skipped": 21,
+    "midia_passed": 32
+  },
+  "coverage": {
+    "percent_combined_lines_branches": 84.2649,
+    "minimum": 80,
+    "lines_covered": 6919,
+    "lines_valid": 8006,
+    "branches_covered": 1403,
+    "branches_valid": 1870
+  },
+  "note": "JUnit total includes successful subtests without individual testcase nodes. PostgreSQL tests were explicitly skipped, never counted as SQLite proof.",
+  "cases": [
+    {
+      "module": "acessoja.test_backup_restore",
+      "scenario": "test_restoration_rejects_live_name_missing_or_replaced_journal",
+      "status": "passed",
+      "seconds": 10.402
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_host_and_cors_origin_do_not_get_authority",
+      "status": "passed",
+      "seconds": 0.683
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i02_plain_http_redirects_and_forged_https_cannot_bypass",
+      "status": "passed",
+      "seconds": 0.238
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i04_readiness_db_cache_and_mail_failure_are_neutral_and_recover",
+      "status": "passed",
+      "seconds": 0.17
+    },
+    {
+      "module": "avaliacao.avaliacao_tests.TestLocalModel",
+      "scenario": "test_criacao_local",
+      "status": "passed",
+      "seconds": 0.875
+    },
+    {
+      "module": "avaliacao.avaliacao_tests.TestLocalModel",
+      "scenario": "test_media_estrelas_sem_avaliacoes",
+      "status": "passed",
+      "seconds": 0.66
+    },
+    {
+      "module": "avaliacao.avaliacao_tests.TestLocalModel",
+      "scenario": "test_media_estrelas_com_avaliacoes",
+      "status": "passed",
+      "seconds": 0.996
+    },
+    {
+      "module": "avaliacao.avaliacao_tests.TestLocalModel",
+      "scenario": "test_str_retorna_nome",
+      "status": "passed",
+      "seconds": 0.452
+    },
+    {
+      "module": "avaliacao.avaliacao_tests.TestAvaliacaoLocalModel",
+      "scenario": "test_criacao_avaliacao",
+      "status": "passed",
+      "seconds": 0.329
+    },
+    {
+      "module": "avaliacao.avaliacao_tests.TestAvaliacaoLocalModel",
+      "scenario": "test_usuario_nao_pode_avaliar_mesmo_local_duas_vezes",
+      "status": "passed",
+      "seconds": 0.358
+    },
+    {
+      "module": "avaliacao.avaliacao_tests.TestAvaliacaoLocalModel",
+      "scenario": "test_str_retorna_descricao_legivel",
+      "status": "passed",
+      "seconds": 0.38
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_zero_points_and_private_summary",
+      "status": "passed",
+      "seconds": 0.491
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_first_review_survey_persists_and_replay_cannot_award",
+      "status": "passed",
+      "seconds": 1.596
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_client_cannot_control_points_author_or_moderation[points-9000]",
+      "status": "passed",
+      "seconds": 0.38
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_client_cannot_control_points_author_or_moderation[pontos-9000]",
+      "status": "passed",
+      "seconds": 0.321
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_client_cannot_control_points_author_or_moderation[user-42]",
+      "status": "passed",
+      "seconds": 0.399
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_client_cannot_control_points_author_or_moderation[verified_author-True]",
+      "status": "passed",
+      "seconds": 0.403
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_client_cannot_control_points_author_or_moderation[comment_verified-True]",
+      "status": "passed",
+      "seconds": 0.58
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_client_cannot_control_points_author_or_moderation[is_current-False]",
+      "status": "passed",
+      "seconds": 0.532
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_client_cannot_control_points_author_or_moderation[is_valid-True]",
+      "status": "passed",
+      "seconds": 0.408
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_invalid_rating_does_not_award[0]",
+      "status": "passed",
+      "seconds": 0.382
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_invalid_rating_does_not_award[-1]",
+      "status": "passed",
+      "seconds": 0.513
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_invalid_rating_does_not_award[6]",
+      "status": "passed",
+      "seconds": 0.463
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_anonymous_write_and_forged_name_rejected",
+      "status": "passed",
+      "seconds": 0.364
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_only_author_can_edit_delete_or_move_review",
+      "status": "passed",
+      "seconds": 0.887
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_delete_reverses_points_and_recreate_restores_only_once",
+      "status": "passed",
+      "seconds": 0.912
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_comment_points_require_moderation_and_edit_revokes",
+      "status": "passed",
+      "seconds": 1.435
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_levels_categories_and_achievement_progress",
+      "status": "passed",
+      "seconds": 1.972
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_historical_uncertain_author_stays_without_points",
+      "status": "passed",
+      "seconds": 1.131
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_privacy_community_self_and_anonymized_place_reviews",
+      "status": "passed",
+      "seconds": 1.259
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_own_profile_and_password_cannot_be_changed_by_name",
+      "status": "passed",
+      "seconds": 2.478
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_token_login_expiration_logout_and_password_revocation",
+      "status": "passed",
+      "seconds": 3.314
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_real_admin_permissions",
+      "status": "passed",
+      "seconds": 1.026
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_database_uniqueness_and_atomic_rollback",
+      "status": "passed",
+      "seconds": 0.89
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_discovery_filters_pagination_coordinates_and_visits",
+      "status": "passed",
+      "seconds": 1.09
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_arrival_requires_consent_precise_location_and_owner",
+      "status": "passed",
+      "seconds": 0.9
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_direct_orm_save_rolls_back_review_when_point_activity_fails",
+      "status": "passed",
+      "seconds": 0.549
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_stale_signal_cannot_restore_points_of_invalid_review",
+      "status": "passed",
+      "seconds": 0.822
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_stale_signal_cannot_award_a_deleted_review",
+      "status": "passed",
+      "seconds": 0.821
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_existing_event_value_is_reconciled_with_confirmed_rule",
+      "status": "passed",
+      "seconds": 0.869
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_orm_cannot_move_an_existing_review_to_a_different_origin",
+      "status": "passed",
+      "seconds": 0.988
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_missing_ledger_entry_is_repaired_once",
+      "status": "passed",
+      "seconds": 1.016
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_reconciliation_is_read_only_by_default_then_applies_idempotently",
+      "status": "passed",
+      "seconds": 0.77
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_reconciliation_restores_only_existing_eligible_balance",
+      "status": "passed",
+      "seconds": 1.454
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_reconciliation_covers_unverified_sources_and_orphan_events",
+      "status": "passed",
+      "seconds": 0.874
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_reconciliation_preserves_unknown_actions_and_rejects_unknown_users",
+      "status": "passed",
+      "seconds": 0.643
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_orm_comment_edit_revokes_approval_and_preserves_history_source",
+      "status": "passed",
+      "seconds": 1.206
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_archived_source_handoff_and_repeated_deletion_do_not_revoke_current_award",
+      "status": "passed",
+      "seconds": 1.1
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_survey_badge_uses_the_same_answer_eligibility_as_points",
+      "status": "passed",
+      "seconds": 1.332
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_database_constraints_guard_event_identity_and_history_replays",
+      "status": "passed",
+      "seconds": 0.613
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_repair_appends_adjustment_and_handles_an_outdated_revision",
+      "status": "passed",
+      "seconds": 0.763
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_create_edit_adjustment_and_opt_in_delete_return_confirmed_feedback",
+      "status": "passed",
+      "seconds": 1.725
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_activity_is_private_paginated_and_keeps_deleted_source_metadata",
+      "status": "passed",
+      "seconds": 0.705
+    },
+    {
+      "module": "contribuicoes.test_integrity",
+      "scenario": "test_impact_distinguishes_actions_reviews_and_operations_and_maximum_level",
+      "status": "passed",
+      "seconds": 2.2
+    },
+    {
+      "module": "contribuicoes.test_optional_survey",
+      "scenario": "test_stars_only_earn_ten_and_completing_survey_earns_five_once",
+      "status": "passed",
+      "seconds": 0.667
+    },
+    {
+      "module": "contribuicoes.test_optional_survey",
+      "scenario": "test_inactive_accounts_cannot_login_and_admin_username_authentication_works",
+      "status": "passed",
+      "seconds": 0.875
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c38_02_public_metadata_sources_dates_and_no_author_identity",
+      "status": "passed",
+      "seconds": 1.037
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c38_03_editing_one_resource_preserves_other_revisions_and_confirmation",
+      "status": "passed",
+      "seconds": 1.125
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c38_04_confirmation_is_repeatable_and_changes_no_votes_points_or_visits",
+      "status": "passed",
+      "seconds": 1.294
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c38_05_stale_revision_and_unknown_assertion_are_rejected",
+      "status": "passed",
+      "seconds": 1.046
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c38_06_invalid_observation_time_is_not_accepted[2099-01-01T10:00:00Z]",
+      "status": "passed",
+      "seconds": 1.608
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c38_06_invalid_observation_time_is_not_accepted[2020-01-01T10:00:00]",
+      "status": "passed",
+      "seconds": 0.959
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c38_06_invalid_observation_time_is_not_accepted[not-a-date]",
+      "status": "passed",
+      "seconds": 0.907
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c38_06_temporal_boundary_and_unknown_date_are_explicit",
+      "status": "passed",
+      "seconds": 2.292
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c38_07_change_is_own_assertion_keeps_disagreement_without_touching_stars",
+      "status": "passed",
+      "seconds": 2.404
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c38_08_private_invalid_and_archived_do_not_influence_public_or_history",
+      "status": "passed",
+      "seconds": 1.065
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c40_report_is_private_idempotent_and_has_no_automatic_penalty",
+      "status": "passed",
+      "seconds": 1.291
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c40_resource_report_validates_target_and_protects_authority",
+      "status": "passed",
+      "seconds": 0.922
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c41_permission_is_specific_and_admin_does_not_expose_queue_to_staff_alone",
+      "status": "passed",
+      "seconds": 1.607
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c41_03_invalidation_reconciles_points_and_is_idempotent",
+      "status": "passed",
+      "seconds": 3.764
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c41_resource_invalidation_does_not_penalize_rating_comment_or_other_resources",
+      "status": "passed",
+      "seconds": 3.824
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c41_old_revision_and_removed_target_cannot_punish_new_content",
+      "status": "passed",
+      "seconds": 3.859
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c41_rollback_never_publishes_an_uncommitted_hint",
+      "status": "passed",
+      "seconds": 3.663
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c41_request_revision_uses_safe_messages_without_reporter_or_internal_reason",
+      "status": "passed",
+      "seconds": 3.039
+    },
+    {
+      "module": "evidencias.test_flow",
+      "scenario": "test_c40_c41_account_deletion_anonymizes_trail_and_own_export_is_scoped",
+      "status": "passed",
+      "seconds": 4.516
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_day_granularity_does_not_invent_a_time",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_osm_same_value_and_changed_name_do_not_renew_resource_or_moderation",
+      "status": "passed",
+      "seconds": 3.322
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_osm_disappearance_withdraws_and_reappearance_does_not_refresh_confirmation",
+      "status": "passed",
+      "seconds": 2.463
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_changed_resource_gets_new_receipt_without_renewing_unrelated_resource",
+      "status": "passed",
+      "seconds": 1.955
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_different_reporters_share_measure_with_one_effect_and_each_audit",
+      "status": "passed",
+      "seconds": 3.85
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_report_retry_after_keep_reuses_protocol_and_old_revision_never_gets_new_case",
+      "status": "passed",
+      "seconds": 3.575
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_throttling_fail_closed_and_validation_never_create_fake_receipt",
+      "status": "passed",
+      "seconds": 2.535
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_permission_grant_and_revoke_is_explicit_and_staff_is_not_authority",
+      "status": "passed",
+      "seconds": 1.748
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_admin_uses_same_decision_path_and_rejects_direct_validity_edit",
+      "status": "passed",
+      "seconds": 2.324
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_decision_form_rejects_untrusted_author_message_and_short_reason",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_on_commit_hint_fails_safely_and_rollback_registers_no_effect",
+      "status": "passed",
+      "seconds": 1.979
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_closed_report_retention_minimizes_then_removes_audit",
+      "status": "passed",
+      "seconds": 2.561
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_closed_evidence_case_reports_unavailable_after_invalidation",
+      "status": "passed",
+      "seconds": 3.051
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_public_pagination_and_query_count_do_not_reveal_private_rows",
+      "status": "passed",
+      "seconds": 3.226
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_osm_suppression_applies_to_equivalent_assertion_in_other_channel",
+      "status": "passed",
+      "seconds": 3.439
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_catalog_reimport_does_not_restore_moderation_or_touch_community",
+      "status": "passed",
+      "seconds": 3.592
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_visitor_can_request_login_to_report_supported_osm_fact",
+      "status": "passed",
+      "seconds": 1.355
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_removed_registered_place_closes_without_exposing_or_mutating_missing_target",
+      "status": "passed",
+      "seconds": 1.651
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_moderation_reloads_case_after_owner_lock_changes_target_key",
+      "status": "passed",
+      "seconds": 1.634
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_requires_authentication[None]",
+      "status": "passed",
+      "seconds": 0.028
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_requires_authentication[Token invalid]",
+      "status": "passed",
+      "seconds": 0.041
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_expired_token",
+      "status": "passed",
+      "seconds": 0.946
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_idempotence_isolation_and_no_side_effects",
+      "status": "passed",
+      "seconds": 1.416
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_body[None]",
+      "status": "passed",
+      "seconds": 1.375
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_body[body1]",
+      "status": "passed",
+      "seconds": 1.384
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_body[body2]",
+      "status": "passed",
+      "seconds": 1.233
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_body[body3]",
+      "status": "passed",
+      "seconds": 1.665
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_body[body4]",
+      "status": "passed",
+      "seconds": 1.239
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_body[body5]",
+      "status": "passed",
+      "seconds": 1.247
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_body[body6]",
+      "status": "passed",
+      "seconds": 3.399
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_body[body7]",
+      "status": "passed",
+      "seconds": 1.293
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_body[body8]",
+      "status": "passed",
+      "seconds": 1.09
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_body[body9]",
+      "status": "passed",
+      "seconds": 0.858
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_body[body10]",
+      "status": "passed",
+      "seconds": 0.903
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_body[body11]",
+      "status": "passed",
+      "seconds": 1.698
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_rejects_owner_and_bad_queries[get-?user=2-None]",
+      "status": "passed",
+      "seconds": 0.899
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_rejects_owner_and_bad_queries[get-?owner=2-None]",
+      "status": "passed",
+      "seconds": 0.769
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_rejects_owner_and_bad_queries[post-?user=2-body2]",
+      "status": "passed",
+      "seconds": 0.808
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_rejects_owner_and_bad_queries[delete-1/?user=2-None]",
+      "status": "passed",
+      "seconds": 1.761
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_rejects_owner_and_bad_queries[delete-1/-body4]",
+      "status": "passed",
+      "seconds": 1.13
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_rejects_owner_and_bad_queries[get-estado/?locais=1&user=2-None]",
+      "status": "passed",
+      "seconds": 2.029
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_rejects_owner_and_bad_queries[get-?page_size=0-None]",
+      "status": "passed",
+      "seconds": 2.004
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_rejects_owner_and_bad_queries[get-?page_size=nan-None]",
+      "status": "passed",
+      "seconds": 3.578
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_rejects_owner_and_bad_queries[get-path8-None]",
+      "status": "passed",
+      "seconds": 1.197
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_public_stats_and_own_review_are_separate",
+      "status": "passed",
+      "seconds": 2.497
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_empty_optional_fields_and_no_invented_hours_or_distance",
+      "status": "passed",
+      "seconds": 1.251
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_pagination_search_and_stable_order",
+      "status": "passed",
+      "seconds": 1.76
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_state_batch_does_not_confuse_unloaded_pages_or_another_owner",
+      "status": "passed",
+      "seconds": 1.105
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_batch[]",
+      "status": "passed",
+      "seconds": 1.099
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_batch[0]",
+      "status": "passed",
+      "seconds": 1.485
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_batch[-1]",
+      "status": "passed",
+      "seconds": 1.129
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_batch[nan]",
+      "status": "passed",
+      "seconds": 1.099
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_batch[1.5]",
+      "status": "passed",
+      "seconds": 1.052
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_batch[1,,2]",
+      "status": "passed",
+      "seconds": 1.135
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_invalid_batch[ids6]",
+      "status": "passed",
+      "seconds": 0.986
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_bounded_query_count",
+      "status": "passed",
+      "seconds": 0.997
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_database_uniqueness_and_cascade",
+      "status": "passed",
+      "seconds": 0.854
+    },
+    {
+      "module": "locais.locais_tests.TestLocalModel",
+      "scenario": "test_criacao_local_basico",
+      "status": "passed",
+      "seconds": 0.009
+    },
+    {
+      "module": "locais.locais_tests.TestLocalModel",
+      "scenario": "test_media_estrelas_sem_avaliacoes",
+      "status": "passed",
+      "seconds": 0.009
+    },
+    {
+      "module": "locais.locais_tests.TestLocalModel",
+      "scenario": "test_local_aberto_por_padrao",
+      "status": "passed",
+      "seconds": 0.007
+    },
+    {
+      "module": "locais.locais_tests.TestLocalModel",
+      "scenario": "test_local_fechado",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.locais_tests.TestLocalModel",
+      "scenario": "test_campos_acessibilidade_padrao_false",
+      "status": "passed",
+      "seconds": 0.007
+    },
+    {
+      "module": "locais.locais_tests.TestLocalModel",
+      "scenario": "test_local_totalmente_acessivel",
+      "status": "passed",
+      "seconds": 0.007
+    },
+    {
+      "module": "locais.locais_tests.TestLocalModel",
+      "scenario": "test_coordenadas_geograficas",
+      "status": "passed",
+      "seconds": 0.007
+    },
+    {
+      "module": "locais.locais_tests.TestLocalModel",
+      "scenario": "test_distancia_float",
+      "status": "passed",
+      "seconds": 0.008
+    },
+    {
+      "module": "locais.locais_tests.TestLocalModel",
+      "scenario": "test_data_criacao_automatica",
+      "status": "passed",
+      "seconds": 0.01
+    },
+    {
+      "module": "locais.locais_tests.TestLocalModel",
+      "scenario": "test_filtrar_locais_abertos",
+      "status": "passed",
+      "seconds": 0.026
+    },
+    {
+      "module": "locais.locais_tests.TestLocalModel",
+      "scenario": "test_filtrar_por_cao_guia",
+      "status": "passed",
+      "seconds": 0.012
+    },
+    {
+      "module": "locais.locais_tests.TestVisitaRecente",
+      "scenario": "test_criacao_visita",
+      "status": "passed",
+      "seconds": 0.404
+    },
+    {
+      "module": "locais.locais_tests.TestVisitaRecente",
+      "scenario": "test_data_visita_automatica",
+      "status": "passed",
+      "seconds": 0.445
+    },
+    {
+      "module": "locais.locais_tests.TestVisitaRecente",
+      "scenario": "test_multiplas_visitas_mesmo_local",
+      "status": "passed",
+      "seconds": 0.405
+    },
+    {
+      "module": "locais.locais_tests.TestSeedSprint1Command",
+      "scenario": "test_seed_cria_tres_locais_com_coordenadas",
+      "status": "passed",
+      "seconds": 0.154
+    },
+    {
+      "module": "locais.locais_tests.TestSeedSprint1Command",
+      "scenario": "test_seed_with_user_cria_login_de_teste",
+      "status": "passed",
+      "seconds": 0.912
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_catalog_is_public_and_aligned",
+      "status": "passed",
+      "seconds": 0.019
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_historical_booleans_true_and_false_remain_unknown",
+      "status": "passed",
+      "seconds": 0.506
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_new_creation_explicit_states_dates_and_omission",
+      "status": "passed",
+      "seconds": 1.492
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_patch_is_atomic[None]",
+      "status": "passed",
+      "seconds": 1.322
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_patch_is_atomic[invalid1]",
+      "status": "passed",
+      "seconds": 1.223
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_patch_is_atomic[invalid2]",
+      "status": "passed",
+      "seconds": 0.994
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_patch_is_atomic[invalid3]",
+      "status": "passed",
+      "seconds": 1.032
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_patch_is_atomic[invalid4]",
+      "status": "passed",
+      "seconds": 1.092
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_patch_is_atomic[invalid5]",
+      "status": "passed",
+      "seconds": 1.575
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_patch_is_atomic[invalid6]",
+      "status": "passed",
+      "seconds": 4.339
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_patch_is_atomic[invalid7]",
+      "status": "passed",
+      "seconds": 4.224
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_patch_is_atomic[invalid8]",
+      "status": "passed",
+      "seconds": 3.452
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_patch_preserves_omitted_and_null_removes_one_evidence",
+      "status": "passed",
+      "seconds": 5.495
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_existing_write_permissions_are_preserved",
+      "status": "passed",
+      "seconds": 1.941
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_filters_combine_categories_sources_resources_and_incomplete",
+      "status": "passed",
+      "seconds": 0.231
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_filters_are_not_silently_ignored[params0]",
+      "status": "passed",
+      "seconds": 0.008
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_filters_are_not_silently_ignored[params1]",
+      "status": "passed",
+      "seconds": 0.01
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_filters_are_not_silently_ignored[params2]",
+      "status": "passed",
+      "seconds": 0.011
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_filters_are_not_silently_ignored[params3]",
+      "status": "passed",
+      "seconds": 0.01
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_filters_are_not_silently_ignored[params4]",
+      "status": "passed",
+      "seconds": 0.009
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_invalid_filters_are_not_silently_ignored[params5]",
+      "status": "passed",
+      "seconds": 0.01
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_repeated_filter_parameter_is_rejected",
+      "status": "passed",
+      "seconds": 0.01
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_community_unknown_na_divergence_and_private_visibility",
+      "status": "passed",
+      "seconds": 2.111
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_ambiguous_old_question_cannot_set_a_resource",
+      "status": "passed",
+      "seconds": 1.376
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_list_queries_are_bounded_by_batches",
+      "status": "passed",
+      "seconds": 1.209
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_external_matching_includes_linked_state_without_creating_a_record",
+      "status": "passed",
+      "seconds": 1.166
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_real_pbf_areas_original_ids_and_dry_run",
+      "status": "passed",
+      "seconds": 1.067
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_geometry_holes_islands_border_and_concave",
+      "status": "passed",
+      "seconds": 0.024
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_eligibility[tags0-not_a_supported_poi]",
+      "status": "passed",
+      "seconds": 0.014
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_eligibility[tags1-inactive]",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_eligibility[tags2-restricted_access]",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_eligibility[tags3-inactive]",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_eligibility[tags4-None]",
+      "status": "passed",
+      "seconds": 0.007
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_source_data_unknown_and_allowlist",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_partial_failure_absence_reappearance_and_rollback",
+      "status": "passed",
+      "seconds": 2.359
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_incomplete_relation_prohibits_complete_publication",
+      "status": "passed",
+      "seconds": 0.371
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_lease_owner_and_old_snapshot_decisions",
+      "status": "passed",
+      "seconds": 1.256
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_api_sql_filters_and_snapshot_version",
+      "status": "passed",
+      "seconds": 3.134
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_invalid_queries[params0]",
+      "status": "passed",
+      "seconds": 0.029
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_invalid_queries[params1]",
+      "status": "passed",
+      "seconds": 0.041
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_invalid_queries[params2]",
+      "status": "passed",
+      "seconds": 0.044
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_invalid_queries[params3]",
+      "status": "passed",
+      "seconds": 0.031
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_invalid_queries[params4]",
+      "status": "passed",
+      "seconds": 0.029
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_invalid_queries[params5]",
+      "status": "passed",
+      "seconds": 0.033
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_invalid_queries[params6]",
+      "status": "passed",
+      "seconds": 0.026
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_materialize_once_trusted_identity_and_provenance",
+      "status": "passed",
+      "seconds": 1.911
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_confirm_catalog_without_postal_address_keeps_osm_identity",
+      "status": "passed",
+      "seconds": 4.499
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_publication_during_response_invalidates_count_and_page",
+      "status": "passed",
+      "seconds": 2.667
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_conservative_ambiguity_and_already_claimed_local",
+      "status": "passed",
+      "seconds": 2.707
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_duplicate_candidates_keep_identities_and_block_automatic_link",
+      "status": "passed",
+      "seconds": 0.257
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_rule_change_and_explicit_closure_do_not_delete_community",
+      "status": "passed",
+      "seconds": 5.079
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_failed_publication_does_not_expose_proposed_conservative_links",
+      "status": "passed",
+      "seconds": 2.492
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_ibge_conversion_reads_crs_and_encoding",
+      "status": "passed",
+      "seconds": 0.662
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_ten_thousand_sql_budget_and_storage",
+      "status": "passed",
+      "seconds": 11.12
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_catalog_node_location_index_is_platform_safe",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_legacy_and_paged_contract_global_order_and_retry",
+      "status": "passed",
+      "seconds": 0.443
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query0]",
+      "status": "passed",
+      "seconds": 0.018
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query1]",
+      "status": "passed",
+      "seconds": 0.091
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query2]",
+      "status": "passed",
+      "seconds": 0.02
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query3]",
+      "status": "passed",
+      "seconds": 0.009
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query4]",
+      "status": "passed",
+      "seconds": 0.01
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query5]",
+      "status": "passed",
+      "seconds": 0.008
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query6]",
+      "status": "passed",
+      "seconds": 0.008
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query7]",
+      "status": "passed",
+      "seconds": 0.008
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query8]",
+      "status": "passed",
+      "seconds": 0.008
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query9]",
+      "status": "passed",
+      "seconds": 0.016
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query10]",
+      "status": "passed",
+      "seconds": 0.016
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query11]",
+      "status": "passed",
+      "seconds": 0.019
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query12]",
+      "status": "passed",
+      "seconds": 0.019
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_invalid_discovery_contract[query13]",
+      "status": "passed",
+      "seconds": 0.011
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_stable_ties_missing_coordinates_and_dateline",
+      "status": "passed",
+      "seconds": 0.132
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_resource_filters_before_page_and_remote_search",
+      "status": "passed",
+      "seconds": 0.199
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_manual_auth_retry_changed_body_deleted_receipt_and_no_side_effects",
+      "status": "passed",
+      "seconds": 0.655
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_manual_invalid_fields[change0]",
+      "status": "passed",
+      "seconds": 0.472
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_manual_invalid_fields[change1]",
+      "status": "passed",
+      "seconds": 0.614
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_manual_invalid_fields[change2]",
+      "status": "passed",
+      "seconds": 0.347
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_manual_invalid_fields[change3]",
+      "status": "passed",
+      "seconds": 0.397
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_manual_invalid_fields[change4]",
+      "status": "passed",
+      "seconds": 0.351
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_manual_invalid_fields[change5]",
+      "status": "passed",
+      "seconds": 0.375
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_manual_invalid_fields[change6]",
+      "status": "passed",
+      "seconds": 0.358
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_manual_invalid_fields[change7]",
+      "status": "passed",
+      "seconds": 0.576
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_manual_invalid_fields[change8]",
+      "status": "passed",
+      "seconds": 0.482
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_duplicates_across_owners_require_review_and_homonyms_are_distinct",
+      "status": "passed",
+      "seconds": 2.038
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_coordinate_validation_preserves_legacy_and_write_permissions",
+      "status": "passed",
+      "seconds": 0.558
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_typed_geocode_poi_independent_of_neighborhood_and_public_cache",
+      "status": "passed",
+      "seconds": 0.018
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_public_nominatim_requires_opt_in_and_shared_cache",
+      "status": "passed",
+      "seconds": 0.009
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_rating_order_uses_only_visible_valid_reviews",
+      "status": "passed",
+      "seconds": 1.14
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_access_logs_redact_origin_without_changing_query",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params0]",
+      "status": "passed",
+      "seconds": 0.011
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params1]",
+      "status": "passed",
+      "seconds": 0.014
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params2]",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params3]",
+      "status": "passed",
+      "seconds": 0.012
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params4]",
+      "status": "passed",
+      "seconds": 0.022
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params5]",
+      "status": "passed",
+      "seconds": 0.03
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params6]",
+      "status": "passed",
+      "seconds": 0.271
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params7]",
+      "status": "passed",
+      "seconds": 0.085
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params8]",
+      "status": "passed",
+      "seconds": 0.02
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params9]",
+      "status": "passed",
+      "seconds": 0.017
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params10]",
+      "status": "passed",
+      "seconds": 0.027
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params11]",
+      "status": "passed",
+      "seconds": 0.015
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_parameters_never_call_overpass[params12]",
+      "status": "passed",
+      "seconds": 0.023
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_api_returns_results_tokens_attribution_without_writes",
+      "status": "passed",
+      "seconds": 0.068
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_upstream_errors_become_explicit_api_errors[429-429]",
+      "status": "passed",
+      "seconds": 0.023
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_upstream_errors_become_explicit_api_errors[500-503]",
+      "status": "passed",
+      "seconds": 0.085
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_upstream_errors_become_explicit_api_errors[503-503]",
+      "status": "passed",
+      "seconds": 0.025
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_upstream_errors_become_explicit_api_errors[302-503]",
+      "status": "passed",
+      "seconds": 0.023
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_connection_and_timeout[exception0-504]",
+      "status": "passed",
+      "seconds": 0.024
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_connection_and_timeout[exception1-503]",
+      "status": "passed",
+      "seconds": 0.018
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_bad_provider_payload_is_not_cached_as_success[None]",
+      "status": "passed",
+      "seconds": 0.022
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_bad_provider_payload_is_not_cached_as_success[bad1]",
+      "status": "passed",
+      "seconds": 0.025
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_bad_provider_payload_is_not_cached_as_success[bad2]",
+      "status": "passed",
+      "seconds": 0.027
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_bad_provider_payload_is_not_cached_as_success[bad3]",
+      "status": "passed",
+      "seconds": 0.019
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_explicit_match_precedes_geographic_candidates",
+      "status": "passed",
+      "seconds": 0.021
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_conservative_matching_requires_address_name_and_proximity",
+      "status": "passed",
+      "seconds": 0.07
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_ambiguous_same_address_is_kept_separate",
+      "status": "passed",
+      "seconds": 0.017
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_import_requires_real_authentication",
+      "status": "passed",
+      "seconds": 1.169
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_authenticated_import_is_idempotent_and_does_not_invent_accessibility",
+      "status": "passed",
+      "seconds": 1.751
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_existing_local_keeps_its_reviews_distance_and_flags",
+      "status": "passed",
+      "seconds": 1.114
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_import_rejects_tampered_and_expired_tokens",
+      "status": "passed",
+      "seconds": 2.037
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_import_ignores_client_coordinates_and_flags",
+      "status": "passed",
+      "seconds": 1.372
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_import_validates_confirmed_fields[data0]",
+      "status": "passed",
+      "seconds": 1.1
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_import_validates_confirmed_fields[data1]",
+      "status": "passed",
+      "seconds": 1.078
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_import_validates_confirmed_fields[data2]",
+      "status": "passed",
+      "seconds": 1.306
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_import_validates_confirmed_fields[data3]",
+      "status": "passed",
+      "seconds": 1.245
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_authenticated_endpoint_cannot_set_osm_link",
+      "status": "passed",
+      "seconds": 1.317
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_api_annotates_matching_without_discarding",
+      "status": "passed",
+      "seconds": 0.1
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_category_endpoint_matches_central_catalog",
+      "status": "passed",
+      "seconds": 0.016
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_geocode_validates_exclusive_parameters[params0]",
+      "status": "passed",
+      "seconds": 0.027
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_geocode_validates_exclusive_parameters[params1]",
+      "status": "passed",
+      "seconds": 0.014
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_geocode_validates_exclusive_parameters[params2]",
+      "status": "passed",
+      "seconds": 0.032
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_geocode_validates_exclusive_parameters[params3]",
+      "status": "passed",
+      "seconds": 0.017
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_geocode_validates_exclusive_parameters[params4]",
+      "status": "passed",
+      "seconds": 0.02
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_unconfigured_geocoder_has_useful_error",
+      "status": "passed",
+      "seconds": 0.023
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_corrected_address_still_checks_existing_record",
+      "status": "passed",
+      "seconds": 1.285
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_concurrent_unique_constraint_recovers_existing_record",
+      "status": "passed",
+      "seconds": 1.446
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_row_link_race_does_not_overwrite_other_osm_id",
+      "status": "passed",
+      "seconds": 1.273
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_anonymous_endpoint_has_ip_throttle",
+      "status": "passed",
+      "seconds": 0.802
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_eight_internal_places_four_without_point_survive_general_and_paged_queries",
+      "status": "passed",
+      "seconds": 0.432
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_normalized_error_envelope_headers_and_strict_query",
+      "status": "passed",
+      "seconds": 0.044
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_default_is_off_and_legacy_flags_are_not_consent",
+      "status": "passed",
+      "seconds": 1.232
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_authentication_required[/api/usuarios/me/route-history-preferences/-get]",
+      "status": "passed",
+      "seconds": 0.016
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_authentication_required[/api/usuarios/me/route-history-preferences/-patch]",
+      "status": "passed",
+      "seconds": 0.021
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_authentication_required[/api/route-history/-get]",
+      "status": "passed",
+      "seconds": 0.02
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_authentication_required[/api/route-history/-post]",
+      "status": "passed",
+      "seconds": 0.022
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_authentication_required[/api/route-history/clear/-delete]",
+      "status": "passed",
+      "seconds": 0.02
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_authentication_required[/api/route-history/origins/-delete]",
+      "status": "passed",
+      "seconds": 0.024
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_authentication_required[/api/route-history/eadcf447-0f74-40df-bf12-3af59aabf110/-get]",
+      "status": "passed",
+      "seconds": 0.019
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_started_only_idempotency_and_distinct_sessions",
+      "status": "passed",
+      "seconds": 3.451
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes0]",
+      "status": "passed",
+      "seconds": 1.307
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes1]",
+      "status": "passed",
+      "seconds": 1.197
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes2]",
+      "status": "passed",
+      "seconds": 1.259
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes3]",
+      "status": "passed",
+      "seconds": 1.324
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes4]",
+      "status": "passed",
+      "seconds": 2.059
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes5]",
+      "status": "passed",
+      "seconds": 2.516
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes6]",
+      "status": "passed",
+      "seconds": 2.251
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes7]",
+      "status": "passed",
+      "seconds": 1.273
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes8]",
+      "status": "passed",
+      "seconds": 1.041
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes9]",
+      "status": "passed",
+      "seconds": 0.955
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes10]",
+      "status": "passed",
+      "seconds": 2.205
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes11]",
+      "status": "passed",
+      "seconds": 1.272
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_invalid_start_is_atomic[changes12]",
+      "status": "passed",
+      "seconds": 1.654
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_nonfinite_coordinates_are_rejected[nan]",
+      "status": "passed",
+      "seconds": 3.09
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_nonfinite_coordinates_are_rejected[inf]",
+      "status": "passed",
+      "seconds": 1.042
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_nonfinite_coordinates_are_rejected[-inf]",
+      "status": "passed",
+      "seconds": 0.534
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_owner_scope_and_client_identity_cannot_select_another_account",
+      "status": "passed",
+      "seconds": 0.608
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_transitions_recalculation_unknown_end_and_terminal_order",
+      "status": "passed",
+      "seconds": 0.631
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_cancellation_after_start_is_terminal_but_interruption_has_unknown_end",
+      "status": "passed",
+      "seconds": 0.58
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_origin_requires_separate_consent_and_is_rounded_before_storage",
+      "status": "passed",
+      "seconds": 0.587
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_revocation_preserves_old_records_and_stale_consent_cannot_collect",
+      "status": "passed",
+      "seconds": 0.572
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_origin_can_be_revoked_with_recording_disabled",
+      "status": "passed",
+      "seconds": 0.562
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_deleted_record_scrubs_private_data_and_late_start_or_patch_cannot_restore",
+      "status": "passed",
+      "seconds": 0.705
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_clear_is_private_keeps_visits_contributions_and_prevents_pending_creates",
+      "status": "passed",
+      "seconds": 0.582
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_deleted_destination_keeps_historical_coordinates_without_recreating_a_place",
+      "status": "passed",
+      "seconds": 0.566
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_external_and_manual_destinations_keep_separate_ids",
+      "status": "passed",
+      "seconds": 0.54
+    },
+    {
+      "module": "locais.test_route_history",
+      "scenario": "test_stable_pagination_and_schema",
+      "status": "passed",
+      "seconds": 1.296
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_valid_upload_is_pending_private_and_changes_no_points",
+      "status": "passed",
+      "seconds": 0.547
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_publication_requires_approval_and_each_direct_variant_is_authorized[image]",
+      "status": "passed",
+      "seconds": 0.991
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_publication_requires_approval_and_each_direct_variant_is_authorized[thumb]",
+      "status": "passed",
+      "seconds": 1.123
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_ineligible_review_revokes_public_file_and_list[invalid]",
+      "status": "passed",
+      "seconds": 1.206
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_ineligible_review_revokes_public_file_and_list[archived]",
+      "status": "passed",
+      "seconds": 0.586
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_ineligible_review_revokes_public_file_and_list[deleted]",
+      "status": "passed",
+      "seconds": 0.699
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_retry_and_quantity_are_enforced_without_duplicate_files",
+      "status": "passed",
+      "seconds": 1.725
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_ownership_and_unknown_fields_cannot_be_forged",
+      "status": "passed",
+      "seconds": 0.109
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c45_disguised_corrupt_and_unsupported_inputs_are_not_published[<svg/>-image.svg-image/svg+xml]",
+      "status": "passed",
+      "seconds": 0.441
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c45_disguised_corrupt_and_unsupported_inputs_are_not_published[not a raster-image.png-image/png]",
+      "status": "passed",
+      "seconds": 0.514
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c45_disguised_corrupt_and_unsupported_inputs_are_not_published[content2-image.jpg-image/jpeg]",
+      "status": "passed",
+      "seconds": 0.241
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c45_disguised_corrupt_and_unsupported_inputs_are_not_published[\\x89PNG\\r\\n\\x1a\\n\\x00\\x00\\x00\\rIHDR\\x00\\x00\\x00P\\x00\\x00\\x00(\\x08\\x02\\x00\\x00\\x00\\xe6-image.png-image/png]",
+      "status": "passed",
+      "seconds": 0.381
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c45_disguised_corrupt_and_unsupported_inputs_are_not_published[\\x00heic-image.heic-image/heic]",
+      "status": "passed",
+      "seconds": 0.246
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c45_byte_pixel_and_request_limits_are_distinct",
+      "status": "passed",
+      "seconds": 0.397
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c45_real_decoder_orients_reencodes_and_removes_exif",
+      "status": "passed",
+      "seconds": 0.657
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_approval_is_separate_from_report_and_staff_alone_cannot_decide",
+      "status": "passed",
+      "seconds": 0.531
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_approved_photo_report_uses_existing_queue_and_no_reporter_exposure",
+      "status": "passed",
+      "seconds": 0.595
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_replacement_and_description_require_new_review_without_touching_other_fields",
+      "status": "passed",
+      "seconds": 0.736
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_storage_failure_is_recoverable_and_retry_reuses_operation",
+      "status": "passed",
+      "seconds": 0.601
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c44_avatar_is_processed_preserves_base64_contract_and_remove_is_versioned",
+      "status": "passed",
+      "seconds": 0.385
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c44_bad_replacement_preserves_previous_and_generic_update_cannot_bypass",
+      "status": "passed",
+      "seconds": 0.726
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c45_remove_and_reconcile_are_idempotent_and_do_not_delete_live_assets",
+      "status": "passed",
+      "seconds": 0.343
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c45_export_images_is_own_and_private_and_account_erasure_removes_availability",
+      "status": "passed",
+      "seconds": 0.496
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_admin_session_can_read_pending_file_and_has_initial_review_surface",
+      "status": "passed",
+      "seconds": 0.408
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_live_session_is_rechecked_after_actual_processing",
+      "status": "passed",
+      "seconds": 0.292
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_database_failure_rolls_back_and_keeps_durable_cleanup",
+      "status": "passed",
+      "seconds": 0.282
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_duplicate_operation_with_changed_content_and_stale_moderation_are_conflicts",
+      "status": "passed",
+      "seconds": 1.928
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_moderation_is_idempotent_and_comment_edit_keeps_approved_photo",
+      "status": "passed",
+      "seconds": 1.614
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c45_cleanup_failure_retries_and_expired_processing_is_reconciled",
+      "status": "passed",
+      "seconds": 0.372
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c45_streamed_limit_and_unknown_variants_are_refused",
+      "status": "passed",
+      "seconds": 0.06
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c42_old_photo_report_never_rejects_replacement",
+      "status": "passed",
+      "seconds": 0.784
+    },
+    {
+      "module": "midia.test_images",
+      "scenario": "test_c45_cleanup_command_has_bounded_batch_and_durable_effect",
+      "status": "passed",
+      "seconds": 0.455
+    },
+    {
+      "module": "modal_avaliacao.modal_avaliacao_tests.TestModalAvaliacaoModel",
+      "scenario": "test_criacao_modal_avaliacao",
+      "status": "passed",
+      "seconds": 0.379
+    },
+    {
+      "module": "modal_avaliacao.modal_avaliacao_tests.TestModalAvaliacaoModel",
+      "scenario": "test_str_retorna_descricao_legivel",
+      "status": "passed",
+      "seconds": 0.29
+    },
+    {
+      "module": "modal_avaliacao.modal_avaliacao_tests.TestModalAvaliacaoAPI",
+      "scenario": "test_criar_avaliacao_via_api",
+      "status": "passed",
+      "seconds": 0.394
+    },
+    {
+      "module": "modal_avaliacao.modal_avaliacao_tests.TestModalAvaliacaoAPI",
+      "scenario": "test_respostas_legadas_nao_reinterpretam_flags_de_acessibilidade",
+      "status": "passed",
+      "seconds": 0.427
+    },
+    {
+      "module": "modal_avaliacao.modal_avaliacao_tests.TestModalAvaliacaoAPI",
+      "scenario": "test_respostas_nao_nao_alteram_flags",
+      "status": "passed",
+      "seconds": 0.385
+    },
+    {
+      "module": "modal_avaliacao.modal_avaliacao_tests.TestModalAvaliacaoAPI",
+      "scenario": "test_filtrar_avaliacoes_por_local_id",
+      "status": "passed",
+      "seconds": 0.412
+    },
+    {
+      "module": "modal_avaliacao.modal_avaliacao_tests.TestModalAvaliacaoAPI",
+      "scenario": "test_escrita_anonima_nao_atribui_avaliacao_a_usuario_existente",
+      "status": "passed",
+      "seconds": 0.293
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_catalog_and_four_codes_roundtrip",
+      "status": "passed",
+      "seconds": 0.466
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change0]",
+      "status": "passed",
+      "seconds": 0.319
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change1]",
+      "status": "passed",
+      "seconds": 0.313
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change2]",
+      "status": "passed",
+      "seconds": 0.328
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change3]",
+      "status": "passed",
+      "seconds": 0.317
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change4]",
+      "status": "passed",
+      "seconds": 0.33
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change5]",
+      "status": "passed",
+      "seconds": 0.33
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change6]",
+      "status": "passed",
+      "seconds": 0.311
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change7]",
+      "status": "passed",
+      "seconds": 0.31
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change8]",
+      "status": "passed",
+      "seconds": 0.315
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change9]",
+      "status": "passed",
+      "seconds": 0.458
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change10]",
+      "status": "passed",
+      "seconds": 0.475
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change11]",
+      "status": "passed",
+      "seconds": 0.692
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change12]",
+      "status": "passed",
+      "seconds": 0.677
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change13]",
+      "status": "passed",
+      "seconds": 2.261
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change14]",
+      "status": "passed",
+      "seconds": 1.481
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_creation_is_atomic[change15]",
+      "status": "passed",
+      "seconds": 0.753
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_partial_update_clear_and_no_duplicate_points",
+      "status": "passed",
+      "seconds": 3.269
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_invalid_patch_cannot_change_review_local_or_points",
+      "status": "passed",
+      "seconds": 1.18
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_full_update_and_author_permissions",
+      "status": "passed",
+      "seconds": 1.917
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_legacy_comment_edit_preserves_raw_answers_without_reinterpreting",
+      "status": "passed",
+      "seconds": 1.796
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_unconfirmed_legacy_defaults_cannot_earn_survey_points_by_comment_edit",
+      "status": "passed",
+      "seconds": 1.267
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_aggregate_privacy_divergence_dates_and_history",
+      "status": "passed",
+      "seconds": 2.182
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_summary_invalid_local[bad-400]",
+      "status": "passed",
+      "seconds": 0.433
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_summary_invalid_local[0-400]",
+      "status": "passed",
+      "seconds": 0.435
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_summary_invalid_local[999999-404]",
+      "status": "passed",
+      "seconds": 0.395
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_summary_and_review_list_queries_do_not_scale_per_feature_or_row",
+      "status": "passed",
+      "seconds": 5.626
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_preferences_are_optional_on_signup_and_current_user_only",
+      "status": "passed",
+      "seconds": 0.995
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_create_edit_deduplicate_partial_omit_and_clear",
+      "status": "passed",
+      "seconds": 0.975
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_get_reads_persisted_preferences_with_a_stale_authenticated_instance",
+      "status": "passed",
+      "seconds": 0.854
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_write_is_atomic_and_never_uses_client_identity[body0]",
+      "status": "passed",
+      "seconds": 0.931
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_write_is_atomic_and_never_uses_client_identity[body1]",
+      "status": "passed",
+      "seconds": 0.81
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_write_is_atomic_and_never_uses_client_identity[body2]",
+      "status": "passed",
+      "seconds": 0.764
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_write_is_atomic_and_never_uses_client_identity[body3]",
+      "status": "passed",
+      "seconds": 0.711
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_write_is_atomic_and_never_uses_client_identity[body4]",
+      "status": "passed",
+      "seconds": 0.79
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_write_is_atomic_and_never_uses_client_identity[body5]",
+      "status": "passed",
+      "seconds": 0.747
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_write_is_atomic_and_never_uses_client_identity[body6]",
+      "status": "passed",
+      "seconds": 0.742
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_write_is_atomic_and_never_uses_client_identity[body7]",
+      "status": "passed",
+      "seconds": 0.839
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_write_is_atomic_and_never_uses_client_identity[body8]",
+      "status": "passed",
+      "seconds": 0.788
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-None]",
+      "status": "passed",
+      "seconds": 0.747
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-body1]",
+      "status": "passed",
+      "seconds": 0.776
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-body2]",
+      "status": "passed",
+      "seconds": 0.748
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-rampa_acesso]",
+      "status": "passed",
+      "seconds": 0.78
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-1]",
+      "status": "passed",
+      "seconds": 0.829
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-True]",
+      "status": "passed",
+      "seconds": 0.746
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-None]",
+      "status": "passed",
+      "seconds": 0.787
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-body1]",
+      "status": "passed",
+      "seconds": 0.713
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-body2]",
+      "status": "passed",
+      "seconds": 0.661
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-rampa_acesso]",
+      "status": "passed",
+      "seconds": 2.179
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-1]",
+      "status": "passed",
+      "seconds": 1.174
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-True]",
+      "status": "passed",
+      "seconds": 0.644
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_unauthenticated_request_cannot_read_or_write[get]",
+      "status": "passed",
+      "seconds": 0.662
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_unauthenticated_request_cannot_read_or_write[put]",
+      "status": "passed",
+      "seconds": 0.746
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_unauthenticated_request_cannot_read_or_write[patch]",
+      "status": "passed",
+      "seconds": 0.603
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_unauthenticated_request_cannot_read_or_write[delete]",
+      "status": "passed",
+      "seconds": 0.598
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_unknown_retired_choice_is_reported_until_explicitly_removed",
+      "status": "passed",
+      "seconds": 0.618
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_preferences_are_not_in_profile_login_users_or_public_reviews",
+      "status": "passed",
+      "seconds": 2.157
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_swapping_authentication_changes_only_the_private_owner",
+      "status": "passed",
+      "seconds": 1.401
+    },
+    {
+      "module": "usuarios.test_accessibility_preferences",
+      "scenario": "test_openapi_describes_filters_catalog_states_and_private_payload",
+      "status": "passed",
+      "seconds": 0.875
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r01_async_email_uses_trusted_frontend_and_no_request_host",
+      "status": "passed",
+      "seconds": 0.795
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r02_neutral_for_all_eligibility_states[existing]",
+      "status": "passed",
+      "seconds": 0.48
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r02_neutral_for_all_eligibility_states[missing]",
+      "status": "passed",
+      "seconds": 0.542
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r02_neutral_for_all_eligibility_states[inactive]",
+      "status": "passed",
+      "seconds": 0.488
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r02_neutral_for_all_eligibility_states[unusable]",
+      "status": "passed",
+      "seconds": 0.56
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r03_r06_valid_reset_changes_password_revokes_tokens_and_sessions",
+      "status": "passed",
+      "seconds": 3.008
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r04_invalid_link_preserves_password[changes0]",
+      "status": "passed",
+      "seconds": 0.901
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r04_invalid_link_preserves_password[changes1]",
+      "status": "passed",
+      "seconds": 0.9
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r04_invalid_link_preserves_password[changes2]",
+      "status": "passed",
+      "seconds": 1.01
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r04_invalid_link_preserves_password[changes3]",
+      "status": "passed",
+      "seconds": 1.127
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r04_expired_token_controlled_clock",
+      "status": "passed",
+      "seconds": 0.842
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r05_weak_or_mismatched_password[12345678-12345678]",
+      "status": "passed",
+      "seconds": 1.189
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r05_weak_or_mismatched_password[short-short]",
+      "status": "passed",
+      "seconds": 0.899
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r05_weak_or_mismatched_password[Fresh-access!5813-different]",
+      "status": "passed",
+      "seconds": 0.84
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r06_all_password_change_paths_validate_and_revoke[/auth/users/set_password/]",
+      "status": "passed",
+      "seconds": 2.741
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r06_all_password_change_paths_validate_and_revoke[/api/usuarios/alterar-senha/]",
+      "status": "passed",
+      "seconds": 2.41
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r06_public_actions_ignore_stale_authentication",
+      "status": "passed",
+      "seconds": 1.485
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r06_alternate_username_routes_are_not_an_account_reset_bypass",
+      "status": "passed",
+      "seconds": 0.451
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_registration_uses_password_validators",
+      "status": "passed",
+      "seconds": 0.033
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r07_request_and_confirmation_throttle_use_hashed_identifiers",
+      "status": "passed",
+      "seconds": 0.629
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r07_mail_timeout_is_private_retryable_and_cannot_enumerate",
+      "status": "passed",
+      "seconds": 0.417
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r07_notification_failure_does_not_undo_success",
+      "status": "passed",
+      "seconds": 1.065
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_cache_outage_fails_closed_without_fallback",
+      "status": "passed",
+      "seconds": 0.644
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p01_owner_choices_are_recorded_idempotently_revoked_and_separate",
+      "status": "passed",
+      "seconds": 1.026
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p02_legacy_choices_are_honest_and_pause_new_collection",
+      "status": "passed",
+      "seconds": 1.486
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p03_export_has_actual_categories_dates_and_no_credentials_or_other_account",
+      "status": "passed",
+      "seconds": 1.435
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p04_owner_is_only_from_authentication_and_unknown_fields_are_rejected[/api/usuarios/me/data-export/]",
+      "status": "passed",
+      "seconds": 0.869
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p04_owner_is_only_from_authentication_and_unknown_fields_are_rejected[/api/usuarios/me/delete-account/]",
+      "status": "passed",
+      "seconds": 0.867
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p05_deletion_requires_current_password_and_explicit_confirmation[/api/usuarios/me/delete-account/]",
+      "status": "passed",
+      "seconds": 1.393
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p05_deletion_requires_current_password_and_explicit_confirmation[/auth/users/me/]",
+      "status": "passed",
+      "seconds": 1.294
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p06_p07_deletion_preserves_shared_catalog_other_reviews_and_point_integrity[/api/usuarios/me/delete-account/]",
+      "status": "passed",
+      "seconds": 11.665
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p06_p07_deletion_preserves_shared_catalog_other_reviews_and_point_integrity[/auth/users/me/]",
+      "status": "passed",
+      "seconds": 2.268
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p06_djoser_id_cannot_delete_someone_else_even_with_own_password",
+      "status": "passed",
+      "seconds": 0.982
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p08_database_failure_rolls_back_and_cancels_external_intent",
+      "status": "passed",
+      "seconds": 3.275
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p08_external_storage_failure_does_not_claim_completion",
+      "status": "passed",
+      "seconds": 2.191
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p09_commit_publication_failure_is_pending_and_recoverable",
+      "status": "passed",
+      "seconds": 1.518
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_export_wrong_password_size_limit_and_rate_limit",
+      "status": "passed",
+      "seconds": 4.087
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_retention_prunes_history_but_preserves_current_decision",
+      "status": "passed",
+      "seconds": 1.241
+    },
+    {
+      "module": "usuarios.test_preparar_moderador_demo.ModeratorBootstrapTests",
+      "scenario": "test_no_admin_provisioning_in_staging",
+      "status": "passed",
+      "seconds": 0.032
+    },
+    {
+      "module": "usuarios.test_preparar_moderador_demo.ModeratorBootstrapTests",
+      "scenario": "test_provisioning_twice_keeps_password_unusable_and_least_privilege",
+      "status": "passed",
+      "seconds": 0.104
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_non_object_json_is_bad_request_not_server_error[/auth/users/reset_password/]",
+      "status": "passed",
+      "seconds": 0.016
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_non_object_json_is_bad_request_not_server_error[/auth/users/reset_password_confirm/]",
+      "status": "passed",
+      "seconds": 0.025
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_non_object_json_is_bad_request_not_server_error[/api/login/]",
+      "status": "passed",
+      "seconds": 0.024
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_non_object_json_is_bad_request_not_server_error[/auth/token/login/]",
+      "status": "passed",
+      "seconds": 0.016
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_email_change_requires_current_password_and_normalizes_without_echo[/auth/users/me/]",
+      "status": "passed",
+      "seconds": 2.56
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_email_change_requires_current_password_and_normalizes_without_echo[/api/usuarios/perfil/?nome=synthetic-regression]",
+      "status": "passed",
+      "seconds": 2.253
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_stale_authentication_snapshot_cannot_undo_new_password_or_revive_deleted_owner[/auth/users/me/]",
+      "status": "passed",
+      "seconds": 2.171
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_stale_authentication_snapshot_cannot_undo_new_password_or_revive_deleted_owner[/api/usuarios/perfil/?nome=synthetic-regression]",
+      "status": "passed",
+      "seconds": 2.129
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_legacy_client_cannot_create_current_notice_proof_without_acknowledging_it",
+      "status": "passed",
+      "seconds": 0.751
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_erasing_own_visits_preserves_the_other_account_and_shared_catalog",
+      "status": "passed",
+      "seconds": 1.031
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_admin_audit_copies_are_minimal_export_own_metadata_and_scrub_on_deletion",
+      "status": "passed",
+      "seconds": 1.755
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_missing_journal_marker_or_wrong_identity_cannot_be_treated_as_empty",
+      "status": "passed",
+      "seconds": 0.333
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_photo_writer_checks_live_credential_after_owner_lock",
+      "status": "passed",
+      "seconds": 0.323
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_readiness_refuses_missing_stage_journal_but_recovers",
+      "status": "passed",
+      "seconds": 0.354
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_authenticated_session_is_checked_again_after_owner_lock[False]",
+      "status": "passed",
+      "seconds": 0.328
+    },
+    {
+      "module": "usuarios.test_security_regressions",
+      "scenario": "test_authenticated_session_is_checked_again_after_owner_lock[True]",
+      "status": "passed",
+      "seconds": 0.312
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioModel",
+      "scenario": "test_criacao_usuario_basico",
+      "status": "passed",
+      "seconds": 0.921
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioModel",
+      "scenario": "test_senha_e_armazenada_com_hash",
+      "status": "passed",
+      "seconds": 1.093
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioModel",
+      "scenario": "test_criacao_usuario_sem_nome_levanta_erro",
+      "status": "passed",
+      "seconds": 0.021
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioModel",
+      "scenario": "test_valores_padrao_de_preferencias",
+      "status": "passed",
+      "seconds": 0.517
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioModel",
+      "scenario": "test_usuario_comum_nao_tem_permissoes_administrativas",
+      "status": "passed",
+      "seconds": 0.294
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioModel",
+      "scenario": "test_str_retorna_nome",
+      "status": "passed",
+      "seconds": 0.314
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioPerfilAPI",
+      "scenario": "test_get_perfil_sem_parametro_nome_retorna_400",
+      "status": "passed",
+      "seconds": 0.543
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioPerfilAPI",
+      "scenario": "test_get_perfil_usuario_inexistente_retorna_404",
+      "status": "passed",
+      "seconds": 0.788
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioPerfilAPI",
+      "scenario": "test_get_perfil_usuario_existente",
+      "status": "passed",
+      "seconds": 0.389
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioPerfilAPI",
+      "scenario": "test_put_perfil_atualiza_nome_completo",
+      "status": "passed",
+      "seconds": 0.492
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioSenhaAPI",
+      "scenario": "test_alterar_senha_sem_nome_retorna_400",
+      "status": "passed",
+      "seconds": 0.368
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioSenhaAPI",
+      "scenario": "test_alterar_senha_usuario_inexistente_retorna_404",
+      "status": "passed",
+      "seconds": 0.337
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioSenhaAPI",
+      "scenario": "test_alterar_senha_atual_incorreta_retorna_403",
+      "status": "passed",
+      "seconds": 1.014
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioSenhaAPI",
+      "scenario": "test_alterar_senha_com_sucesso",
+      "status": "passed",
+      "seconds": 1.338
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioSenhaAPI",
+      "scenario": "test_alterar_senha_curta_retorna_400",
+      "status": "passed",
+      "seconds": 0.979
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioFotoAPI",
+      "scenario": "test_upload_foto_sem_campos_retorna_400",
+      "status": "passed",
+      "seconds": 0.479
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioFotoAPI",
+      "scenario": "test_upload_foto_usuario_inexistente_retorna_404",
+      "status": "passed",
+      "seconds": 0.428
+    },
+    {
+      "module": "usuarios.usuarios_tests.TestUsuarioFotoAPI",
+      "scenario": "test_upload_foto_com_sucesso",
+      "status": "passed",
+      "seconds": 0.705
+    },
+    {
+      "module": "acessoja.test_backup_restore",
+      "scenario": "test_i05_postgresql_restore_checks_counts_media_suppression_and_synthetic_smoke",
+      "status": "skipped",
+      "seconds": 0.128,
+      "reason": "Requires actual PostgreSQL plus matching pg_dump/pg_restore; CI job provided."
+    },
+    {
+      "module": "contribuicoes.test_activity_migration",
+      "scenario": "test_activity_metadata_migration_preserves_old_ledger_without_inventing_a_cause",
+      "status": "passed",
+      "seconds": 0.609
+    },
+    {
+      "module": "contribuicoes.test_contributions",
+      "scenario": "test_postgresql_concurrent_replay_awards_once",
+      "status": "skipped",
+      "seconds": 0.109,
+      "reason": "Row-lock concurrency must run on PostgreSQL, not SQLite."
+    },
+    {
+      "module": "contribuicoes.test_integrity_concurrency",
+      "scenario": "test_postgresql_concurrent_survey_completion_awards_once",
+      "status": "skipped",
+      "seconds": 0.143,
+      "reason": "Real row-lock concurrency requires PostgreSQL."
+    },
+    {
+      "module": "contribuicoes.test_integrity_concurrency",
+      "scenario": "test_postgresql_concurrent_stale_signal_and_deletion_keep_zero_balance",
+      "status": "skipped",
+      "seconds": 0.106,
+      "reason": "Real row-lock concurrency requires PostgreSQL."
+    },
+    {
+      "module": "contribuicoes.test_integrity_concurrency",
+      "scenario": "test_postgresql_concurrent_summary_reads_keep_counts_and_points_consistent",
+      "status": "skipped",
+      "seconds": 0.103,
+      "reason": "Real row-lock concurrency requires PostgreSQL."
+    },
+    {
+      "module": "contribuicoes.test_migrations",
+      "scenario": "test_historical_duplicates_are_preserved_without_points_or_fake_admins",
+      "status": "passed",
+      "seconds": 15.432
+    },
+    {
+      "module": "evidencias.test_integrity",
+      "scenario": "test_backfill_distinguishes_reviews_and_preserves_unknown_observation_dates",
+      "status": "passed",
+      "seconds": 13.247
+    },
+    {
+      "module": "evidencias.test_postgresql",
+      "scenario": "test_postgresql_concurrent_duplicate_reports_have_one_real_protocol",
+      "status": "skipped",
+      "seconds": 0.001,
+      "reason": "requires independent PostgreSQL locks"
+    },
+    {
+      "module": "evidencias.test_postgresql",
+      "scenario": "test_postgresql_concurrent_moderators_get_one_effect_and_a_conflict",
+      "status": "skipped",
+      "seconds": 0.0,
+      "reason": "requires independent PostgreSQL locks"
+    },
+    {
+      "module": "evidencias.test_postgresql",
+      "scenario": "test_postgresql_concurrent_author_edit_and_decision_keep_revision_binding",
+      "status": "skipped",
+      "seconds": 0.0,
+      "reason": "requires independent PostgreSQL locks"
+    },
+    {
+      "module": "evidencias.test_postgresql",
+      "scenario": "test_postgresql_concurrent_account_deletion_does_not_deadlock_moderation",
+      "status": "skipped",
+      "seconds": 0.0,
+      "reason": "requires independent PostgreSQL locks"
+    },
+    {
+      "module": "evidencias.test_postgresql",
+      "scenario": "test_postgresql_concurrent_confirmation_is_one_event_without_points",
+      "status": "skipped",
+      "seconds": 0.0,
+      "reason": "requires independent PostgreSQL locks"
+    },
+    {
+      "module": "evidencias.test_postgresql",
+      "scenario": "test_postgresql_concurrent_same_operation_returns_identical_decision",
+      "status": "skipped",
+      "seconds": 0.001,
+      "reason": "requires independent PostgreSQL locks"
+    },
+    {
+      "module": "evidencias.test_postgresql",
+      "scenario": "test_postgresql_concurrent_osm_channels_share_lock_and_denial",
+      "status": "skipped",
+      "seconds": 0.001,
+      "reason": "requires independent PostgreSQL locks"
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_postgresql_concurrent_favorite_create_is_idempotent",
+      "status": "skipped",
+      "seconds": 0.113,
+      "reason": "Concurrency requires PostgreSQL row locks, not SQLite"
+    },
+    {
+      "module": "favoritos.test_favorites",
+      "scenario": "test_additive_migration_preserves_existing_domain_data",
+      "status": "passed",
+      "seconds": 3.81
+    },
+    {
+      "module": "locais.test_accessibility_api",
+      "scenario": "test_new_migrations_preserve_raw_flags_review_authors_dates_and_empty_preferences",
+      "status": "passed",
+      "seconds": 13.856
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_postgresql_concurrent_catalog_confirmation",
+      "status": "skipped",
+      "seconds": 0.158,
+      "reason": "Requires real PostgreSQL row locks"
+    },
+    {
+      "module": "locais.test_catalog",
+      "scenario": "test_postgresql_concurrent_catalog_publishers",
+      "status": "skipped",
+      "seconds": 0.12,
+      "reason": "Requires real PostgreSQL independent connections"
+    },
+    {
+      "module": "locais.test_catalog_seed_demo",
+      "scenario": "test_export_public_catalog_only_source_data_and_idempotent_restore",
+      "status": "passed",
+      "seconds": 0.189
+    },
+    {
+      "module": "locais.test_catalog_seed_demo",
+      "scenario": "test_catalog_seed_rejects_existing_active_batch",
+      "status": "passed",
+      "seconds": 0.159
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_postgresql_concurrent_manual_registration",
+      "status": "skipped",
+      "seconds": 0.127,
+      "reason": "Requires actual independent PostgreSQL connections"
+    },
+    {
+      "module": "locais.test_discovery_cards",
+      "scenario": "test_manual_migration_preserves_existing_domains",
+      "status": "passed",
+      "seconds": 7.528
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_migration_preserves_previous_records_and_evaluations",
+      "status": "passed",
+      "seconds": 13.369
+    },
+    {
+      "module": "midia.test_postgresql",
+      "scenario": "test_postgresql_concurrent_media_quota_is_enforced_under_upload_reservations",
+      "status": "skipped",
+      "seconds": 0.001,
+      "reason": "requires independent PostgreSQL image transactions"
+    },
+    {
+      "module": "midia.test_postgresql",
+      "scenario": "test_postgresql_concurrent_avatar_versions_never_overwrite_newer_state",
+      "status": "skipped",
+      "seconds": 0.001,
+      "reason": "requires independent PostgreSQL image transactions"
+    },
+    {
+      "module": "midia.test_postgresql",
+      "scenario": "test_postgresql_concurrent_photo_moderation_is_versioned_and_idempotent",
+      "status": "skipped",
+      "seconds": 0.001,
+      "reason": "requires independent PostgreSQL image transactions"
+    },
+    {
+      "module": "modal_avaliacao.test_versioned_questionnaire",
+      "scenario": "test_migration_preserves_raw_history",
+      "status": "passed",
+      "seconds": 12.2
+    },
+    {
+      "module": "usuarios.test_account_security",
+      "scenario": "test_r08_postgresql_concurrent_reset_accepts_only_one_confirmation",
+      "status": "skipped",
+      "seconds": 0.329,
+      "reason": "Real PostgreSQL row locks required; SQLite is not concurrency evidence."
+    },
+    {
+      "module": "usuarios.test_personal_data",
+      "scenario": "test_p08_postgresql_concurrent_deletion_is_atomic_and_repeatable",
+      "status": "skipped",
+      "seconds": 1.763,
+      "reason": "Requires real PostgreSQL row locks."
+    },
+    {
+      "module": "usuarios.test_privacy_migration",
+      "scenario": "test_p02_existing_users_get_distinct_privacy_ids_without_invented_consent",
+      "status": "passed",
+      "seconds": 15.497
+    },
+    {
+      "module": "acessoja.test_backup_restore",
+      "scenario": "test_backup_hash_age_version_and_fingerprint_are_required",
+      "status": "passed",
+      "seconds": 0.381
+    },
+    {
+      "module": "acessoja.test_backup_restore",
+      "scenario": "test_postgres_secrets_use_environment_never_arguments",
+      "status": "passed",
+      "seconds": 0.007
+    },
+    {
+      "module": "acessoja.test_backup_restore",
+      "scenario": "test_media_roundtrip_and_rejects_links_and_traversal",
+      "status": "passed",
+      "seconds": 0.019
+    },
+    {
+      "module": "acessoja.test_backup_restore",
+      "scenario": "test_probe_observes_actual_http_failure_and_recovery_without_data",
+      "status": "passed",
+      "seconds": 0.534
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_staging_restricts_authentication_hosts_origins_cookies_and_logs",
+      "status": "passed",
+      "seconds": 0.05
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[APP_ENV-production]",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[FRONTEND_PUBLIC_ORIGIN-http://example.test]",
+      "status": "passed",
+      "seconds": 0.011
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[FRONTEND_PUBLIC_ORIGIN-https://user:password@example.test]",
+      "status": "passed",
+      "seconds": 0.024
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[EMAIL_USE_SSL-True]",
+      "status": "passed",
+      "seconds": 0.038
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[EMAIL_USE_TLS-False]",
+      "status": "passed",
+      "seconds": 0.015
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[EMAIL_TIMEOUT-0]",
+      "status": "passed",
+      "seconds": 0.011
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[PASSWORD_RESET_TIMEOUT-1]",
+      "status": "passed",
+      "seconds": 0.043
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[TRUSTED_PROXY_CIDRS-0.0.0.0/0]",
+      "status": "passed",
+      "seconds": 0.011
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[TRUSTED_PROXY_CIDRS-invalid]",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[DELETION_JOURNAL_DIR-]",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[SECURE_LOG_DIR-]",
+      "status": "passed",
+      "seconds": 0.011
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[CSRF_TRUSTED_ORIGINS-*]",
+      "status": "passed",
+      "seconds": 0.053
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[PRIVACY_CONTACT_EMAIL-]",
+      "status": "passed",
+      "seconds": 0.017
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_staging_environment_aborts_startup[PASSWORD_RESET_CONFIRM_URL-https://attacker.test/{token}]",
+      "status": "passed",
+      "seconds": 0.012
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_critical_base_setting_aborts[DEBUG-True]",
+      "status": "passed",
+      "seconds": 0.061
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_critical_base_setting_aborts[SECRET_KEY-weak]",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_critical_base_setting_aborts[ALLOWED_HOSTS-replacement2]",
+      "status": "passed",
+      "seconds": 0.012
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_critical_base_setting_aborts[CACHES-replacement3]",
+      "status": "passed",
+      "seconds": 0.012
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_critical_base_setting_aborts[DATABASES-replacement4]",
+      "status": "passed",
+      "seconds": 0.039
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i01_invalid_critical_base_setting_aborts[CORS_ALLOWED_ORIGINS-replacement5]",
+      "status": "passed",
+      "seconds": 0.015
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i02_forwarding_only_from_the_exact_proxy[203.0.113.4-https-False]",
+      "status": "passed",
+      "seconds": 0.007
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i02_forwarding_only_from_the_exact_proxy[10.85.0.10-https-True]",
+      "status": "passed",
+      "seconds": 0.009
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i02_forwarding_only_from_the_exact_proxy[10.85.0.10-https,http-False]",
+      "status": "passed",
+      "seconds": 0.009
+    },
+    {
+      "module": "acessoja.test_secure_staging",
+      "scenario": "test_i03_structured_logger_ignores_secret_canaries_and_exception_text",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_catalog_copy_cannot_mutate_authority",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_catalog_has_ten_unique_observable_resources",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_conflict_precedence_is_order_independent",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_divergence_cannot_be_positive",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_empty_information_is_unknown",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_explicit_observation_without_community",
+      "status": "passed",
+      "seconds": 0.008
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_filter_groups_lists_and_legacy_false_are_neutral",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_filters_reject_invalid_values",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_flutter_catalog_snapshot_matches",
+      "status": "passed",
+      "seconds": 0.008
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_four_codes_keep_distinct_meanings",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_information_validation_is_whole_object",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_invalid_archived_and_duplicate_reports_do_not_add_votes",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_legacy_questions_do_not_claim_parking_tables_or_dogs",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_merge_preserves_omission_and_clears_only_explicit_null",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_observed_date_requires_explicit_zoned_input",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_only_semantically_corresponding_osm_toilets_are_mapped",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_osm_conflict_excludes_canonical_place",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_osm_general_wheelchair_is_not_a_specific_resource",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_preferences_are_optional_validated_and_deduplicated",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_questionnaire_contract_is_preserved",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_registration_and_community_can_disagree",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_resource_filters_use_and",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_strict_and_incomplete_state_matrix",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_accessibility_core.AccessibilityCoreTests",
+      "scenario": "test_unknown_and_na_follow_existing_aggregation",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_catalog_seed_demo",
+      "scenario": "test_catalog_seed_rejects_modified_document",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_normalizes_osm_types_and_keeps_unknown_data[node]",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_normalizes_osm_types_and_keeps_unknown_data[way]",
+      "status": "passed",
+      "seconds": 0.002
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_normalizes_osm_types_and_keeps_unknown_data[relation]",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[None]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad1]",
+      "status": "passed",
+      "seconds": 0.028
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad2]",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad3]",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad4]",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad5]",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad6]",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad7]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad8]",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad9]",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad10]",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad11]",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad12]",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_elements_are_discarded[bad13]",
+      "status": "passed",
+      "seconds": 0.01
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_optional_data_is_not_invented",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_osm_accessibility_is_metadata_only",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_central_categories[tags0-restaurante]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_central_categories[tags1-cafeteria]",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_central_categories[tags2-supermercado]",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_central_categories[tags3-farmacia]",
+      "status": "passed",
+      "seconds": 0.009
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_central_categories[tags4-saude]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_central_categories[tags5-educacao]",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_central_categories[tags6-loja]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_central_categories[tags7-parque]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_central_categories[tags8-banco]",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_central_categories[tags9-publico]",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_central_categories[tags10-outros]",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_cache_avoids_repeated_calls_and_preserves_empty_result",
+      "status": "passed",
+      "seconds": 0.014
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_cache_expires_with_configured_ttl",
+      "status": "passed",
+      "seconds": 0.017
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_limits_results_deduplicates_object_ids_and_filters_radius",
+      "status": "passed",
+      "seconds": 0.014
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_category_query_uses_fixed_ql_and_filtered_response",
+      "status": "passed",
+      "seconds": 0.012
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_invalid_json_and_oversized_payload",
+      "status": "passed",
+      "seconds": 0.033
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_single_inflight_slot_and_cooldown",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_service_validates_non_http_callers[invalid0]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_service_validates_non_http_callers[invalid1]",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_service_validates_non_http_callers[invalid2]",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_service_validates_non_http_callers[invalid3]",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_service_validates_non_http_callers[invalid4]",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_configured_geocoder_is_cached_and_identifies_app",
+      "status": "passed",
+      "seconds": 0.017
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_reverse_geocode_and_invalid_coordinates",
+      "status": "passed",
+      "seconds": 0.017
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_geocoder[45]",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_geocoder[payload1]",
+      "status": "passed",
+      "seconds": 0.011
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_malformed_geocoder[payload2]",
+      "status": "passed",
+      "seconds": 0.011
+    },
+    {
+      "module": "locais.test_external_places",
+      "scenario": "test_whole_transfer_has_deadline",
+      "status": "passed",
+      "seconds": 0.012
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_coordinate_pair[0-0-True]",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_coordinate_pair[-90-180-True]",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_coordinate_pair[90--180-True]",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_coordinate_pair[None-0-False]",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_coordinate_pair[0-None-False]",
+      "status": "passed",
+      "seconds": 0.033
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_coordinate_pair[True-0-False]",
+      "status": "passed",
+      "seconds": 0.018
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_coordinate_pair[0-False-False]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_coordinate_pair[nan-0-False]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_coordinate_pair[0-inf-False]",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_coordinate_pair[90.1-0-False]",
+      "status": "passed",
+      "seconds": 0.008
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_coordinate_pair[0-180.1-False]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_retry_after_seconds_and_fail_closed[0-0-upstream]",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_retry_after_seconds_and_fail_closed[8640000-8640000-upstream]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_retry_after_seconds_and_fail_closed[not a date-15-application]",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_retry_after_seconds_and_fail_closed[None-15-application]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_retry_after_seconds_and_fail_closed[-1-15-application]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_retry_after_seconds_and_fail_closed[9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999-None-upstream]",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_retry_after_http_dates_past_and_long_future",
+      "status": "passed",
+      "seconds": 0.007
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_upstream_status_header_cooldown_and_no_early_second_call[429]",
+      "status": "passed",
+      "seconds": 0.009
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_upstream_status_header_cooldown_and_no_early_second_call[502]",
+      "status": "passed",
+      "seconds": 0.01
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_upstream_status_header_cooldown_and_no_early_second_call[503]",
+      "status": "passed",
+      "seconds": 0.016
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_upstream_status_header_cooldown_and_no_early_second_call[504]",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_transport_failure_is_distinct_from_http_and_sanitized[failure0-connect_timeout-connect-504]",
+      "status": "passed",
+      "seconds": 0.009
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_transport_failure_is_distinct_from_http_and_sanitized[failure1-read_timeout-read-504]",
+      "status": "passed",
+      "seconds": 0.009
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_transport_failure_is_distinct_from_http_and_sanitized[failure2-tls_failed-connect-503]",
+      "status": "passed",
+      "seconds": 0.007
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_transport_failure_is_distinct_from_http_and_sanitized[failure3-dns_failed-connect-503]",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_invalid_or_partial_is_not_empty_success_or_cached[payload0-None]",
+      "status": "passed",
+      "seconds": 0.012
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_invalid_or_partial_is_not_empty_success_or_cached[payload1-None]",
+      "status": "passed",
+      "seconds": 0.016
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_invalid_or_partial_is_not_empty_success_or_cached[payload2-None]",
+      "status": "passed",
+      "seconds": 0.044
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_invalid_or_partial_is_not_empty_success_or_cached[None-<html>private details</html>]",
+      "status": "passed",
+      "seconds": 0.017
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_invalid_or_partial_is_not_empty_success_or_cached[None-{bad json]",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_complete_empty_cache_metadata_expiry_and_exact_centres",
+      "status": "passed",
+      "seconds": 0.017
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_selector_union_covers_catalog_without_duplicating_shop",
+      "status": "passed",
+      "seconds": 0.011
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_cache_failure_prevents_provider_call",
+      "status": "passed",
+      "seconds": 0.014
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_owner_release_cannot_unlock_successor",
+      "status": "passed",
+      "seconds": 0.008
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_disabled_geocoder_command_and_private_compatible_configuration",
+      "status": "passed",
+      "seconds": 0.157
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_public_geocoder_never_calls_with_local_coordination[False]",
+      "status": "passed",
+      "seconds": 0.017
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_public_geocoder_never_calls_with_local_coordination[True]",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_required_shared_coordination_fails_closed",
+      "status": "passed",
+      "seconds": 0.027
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_invalid_budgets_fail_before_network[GEO_READ_TIMEOUT-nan]",
+      "status": "passed",
+      "seconds": 0.031
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_invalid_budgets_fail_before_network[GEO_TOTAL_TIMEOUT-31]",
+      "status": "passed",
+      "seconds": 0.027
+    },
+    {
+      "module": "locais.test_geographic_recovery",
+      "scenario": "test_invalid_budgets_fail_before_network[EXTERNAL_PLACES_MAX_AGE_SECONDS-100]",
+      "status": "passed",
+      "seconds": 0.019
+    },
+    {
+      "module": "locais.test_geographic_redis",
+      "scenario": "test_redis_independent_workers_one_lease_and_shared_long_cooldown",
+      "status": "passed",
+      "seconds": 16.21
+    },
+    {
+      "module": "locais.test_geographic_redis",
+      "scenario": "test_redis_lease_expiry_recovers_and_old_owner_cannot_release_new_owner",
+      "status": "passed",
+      "seconds": 0.053
+    },
+    {
+      "module": "locais.test_geographic_redis",
+      "scenario": "test_redis_nominatim_origin_budget_public_opt_in_and_coordination_failure",
+      "status": "passed",
+      "seconds": 0.015
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_all_four_answers_and_explicit_clear_are_accepted",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_archives_invalid_records_and_duplicate_people_are_excluded",
+      "status": "passed",
+      "seconds": 0.002
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_catalog_has_eight_stable_distinct_resources_and_four_groups",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_completeness_uses_codes_and_does_not_autofill_missing",
+      "status": "passed",
+      "seconds": 0.002
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_deterministic_states_and_all_counts",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_explicit_clear_removes_answer_and_date_without_replacing_by_unknown",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_invalid_roots_resources_types_and_codes_are_rejected",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_legacy_raw_answers_cannot_feed_current_indicators",
+      "status": "passed",
+      "seconds": 0.002
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_legacy_server_defaults_are_not_completed_by_comment_edit",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_missing_is_distinct_from_unknown_and_not_applicable",
+      "status": "passed",
+      "seconds": 0.002
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_partial_resource_write_preserves_answers_and_received_dates",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_recent_report_keeps_earlier_divergence_and_small_sample_notice",
+      "status": "passed",
+      "seconds": 0.002
+    },
+    {
+      "module": "modal_avaliacao.test_questionnaire_core.QuestionnaireCoreTests",
+      "scenario": "test_unchanged_answer_or_comment_cannot_refresh_observation_date",
+      "status": "passed",
+      "seconds": 0.002
+    },
+    {
+      "module": "usuarios.test_security_redis",
+      "scenario": "test_real_redis_workers_share_identifier_budget_and_keys_contain_no_personal_data",
+      "status": "passed",
+      "seconds": 5.487
+    }
+  ],
+  "coverage_combined_after_tls_lab": {
+    "percent": 85.4468171237729,
+    "minimum": 80,
+    "lines-covered": 7024,
+    "lines-valid": 8009,
+    "branches-covered": 1419,
+    "branches-valid": 1872,
+    "commands": [
+      "coverage run --append scripts/verify_proxy_lab.py --caddy CADDY --report proxy_lab.json",
+      "coverage report --fail-under=80"
+    ],
+    "note": "Full pytest: 84.26%; additional real TLS/proxy lab covers operation script and verifies private route precedence."
+  }
+}
