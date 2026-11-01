@@ -25,31 +25,30 @@ import 'package:flutter_application_1/services/review_changes.dart';
 import 'map_sprint2_test.dart' as fixture;
 
 Map<String, dynamic> row(int id) => {
-      'catalog_id': id,
-      'external_id': 'osm:node:$id',
-      'source': 'openstreetmap',
-      'nome': 'Catálogo $id',
-      'endereco': 'Rua $id',
-      'latitude': -16.3267,
-      'longitude': -48.9528,
-      'categoria': 'cafeteria',
-      'categoria_label': 'Cafeterias',
-      'internal_id': null,
-      'source_snapshot_at': '2026-10-18T20:25:06Z',
-    };
+  'catalog_id': id,
+  'external_id': 'osm:node:$id',
+  'source': 'openstreetmap',
+  'nome': 'Catálogo $id',
+  'endereco': 'Rua $id',
+  'latitude': -16.3267,
+  'longitude': -48.9528,
+  'categoria': 'cafeteria',
+  'categoria_label': 'Cafeterias',
+  'internal_id': null,
+  'source_snapshot_at': '2026-10-18T20:25:06Z',
+};
 Map<String, dynamic> envelope(
   List<Map<String, dynamic>> rows, {
   String? next,
   String version = '1:batch',
-}) =>
-    {
-      'count': 40,
-      'next': next,
-      'results': rows,
-      'catalog_version': version,
-      'coverage_complete': false,
-      'available': true,
-    };
+}) => {
+  'count': 40,
+  'next': next,
+  'results': rows,
+  'catalog_version': version,
+  'coverage_complete': false,
+  'available': true,
+};
 
 class FakeCatalog extends PlacesService {
   Future<DiscoveryPage> Function(DiscoveryQuery, String?, String?)? answer;
@@ -58,150 +57,167 @@ class FakeCatalog extends PlacesService {
     required DiscoveryQuery query,
     String? next,
     String? version,
-  }) =>
-      answer!(query, next, version);
+  }) => answer!(query, next, version);
 }
 
 void main() {
   setUp(AppHttp.clearSession);
   tearDown(AppHttp.clearSession);
   testWidgets(
-      'open catalog detail refreshes canonical presentation after confirmation',
-      (tester) async {
-    var linked = false;
-    MapPlace? current;
-    final methods = <String>[];
-    AppHttp.client = MockClient((request) async {
-      methods.add(request.method);
-      return fixture.jsonResponse({
-        ...row(1),
-        if (linked) 'internal_id': 9,
-        if (linked)
-          'linked_local': {
-            'id_local': 9,
-            'nome': 'Nome corrigido',
-            'endereco': 'Rua comunitária',
-            'latitude': 0,
-            'longitude': 0,
-            'categoria': 'cafeteria'
-          }
+    'open catalog detail refreshes canonical presentation after confirmation',
+    (tester) async {
+      var linked = false;
+      MapPlace? current;
+      final methods = <String>[];
+      AppHttp.client = MockClient((request) async {
+        methods.add(request.method);
+        return fixture.jsonResponse({
+          ...row(1),
+          if (linked) 'internal_id': 9,
+          if (linked)
+            'linked_local': {
+              'id_local': 9,
+              'nome': 'Nome corrigido',
+              'endereco': 'Rua comunitária',
+              'latitude': 0,
+              'longitude': 0,
+              'categoria': 'cafeteria',
+            },
+        });
       });
-    });
-    await tester.pumpWidget(fixture.harness(MapPlaceDetailsScreen(
-        place: row(1),
-        distanceLabel: '—',
-        canReview: false,
-        onPlaceChanged: (place) => current = place)));
-    await tester.pumpAndSettle();
-    linked = true;
-    reviewChanges.value++;
-    await tester.pumpAndSettle();
-    expect(find.text('Nome corrigido'), findsOneWidget);
-    expect(current?.toMap()['latitude'], 0);
-    expect(current?.internalId, 9);
-    expect(methods, everyElement('GET'));
-    await tester.pumpWidget(const SizedBox());
-  });
+      await tester.pumpWidget(
+        fixture.harness(
+          MapPlaceDetailsScreen(
+            place: row(1),
+            distanceLabel: '—',
+            canReview: false,
+            onPlaceChanged: (place) => current = place,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      linked = true;
+      reviewChanges.value++;
+      await tester.pumpAndSettle();
+      expect(find.text('Nome corrigido'), findsOneWidget);
+      expect(current?.toMap()['latitude'], 0);
+      expect(current?.internalId, 9);
+      expect(methods, everyElement('GET'));
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
   testWidgets(
-      'guest login preserves draft and completes favorite after original button disposal',
-      (tester) async {
-    final favorites = FavoritesController();
-    addTearDown(favorites.dispose);
-    final writes = <String>[];
-    AppHttp.client = MockClient((request) async {
-      if (request.method == 'POST') {
-        writes.add(request.url.path);
-      }
-      if (request.url.path == '/api/login/') {
-        return fixture.jsonResponse({
-          'status': 'success',
-          'token': 'guest-token',
-          'user': {'id_usuario': 12, 'nome': 'guest'}
-        });
-      }
-      if (request.url.path.endsWith('/confirmar/')) {
-        expect(jsonDecode(request.body), {
-          'confirmed': true,
-          'nome': 'Rascunho editado',
-          'endereco': 'Rua revisada'
-        });
-        return fixture.jsonResponse({
-          'id_local': 9,
-          'nome': 'Rascunho editado',
-          'endereco': 'Rua revisada'
-        }, 201);
-      }
-      if (request.url.path == '/api/favoritos/estado/') {
-        return fixture.jsonResponse({
-          'results': [
-            {'local': 9, 'id': null, 'exists': true}
-          ]
-        });
-      }
-      if (request.url.path == '/api/favoritos/' && request.method == 'POST') {
-        return fixture.jsonResponse({
-          'id': 3,
-          'local': 9,
-          'criado_em': '2026-10-20T00:00:00Z',
-          'local_detalhes': {
+    'guest login preserves draft and completes favorite after original button disposal',
+    (tester) async {
+      final favorites = FavoritesController();
+      addTearDown(favorites.dispose);
+      final writes = <String>[];
+      AppHttp.client = MockClient((request) async {
+        if (request.method == 'POST') {
+          writes.add(request.url.path);
+        }
+        if (request.url.path == '/api/login/') {
+          return fixture.jsonResponse({
+            'status': 'success',
+            'token': 'guest-token',
+            'user': {'id_usuario': 12, 'nome': 'guest'},
+          });
+        }
+        if (request.url.path.endsWith('/confirmar/')) {
+          expect(jsonDecode(request.body), {
+            'confirmed': true,
+            'nome': 'Rascunho editado',
+            'endereco': 'Rua revisada',
+          });
+          return fixture.jsonResponse({
             'id_local': 9,
             'nome': 'Rascunho editado',
             'endereco': 'Rua revisada',
-            'public_rating': {'count': 0, 'average': null},
-            'own_review': null
-          }
-        }, 201);
-      }
-      return fixture.jsonResponse({});
-    });
-    await tester.pumpWidget(FavoritesScope(
-        controller: favorites,
-        child: fixture.harness(Scaffold(
-            body: ValueListenableBuilder<int>(
+          }, 201);
+        }
+        if (request.url.path == '/api/favoritos/estado/') {
+          return fixture.jsonResponse({
+            'results': [
+              {'local': 9, 'id': null, 'exists': true},
+            ],
+          });
+        }
+        if (request.url.path == '/api/favoritos/' && request.method == 'POST') {
+          return fixture.jsonResponse({
+            'id': 3,
+            'local': 9,
+            'criado_em': '2026-10-20T00:00:00Z',
+            'local_detalhes': {
+              'id_local': 9,
+              'nome': 'Rascunho editado',
+              'endereco': 'Rua revisada',
+              'public_rating': {'count': 0, 'average': null},
+              'own_review': null,
+            },
+          }, 201);
+        }
+        return fixture.jsonResponse({});
+      });
+      await tester.pumpWidget(
+        FavoritesScope(
+          controller: favorites,
+          child: fixture.harness(
+            Scaffold(
+              body: ValueListenableBuilder<int>(
                 valueListenable: AppHttp.sessionRevision,
                 builder: (_, __, ___) => AppHttp.authenticated
                     ? const Text('signed in')
-                    : FavoriteButton(place: row(1)))))));
-    await tester.tap(find.byType(FavoriteButton));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-        find.byType(TextFormField).at(0), 'Rascunho editado');
-    await tester.enterText(find.byType(TextFormField).at(1), 'Rua revisada');
-    await tester.tap(find.text('Entrar e continuar'));
-    await tester.pumpAndSettle();
-    expect(find.byType(LoginScreen), findsOneWidget);
-    await tester.enterText(find.byType(TextField).first, 'guest');
-    await tester.enterText(find.byType(TextField).last, 'password');
-    final login = find.widgetWithText(ElevatedButton, 'Entrar');
-    await tester.ensureVisible(login);
-    await tester.tap(login);
-    await tester.pumpAndSettle();
-    expect(find.byType(FavoriteButton), findsNothing);
-    expect(find.byType(ExternalPlaceRegistration), findsOneWidget);
-    expect(find.text('Rascunho editado'), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirmar cadastro'));
-    await tester.pumpAndSettle();
-    expect(writes, [
-      '/api/login/',
-      '/api/locais/catalogo/1/confirmar/',
-      '/api/favoritos/'
-    ]);
-    expect(favorites.saved(9), isTrue);
-    expect(find.byType(ExternalPlaceRegistration), findsNothing);
-    await tester.pumpWidget(const SizedBox());
-  });
+                    : FavoriteButton(place: row(1)),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byType(FavoriteButton));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextFormField).at(0),
+        'Rascunho editado',
+      );
+      await tester.enterText(find.byType(TextFormField).at(1), 'Rua revisada');
+      await tester.tap(find.text('Entrar e continuar'));
+      await tester.pumpAndSettle();
+      expect(find.byType(LoginScreen), findsOneWidget);
+      await tester.enterText(find.byType(TextField).first, 'guest');
+      await tester.enterText(find.byType(TextField).last, 'password');
+      final login = find.widgetWithText(ElevatedButton, 'Entrar');
+      await tester.ensureVisible(login);
+      await tester.tap(login);
+      await tester.pumpAndSettle();
+      expect(find.byType(FavoriteButton), findsNothing);
+      expect(find.byType(ExternalPlaceRegistration), findsOneWidget);
+      expect(find.text('Rascunho editado'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirmar cadastro'));
+      await tester.pumpAndSettle();
+      expect(writes, [
+        '/api/login/',
+        '/api/locais/catalogo/1/confirmar/',
+        '/api/favoritos/',
+      ]);
+      expect(favorites.saved(9), isTrue);
+      expect(find.byType(ExternalPlaceRegistration), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
   test(
     'catalog page binds query origin and version and rejects foreign links',
     () async {
       final query = DiscoveryQuery(search: 'Café');
       final endpoint = Uri.parse('${Config.baseUrl}/api/locais/catalogo/');
-      final next = endpoint.replace(
-        queryParameters: {
-          ...query.parameters,
-          'page': '2',
-          'catalog_version': '1:batch',
-        },
-      ).toString();
+      final next = endpoint
+          .replace(
+            queryParameters: {
+              ...query.parameters,
+              'page': '2',
+              'catalog_version': '1:batch',
+            },
+          )
+          .toString();
       AppHttp.client = MockClient(
         (request) async => fixture.jsonResponse(envelope([row(1)], next: next)),
       );
@@ -235,14 +251,16 @@ void main() {
         ),
         throwsFormatException,
       );
-      AppHttp.client = MockClient((_) async => fixture.jsonResponse({
-            'count': 0,
-            'results': [],
-            'next': null,
-            'catalog_version': '0:None',
-            'available': false,
-            'coverage_complete': false,
-          }));
+      AppHttp.client = MockClient(
+        (_) async => fixture.jsonResponse({
+          'count': 0,
+          'results': [],
+          'next': null,
+          'catalog_version': '0:None',
+          'available': false,
+          'coverage_complete': false,
+        }),
+      );
       expect((await service.fetchCatalogPage(query: query)).available, isFalse);
     },
   );
@@ -405,39 +423,46 @@ void main() {
       expect(local['id_local'], 9);
     },
   );
-  test('load remaining catalog pages keeps stable version and loaded IDs', () async {
-    final catalog = FakeCatalog();
-    final seen = <String?>[];
-    catalog.answer = (query, next, version) async {
-      seen.add(next);
-      final uri = Uri.parse('${Config.baseUrl}/api/locais/catalogo/');
-      final nextPage = seen.length < 3
-          ? uri.replace(queryParameters: {
-              ...query.parameters,
-              'page': '${seen.length + 1}',
-              'catalog_version': '1:batch',
-            }).toString()
-          : null;
-      return DiscoveryPage(
-        [MapPlace.external(row(seen.length))],
-        nextPage,
-        3,
-        catalogVersion: '1:batch',
-        complete: false,
-        available: true,
-      );
-    };
-    final controller = DiscoveryController(service: catalog, catalog: true);
-    addTearDown(controller.dispose);
-    await controller.load();
-    expect(controller.places.length, 1);
-    await controller.loadRemaining();
-    expect(controller.places.map((p) => p.catalogId).toList(), [1, 2, 3]);
-    expect(controller.count, 3);
-    expect(controller.next, isNull);
-    expect(controller.loadingRemaining, isFalse);
-    expect(seen.length, 3);
-  });
+  test(
+    'load remaining catalog pages keeps stable version and loaded IDs',
+    () async {
+      final catalog = FakeCatalog();
+      final seen = <String?>[];
+      catalog.answer = (query, next, version) async {
+        seen.add(next);
+        final uri = Uri.parse('${Config.baseUrl}/api/locais/catalogo/');
+        final nextPage = seen.length < 3
+            ? uri
+                  .replace(
+                    queryParameters: {
+                      ...query.parameters,
+                      'page': '${seen.length + 1}',
+                      'catalog_version': '1:batch',
+                    },
+                  )
+                  .toString()
+            : null;
+        return DiscoveryPage(
+          [MapPlace.external(row(seen.length))],
+          nextPage,
+          3,
+          catalogVersion: '1:batch',
+          complete: false,
+          available: true,
+        );
+      };
+      final controller = DiscoveryController(service: catalog, catalog: true);
+      addTearDown(controller.dispose);
+      await controller.load();
+      expect(controller.places.length, 1);
+      await controller.loadRemaining();
+      expect(controller.places.map((p) => p.catalogId).toList(), [1, 2, 3]);
+      expect(controller.count, 3);
+      expect(controller.next, isNull);
+      expect(controller.loadingRemaining, isFalse);
+      expect(seen.length, 3);
+    },
+  );
   test(
     'preview old account response cannot reintroduce private Local detail',
     () async {
@@ -453,7 +478,9 @@ void main() {
         'linked_local': {'id_local': 9, 'nome': 'old account'},
       });
       await request;
-      expect(preview.place, isNull);
+      expect(preview.place!.linkedLocal, isEmpty);
+      expect(preview.place!.name, isNot('old account'));
+      expect(preview.place!.data.containsKey('linked_local'), isFalse);
     },
   );
   testWidgets(
@@ -501,10 +528,7 @@ void main() {
               size: Size(320, 640),
               textScaler: TextScaler.linear(2),
             ),
-            child: ExplorarScreen(
-              userName: '',
-              currentLocation: LatLng(0, 0),
-            ),
+            child: ExplorarScreen(userName: '', currentLocation: LatLng(0, 0)),
           ),
         ),
       );

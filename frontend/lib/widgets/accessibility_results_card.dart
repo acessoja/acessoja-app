@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import '../screens/evidence_details_screen.dart';
+
 import '../models/evidence.dart';
-import 'feature_provenance.dart';
+import 'resource_information_list.dart';
 import '../models/accessibility_survey.dart';
-import '../models/accessibility_catalog.dart';
 import '../services/contribution_service.dart';
 import '../services/app_http.dart';
 
@@ -14,13 +13,16 @@ class AccessibilityResultsCard extends StatefulWidget {
   final Map<String, dynamic> registeredData;
   final ContributionService service;
   final VoidCallback? onViewReviews;
-  const AccessibilityResultsCard(
-      {super.key,
-      required this.localId,
-      this.revision = 0,
-      this.registeredData = const {},
-      this.service = const ContributionService(),
-      this.onViewReviews});
+  final void Function(String, Map<String, dynamic>)? onResourceProjection;
+  const AccessibilityResultsCard({
+    super.key,
+    required this.localId,
+    this.revision = 0,
+    this.registeredData = const {},
+    this.service = const ContributionService(),
+    this.onViewReviews,
+    this.onResourceProjection,
+  });
   @override
   State<AccessibilityResultsCard> createState() =>
       _AccessibilityResultsCardState();
@@ -28,6 +30,7 @@ class AccessibilityResultsCard extends StatefulWidget {
 
 class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
   AccessibilityResults? _results;
+  final _overrides = <String, dynamic>{};
   bool _loading = true, _failed = false;
   int _generation = 0;
   @override
@@ -42,7 +45,10 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.localId != widget.localId ||
         oldWidget.revision != widget.revision) {
-      _results = null;
+      _overrides.clear();
+      if (oldWidget.localId != widget.localId) {
+        _results = null;
+      }
       _load();
     }
   }
@@ -50,6 +56,7 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
   void _sessionChanged() {
     _generation++;
     _results = null;
+    _overrides.clear();
     _load();
   }
 
@@ -83,166 +90,125 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
     }
   }
 
-  String _state(BuildContext context, String code) => switch (code) {
-        'presence_reported' =>
-          surveyText(context, 'Presença relatada', 'Presence reported'),
-        'absence_reported' =>
-          surveyText(context, 'Ausência relatada', 'Absence reported'),
-        'divergent' =>
-          surveyText(context, 'Relatos divergentes', 'Conflicting reports'),
-        'unconfirmed' =>
-          surveyText(context, 'Ainda não confirmado', 'Not confirmed yet'),
-        'not_applicable' => surveyText(
-            context, 'Informado como não aplicável', 'Reported not applicable'),
-        'unknown' =>
-          surveyText(context, 'Informação desconhecida', 'Unknown information'),
-        _ => surveyText(context, 'Ainda não avaliado', 'Not evaluated yet'),
-      };
   @override
   Widget build(BuildContext context) {
-    final information = _results?.information.isNotEmpty == true
+    final raw = _results?.information.isNotEmpty == true
         ? _results!.information
         : widget.registeredData['accessibility'] ??
-            widget.registeredData['accessibility_information'];
+              widget.registeredData['accessibility_information'];
     return Card(
-        child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+      semanticContainer: false,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              surveyText(
+                context,
+                'Recursos: relatos da comunidade',
+                'Features: community reports',
+              ),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            if (_loading)
+              Text(
+                surveyText(
+                  context,
+                  'Carregando resultados por recurso…',
+                  'Loading feature results…',
+                ),
+              ),
+            if (_failed) ...[
+              Text(
+                surveyText(
+                  context,
+                  'Não foi possível carregar os resultados. Isso não indica ausência de avaliações.',
+                  'Unable to load results. This does not mean there are no reviews.',
+                ),
+              ),
+              OutlinedButton(
+                key: const ValueKey('resource-results-retry'),
+                onPressed: _load,
+                child: Text(
+                  surveyText(context, 'Tentar novamente', 'Try again'),
+                ),
+              ),
+            ],
+            ResourceInformationList(
+              information: {...evidenceMap(raw), ..._overrides},
+              results: _results?.resources ?? const [],
+              localId: widget.localId,
+              onChanged: _load,
+              onProjection: (id, value) {
+                if (!mounted) {
+                  return;
+                }
+                setState(() => _overrides[id] = value);
+                widget.onResourceProjection?.call(id, value);
+              },
+            ),
+            if ((_results?.legacy ?? 0) > 0)
+              ExpansionTile(
+                title: Text(
+                  surveyText(
+                    context,
+                    'Informações históricas',
+                    'Historical information',
+                  ),
+                ),
                 children: [
                   Text(
-                      surveyText(context, 'Recursos: relatos da comunidade',
-                          'Features: community reports'),
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text(surveyText(
+                    surveyText(
                       context,
-                      'As estrelas são uma nota geral. Os relatos abaixo não certificam acessibilidade.',
-                      'Stars are a general rating. The reports below do not certify accessibility.')),
-                  if (_loading)
-                    Semantics(
-                        liveRegion: true,
-                        child: Text(surveyText(
-                            context,
-                            'Carregando resultados por recurso…',
-                            'Loading feature results…'))),
-                  if (_failed) ...[
-                    Semantics(
-                        liveRegion: true,
-                        child: Text(surveyText(
-                            context,
-                            'Não foi possível carregar os resultados. Isso não indica ausência de avaliações.',
-                            'Unable to load results. This does not mean there are no reviews.'))),
-                    OutlinedButton(
-                        key: const ValueKey('resource-results-retry'),
-                        onPressed: _load,
-                        child: Text(surveyText(
-                            context, 'Tentar novamente', 'Try again'))),
-                  ],
-                  if (_results != null && !_failed) ...[
-                    if (_results!.legacy > 0)
-                      Text(surveyText(
-                          context,
-                          '${_results!.legacy} registro(s) legado(s) não comparáveis aos recursos atuais.',
-                          '${_results!.legacy} legacy record(s) cannot be compared with current features.')),
-                    for (final resource in _results!.resources) ...[
-                      const Divider(),
+                      '${_results!.legacy} registro(s) legado(s) não comparáveis aos recursos atuais.',
+                      '${_results!.legacy} legacy record(s) cannot be compared with current features.',
+                    ),
+                  ),
+                ],
+              ),
+            if (widget.registeredData.entries.any(
+              (e) =>
+                  [
+                    'rampa_acesso',
+                    'banheiro_acessivel',
+                    'mesa_acessivel',
+                    'cardapio_braille',
+                    'cao_guia',
+                  ].contains(e.key) &&
+                  e.value == true,
+            ))
+              ExpansionTile(
+                title: Text(
+                  surveyText(
+                    context,
+                    'Informações do cadastro (origem histórica não verificada)',
+                    'Registration information (historical source not verified)',
+                  ),
+                ),
+                children: [
+                  for (final q in SurveyContract.questions)
+                    if (widget.registeredData[q.id] == true)
                       Text(
-                          SurveyContract.questions
-                              .firstWhere((q) => q.id == resource.id)
-                              .name(context),
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                      Text(SurveyContract.questions
-                          .firstWhere((q) => q.id == resource.id)
-                          .description(context)),
-                      Text(_state(context, resource.state),
-                          key: ValueKey('resource-state-${resource.id}')),
-                      FeatureProvenance(
-                          information: evidenceMap(information is Map
-                              ? information[resource.id]
-                              : null)),
-                      TextButton(
-                          onPressed: () async {
-                            await Navigator.push(
-                                context,
-                                MaterialPageRoute<void>(
-                                    builder: (_) => EvidenceDetailsScreen(
-                                        localId: widget.localId,
-                                        resource: resource.id)));
-                            if (mounted) {
-                              await _load();
-                            }
-                          },
-                          child: Text(surveyText(context, 'Ver fontes e datas',
-                              'View sources and dates'))),
-                      for (final code in surveyCodes)
-                        Text(
-                            '${SurveyContract.answer(context, code)}: ${resource.counts[code]}'),
-                      if (resource.unanswered > 0)
-                        Text(surveyText(
-                            context,
-                            'Sem resposta: ${resource.unanswered}',
-                            'Unanswered: ${resource.unanswered}')),
-                      if (resource.few)
-                        Text(surveyText(
-                            context, 'Poucas avaliações', 'Few reviews')),
-                      if (resource.latest != null)
-                        Text(surveyText(context, 'Última resposta recebida: ',
-                                'Latest response received: ') +
-                            MaterialLocalizations.of(context)
-                                .formatShortDate(resource.latest!.toLocal())),
-                    ],
-                  ],
-                  if (information is Map && information.isNotEmpty) ...[
-                    const Divider(),
-                    Text(
-                        surveyText(
-                            context, 'Fontes dos recursos', 'Feature sources'),
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    for (final resource in AccessibilityCatalog.resources)
-                      if (information[resource.id] is Map) ...[
-                        const SizedBox(height: 8),
-                        Text(resource.name(context),
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        Text(resource.description(context)),
-                        Text(_state(context,
-                            information[resource.id]['state'].toString())),
-                        if (information[resource.id]['note'] is String &&
-                            information[resource.id]['note'].isNotEmpty)
-                          Text(information[resource.id]['note'] as String),
-                        FeatureProvenance(
-                            information: evidenceMap(information[resource.id]),
-                            compact: false),
-                      ],
-                  ],
-                  if (widget.registeredData.entries.any((entry) =>
-                      [
-                        'rampa_acesso',
-                        'banheiro_acessivel',
-                        'mesa_acessivel',
-                        'cardapio_braille',
-                        'cao_guia'
-                      ].contains(entry.key) &&
-                      entry.value == true)) ...[
-                    const Divider(),
-                    Text(surveyText(
-                        context,
-                        'Informações do cadastro (origem histórica não verificada)',
-                        'Registration information (historical source not verified)')),
-                    for (final q in SurveyContract.questions)
-                      if (widget.registeredData[q.id] == true)
-                        Text(
-                            '${q.name(context)}: ${surveyText(context, 'informado no cadastro', 'reported in registration')}'),
-                  ],
-                  if (widget.onViewReviews != null)
-                    OutlinedButton(
-                        key: const ValueKey('resource-view-reviews'),
-                        onPressed: widget.onViewReviews,
-                        child: Text(surveyText(
-                            context,
-                            'Consultar respostas e histórico',
-                            'View answers and history'))),
-                ])));
+                        '${q.name(context)}: ${surveyText(context, 'informado no cadastro', 'reported in registration')}',
+                      ),
+                ],
+              ),
+            if (widget.onViewReviews != null)
+              OutlinedButton(
+                key: const ValueKey('resource-view-reviews'),
+                onPressed: widget.onViewReviews,
+                child: Text(
+                  surveyText(
+                    context,
+                    'Consultar respostas e histórico',
+                    'View answers and history',
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }

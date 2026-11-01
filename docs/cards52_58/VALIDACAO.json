@@ -1,0 +1,110 @@
+{
+  "date": "2026-10-31",
+  "repository": "https://github.com/acessoja/acessoja-app",
+  "base_commit": "2d3fdd2c7fcc33fb0de3b9a120787173d372a154",
+  "status": "IMPLEMENTADO_VALIDADO_LOCALMENTE_HOMOLOGACAO_PARCIAL",
+  "sdk": {
+    "flutter": "3.47.4",
+    "dart": "3.13.3",
+    "flutter_map": "6.2.1",
+    "dependencies_changed": false
+  },
+  "frontend": {
+    "analyze": "No issues found",
+    "test": {
+      "passed": 965,
+      "all_passed": true
+    },
+    "web_build": "passed; release dart2js/CanvasKit; Wasm dry run also succeeded",
+    "android_apk": "not run; no Android SDK/device; user prefers browser"
+  },
+  "backend": {
+    "passed": 695,
+    "skipped": 29,
+    "subtests_passed": 21,
+    "coverage_percent": 84.17,
+    "coverage_gate_percent": 80,
+    "new_public_summary_tests_passed": 3,
+    "database": "SQLite test database",
+    "flake8": "passed",
+    "django_check": "passed",
+    "migration_check": "no changes",
+    "openapi_fail_on_warn": "passed",
+    "pip_check": "passed"
+  },
+  "browser": {
+    "version": "151.0.7922.34",
+    "platform": "Linux, headless Chrome for Testing",
+    "desktop": [
+      1280,
+      900
+    ],
+    "mobile": "390x844 emulation; not real mobile hardware",
+    "passed_steps": 15,
+    "screenshots": 14,
+    "page_errors": [],
+    "writes": "Only synthetic login POST; no content mutation",
+    "backend": "Real Django, disposable SQLite, real private image derivatives",
+    "input": "DOM semantic actions, Escape/Tab, pointer/scroll; no human AT"
+  },
+  "performance": {
+    "volumes": [
+      5,
+      50,
+      500
+    ],
+    "baseline_is_original_main": true,
+    "vm": "debug/JIT: 30 warmups, 80 layouts, 20 selection pumps",
+    "web": "release/CanvasKit: 3 alternating rounds, 80 layouts, 40 selection frames",
+    "network_attempts": 0,
+    "physical_gpu_frame_measurement": false,
+    "limitations": "RAF interval is harness scheduling; shared-host timing is observational"
+  },
+  "pending": [
+    "Physical Android/TalkBack/touch/rotation",
+    "Human screen reader validation",
+    "Real mobile Chrome",
+    "Contrast over varied public tiles on hardware",
+    "PostgreSQL/Redis concurrency jobs and remote CI",
+    "Conditional Qualquer/Priorizar modes absent from base; CT-45/46 dependency"
+  ],
+  "external_writes": {
+    "trello_mutated": false,
+    "commit": false,
+    "push": false,
+    "pull_request": false,
+    "merge": false,
+    "deployment": false
+  },
+  "installer": {
+    "passed": 7,
+    "cases": [
+      "dry run / full apply / backups / idempotency",
+      "CRLF preservation",
+      "divergent work protection",
+      "tampered payload",
+      "path traversal",
+      "symlink redirection",
+      "rollback after an interrupted write"
+    ]
+  },
+  "recovery": {
+    "reason": "Temporary workspace maintenance removed runtime and unsaved final execution logs.",
+    "code_recovered_from": "Canonical package version 1; every payload hash verified before resuming.",
+    "source_archive_sha256": "d42b25fd395c1ef6397eff0bcd5033e74cac59a856565d721f192b43d3fa93c2",
+    "reexecuted": [
+      "Flutter version",
+      "offline pub with enforced lockfile",
+      "flutter analyze",
+      "complete flutter test suite",
+      "seven installer filesystem checks"
+    ],
+    "retained_verified_evidence": [
+      "pytest/coverage, lint/schema/migrations/pip logs",
+      "actual compiled Flutter web build and Chrome lab",
+      "14 requested synthetic screenshots",
+      "before/after benchmark raw data"
+    ],
+    "dependencies_upgraded": false
+  }
+}

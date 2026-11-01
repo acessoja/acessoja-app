@@ -1,0 +1,44 @@
+{
+  "mode": "flutter test debug/JIT; no physical GPU raster measurement",
+  "sdk": "Flutter 3.47.4 / Dart 3.13.3",
+  "network_guard": "HttpOverrides throws/counts every HttpClient creation",
+  "samples": [
+    {
+      "places": 5,
+      "layout_repetitions": 80,
+      "layout_median_us": 103,
+      "layout_p95_us": 265,
+      "layout_min_us": 60,
+      "layout_max_us": 736,
+      "selection_frames": 20,
+      "marker_parent_rebuilds": 20,
+      "pump_median_us": 7370,
+      "pump_p95_us": 25227
+    },
+    {
+      "places": 50,
+      "layout_repetitions": 80,
+      "layout_median_us": 246,
+      "layout_p95_us": 678,
+      "layout_min_us": 190,
+      "layout_max_us": 1785,
+      "selection_frames": 20,
+      "marker_parent_rebuilds": 20,
+      "pump_median_us": 12904,
+      "pump_p95_us": 21670
+    },
+    {
+      "places": 500,
+      "layout_repetitions": 80,
+      "layout_median_us": 2078,
+      "layout_p95_us": 3429,
+      "layout_min_us": 1885,
+      "layout_max_us": 7043,
+      "selection_frames": 20,
+      "marker_parent_rebuilds": 20,
+      "pump_median_us": 31111,
+      "pump_p95_us": 44206
+    }
+  ],
+  "network_client_attempts": 0
+}

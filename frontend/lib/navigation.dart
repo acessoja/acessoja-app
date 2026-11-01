@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'services/app_http.dart';
+
 import 'dart:async';
 
 /// A route request is passed back through intermediate screens to the map.
@@ -29,7 +31,10 @@ void logOut(BuildContext context) {
 /// Only an explicit Saved Places action can request a route through Settings.
 class PlaceRouteRequest {
   final Map<String, dynamic> place;
-  PlaceRouteRequest(Map<String, dynamic> value)
-      : place = Map.unmodifiable(routePlace(value) ??
-            (throw const FormatException('Invalid route coordinates')));
+  final Map<String, dynamic>? returnContext;
+  PlaceRouteRequest(Map<String, dynamic> value, {this.returnContext})
+    : place = Map.unmodifiable(
+        routePlace(value) ??
+            (throw const FormatException('Invalid route coordinates')),
+      );
 }

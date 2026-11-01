@@ -1,0 +1,158 @@
+{
+  "started_at": "2026-10-31T22:38:09.893414+00:00",
+  "status": "passed",
+  "scope": "Actual main.dart.js release + Django API + SQLite/private image storage; synthetic data",
+  "input": "Playwright pointer and semantic actions, Escape/Tab; mobile viewport emulation",
+  "excluded": [
+    "Physical Android/TalkBack",
+    "Human screen reader",
+    "Real mobile browser",
+    "External tiles and routing providers",
+    "PostgreSQL/Redis"
+  ],
+  "steps": [
+    {
+      "name": "Real login and map loaded",
+      "status": "passed",
+      "screenshot": "01_mapa_desktop.png"
+    },
+    {
+      "name": "CT-09 CT-17 selection opens one compact persistent panel",
+      "status": "passed",
+      "screenshot": "02_painel_compacto.png"
+    },
+    {
+      "name": "CT-10 expanded accessibility surface",
+      "status": "passed",
+      "screenshot": "03_painel_expandido.png"
+    },
+    {
+      "name": "CT-05 CT-06 genuine source details route",
+      "status": "passed",
+      "screenshot": "04_fontes.png"
+    },
+    {
+      "name": "CT-22 real approved media only",
+      "status": "passed",
+      "screenshot": "05_avaliacoes_fotos_publicas.png"
+    },
+    {
+      "name": "CT-14 CT-44 real compiled panel at emulated mobile viewport",
+      "status": "passed",
+      "screenshot": "06_mobile_expandido.png"
+    },
+    {
+      "name": "CT-52 200 percent Informações",
+      "status": "passed",
+      "screenshot": "09_mobile_200_informacoes.png"
+    },
+    {
+      "name": "CT-52 200 percent Acessibilidade",
+      "status": "passed",
+      "screenshot": "10_mobile_200_recursos.png"
+    },
+    {
+      "name": "CT-52 200 percent Avaliações e fotos",
+      "status": "passed",
+      "screenshot": "11_mobile_200_fotos.png"
+    },
+    {
+      "name": "CT-52 desktop 200 percent",
+      "status": "passed",
+      "screenshot": "12_desktop_200.png"
+    },
+    {
+      "name": "CT-11 Escape collapses panel",
+      "status": "passed",
+      "screenshot": "07_mobile_compacto.png"
+    },
+    {
+      "name": "CT-11 close restores map",
+      "status": "passed",
+      "screenshot": "08_mobile_fechado.png"
+    },
+    {
+      "name": "CT-35 CT-41 real cluster lists coincident members",
+      "status": "passed",
+      "screenshot": "13_agrupamento.png"
+    },
+    {
+      "name": "CT-41 select a coincident member",
+      "status": "passed",
+      "screenshot": "14_membro_selecionado.png"
+    },
+    {
+      "name": "CT-51 keyboard focus traverses actual web semantics",
+      "status": "passed"
+    }
+  ],
+  "browser": "151.0.7922.34",
+  "platform": "linux",
+  "api_requests": [
+    {
+      "method": "POST",
+      "path": "/api/login/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usuarios/me/route-history-preferences/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usuarios/perfil/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/catalogo/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/externos/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/catalogo/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/1/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/favoritos/estado/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/avaliacoes/modal-avaliacoes/recursos/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/evidencias/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/avaliacoes/modal-avaliacoes/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/midia/fotos/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/midia/arquivos/f09fdabb-9c28-4015-89b3-33c5dc8bd8de/thumb/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/4/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/favoritos/estado/"
+    }
+  ],
+  "page_errors": []
+}
