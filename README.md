@@ -646,3 +646,7 @@ a elegibilidade e o bônus +3 por autor/local no livro-razão existente.
 Contratos, precedência, migrations e roteiro: [AVALIACOES_CARDS_47_51.md](docs/AVALIACOES_CARDS_47_51.md).
 Resultados, 54 critérios e 44 cenários, incluindo as homologações externas pendentes:
 [EVIDENCIAS_CARD_51.md](docs/EVIDENCIAS_CARD_51.md).
+
+## Cards 52–58 — painel integrado ao mapa
+
+Painel persistente com recursos/fontes, avaliações/fotos públicas e seleção sincronizada com os marcadores. Consulte [implementação e limites de homologação](docs/cards52_58/IMPLEMENTACAO.md), [matriz CT-01–56](docs/cards52_58/CT_01_56.md), [desempenho](docs/cards52_58/DESEMPENHO.md) e [resultados executados](docs/cards52_58/VALIDACAO.json). Flutter/Chrome é o fluxo local preferido; Android físico/TalkBack e CI remoto permanecem pendentes conforme o relatório.

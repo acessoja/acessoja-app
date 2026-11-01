@@ -537,6 +537,16 @@ void main() {
     await tester.ensureVisible(find.byKey(const ValueKey('preview-evaluate')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('preview-evaluate')));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('preview-accessibility-more')),
+    );
+    await tester.tap(find.byKey(const ValueKey('preview-accessibility-more')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('panel-section-reviews')),
+    );
+    await tester.tap(find.byKey(const ValueKey('panel-section-reviews')));
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const ValueKey('preview-reviews')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('preview-reviews')));

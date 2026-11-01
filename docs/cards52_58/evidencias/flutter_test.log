@@ -1,0 +1,973 @@
+00:00 +0: loading /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart
+00:00 +0: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(320.0, 640.0) variant=0: login, register, internal/external details
+00:01 +1: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(320.0, 640.0) variant=0: login, register, internal/external details
+00:01 +2: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(320.0, 640.0) variant=0: login, register, internal/external details
+00:01 +3: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/onboarding_screen_test.dart: first launch, back, completion and subsequent launch
+00:02 +4: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint1_test.dart: Sprint 1: local da API aparece como marcador e abre detalhes
+00:02 +5: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint1_test.dart: Sprint 1: local da API aparece como marcador e abre detalhes
+00:02 +6: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint1_test.dart: Sprint 1: local da API aparece como marcador e abre detalhes
+00:02 +7: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint1_test.dart: Sprint 1: local da API aparece como marcador e abre detalhes
+00:02 +8: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint1_test.dart: Sprint 1: local da API aparece como marcador e abre detalhes
+00:02 +9: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint1_test.dart: Sprint 1: local da API aparece como marcador e abre detalhes
+00:02 +10: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint1_test.dart: Sprint 1: local da API aparece como marcador e abre detalhes
+00:03 +11: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(320.0, 640.0) variant=2: login, register, internal/external details
+00:03 +12: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evaluation_modal_test.dart: envia oito códigos estáveis somente na confirmação
+00:03 +13: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(320.0, 640.0) variant=3: login, register, internal/external details
+00:03 +14: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: visible back preserves login input and category route names
+00:04 +15: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: visible back preserves login input and category route names
+00:04 +16: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: visible back preserves login input and category route names
+00:04 +17: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/ui_preview_test.dart: render reviewable dark-mode previews
+00:05 +18: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/ui_preview_test.dart: render reviewable dark-mode previews
+00:05 +19: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/ui_preview_test.dart: render reviewable dark-mode previews
+00:05 +20: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/ui_preview_test.dart: render reviewable dark-mode previews
+00:05 +21: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/ui_preview_test.dart: render reviewable dark-mode previews
+00:05 +22: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/ui_preview_test.dart: render reviewable dark-mode previews
+00:05 +23: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/ui_preview_test.dart: render reviewable dark-mode previews
+00:05 +24: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/ui_preview_test.dart: render reviewable dark-mode previews
+00:05 +25: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/ui_preview_test.dart: render reviewable dark-mode previews
+00:05 +26: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: drawer entry returns to same map with drawer closed
+00:05 +27: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: drawer entry returns to same map with drawer closed
+00:05 +28: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: drawer entry returns to same map with drawer closed
+00:05 +29: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: drawer entry returns to same map with drawer closed
+00:05 +30: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: drawer entry returns to same map with drawer closed
+00:05 +31: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: drawer entry returns to same map with drawer closed
+00:05 +32: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: drawer entry returns to same map with drawer closed
+00:05 +33: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: drawer entry returns to same map with drawer closed
+00:05 +34: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(360.0, 740.0) variant=2: login, register, internal/external details
+00:05 +35: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(360.0, 740.0) variant=2: login, register, internal/external details
+00:06 +36: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(360.0, 740.0) variant=2: login, register, internal/external details
+00:06 +37: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(360.0, 740.0) variant=2: login, register, internal/external details
+00:06 +38: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(360.0, 740.0) variant=2: login, register, internal/external details
+00:06 +39: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: map menu opens settings and rights returns to settings first
+00:06 +40: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: map menu opens settings and rights returns to settings first
+00:06 +41: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: map menu opens settings and rights returns to settings first
+00:06 +42: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(360.0, 740.0) variant=3: login, register, internal/external details
+00:06 +43: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(360.0, 740.0) variant=3: login, register, internal/external details
+00:06 +44: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: mixed sources and divergence have text without invented observation
+00:06 +45: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: mixed sources and divergence have text without invented observation
+00:06 +46: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: mixed sources and divergence have text without invented observation
+00:06 +47: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(360.0, 740.0) variant=4: login, register, internal/external details
+00:06 +48: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: categories open separate pages with relevant laws and return
+00:07 +49: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/rights_screen_test.dart: categories open separate pages with relevant laws and return
+00:07 +50: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:07 +51: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:07 +52: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:07 +53: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:07 +54: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:07 +55: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:07 +56: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:07 +57: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:08 +58: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:08 +59: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:08 +60: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:08 +61: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:08 +62: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:08 +63: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:08 +64: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual uncertain retry requires original account
+00:08 +65: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(390.0, 844.0) variant=4: login, register, internal/external details
+00:08 +66: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(390.0, 844.0) variant=4: login, register, internal/external details
+00:08 +67: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(390.0, 844.0) variant=4: login, register, internal/external details
+00:08 +68: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: pending GPS cannot update picker after session change
+00:08 +69: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: pending GPS cannot update picker after session change
+00:08 +70: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: pending GPS cannot update picker after session change
+00:08 +71: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: private history with combined scale at Size(390.0, 844.0)
+00:09 +72: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +73: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +74: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +75: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +76: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +77: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +78: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +79: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +80: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +81: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +82: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +83: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +84: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +85: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +86: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +87: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +88: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +89: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +90: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +91: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +92: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +93: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +94: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +95: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +96: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +97: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +98: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +99: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +100: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +101: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +102: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/evidence_cards_38_41_test.dart: visitor returns from login to an explicit confirmation
+00:09 +103: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: geographic search is explicit and homonyms require selection
+00:09 +104: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: geographic search is explicit and homonyms require selection
+00:09 +105: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: geographic search is explicit and homonyms require selection
+00:09 +106: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: geographic search is explicit and homonyms require selection
+00:09 +107: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: geographic search is explicit and homonyms require selection
+00:09 +108: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: geographic search is explicit and homonyms require selection
+00:09 +109: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: geographic search is explicit and homonyms require selection
+00:09 +110: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: geographic search is explicit and homonyms require selection
+00:09 +111: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: geographic search is explicit and homonyms require selection
+00:09 +112: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=1: login, register, internal/external details
+00:09 +113: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=1: login, register, internal/external details
+00:09 +114: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=1: login, register, internal/external details
+00:09 +115: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=1: login, register, internal/external details
+00:09 +116: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=1: login, register, internal/external details
+00:09 +117: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=1: login, register, internal/external details
+00:09 +118: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=1: login, register, internal/external details
+00:09 +119: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=1: login, register, internal/external details
+00:09 +120: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:09 +121: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:09 +122: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:09 +123: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:09 +124: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:10 +125: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:10 +126: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:10 +127: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:10 +128: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:10 +129: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:10 +130: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:10 +131: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:10 +132: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:10 +133: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:10 +134: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: failed review lookup is never labelled as no reviews or shown as an internal error
+00:10 +135: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_cards28_33_test.dart: manual retry freezes same payload and UUID after lost response
+00:10 +136: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=4: login, register, internal/external details
+00:10 +137: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=4: login, register, internal/external details
+00:10 +138: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=4: login, register, internal/external details
+00:10 +139: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=4: login, register, internal/external details
+00:10 +140: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=4: login, register, internal/external details
+00:10 +141: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: reading matrix Size(640.0, 320.0) variant=4: login, register, internal/external details
+00:10 +142: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_privacy_test.dart: cold reset route bypasses onboarding and survives rebuilding the app
+00:10 +143: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_privacy_test.dart: cold reset route bypasses onboarding and survives rebuilding the app
+00:10 +144: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_privacy_test.dart: cold reset route bypasses onboarding and survives rebuilding the app
+00:10 +145: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_privacy_test.dart: cold reset route bypasses onboarding and survives rebuilding the app
+00:11 +146: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_privacy_test.dart: cold reset route bypasses onboarding and survives rebuilding the app
+00:11 +147: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: coincident places open a selector and each member remains selectable
+00:11 +148: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: coincident places open a selector and each member remains selectable
+00:11 +149: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_sections_test.dart: CT-21 CT-44 desktop reparent keeps loaded sections; resource refresh is selective
+00:11 +150: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_sections_test.dart: CT-21 CT-44 desktop reparent keeps loaded sections; resource refresh is selective
+00:11 +151: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_sections_test.dart: CT-21 CT-44 desktop reparent keeps loaded sections; resource refresh is selective
+00:12 +152: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_sections_test.dart: CT-21 CT-44 desktop reparent keeps loaded sections; resource refresh is selective
+00:12 +153: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_sections_test.dart: CT-21 CT-44 desktop reparent keeps loaded sections; resource refresh is selective
+00:12 +154: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_sections_test.dart: CT-21 CT-44 desktop reparent keeps loaded sections; resource refresh is selective
+00:12 +155: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_sections_test.dart: CT-21 CT-44 desktop reparent keeps loaded sections; resource refresh is selective
+00:12 +156: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: browsing and closing another preview preserves an existing route
+00:12 +157: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: browsing and closing another preview preserves an existing route
+00:12 +158: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: browsing and closing another preview preserves an existing route
+00:12 +159: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: browsing and closing another preview preserves an existing route
+00:12 +160: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_privacy_test.dart: export prompts for current password, downloads bytes and exposes visible feedback
+00:12 +161: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_sections_test.dart: CT-06 failed second page is retryable and retains the first source
+00:12 +162: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: questionnaire answers and route survive presentation changes
+00:13 +163: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.0 dark=false
+00:13 +164: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.0 dark=false
+00:13 +165: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.0 dark=false
+00:13 +166: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.0 dark=false
+00:13 +167: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: running navigation keeps controller and session during reading changes
+00:13 +168: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: running navigation keeps controller and session during reading changes
+00:13 +169: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: running navigation keeps controller and session during reading changes
+00:13 +170: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: running navigation keeps controller and session during reading changes
+00:13 +171: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: running navigation keeps controller and session during reading changes
+00:13 +172: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: running navigation keeps controller and session during reading changes
+00:13 +173: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: running navigation keeps controller and session during reading changes
+00:13 +174: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: running navigation keeps controller and session during reading changes
+00:13 +175: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: running navigation keeps controller and session during reading changes
+00:14 +176: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: running navigation keeps controller and session during reading changes
+00:14 +177: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: running navigation keeps controller and session during reading changes
+00:14 +178: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: running navigation keeps controller and session during reading changes
+00:14 +179: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: last removal updates total and shared icon; undo before DELETE is real
+00:14 +180: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: last removal updates total and shared icon; undo before DELETE is real
+00:14 +181: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: last removal updates total and shared icon; undo before DELETE is real
+00:14 +182: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: last removal updates total and shared icon; undo before DELETE is real
+00:15 +183: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: last removal updates total and shared icon; undo before DELETE is real
+00:15 +184: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: last removal updates total and shared icon; undo before DELETE is real
+00:15 +185: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: last removal updates total and shared icon; undo before DELETE is real
+00:15 +186: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: last removal updates total and shared icon; undo before DELETE is real
+00:15 +187: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: last removal updates total and shared icon; undo before DELETE is real
+00:15 +188: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:15 +189: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:15 +190: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:15 +191: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:15 +192: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:15 +193: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:15 +194: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:15 +195: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:16 +196: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:16 +197: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:16 +198: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:16 +199: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:16 +200: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:16 +201: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:16 +202: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_evidence_test.dart: retained snapshot, true empty and 8 internal identities with controlled outage
+00:16 +203: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(640.0, 320.0) scale=1.0 dark=false
+00:16 +204: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(640.0, 320.0) scale=1.0 dark=false
+00:16 +205: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: own review opens existing editor prefilled with full private record, no implicit POST
+00:16 +206: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: general keeps content at 200% width=1280.0
+00:16 +207: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(640.0, 320.0) scale=1.5 dark=false
+00:16 +208: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(640.0, 320.0) scale=1.5 dark=false
+00:16 +209: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: privacy keeps content at 200% width=320.0
+00:16 +210: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: Tab focus and Space activate a single save without parent action
+00:16 +211: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(640.0, 320.0) scale=2.0 dark=false
+00:16 +212: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(640.0, 320.0) scale=2.0 dark=false
+00:16 +213: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: external confirmation/import status=201, retry retains canonical ID
+00:17 +214: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: profile keeps content at 200% width=320.0
+00:17 +215: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.0 dark=true
+00:17 +216: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: external confirmation/import status=200, retry retains canonical ID
+00:17 +217: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: profile keeps content at 200% width=1280.0
+00:17 +218: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +219: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +220: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +221: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +222: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +223: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +224: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +225: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +226: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +227: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +228: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +229: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +230: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +231: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +232: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +233: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +234: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +235: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +236: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_cards_04_06_test.dart: preview size=Size(320.0, 700.0) scale=1.5 dark=true
+00:17 +237: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_integration_test.dart: external confirmation/import status=429, retry retains canonical ID
+00:17 +238: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/reading_layouts_test.dart: help keeps content at 200% width=1280.0
+00:17 +239: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:17 +240: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:17 +241: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:17 +242: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:17 +243: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:17 +244: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:17 +245: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:17 +246: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:17 +247: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:17 +248: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:18 +249: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:18 +250: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:18 +251: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:18 +252: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:18 +253: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:18 +254: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:18 +255: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:18 +256: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/cards_47_51_test.dart: T22 rejected context correction validates then creates pending revision without review write
+00:18 +257: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:18 +258: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:18 +259: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:18 +260: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:18 +261: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:18 +262: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +263: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +264: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +265: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +266: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +267: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +268: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +269: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +270: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +271: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +272: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +273: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +274: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +275: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:19 +276: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +277: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +278: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +279: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +280: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +281: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +282: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +283: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +284: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +285: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +286: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +287: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +288: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +289: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +290: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +291: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +292: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:20 +293: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +293: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_test.dart: 8 internal, 4 missing points, coincident cluster represents 4 identities; movement alone does not query
+Request failed
+00:21 +294: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +295: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +296: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +297: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +298: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +299: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +300: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +301: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +302: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +303: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +304: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +305: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +306: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +307: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +308: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +309: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +310: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +311: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +312: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +313: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +314: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +315: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +316: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +317: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +318: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +319: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +320: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/discovery_evidence_test.dart: distant destination and free point journeys with controlled providers
+00:21 +321: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_test.dart: 8 internal, 4 missing points, coincident cluster represents 4 identities; movement alone does not query
+00:22 +322: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/contributions_central_test.dart: history failure leaves summary visible and exposes a section retry
+00:22 +322: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_recovery_test.dart: text preserves explicit bbox; removing area preserves text and never calls external source
+Request failed
+00:22 +323: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/register_screen_test.dart: next muda foco entre os quatro campos e done é o último
+00:22 +324: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/register_screen_test.dart: next muda foco entre os quatro campos e done é o último
+00:23 +325: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/register_screen_test.dart: next muda foco entre os quatro campos e done é o último
+00:23 +326: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/register_screen_test.dart: next muda foco entre os quatro campos e done é o último
+00:23 +327: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:23 +328: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:23 +329: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:23 +330: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:23 +331: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:23 +332: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:23 +333: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:23 +334: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:23 +335: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:24 +336: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:24 +337: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:24 +338: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:24 +339: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(390.0, 844.0)
+00:24 +340: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: system high contrast follows brightness without changing saved reading choices
+00:24 +341: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: system high contrast follows brightness without changing saved reading choices
+00:24 +342: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: system high contrast follows brightness without changing saved reading choices
+00:24 +343: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: system high contrast follows brightness without changing saved reading choices
+00:25 +344: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: system high contrast follows brightness without changing saved reading choices
+00:25 +345: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_host_test.dart: CT-14 CT-44 global accessibility action never covers expanded map panel Size(1280.0, 900.0)
+00:25 +346: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/contributions_central_test.dart: saving disables repeated submissions before the response confirms points
+00:25 +347: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: one semantic action, tap opens once, Escape restores focus
+00:25 +348: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: one semantic action, tap opens once, Escape restores focus
+00:26 +349: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: one semantic action, tap opens once, Escape restores focus
+00:26 +350: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: one semantic action, tap opens once, Escape restores focus
+00:26 +351: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +352: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +353: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +354: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +355: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +356: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +357: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +358: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +359: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +360: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +361: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +362: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +363: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +364: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +365: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +366: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +367: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +368: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +369: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +370: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +371: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +372: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +373: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +374: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +375: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +376: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:26 +377: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +378: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +379: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +380: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +381: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +382: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +383: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +384: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +385: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +386: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +387: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +388: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +389: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +390: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +391: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +392: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +393: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +394: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +395: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +396: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +397: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +398: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +399: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +400: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +401: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +402: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +403: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: avaliar externo confirma cadastro e abre editor com ID interno
+00:27 +404: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: directional taps, keyboard arrows and restoring position work
+00:27 +405: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: directional taps, keyboard arrows and restoring position work
+00:27 +406: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: directional taps, keyboard arrows and restoring position work
+00:27 +407: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: directional taps, keyboard arrows and restoring position work
+00:27 +408: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: directional taps, keyboard arrows and restoring position work
+00:27 +409: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: directional taps, keyboard arrows and restoring position work
+00:27 +410: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: directional taps, keyboard arrows and restoring position work
+00:27 +411: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/contributions_central_test.dart: central layout width=320.0 scale=1.0 dark=false
+00:27 +412: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_navigation_contributions_test.dart: preview has direct review and reviews actions without a route
+00:28 +413: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_navigation_contributions_test.dart: preview has direct review and reviews actions without a route
+00:28 +414: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_navigation_contributions_test.dart: preview has direct review and reviews actions without a route
+00:28 +415: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_navigation_contributions_test.dart: preview has direct review and reviews actions without a route
+00:28 +416: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_navigation_contributions_test.dart: preview has direct review and reviews actions without a route
+00:28 +417: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_navigation_contributions_test.dart: preview has direct review and reviews actions without a route
+00:28 +418: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_navigation_contributions_test.dart: preview has direct review and reviews actions without a route
+00:28 +419: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/contributions_central_test.dart: central layout width=360.0 scale=1.0 dark=false
+00:28 +420: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: changing reading choices preserves typed text and Navigator route
+00:29 +421: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: changing reading choices preserves typed text and Navigator route
+00:29 +422: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: changing reading choices preserves typed text and Navigator route
+00:29 +423: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: changing reading choices preserves typed text and Navigator route
+00:29 +424: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: changing reading choices preserves typed text and Navigator route
+00:29 +425: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/contributions_central_test.dart: central layout width=360.0 scale=2.0 dark=false
+00:29 +426: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_navigation_contributions_test.dart: review editor preloads own review and never treats OSM as internal
+00:29 +427: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_navigation_contributions_test.dart: review editor preloads own review and never treats OSM as internal
+00:29 +428: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_navigation_contributions_test.dart: review editor preloads own review and never treats OSM as internal
+00:29 +429: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_navigation_contributions_test.dart: review editor preloads own review and never treats OSM as internal
+00:29 +430: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: filtro por origem mostra somente locais externos
+00:29 +431: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: filtro por origem mostra somente locais externos
+00:29 +432: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: filtro por origem mostra somente locais externos
+00:29 +433: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: filtro por origem mostra somente locais externos
+00:29 +434: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: filtro por origem mostra somente locais externos
+00:30 +435: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: filtro por origem mostra somente locais externos
+00:30 +436: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(320.0, 640.0) app=1.0 with high contrast
+00:30 +437: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/contributions_central_test.dart: central layout width=800.0 scale=1.0 dark=false
+00:30 +438: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: filtro por categoria usa a base consolidada sem enviar critérios pessoais à fonte externa
+00:30 +439: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: filtro por categoria usa a base consolidada sem enviar critérios pessoais à fonte externa
+00:30 +440: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: filtro por categoria usa a base consolidada sem enviar critérios pessoais à fonte externa
+00:30 +441: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:30 +442: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:31 +443: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:31 +444: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:31 +445: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:31 +446: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:31 +447: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:31 +448: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:31 +449: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:31 +450: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:31 +451: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:31 +452: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:31 +453: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:32 +454: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:32 +455: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:32 +456: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:32 +457: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:32 +458: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:32 +459: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:32 +460: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:32 +461: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:32 +462: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:32 +463: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes
+00:33 +464: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(390.0, 844.0) app=2.0 with high contrast
+00:33 +465: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(390.0, 844.0) app=2.0 with high contrast
+00:33 +466: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: confirmação externa mantém painel com id_local real
+00:33 +467: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_sprint2_test.dart: confirmação externa mantém painel com id_local real
+00:33 +468: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-26 CT-27 applying a filter retains panel context without an ineligible pin
+00:33 +469: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-26 CT-27 applying a filter retains panel context without an ineligible pin
+00:33 +470: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-26 CT-27 applying a filter retains panel context without an ineligible pin
+00:33 +471: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-26 CT-27 applying a filter retains panel context without an ineligible pin
+00:33 +472: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-26 CT-27 applying a filter retains panel context without an ineligible pin
+00:33 +473: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-26 CT-27 applying a filter retains panel context without an ineligible pin
+00:33 +474: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-26 CT-27 applying a filter retains panel context without an ineligible pin
+00:34 +475: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-26 CT-27 applying a filter retains panel context without an ineligible pin
+00:34 +476: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-26 CT-27 applying a filter retains panel context without an ineligible pin
+00:34 +477: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-26 CT-27 applying a filter retains panel context without an ineligible pin
+00:34 +478: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-26 CT-27 applying a filter retains panel context without an ineligible pin
+00:34 +479: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-26 CT-27 applying a filter retains panel context without an ineligible pin
+00:34 +480: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(1280.0, 800.0) app=1.5 with high contrast
+00:34 +481: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(1280.0, 800.0) app=1.5 with high contrast
+00:34 +482: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(1280.0, 800.0) app=1.5 with high contrast
+00:34 +483: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(1280.0, 800.0) app=1.5 with high contrast
+00:34 +484: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(1280.0, 800.0) app=1.5 with high contrast
+00:34 +485: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(1280.0, 800.0) app=1.5 with high contrast
+00:34 +486: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(1280.0, 800.0) app=1.5 with high contrast
+00:34 +487: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(1280.0, 800.0) app=1.5 with high contrast
+00:34 +488: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(1280.0, 800.0) app=1.5 with high contrast
+00:34 +489: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel reflows and closes at Size(1280.0, 800.0) app=1.5 with high contrast
+00:34 +490: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/contributions_central_test.dart: central layout width=1280.0 scale=1.0 dark=true
+00:34 +491: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/contributions_central_test.dart: central layout width=1280.0 scale=1.0 dark=true
+00:34 +492: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_screen_test.dart: loading, empty and recording disabled are different states
+00:34 +493: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_screen_test.dart: loading, empty and recording disabled are different states
+00:35 +494: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_screen_test.dart: loading, empty and recording disabled are different states
+00:35 +495: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_screen_test.dart: loading, empty and recording disabled are different states
+00:35 +496: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_screen_test.dart: loading, empty and recording disabled are different states
+00:35 +497: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_screen_test.dart: loading, empty and recording disabled are different states
+00:35 +498: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_screen_test.dart: loading, empty and recording disabled are different states
+00:35 +499: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-09 CT-10 CT-11 CT-12 CT-28 real MainScreen panel preserves camera and top-route Escape
+00:35 +500: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-09 CT-10 CT-11 CT-12 CT-28 real MainScreen panel preserves camera and top-route Escape
+00:35 +501: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-09 CT-10 CT-11 CT-12 CT-28 real MainScreen panel preserves camera and top-route Escape
+00:35 +502: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_screen_test.dart: query error has retry instead of a false empty state
+00:35 +503: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: panel guidelines for theme dark=true contrast=ReadingContrast.high
+00:35 +504: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-13 CT-14 CT-44 CT-52 panel no overflow Size(320.0, 640.0) pt 200%
+00:35 +505: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_screen_test.dart: preferences failure does not discard readable history
+00:35 +506: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: hiding from its own panel does not restore focus to an invisible button
+00:36 +507: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_panel_test.dart: hiding from its own panel does not restore focus to an invisible button
+00:36 +508: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_cards_52_58_test.dart: CT-13 CT-14 CT-44 CT-52 panel no overflow Size(640.0, 320.0) pt 200%
+00:36 +509: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +510: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +511: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +512: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +513: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +514: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +515: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +516: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +517: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +518: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +519: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +520: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +521: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +522: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +523: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +524: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +525: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +526: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +527: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +528: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +529: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +530: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +531: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +532: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +533: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +534: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +535: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +536: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +537: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +538: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +539: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +540: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +541: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +542: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +543: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:36 +544: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:37 +545: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:37 +546: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:37 +547: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: private empty list, total and accessible refresh
+00:37 +548: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_screen_test.dart: historical destination requires review and pops destination only, without starting
+00:37 +549: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/saved_places_state_test.dart: server search and clearing preserves honest spaces: local inexistente
+00:37 +550: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +551: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +552: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +553: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +554: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +555: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +556: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +557: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +558: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +559: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +560: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +561: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +562: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +563: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +564: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +565: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +566: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +567: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +568: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +569: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:37 +570: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +571: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +572: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +573: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +574: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +575: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +576: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +577: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +578: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +579: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +580: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +581: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +582: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +583: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +584: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:38 +585: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:39 +586: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:39 +587: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:39 +588: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/map_panel_performance_test.dart: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:39 +589: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: all four selected options reach review and send without translated identities
+00:39 +590: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: all four selected options reach review and send without translated identities
+00:39 +591: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: all four selected options reach review and send without translated identities
+00:39 +592: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/catalog_card34_test.dart: open catalog detail refreshes canonical presentation after confirmation
+00:39 +593: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_screen_test.dart: history layout Size(360.0, 740.0) 2.0 true
+00:39 +594: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +595: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +596: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +597: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +598: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +599: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +600: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +601: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +602: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +603: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +604: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +605: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +606: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +607: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +608: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +609: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +610: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +611: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +612: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +613: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +614: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +615: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +616: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +617: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +618: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +619: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +620: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +621: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +622: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +623: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +624: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +625: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +626: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +627: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +628: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: failed submission stays open with all answers and retry sends once
+00:40 +629: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/catalog_card34_test.dart: guest login preserves draft and completes favorite after original button disposal
+00:40 +630: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/catalog_card34_test.dart: guest login preserves draft and completes favorite after original button disposal
+00:40 +631: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/catalog_card34_test.dart: guest login preserves draft and completes favorite after original button disposal
+00:40 +632: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/catalog_card34_test.dart: guest login preserves draft and completes favorite after original button disposal
+00:40 +633: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:40 +634: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:40 +635: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:40 +636: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:40 +637: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:40 +638: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:40 +639: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:40 +640: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:40 +641: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:40 +642: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:40 +643: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +644: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +645: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +646: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +647: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +647: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/catalog_card34_test.dart: map loads persisted catalog without GPS while other sources fail
+Request failed
+00:41 +648: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +649: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +650: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +651: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +652: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +653: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +654: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +655: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:41 +656: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:42 +657: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:42 +658: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:42 +659: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:42 +660: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:42 +661: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:42 +662: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:42 +663: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:42 +664: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:42 +665: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:42 +666: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:42 +667: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:43 +668: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:43 +669: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow no permission on entry; manual OSM preview never registers or visits
+00:43 +670: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: English survey returns stable codes after review
+00:43 +671: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: English survey returns stable codes after review
+00:43 +672: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: English survey returns stable codes after review
+00:43 +673: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: English survey returns stable codes after review
+00:43 +674: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: English survey returns stable codes after review
+00:43 +675: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: English survey returns stable codes after review
+00:43 +676: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: English survey returns stable codes after review
+00:43 +677: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: English survey returns stable codes after review
+00:43 +678: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancel in-flight calculation leaves the map usable after late reply
+00:44 +679: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancel in-flight calculation leaves the map usable after late reply
+00:44 +680: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancel in-flight calculation leaves the map usable after late reply
+00:44 +681: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancel in-flight calculation leaves the map usable after late reply
+00:44 +682: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancel in-flight calculation leaves the map usable after late reply
+00:44 +683: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancel in-flight calculation leaves the map usable after late reply
+00:44 +684: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancel in-flight calculation leaves the map usable after late reply
+00:44 +685: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: survey responsive 360.0 scale 1.0 dark false
+00:44 +686: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: successful review refreshes detail content instead of spinning forever
+00:44 +687: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: successful review refreshes detail content instead of spinning forever
+00:44 +688: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: successful review refreshes detail content instead of spinning forever
+00:44 +689: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: successful review refreshes detail content instead of spinning forever
+00:44 +690: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: successful review refreshes detail content instead of spinning forever
+00:44 +691: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: successful review refreshes detail content instead of spinning forever
+00:44 +692: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: successful review refreshes detail content instead of spinning forever
+00:44 +693: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: successful review refreshes detail content instead of spinning forever
+00:45 +694: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: successful review refreshes detail content instead of spinning forever
+00:45 +695: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: successful review refreshes detail content instead of spinning forever
+00:45 +696: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: successful review refreshes detail content instead of spinning forever
+00:45 +697: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow NoRoute feedback does not block searching or map attribution
+00:45 +698: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow NoRoute feedback does not block searching or map attribution
+00:45 +699: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow NoRoute feedback does not block searching or map attribution
+00:45 +700: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow NoRoute feedback does not block searching or map attribution
+00:45 +701: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/questionnaire_cards_13_15_test.dart: survey responsive 390.0 scale 1.5 dark false
+00:45 +702: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: logout replaces the root route even after pushReplacement
+00:45 +703: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: logout replaces the root route even after pushReplacement
+00:45 +704: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow GPS start external failure and pause resume stay coherent
+00:45 +705: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow GPS start external failure and pause resume stay coherent
+00:45 +706: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow GPS start external failure and pause resume stay coherent
+00:45 +707: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow GPS start external failure and pause resume stay coherent
+00:45 +708: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow GPS start external failure and pause resume stay coherent
+00:45 +709: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow GPS start external failure and pause resume stay coherent
+00:46 +710: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow GPS start external failure and pause resume stay coherent
+00:46 +711: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow GPS start external failure and pause resume stay coherent
+00:46 +712: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow GPS start external failure and pause resume stay coherent
+00:46 +713: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow GPS start external failure and pause resume stay coherent
+00:46 +714: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow GPS start external failure and pause resume stay coherent
+00:46 +715: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow GPS start external failure and pause resume stay coherent
+00:46 +716: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/local_card_test.dart: exibe nome, distância e status do local
+00:46 +717: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/local_card_test.dart: exibe nome, distância e status do local
+00:46 +718: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/local_card_test.dart: exibe nome, distância e status do local
+00:46 +719: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/local_card_test.dart: exibe nome, distância e status do local
+00:46 +720: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/local_card_test.dart: exibe nome, distância e status do local
+00:46 +721: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:46 +722: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:46 +723: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:46 +724: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:46 +725: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:46 +726: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:46 +727: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:47 +728: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:47 +729: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:47 +730: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:47 +731: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:47 +732: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:47 +733: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:47 +734: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:47 +735: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow cancelling pending GPS cannot start or restore a route
+00:47 +736: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: map destination and filter sheets fit above a small-screen keyboard
+00:47 +737: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: map destination and filter sheets fit above a small-screen keyboard
+00:47 +738: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: map destination and filter sheets fit above a small-screen keyboard
+00:47 +739: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: map destination and filter sheets fit above a small-screen keyboard
+00:47 +740: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: map destination and filter sheets fit above a small-screen keyboard
+00:47 +741: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: map destination and filter sheets fit above a small-screen keyboard
+00:47 +742: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: map destination and filter sheets fit above a small-screen keyboard
+00:47 +743: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: map destination and filter sheets fit above a small-screen keyboard
+00:47 +744: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: map destination and filter sheets fit above a small-screen keyboard
+00:47 +745: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: map destination and filter sheets fit above a small-screen keyboard
+00:47 +746: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: map destination and filter sheets fit above a small-screen keyboard
+00:47 +747: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow small landscape map and route panel fit above keyboard
+00:47 +748: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow small landscape map and route panel fit above keyboard
+00:47 +749: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow small landscape map and route panel fit above keyboard
+00:47 +750: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow small landscape map and route panel fit above keyboard
+00:47 +751: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow small landscape map and route panel fit above keyboard
+00:47 +752: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow small landscape map and route panel fit above keyboard
+00:47 +753: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow small landscape map and route panel fit above keyboard
+00:47 +754: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow small landscape map and route panel fit above keyboard
+00:47 +755: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow small landscape map and route panel fit above keyboard
+00:48 +756: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow small landscape map and route panel fit above keyboard
+00:48 +757: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow small landscape map and route panel fit above keyboard
+00:48 +758: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow small landscape map and route panel fit above keyboard
+00:48 +759: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/local_card_test.dart: card longo Size(360.0, 740.0) escala 2.0 tema true
+00:48 +760: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: register fits 1440.0 in English dark mode with enlarged text
+00:48 +761: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/frontend_regression_test.dart: register fits 1440.0 in English dark mode with enlarged text
+00:48 +762: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +763: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +764: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +765: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +766: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +767: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +768: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +769: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +770: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +771: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +772: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +773: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +774: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +775: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +776: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +777: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +778: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +779: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +780: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +781: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +782: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +783: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +784: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +785: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +786: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +787: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +788: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +789: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +790: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +791: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +792: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +793: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +794: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +795: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +796: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +797: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +798: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +799: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +800: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +801: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +802: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +803: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +804: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +805: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +806: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +807: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +808: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +809: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +810: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +811: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:48 +812: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:49 +813: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:49 +814: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:49 +815: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: integrated map flow changing destination discards an old map calculation
+00:49 +816: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +817: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +818: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +819: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +820: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +821: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +822: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +823: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +824: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +825: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +826: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +827: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +828: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +829: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile loads empty, edits, preserves failed save, retries and confirms a clear
+00:49 +830: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: avatar cancellation preserves old image and never calls save
+00:49 +831: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: avatar cancellation preserves old image and never calls save
+00:49 +832: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: avatar cancellation preserves old image and never calls save
+00:50 +833: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: avatar cancellation preserves old image and never calls save
+00:50 +834: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: avatar cancellation preserves old image and never calls save
+00:50 +835: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: avatar cancellation preserves old image and never calls save
+00:50 +836: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: avatar cancellation preserves old image and never calls save
+00:50 +837: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: avatar cancellation preserves old image and never calls save
+00:50 +838: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: avatar cancellation preserves old image and never calls save
+00:50 +839: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: avatar cancellation preserves old image and never calls save
+00:50 +840: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: retired choice requires an explicit removal
+00:50 +841: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: retired choice requires an explicit removal
+00:50 +842: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: retired choice requires an explicit removal
+00:50 +843: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:50 +844: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:50 +845: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:50 +846: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:50 +847: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:50 +848: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:50 +849: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:50 +850: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:50 +851: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:50 +852: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:50 +853: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:50 +854: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:51 +855: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:51 +856: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:51 +857: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:51 +858: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:51 +859: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:51 +860: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:51 +861: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:51 +862: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/account_capture_test.dart: account labels and font layout accessible dark=false
+00:51 +863: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: selected photo has context and can be removed before sending
+00:51 +864: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: selected photo has context and can be removed before sending
+00:51 +865: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: selected photo has context and can be removed before sending
+00:51 +866: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: selected photo has context and can be removed before sending
+00:51 +867: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: selected photo has context and can be removed before sending
+00:51 +868: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: selected photo has context and can be removed before sending
+00:51 +869: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: keyboard can select and accessible criteria chips can remove one resource
+00:51 +870: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_cards_07_08_test.dart: route panel 1280.0x800.0 scale 1.5 dark false
+00:51 +871: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: partial upload retries only failed file using same identity
+00:51 +872: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: partial upload retries only failed file using same identity
+00:51 +873: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: partial upload retries only failed file using same identity
+00:51 +874: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: partial upload retries only failed file using same identity
+00:51 +875: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: partial upload retries only failed file using same identity
+00:51 +876: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: partial upload retries only failed file using same identity
+00:52 +877: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: partial upload retries only failed file using same identity
+00:52 +878: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: partial upload retries only failed file using same identity
+00:52 +879: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/media_cards_42_46_test.dart: partial upload retries only failed file using same identity
+00:52 +880: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: manual search, preference use and clear preserve query and saved profile
+00:52 +881: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: manual search, preference use and clear preserve query and saved profile
+00:52 +882: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: manual search, preference use and clear preserve query and saved profile
+00:52 +883: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: manual search, preference use and clear preserve query and saved profile
+00:52 +884: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: manual search, preference use and clear preserve query and saved profile
+00:52 +885: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: manual search, preference use and clear preserve query and saved profile
+00:52 +886: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: manual search, preference use and clear preserve query and saved profile
+00:52 +887: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: manual search, preference use and clear preserve query and saved profile
+00:52 +888: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: manual search, preference use and clear preserve query and saved profile
+00:52 +889: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_layout_test.dart: favorites and panel fit Size(320.0, 640.0) 1.0 dark=false
+00:53 +890: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_layout_test.dart: favorites and panel fit Size(320.0, 640.0) 1.0 dark=false
+00:53 +891: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_layout_test.dart: favorites and panel fit Size(320.0, 640.0) 1.0 dark=false
+00:53 +892: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_layout_test.dart: favorites and panel fit Size(320.0, 640.0) 1.0 dark=false
+00:53 +893: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:53 +894: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:54 +895: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:54 +896: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:54 +897: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:54 +898: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:54 +899: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:54 +900: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:55 +901: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:55 +902: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:55 +903: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:55 +904: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:55 +905: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:55 +906: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:55 +907: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:56 +908: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:56 +909: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:56 +910: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:56 +911: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:56 +912: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: actual start persists, resume and recalc retain identity; new start is distinct
+00:56 +913: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_layout_test.dart: favorites and panel fit Size(390.0, 844.0) 1.0 dark=true
+00:56 +914: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 320.0x640.0 scale 2.0 dark true
+00:56 +915: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 320.0x640.0 scale 2.0 dark true
+00:57 +916: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: history replay preserves filters and search, uses fresh origin and recalculates preview
+00:57 +917: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: history replay preserves filters and search, uses fresh origin and recalculates preview
+00:57 +918: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: history replay preserves filters and search, uses fresh origin and recalculates preview
+00:57 +919: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: history replay preserves filters and search, uses fresh origin and recalculates preview
+00:57 +920: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: history replay preserves filters and search, uses fresh origin and recalculates preview
+00:57 +921: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: history replay preserves filters and search, uses fresh origin and recalculates preview
+00:57 +922: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: history replay preserves filters and search, uses fresh origin and recalculates preview
+00:57 +923: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: history replay preserves filters and search, uses fresh origin and recalculates preview
+00:57 +924: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: history replay preserves filters and search, uses fresh origin and recalculates preview
+00:58 +925: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/route_history_map_test.dart: history replay preserves filters and search, uses fresh origin and recalculates preview
+00:58 +926: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 360.0x740.0 scale 1.5 dark true
+00:58 +927: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_layout_test.dart: favorites and panel fit Size(640.0, 320.0) 1.5 dark=true
+00:58 +928: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 360.0x740.0 scale 2.0 dark false
+00:58 +929: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 360.0x740.0 scale 2.0 dark false
+00:58 +930: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_layout_test.dart: favorites and panel fit Size(640.0, 320.0) 2.0 dark=true
+00:58 +931: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 360.0x740.0 scale 2.0 dark true
+00:58 +932: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 360.0x740.0 scale 2.0 dark true
+00:58 +933: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_layout_test.dart: favorites and panel fit Size(1280.0, 800.0) 1.0 dark=true
+00:58 +934: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 390.0x844.0 scale 1.0 dark false
+00:59 +935: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_layout_test.dart: favorites and panel fit Size(1280.0, 800.0) 1.5 dark=false
+00:59 +936: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 390.0x844.0 scale 1.0 dark true
+00:59 +937: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 390.0x844.0 scale 1.0 dark true
+00:59 +938: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_layout_test.dart: favorites and panel fit Size(1280.0, 800.0) 2.0 dark=false
+00:59 +939: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 390.0x844.0 scale 1.5 dark false
+00:59 +940: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/favorites_layout_test.dart: favorites and panel fit Size(1280.0, 800.0) 2.0 dark=true
+00:59 +941: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 390.0x844.0 scale 1.5 dark true
+00:59 +942: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 390.0x844.0 scale 1.5 dark true
+00:59 +943: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 390.0x844.0 scale 2.0 dark false
+01:00 +944: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 390.0x844.0 scale 2.0 dark true
+01:00 +945: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 800.0x1000.0 scale 1.0 dark false
+01:00 +946: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 800.0x1000.0 scale 1.0 dark true
+01:00 +947: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 800.0x1000.0 scale 1.5 dark false
+01:01 +948: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 800.0x1000.0 scale 1.5 dark true
+01:01 +949: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 800.0x1000.0 scale 2.0 dark false
+01:01 +950: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 800.0x1000.0 scale 2.0 dark true
+01:01 +951: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 1280.0x800.0 scale 1.0 dark false
+01:02 +952: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 1280.0x800.0 scale 1.0 dark true
+01:02 +953: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 1280.0x800.0 scale 1.5 dark false
+01:02 +954: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 1280.0x800.0 scale 1.5 dark true
+01:02 +955: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 1280.0x800.0 scale 2.0 dark false
+01:02 +956: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 1280.0x800.0 scale 2.0 dark true
+01:03 +957: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 640.0x320.0 scale 1.0 dark false
+01:03 +958: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 640.0x320.0 scale 1.0 dark true
+01:03 +959: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 640.0x320.0 scale 1.5 dark false
+01:03 +960: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 640.0x320.0 scale 1.5 dark true
+01:04 +961: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 640.0x320.0 scale 2.0 dark false
+01:04 +962: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: profile and filter layout 640.0x320.0 scale 2.0 dark true
+01:04 +963: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: preference targets, labels and contrast dark false
+01:04 +964: /workspace/scratch/b3b0ff1ac447/work/cards_52_58/project/frontend/test/accessibility_cards_09_12_test.dart: preference targets, labels and contrast dark true
+01:04 +965: All tests passed!

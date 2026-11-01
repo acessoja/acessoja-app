@@ -36,10 +36,10 @@ void showFavoriteRemoval(
           builder: (_, result) => Text(
             result.hasData
                 ? result.data == FavoriteOutcome.confirmed
-                    ? l10n.favoriteRemoved(name)
-                    : result.data == FavoriteOutcome.uncertain
-                        ? l10n.favoriteUncertain
-                        : l10n.favoriteFailed
+                      ? l10n.favoriteRemoved(name)
+                      : result.data == FavoriteOutcome.uncertain
+                      ? l10n.favoriteUncertain
+                      : l10n.favoriteFailed
                 : l10n.favoriteRemoving(name),
           ),
         ),
@@ -57,8 +57,8 @@ void showFavoriteRemoval(
                     result == FavoriteOutcome.confirmed
                         ? l10n.favoriteRestored(name)
                         : result == FavoriteOutcome.uncertain
-                            ? l10n.favoriteUncertain
-                            : l10n.favoriteUndoFailed,
+                        ? l10n.favoriteUncertain
+                        : l10n.favoriteUndoFailed,
                   ),
                 ),
               ),
@@ -88,10 +88,14 @@ class FavoriteButton extends StatefulWidget {
     required this.place,
     this.onRemoving,
     this.refreshOnMount = true,
+    this.compact = false,
+    this.onResolved,
   });
   final Map<String, dynamic> place;
   final VoidCallback? onRemoving;
   final bool refreshOnMount;
+  final bool compact;
+  final ValueChanged<Map<String, dynamic>>? onResolved;
   @override
   State<FavoriteButton> createState() => _FavoriteButtonState();
 }
@@ -128,6 +132,11 @@ class _FavoriteButtonState extends State<FavoriteButton> {
         return;
       }
       setState(() => _registering = false);
+      if (revision == controller.session &&
+          local != null &&
+          MapPlace.internal(local).internalId != null) {
+        widget.onResolved?.call(local);
+      }
       if (local?['_catalog_favorite_completed'] == true) {
         return;
       }
@@ -171,7 +180,8 @@ class _FavoriteButtonState extends State<FavoriteButton> {
     final id = _id(controller);
     if (id != null) {
       final key = '${controller.session}:$id';
-      final force = widget.refreshOnMount &&
+      final force =
+          widget.refreshOnMount &&
           (_checked != key || _checkedController != controller);
       _checked = key;
       _checkedController = controller;
@@ -184,41 +194,63 @@ class _FavoriteButtonState extends State<FavoriteButton> {
     final label = !controller.authenticated
         ? context.l10n.favoriteSignIn
         : pending
-            ? context.l10n.favoritePending
-            : failed
-                ? context.l10n.favoriteCheck
-                : id == null
-                    ? context.l10n.favoriteRegister
-                    : saved == null
-                        ? context.l10n.favoriteLoading
-                        : saved
-                            ? context.l10n.favoriteRemove
-                            : context.l10n.favoriteSave;
+        ? context.l10n.favoritePending
+        : failed
+        ? context.l10n.favoriteCheck
+        : id == null
+        ? context.l10n.favoriteRegister
+        : saved == null
+        ? context.l10n.favoriteLoading
+        : saved
+        ? context.l10n.favoriteRemove
+        : context.l10n.favoriteSave;
     return Semantics(
       label: model.name,
       toggled: saved,
-      child: OutlinedButton.icon(
-        key: ValueKey('favorite-${model.id}'),
-        style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
-        onPressed: pending ||
-                (!controller.authenticated && model.catalogId == null) ||
-                (saved == null && !failed && id != null) ||
-                id != null && !controller.exists(id)
-            ? null
-            : () => _press(controller),
-        icon: ExcludeSemantics(
-          child: Icon(
-            pending
-                ? Icons.sync
-                : failed
+      child: widget.compact
+          ? IconButton(
+              key: ValueKey('favorite-${model.id}'),
+              tooltip: '$label: ${model.name}',
+              onPressed:
+                  pending ||
+                      (!controller.authenticated && model.catalogId == null) ||
+                      (saved == null && !failed && id != null) ||
+                      id != null && !controller.exists(id)
+                  ? null
+                  : () => _press(controller),
+              icon: Icon(
+                pending
+                    ? Icons.sync
+                    : failed
                     ? Icons.help_outline
                     : saved == true
-                        ? Icons.bookmark
-                        : Icons.bookmark_border,
-          ),
-        ),
-        label: Text(label),
-      ),
+                    ? Icons.bookmark
+                    : Icons.bookmark_border,
+              ),
+            )
+          : OutlinedButton.icon(
+              key: ValueKey('favorite-${model.id}'),
+              style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
+              onPressed:
+                  pending ||
+                      (!controller.authenticated && model.catalogId == null) ||
+                      (saved == null && !failed && id != null) ||
+                      id != null && !controller.exists(id)
+                  ? null
+                  : () => _press(controller),
+              icon: ExcludeSemantics(
+                child: Icon(
+                  pending
+                      ? Icons.sync
+                      : failed
+                      ? Icons.help_outline
+                      : saved == true
+                      ? Icons.bookmark
+                      : Icons.bookmark_border,
+                ),
+              ),
+              label: Text(label),
+            ),
     );
   }
 }

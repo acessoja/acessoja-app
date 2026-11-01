@@ -1,0 +1,166 @@
+{
+  "projeto": "AcessoJá",
+  "idioma": "pt-BR",
+  "objetivo_atual": "Cards 52 a 58, painel persistente e marcadores do mapa",
+  "repositorio": "https://github.com/acessoja/acessoja-app",
+  "base_main": "2d3fdd2c7fcc33fb0de3b9a120787173d372a154",
+  "develop_consultado": "05972eadad7f6faa7d8c4eb8cad29a068b5421f8",
+  "comparacao_develop_main": "zero arquivos diferentes na consulta de 31/10/2026",
+  "contexto_anterior": "Cards 38–51 e mídia/editor já estão na main consultada; não sobrepor ZIPs antigos.",
+  "preferencias_usuario": [
+    "Quer implementação concreta por card, com testes e cuidado individual.",
+    "Máquina Windows/PowerShell, caminho histórico C:\\Users\\USER\\acessoja-app.",
+    "Precisa executar no navegador; Android SDK ausente historicamente.",
+    "Evitar pedir de novo contexto disponível e não inventar requisitos de cards ausentes."
+  ],
+  "proximo_card": 59,
+  "estado": "IMPLEMENTADO_VALIDADO_LOCALMENTE_HOMOLOGACAO_PARCIAL",
+  "entrega": "AcessoJa_Cards52_53_54_55_56_57_58.zip",
+  "como_aplicar": "py -3 aplicar_cards52_58.py --repo C:\\Users\\USER\\acessoja-app --check; depois sem --check.",
+  "arquivos_de_contexto": [
+    "docs/cards52_58/IMPLEMENTACAO.md",
+    "docs/cards52_58/CT_01_56.md",
+    "docs/cards52_58/DESEMPENHO.md",
+    "docs/cards52_58/REQUISITOS.md",
+    "docs/cards52_58/REQUISITOS_TRELLO.json",
+    "docs/cards52_58/VALIDACAO.json"
+  ],
+  "arquitetura": {
+    "backend": "Django/DRF, SQLite para testes; contratos existentes de evidência/mídia/pontos preservados",
+    "frontend": "Flutter 3.47.4 / Dart 3.13.3 / flutter_map 6.2.1",
+    "selecao": "PlacePreviewController: selectedId canônico, geração, sessão, nível, seção, scroll e origem",
+    "painel": "Stack persistente; DraggableScrollableSheet no mobile, lateral >=1000; controle de scroll real",
+    "recursos": "10 em 4 grupos; questionário v2 tem 8, piso_tatil/sinalizacao_visual independentes",
+    "api_nova": "Parâmetro opcional include_summary=true no GET de evidências já existente; resumo de todas as páginas públicas",
+    "geometria": "Mesmo agrupamento; IDs únicos, alvos >=48, retângulos reais, lista equivalente; sem HTTP no layout"
+  },
+  "validacao": {
+    "date": "2026-10-31",
+    "repository": "https://github.com/acessoja/acessoja-app",
+    "base_commit": "2d3fdd2c7fcc33fb0de3b9a120787173d372a154",
+    "status": "IMPLEMENTADO_VALIDADO_LOCALMENTE_HOMOLOGACAO_PARCIAL",
+    "sdk": {
+      "flutter": "3.47.4",
+      "dart": "3.13.3",
+      "flutter_map": "6.2.1",
+      "dependencies_changed": false
+    },
+    "frontend": {
+      "analyze": "No issues found",
+      "test": {
+        "passed": 965,
+        "all_passed": true
+      },
+      "web_build": "passed; release dart2js/CanvasKit; Wasm dry run also succeeded",
+      "android_apk": "not run; no Android SDK/device; user prefers browser"
+    },
+    "backend": {
+      "passed": 695,
+      "skipped": 29,
+      "subtests_passed": 21,
+      "coverage_percent": 84.17,
+      "coverage_gate_percent": 80,
+      "new_public_summary_tests_passed": 3,
+      "database": "SQLite test database",
+      "flake8": "passed",
+      "django_check": "passed",
+      "migration_check": "no changes",
+      "openapi_fail_on_warn": "passed",
+      "pip_check": "passed"
+    },
+    "browser": {
+      "version": "151.0.7922.34",
+      "platform": "Linux, headless Chrome for Testing",
+      "desktop": [
+        1280,
+        900
+      ],
+      "mobile": "390x844 emulation; not real mobile hardware",
+      "passed_steps": 15,
+      "screenshots": 14,
+      "page_errors": [],
+      "writes": "Only synthetic login POST; no content mutation",
+      "backend": "Real Django, disposable SQLite, real private image derivatives",
+      "input": "DOM semantic actions, Escape/Tab, pointer/scroll; no human AT"
+    },
+    "performance": {
+      "volumes": [
+        5,
+        50,
+        500
+      ],
+      "baseline_is_original_main": true,
+      "vm": "debug/JIT: 30 warmups, 80 layouts, 20 selection pumps",
+      "web": "release/CanvasKit: 3 alternating rounds, 80 layouts, 40 selection frames",
+      "network_attempts": 0,
+      "physical_gpu_frame_measurement": false,
+      "limitations": "RAF interval is harness scheduling; shared-host timing is observational"
+    },
+    "pending": [
+      "Physical Android/TalkBack/touch/rotation",
+      "Human screen reader validation",
+      "Real mobile Chrome",
+      "Contrast over varied public tiles on hardware",
+      "PostgreSQL/Redis concurrency jobs and remote CI",
+      "Conditional Qualquer/Priorizar modes absent from base; CT-45/46 dependency"
+    ],
+    "external_writes": {
+      "trello_mutated": false,
+      "commit": false,
+      "push": false,
+      "pull_request": false,
+      "merge": false,
+      "deployment": false
+    },
+    "installer": {
+      "passed": 7,
+      "cases": [
+        "dry run / full apply / backups / idempotency",
+        "CRLF preservation",
+        "divergent work protection",
+        "tampered payload",
+        "path traversal",
+        "symlink redirection",
+        "rollback after an interrupted write"
+      ]
+    },
+    "recovery": {
+      "reason": "Temporary workspace maintenance removed runtime and unsaved final execution logs.",
+      "code_recovered_from": "Canonical package version 1; every payload hash verified before resuming.",
+      "source_archive_sha256": "d42b25fd395c1ef6397eff0bcd5033e74cac59a856565d721f192b43d3fa93c2",
+      "reexecuted": [
+        "Flutter version",
+        "offline pub with enforced lockfile",
+        "flutter analyze",
+        "complete flutter test suite",
+        "seven installer filesystem checks"
+      ],
+      "retained_verified_evidence": [
+        "pytest/coverage, lint/schema/migrations/pip logs",
+        "actual compiled Flutter web build and Chrome lab",
+        "14 requested synthetic screenshots",
+        "before/after benchmark raw data"
+      ],
+      "dependencies_upgraded": false
+    }
+  },
+  "limites": [
+    "Physical Android/TalkBack/touch/rotation",
+    "Human screen reader validation",
+    "Real mobile Chrome",
+    "Contrast over varied public tiles on hardware",
+    "PostgreSQL/Redis concurrency jobs and remote CI",
+    "Conditional Qualquer/Priorizar modes absent from base; CT-45/46 dependency"
+  ],
+  "instrucoes_continuidade": [
+    "Ler requisitos completos e contexto antes de mudar código; base remota pode avançar após esta consulta.",
+    "Conferir git status/diff/branches e arquivos reais; instalador preserva conflitos e CRLF.",
+    "Não repetir correções antigas ou redesenhar o ReviewEditorScreen.",
+    "Preservar autoria/revisão, idempotência, privacidade do denunciante e pontuação confirmada pelo servidor.",
+    "Separar implementação, automação, inspeção visual e homologação humana. Não declarar Android/TalkBack/CI sem execução.",
+    "Não inventar Cards 59+; requisitos ainda não fornecidos.",
+    "A antiga imagem 08-DER-imagem.jpg estava ausente; este desenvolvimento usa o prompt Markdown completo, não essa imagem.",
+    "Nenhuma autorização nova de commit/push/merge foi exercida neste pacote."
+  ],
+  "pronto_para": "Revisão/aplicação local e PR após checks do ambiente do usuário; homologação humana pendente."
+}

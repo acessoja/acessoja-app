@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../l10n/account_strings.dart';
 import '../models/accessibility_catalog.dart';
 import '../models/evidence.dart';
@@ -7,16 +8,21 @@ import '../services/evidence_service.dart';
 import 'evidence_actions.dart';
 
 class EvidenceDetailsScreen extends StatefulWidget {
-  const EvidenceDetailsScreen(
-      {super.key,
-      this.localId,
-      this.externalId,
-      required this.resource,
-      this.service = const EvidenceService()});
+  const EvidenceDetailsScreen({
+    super.key,
+    this.localId,
+    this.externalId,
+    required this.resource,
+    this.service = const EvidenceService(),
+    this.onChanged,
+    this.onSummary,
+  });
   final int? localId;
   final String? externalId;
   final String resource;
   final EvidenceService service;
+  final VoidCallback? onChanged;
+  final ValueChanged<Map<String, dynamic>>? onSummary;
   @override
   State<EvidenceDetailsScreen> createState() => _EvidenceDetailsScreenState();
 }
@@ -77,21 +83,28 @@ class _EvidenceDetailsScreenState extends State<EvidenceDetailsScreen> {
       _error = null;
     });
     try {
-      if (next != null && !_visited.add(next)) {
+      if (next != null && _visited.contains(next)) {
         throw const EvidenceException(502);
       }
       final page = await widget.service.list(
-          localId: widget.localId,
-          externalId: widget.externalId,
-          resource: widget.resource,
-          next: next);
+        localId: widget.localId,
+        externalId: widget.externalId,
+        resource: widget.resource,
+        next: next,
+      );
       if (!mounted || generation != _generation) {
         return;
       }
       setState(() {
+        if (next != null) {
+          _visited.add(next);
+        }
         _rows = more ? [..._rows, ...page.items] : page.items;
         _next = page.next;
       });
+      if (page.summary.isNotEmpty) {
+        widget.onSummary?.call(page.summary);
+      }
     } catch (error) {
       if (mounted && generation == _generation) {
         setState(() {
@@ -108,8 +121,10 @@ class _EvidenceDetailsScreenState extends State<EvidenceDetailsScreen> {
 
   Future<void> _act(EvidenceFact original, String action) async {
     _loggingIn = true;
-    final authenticated =
-        await requireEvidenceAccount(context, force: _requiresLogin);
+    final authenticated = await requireEvidenceAccount(
+      context,
+      force: _requiresLogin,
+    );
     _loggingIn = false;
     if (!mounted || !authenticated) {
       return;
@@ -137,39 +152,55 @@ class _EvidenceDetailsScreenState extends State<EvidenceDetailsScreen> {
           throw const EvidenceException(403);
         }
         await Navigator.push(
-            context,
-            MaterialPageRoute<void>(
-                builder: (_) => ReportContentScreen(
-                    service: widget.service,
-                    target: ReportTarget(
-                        kind: 'evidence',
-                        id: current.id,
-                        revision: current.revision,
-                        description:
-                            '${_resourceName(context)}: ${evidenceValue(context, current.state)} · ${evidenceSource(context, current.source)}'))));
+          context,
+          MaterialPageRoute<void>(
+            builder: (_) => ReportContentScreen(
+              service: widget.service,
+              target: ReportTarget(
+                kind: 'evidence',
+                id: current.id,
+                revision: current.revision,
+                description:
+                    '${_resourceName(context)}: ${evidenceValue(context, current.state)} · ${evidenceSource(context, current.source)}',
+              ),
+            ),
+          ),
+        );
       } else if (action == 'confirm') {
         if (!current.canConfirm) {
           throw const EvidenceException(403);
         }
         final accepted = await showDialog<bool>(
-            context: context,
-            builder: (context) => AlertDialog(
-                    title: Text(accountText(context, 'Confirmar informação',
-                        'Confirm information')),
-                    content: Text(
-                        '${_resourceName(context)}: ${evidenceValue(context, current.state)}\n${accountText(context, 'Confirme somente se você pode sustentar esta informação. Isso não registra uma visita nem concede pontos.', 'Confirm only if you can support this information. This does not record a visit or award points.')}'),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child:
-                              Text(accountText(context, 'Cancelar', 'Cancel'))),
-                      FilledButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: Text(accountText(
-                              context,
-                              'Confirmar esta informação',
-                              'Confirm this information')))
-                    ]));
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(
+              accountText(
+                context,
+                'Confirmar informação',
+                'Confirm information',
+              ),
+            ),
+            content: Text(
+              '${_resourceName(context)}: ${evidenceValue(context, current.state)}\n${accountText(context, 'Confirme somente se você pode sustentar esta informação. Isso não registra uma visita nem concede pontos.', 'Confirm only if you can support this information. This does not record a visit or award points.')}',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(accountText(context, 'Cancelar', 'Cancel')),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(
+                  accountText(
+                    context,
+                    'Confirmar esta informação',
+                    'Confirm this information',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
         if (accepted != true ||
             session != AppHttp.sessionRevision.value ||
             generation != _generation) {
@@ -177,21 +208,40 @@ class _EvidenceDetailsScreenState extends State<EvidenceDetailsScreen> {
         }
         setState(() => _busy = true);
         await widget.service.confirm(current);
+        if (mounted &&
+            generation == _generation &&
+            session == AppHttp.sessionRevision.value) {
+          widget.onChanged?.call();
+        }
         if (mounted && generation == _generation) {
-          setState(() => _status = accountText(
-              context, 'Confirmação registrada.', 'Confirmation recorded.'));
+          setState(
+            () => _status = accountText(
+              context,
+              'Confirmação registrada.',
+              'Confirmation recorded.',
+            ),
+          );
         }
       } else {
         if (!current.canUpdate) {
           throw const EvidenceException(403);
         }
         final changed = await showDialog<bool>(
-            context: context,
-            builder: (_) =>
-                _ChangeDialog(fact: current, service: widget.service));
-        if (mounted && changed == true && generation == _generation) {
-          setState(() => _status = accountText(
-              context, 'Relato registrado.', 'Observation recorded.'));
+          context: context,
+          builder: (_) => _ChangeDialog(fact: current, service: widget.service),
+        );
+        if (mounted &&
+            changed == true &&
+            generation == _generation &&
+            session == AppHttp.sessionRevision.value) {
+          widget.onChanged?.call();
+          setState(
+            () => _status = accountText(
+              context,
+              'Relato registrado.',
+              'Observation recorded.',
+            ),
+          );
         }
       }
       if (mounted && generation == _generation) {
@@ -228,89 +278,175 @@ class _EvidenceDetailsScreenState extends State<EvidenceDetailsScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-      appBar: AppBar(
-          title: Text(
-              accountText(context, 'Fontes e datas', 'Sources and dates'))),
-      body: ListView(padding: const EdgeInsets.all(16), children: [
-        Text(_resourceName(context),
-            style: Theme.of(context).textTheme.titleLarge),
-        Text(accountText(
+    appBar: AppBar(
+      title: Text(accountText(context, 'Fontes e datas', 'Sources and dates')),
+    ),
+    body: ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text(
+          _resourceName(context),
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        Text(
+          accountText(
             context,
             'Relatos não certificam acessibilidade. Datas de registro e de importação não comprovam uma visita ou observação.',
-            'Reports do not certify accessibility. Recording and import dates do not prove a visit or observation.')),
+            'Reports do not certify accessibility. Recording and import dates do not prove a visit or observation.',
+          ),
+        ),
         if (_status != null) Semantics(liveRegion: true, child: Text(_status!)),
         if (_error != null) Semantics(liveRegion: true, child: Text(_error!)),
         if (_busy) const LinearProgressIndicator(),
         if (!_busy && _rows.isEmpty && _error == null)
-          Text(accountText(
+          Text(
+            accountText(
               context,
               'Origem não registrada. Data desconhecida. Não há evidências públicas para este recurso.',
-              'Source not recorded. Date unknown. There is no public evidence for this feature.')),
+              'Source not recorded. Date unknown. There is no public evidence for this feature.',
+            ),
+          ),
         for (final fact in _rows)
           Card(
-              child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(evidenceSource(context, fact.source),
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        Text(evidenceValue(context, fact.state)),
-                        Text(evidenceFreshness(context, fact.freshness)),
+            semanticContainer: false,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    evidenceSource(context, fact.source),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(evidenceValue(context, fact.state)),
+                  Text(evidenceFreshness(context, fact.freshness)),
+                  ExpansionTile(
+                    key: PageStorageKey('evidence-history-${fact.id}'),
+                    title: Text(
+                      accountText(
+                        context,
+                        'Ver fontes e histórico',
+                        'View sources and history',
+                      ),
+                    ),
+                    childrenPadding: const EdgeInsets.symmetric(horizontal: 12),
+                    expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${accountText(context, 'Observado em', 'Observed on')}: ${_date(fact.observedAt ?? fact.observedOn, dayOnly: fact.observedAt == null)}',
+                      ),
+                      Text(
+                        '${accountText(context, 'Registrado em', 'Recorded on')}: ${_date(fact.receivedAt)}',
+                      ),
+                      Text(
+                        '${accountText(context, 'Confirmado em', 'Confirmed on')}: ${_date(fact.confirmedAt)}',
+                      ),
+                      if (fact.source == 'openstreetmap') ...[
                         Text(
-                            '${accountText(context, 'Observado em', 'Observed on')}: ${_date(fact.observedAt ?? fact.observedOn, dayOnly: fact.observedAt == null)}'),
+                          '${accountText(context, 'Edição do mapa', 'Map snapshot')}: ${_date(evidenceDate(fact.reference['snapshot_at']))}',
+                        ),
                         Text(
-                            '${accountText(context, 'Registrado em', 'Recorded on')}: ${_date(fact.receivedAt)}'),
+                          '${accountText(context, 'Importado em', 'Imported on')}: ${_date(evidenceDate(fact.reference['imported_at']))}',
+                        ),
                         Text(
-                            '${accountText(context, 'Confirmado em', 'Confirmed on')}: ${_date(fact.confirmedAt)}'),
-                        if (fact.source == 'openstreetmap') ...[
-                          Text(
-                              '${accountText(context, 'Edição do mapa', 'Map snapshot')}: ${_date(evidenceDate(fact.reference['snapshot_at']))}'),
-                          Text(
-                              '${accountText(context, 'Importado em', 'Imported on')}: ${_date(evidenceDate(fact.reference['imported_at']))}'),
-                          Text(
-                              '${accountText(context, 'Objeto OSM editado em', 'OSM object edited on')}: ${_date(evidenceDate(fact.reference['osm_modified_at']))}'),
-                        ],
-                        if (fact.note.isNotEmpty) Text(fact.note),
-                        if (fact.source == 'openstreetmap')
-                          Text(accountText(
-                              context,
-                              'A fonte é externa. As ações abaixo tratam a exibição no AcessoJá e não editam o OpenStreetMap.',
-                              'This source is external. Actions below concern its display on AcessoJá and do not edit OpenStreetMap.')),
+                          '${accountText(context, 'Objeto OSM editado em', 'OSM object edited on')}: ${_date(evidenceDate(fact.reference['osm_modified_at']))}',
+                        ),
+                      ],
+                      if (fact.note.isNotEmpty) Text(fact.note),
+                      if (fact.source == 'openstreetmap')
+                        Text(
+                          accountText(
+                            context,
+                            'A fonte é externa. As ações abaixo tratam a exibição no AcessoJá e não editam o OpenStreetMap.',
+                            'This source is external. Actions below concern its display on AcessoJá and do not edit OpenStreetMap.',
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (fact.canConfirm || fact.canUpdate || fact.canReport)
+                    PopupMenuButton<String>(
+                      tooltip: accountText(
+                        context,
+                        'Contribuir com informação',
+                        'Contribute information',
+                      ),
+                      enabled: !_busy,
+                      onSelected: (action) => _act(fact, action),
+                      itemBuilder: (_) => [
                         if (fact.canConfirm)
-                          OutlinedButton(
-                              onPressed:
-                                  _busy ? null : () => _act(fact, 'confirm'),
-                              child: Text(accountText(
-                                  context,
-                                  'Confirmar informação',
-                                  'Confirm information'))),
+                          PopupMenuItem(
+                            value: 'confirm',
+                            child: Text(
+                              accountText(
+                                context,
+                                'Confirmar informação',
+                                'Confirm information',
+                              ),
+                            ),
+                          ),
                         if (fact.canUpdate)
-                          OutlinedButton(
-                              onPressed:
-                                  _busy ? null : () => _act(fact, 'change'),
-                              child: Text(accountText(context,
-                                  'Informar mudança', 'Report a change'))),
+                          PopupMenuItem(
+                            value: 'change',
+                            child: Text(
+                              accountText(
+                                context,
+                                'Informar mudança',
+                                'Report a change',
+                              ),
+                            ),
+                          ),
                         if (fact.canReport)
-                          TextButton(
-                              onPressed:
-                                  _busy ? null : () => _act(fact, 'report'),
-                              child: Text(accountText(
+                          PopupMenuItem(
+                            value: 'report',
+                            child: Text(
+                              accountText(
+                                context,
+                                'Denunciar informação',
+                                'Report information',
+                              ),
+                            ),
+                          ),
+                      ],
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minHeight: 48,
+                          minWidth: 48,
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.add_comment_outlined),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                accountText(
                                   context,
-                                  'Denunciar informação',
-                                  'Report information'))),
-                      ]))),
+                                  'Contribuir com informação',
+                                  'Contribute information',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
         if (!_busy && _next != null)
           OutlinedButton(
-              onPressed: () => _load(more: true),
-              child: Text(accountText(
-                  context, 'Carregar mais fontes', 'Load more sources'))),
+            onPressed: () => _load(more: true),
+            child: Text(
+              accountText(context, 'Carregar mais fontes', 'Load more sources'),
+            ),
+          ),
         OutlinedButton(
-            onPressed: _busy ? null : _load,
-            child:
-                Text(accountText(context, 'Atualizar dados', 'Refresh data'))),
-      ]));
+          onPressed: _busy ? null : _load,
+          child: Text(accountText(context, 'Atualizar dados', 'Refresh data')),
+        ),
+      ],
+    ),
+  );
 }
 
 class _ChangeDialog extends StatefulWidget {
@@ -372,7 +508,8 @@ class _ChangeDialogState extends State<_ChangeDialog> {
     }
     if (_session != AppHttp.sessionRevision.value) {
       setState(
-          () => _error = evidenceError(context, const EvidenceException(401)));
+        () => _error = evidenceError(context, const EvidenceException(401)),
+      );
       return;
     }
     setState(() {
@@ -380,10 +517,12 @@ class _ChangeDialogState extends State<_ChangeDialog> {
       _error = null;
     });
     try {
-      await widget.service.change(widget.fact,
-          value: _value,
-          note: _note.text.trim(),
-          observedOn: _parseDate(_observed.text.trim()));
+      await widget.service.change(
+        widget.fact,
+        value: _value,
+        note: _note.text.trim(),
+        observedOn: _parseDate(_observed.text.trim()),
+      );
       if (mounted && _session == AppHttp.sessionRevision.value) {
         Navigator.pop(context, true);
       }
@@ -402,82 +541,106 @@ class _ChangeDialogState extends State<_ChangeDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-          title:
-              Text(accountText(context, 'Informar mudança', 'Report a change')),
-          content: SizedBox(
-              width: 420,
-              child: SingleChildScrollView(
-                  child: Form(
-                      key: _form,
-                      child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        Text(accountText(
-                            context,
-                            'Será salvo um relato seu. Notas e comentários de outras pessoas permanecem no histórico.',
-                            'Your own observation will be saved. Other people’s ratings and comments remain in history.')),
-                        DropdownButtonFormField<String>(
-                            initialValue: _value,
-                            isExpanded: true,
-                            decoration: InputDecoration(
-                                labelText: accountText(context,
-                                    'Situação observada', 'Observed state')),
-                            items: [
-                              for (final item in [
-                                ('yes', 'Sim', 'Yes'),
-                                ('no', 'Não', 'No'),
-                                ('unknown', 'Não sei', 'Unknown'),
-                                (
-                                  'not_applicable',
-                                  'Não se aplica',
-                                  'Not applicable'
-                                )
-                              ])
-                                DropdownMenuItem(
-                                    value: item.$1,
-                                    child: Text(
-                                        accountText(context, item.$2, item.$3)))
-                            ],
-                            onChanged: _busy || _accountInvalidated
-                                ? null
-                                : (value) => setState(
-                                    () => _value = value ?? 'unknown')),
-                        TextFormField(
-                            controller: _observed,
-                            enabled: !_busy && !_accountInvalidated,
-                            decoration: InputDecoration(
-                                labelText: accountText(
-                                    context,
-                                    'Data de observação opcional (AAAA-MM-DD)',
-                                    'Optional observation date (YYYY-MM-DD)')),
-                            validator: (value) => value == null ||
-                                    value.trim().isEmpty ||
-                                    _parseDate(value.trim()) != null
-                                ? null
-                                : accountText(
-                                    context,
-                                    'Informe uma data válida, sem ser futura.',
-                                    'Enter a valid date that is not in the future.')),
-                        TextFormField(
-                            controller: _note,
-                            enabled: !_busy && !_accountInvalidated,
-                            maxLength: 1000,
-                            minLines: 2,
-                            maxLines: 5,
-                            decoration: InputDecoration(
-                                labelText: accountText(
-                                    context,
-                                    'Observação (opcional)',
-                                    'Note (optional)'))),
-                        if (_error != null)
-                          Semantics(liveRegion: true, child: Text(_error!)),
-                        if (_busy) const LinearProgressIndicator(),
-                      ])))),
-          actions: [
-            TextButton(
-                onPressed: _busy ? null : () => Navigator.pop(context),
-                child: Text(accountText(context, 'Cancelar', 'Cancel'))),
-            FilledButton(
-                onPressed: _busy || _accountInvalidated ? null : _save,
-                child: Text(accountText(context,
-                    'Confirmar envio do meu relato', 'Confirm my observation')))
-          ]);
+    title: Text(accountText(context, 'Informar mudança', 'Report a change')),
+    content: SizedBox(
+      width: 420,
+      child: SingleChildScrollView(
+        child: Form(
+          key: _form,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                accountText(
+                  context,
+                  'Será salvo um relato seu. Notas e comentários de outras pessoas permanecem no histórico.',
+                  'Your own observation will be saved. Other people’s ratings and comments remain in history.',
+                ),
+              ),
+              DropdownButtonFormField<String>(
+                initialValue: _value,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: accountText(
+                    context,
+                    'Situação observada',
+                    'Observed state',
+                  ),
+                ),
+                items: [
+                  for (final item in [
+                    ('yes', 'Sim', 'Yes'),
+                    ('no', 'Não', 'No'),
+                    ('unknown', 'Não sei', 'Unknown'),
+                    ('not_applicable', 'Não se aplica', 'Not applicable'),
+                  ])
+                    DropdownMenuItem(
+                      value: item.$1,
+                      child: Text(accountText(context, item.$2, item.$3)),
+                    ),
+                ],
+                onChanged: _busy || _accountInvalidated
+                    ? null
+                    : (value) => setState(() => _value = value ?? 'unknown'),
+              ),
+              TextFormField(
+                controller: _observed,
+                enabled: !_busy && !_accountInvalidated,
+                decoration: InputDecoration(
+                  labelText: accountText(
+                    context,
+                    'Data de observação opcional (AAAA-MM-DD)',
+                    'Optional observation date (YYYY-MM-DD)',
+                  ),
+                ),
+                validator: (value) =>
+                    value == null ||
+                        value.trim().isEmpty ||
+                        _parseDate(value.trim()) != null
+                    ? null
+                    : accountText(
+                        context,
+                        'Informe uma data válida, sem ser futura.',
+                        'Enter a valid date that is not in the future.',
+                      ),
+              ),
+              TextFormField(
+                controller: _note,
+                enabled: !_busy && !_accountInvalidated,
+                maxLength: 1000,
+                minLines: 2,
+                maxLines: 5,
+                decoration: InputDecoration(
+                  labelText: accountText(
+                    context,
+                    'Observação (opcional)',
+                    'Note (optional)',
+                  ),
+                ),
+              ),
+              if (_error != null)
+                Semantics(liveRegion: true, child: Text(_error!)),
+              if (_busy) const LinearProgressIndicator(),
+            ],
+          ),
+        ),
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: _busy ? null : () => Navigator.pop(context),
+        child: Text(accountText(context, 'Cancelar', 'Cancel')),
+      ),
+      FilledButton(
+        onPressed: _busy || _accountInvalidated ? null : _save,
+        child: Text(
+          accountText(
+            context,
+            'Confirmar envio do meu relato',
+            'Confirm my observation',
+          ),
+        ),
+      ),
+    ],
+  );
 }
