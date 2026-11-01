@@ -10,6 +10,8 @@ import '../models/evidence.dart';
 import '../services/place_preview_controller.dart';
 import '../services/app_http.dart';
 import 'favorite_button.dart';
+import 'place_maps_link.dart';
+import '../services/route_service.dart';
 import 'resource_information_list.dart';
 import 'accessibility_results_card.dart';
 import 'place_reviews_section.dart';
@@ -37,8 +39,10 @@ class MapPlacePreview extends StatefulWidget {
     this.outsideResults = false,
     this.onSearchPressed,
     this.onPickPointPressed,
+    this.externalNavigation = const ExternalNavigation(),
   });
   final Map<String, dynamic> place;
+  final ExternalNavigation externalNavigation;
   final String distanceLabel;
   final VoidCallback onDetailsPressed;
   final VoidCallback? onRoutePressed,
@@ -184,6 +188,11 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
             ),
             Text('${context.placeCategory(p)} · ${p.sourceLabel}'),
             Text(context.placeAddress(p)),
+            if (expanded && widget.coordinator?.unavailable != true)
+              PlaceMapsLink(
+                place: p.toMap(),
+                external: widget.externalNavigation,
+              ),
             if (widget.outsideResults)
               Semantics(
                 liveRegion: true,

@@ -28,6 +28,7 @@ import '../widgets/external_place_registration.dart';
 
 class ExplorarScreen extends StatefulWidget {
   final String userName;
+  final RouteRequestHandler? onRouteRequested;
   final LatLng currentLocation;
   final bool hasCurrentLocation;
   final String unidadeDistancia;
@@ -37,6 +38,7 @@ class ExplorarScreen extends StatefulWidget {
     required this.currentLocation,
     this.unidadeDistancia = 'KM',
     this.hasCurrentLocation = false,
+    this.onRouteRequested,
   });
   @override
   State<ExplorarScreen> createState() => _ExplorarScreenState();
@@ -51,8 +53,8 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
   String _ordering = 'proximity', _identity = '';
   LatLng? get _origin => PositionScope.read(context) == null
       ? widget.hasCurrentLocation
-          ? widget.currentLocation
-          : null
+            ? widget.currentLocation
+            : null
       : PositionScope.read(context)!.point;
   @override
   void initState() {
@@ -119,6 +121,11 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
               fallback: _origin,
             ),
             canReview: model.internalId != null,
+            onRouteRequested: widget.onRouteRequested == null
+                ? null
+                : (request) => widget.onRouteRequested!(
+                    request.through(RouteEntrySource.explore),
+                  ),
             onPlaceChanged: (place) => model = place,
           ),
         ),
@@ -149,9 +156,11 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
       }
       if (action == 'reviews' && model.internalId != null && mounted) {
         await Navigator.push<void>(
-            context,
-            MaterialPageRoute(
-                builder: (_) => PlaceReviewsScreen(place: model.linkedLocal)));
+          context,
+          MaterialPageRoute(
+            builder: (_) => PlaceReviewsScreen(place: model.linkedLocal),
+          ),
+        );
       }
       if (mounted) {
         _query();
@@ -222,15 +231,26 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            PlaceDetailScreen(place: place, userName: widget.userName),
+        builder: (_) => PlaceDetailScreen(
+          place: place,
+          userName: widget.userName,
+          onRouteRequested: widget.onRouteRequested == null
+              ? null
+              : (request) => widget.onRouteRequested!(
+                  request.through(RouteEntrySource.explore),
+                ),
+        ),
       ),
     );
     if (!mounted) {
       return;
     }
     if (result is PlaceRouteRequest) {
-      Navigator.pop(context, result);
+      await dispatchRouteRequest(
+        context,
+        result.through(RouteEntrySource.explore),
+        widget.onRouteRequested,
+      );
     } else {
       _query();
     }
@@ -379,7 +399,15 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                     displayNameBuilder: (name) => name,
                     onRoutePressed: routePlace(place) == null
                         ? null
-                        : () => Navigator.pop(context, place),
+                        : () => widget.onRouteRequested == null
+                              ? Navigator.pop(context, place)
+                              : dispatchRouteRequest(
+                                  context,
+                                  PlaceRouteRequest(
+                                    place,
+                                  ).through(RouteEntrySource.explore),
+                                  widget.onRouteRequested,
+                                ),
                     onDetailsPressed: () => _detail(place),
                   );
                 },
@@ -393,17 +421,16 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                         child: Text(context.l10n.retry),
                       )
                     : _data.next != null
-                        ? OutlinedButton(
-                            onPressed: _data.loading ? null : _data.load,
-                            child: Text(
-                              context.mapText('Carregar mais', 'Load more'),
-                            ),
-                          )
-                        : Text(
-                            context.mapText(
-                                'Fim dos resultados', 'End of results'),
-                            textAlign: TextAlign.center,
-                          ),
+                    ? OutlinedButton(
+                        onPressed: _data.loading ? null : _data.load,
+                        child: Text(
+                          context.mapText('Carregar mais', 'Load more'),
+                        ),
+                      )
+                    : Text(
+                        context.mapText('Fim dos resultados', 'End of results'),
+                        textAlign: TextAlign.center,
+                      ),
               ),
             Padding(
               padding: const EdgeInsets.all(16),
@@ -423,8 +450,9 @@ class _ExplorarScreenState extends State<ExplorarScreen> {
                 onRoutePressed: model.hasCoordinates
                     ? () => Navigator.pop(context, model.toMap())
                     : null,
-                onDetailsPressed:
-                    _openingCatalog ? null : () => _catalogDetail(model),
+                onDetailsPressed: _openingCatalog
+                    ? null
+                    : () => _catalogDetail(model),
               ),
           ],
         ),

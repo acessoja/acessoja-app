@@ -1,0 +1,12 @@
+test_crlf_is_preserved_and_reapplication_is_safe (__main__.InstallerTests.test_crlf_is_preserved_and_reapplication_is_safe) ... ok
+test_divergent_user_work_is_retained_without_partial_writes (__main__.InstallerTests.test_divergent_user_work_is_retained_without_partial_writes) ... ok
+test_dry_run_complete_apply_backups_and_idempotency (__main__.InstallerTests.test_dry_run_complete_apply_backups_and_idempotency) ... ok
+test_interrupted_write_rolls_back_previous_files (__main__.InstallerTests.test_interrupted_write_rolls_back_previous_files) ... ok
+test_symlink_cannot_redirect_writes (__main__.InstallerTests.test_symlink_cannot_redirect_writes) ... ok
+test_tampered_payload_is_rejected_before_writing (__main__.InstallerTests.test_tampered_payload_is_rejected_before_writing) ... ok
+test_traversal_is_rejected (__main__.InstallerTests.test_traversal_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 1.660s
+
+OK

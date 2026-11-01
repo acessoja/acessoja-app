@@ -1,4 +1,5 @@
 import '../models/place_distance.dart';
+import '../navigation.dart';
 import '../services/current_position.dart';
 import 'package:flutter/material.dart';
 import '../l10n/strings.dart';
@@ -16,13 +17,16 @@ class MapPlaceDetailsScreen extends StatefulWidget {
   final bool canReview;
   final ValueChanged<MapPlace>? onPlaceChanged;
   final bool detailsFailed;
-  const MapPlaceDetailsScreen(
-      {super.key,
-      required this.place,
-      required this.distanceLabel,
-      required this.canReview,
-      this.onPlaceChanged,
-      this.detailsFailed = false});
+  final RouteRequestHandler? onRouteRequested;
+  const MapPlaceDetailsScreen({
+    super.key,
+    required this.place,
+    required this.distanceLabel,
+    required this.canReview,
+    this.onPlaceChanged,
+    this.detailsFailed = false,
+    this.onRouteRequested,
+  });
   @override
   State<MapPlaceDetailsScreen> createState() => _DetailsState();
 }
@@ -72,36 +76,53 @@ class _DetailsState extends State<MapPlaceDetailsScreen> {
   Widget build(BuildContext context) {
     final model = _preview.place ?? _original;
     return Scaffold(
-        appBar: AppBar(
-            toolbarHeight: 56 * MediaQuery.textScalerOf(context).scale(1),
-            title: Text(context.l10n.details)),
-        body: _session != AppHttp.sessionRevision.value
-            ? Center(
-                child: Text(context.mapText(
-                    'Sessão alterada. Abra o local novamente para atualizar os dados.',
-                    'Session changed. Open the place again to refresh its data.')))
-            : Center(
-                child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 680),
-                    child: MapPlacePreview(
-                        place: model.toMap(),
-                        distanceLabel: PositionScope.maybeOf(context) == null
-                            ? widget.distanceLabel
-                            : placeDistanceLabel(context, model),
-                        detailed: true,
-                        loadingDetails: _preview.loading,
-                        detailsFailed: widget.detailsFailed || _preview.failed,
-                        onRetryDetails:
-                            _original.catalogId == null ? null : _preview.retry,
-                        onDetailsPressed: () {},
-                        onRoutePressed: model.hasCoordinates
-                            ? () => Navigator.pop(context, 'route')
-                            : null,
-                        onEvaluatePressed: () =>
-                            Navigator.pop(context, 'evaluate'),
-                        onReviewsPressed:
-                            (widget.canReview || model.internalId != null)
-                                ? () => Navigator.pop(context, 'reviews')
-                                : null))));
+      appBar: AppBar(
+        toolbarHeight: 56 * MediaQuery.textScalerOf(context).scale(1),
+        title: Text(context.l10n.details),
+      ),
+      body: _session != AppHttp.sessionRevision.value
+          ? Center(
+              child: Text(
+                context.mapText(
+                  'Sessão alterada. Abra o local novamente para atualizar os dados.',
+                  'Session changed. Open the place again to refresh its data.',
+                ),
+              ),
+            )
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 680),
+                child: MapPlacePreview(
+                  place: model.toMap(),
+                  distanceLabel: PositionScope.maybeOf(context) == null
+                      ? widget.distanceLabel
+                      : placeDistanceLabel(context, model),
+                  detailed: true,
+                  loadingDetails: _preview.loading,
+                  detailsFailed: widget.detailsFailed || _preview.failed,
+                  onRetryDetails: _original.catalogId == null
+                      ? null
+                      : _preview.retry,
+                  onDetailsPressed: () {},
+                  onRoutePressed: model.hasCoordinates
+                      ? () => widget.onRouteRequested == null
+                            ? Navigator.pop(context, 'route')
+                            : dispatchRouteRequest(
+                                context,
+                                PlaceRouteRequest(
+                                  model.toMap(),
+                                ).through(RouteEntrySource.details),
+                                widget.onRouteRequested,
+                              )
+                      : null,
+                  onEvaluatePressed: () => Navigator.pop(context, 'evaluate'),
+                  onReviewsPressed:
+                      (widget.canReview || model.internalId != null)
+                      ? () => Navigator.pop(context, 'reviews')
+                      : null,
+                ),
+              ),
+            ),
+    );
   }
 }
