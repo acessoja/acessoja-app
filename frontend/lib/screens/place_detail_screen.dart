@@ -4,6 +4,9 @@ import '../widgets/load_error.dart';
 import '../widgets/favorite_button.dart';
 import '../services/review_changes.dart';
 import '../navigation.dart';
+import '../services/app_http.dart';
+import '../services/places_service.dart';
+import '../widgets/place_maps_link.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
 import '../l10n/map_strings.dart';
@@ -23,12 +26,14 @@ class PlaceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> place;
   final String userName;
   final ApiService? apiService;
+  final RouteRequestHandler? onRouteRequested;
 
   const PlaceDetailScreen({
     super.key,
     required this.place,
     required this.userName,
     this.apiService,
+    this.onRouteRequested,
   });
 
   @override
@@ -38,15 +43,63 @@ class PlaceDetailScreen extends StatefulWidget {
 class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
   late final ApiService _apiService = widget.apiService ?? HttpApiService();
   List<dynamic> comments = [];
+  final _account = AppHttp.sessionRevision.value;
   int _loadGeneration = 0;
   int _resourceRevision = 0;
   bool _isLoading = true;
   bool _loadFailed = false;
+  bool _unavailable = false, _returnRefreshFailed = false;
+  void _sessionChanged() {
+    _loadGeneration++;
+    if (mounted) {
+      setState(() {
+        comments = [];
+        _unavailable = true;
+      });
+    }
+  }
+
+  Future<void> _requestRoute(PlaceRouteRequest request) async {
+    await dispatchRouteRequest(context, request, widget.onRouteRequested);
+    final id = widget.place['id_local'];
+    if (widget.onRouteRequested == null ||
+        !mounted ||
+        _account != AppHttp.sessionRevision.value ||
+        id is! int) {
+      return;
+    }
+    try {
+      await const PlacesService().fetchPlace(id);
+      if (mounted && _account == AppHttp.sessionRevision.value) {
+        setState(() => _returnRefreshFailed = false);
+      }
+    } catch (error) {
+      if (!mounted || _account != AppHttp.sessionRevision.value) return;
+      setState(() {
+        _unavailable =
+            error is PlacesException && {404, 410}.contains(error.status);
+        _returnRefreshFailed = !_unavailable;
+      });
+      if (_returnRefreshFailed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.mapText(
+                'Não foi possível atualizar o local. Os dados anteriores continuam disponíveis.',
+                'Could not refresh the place. Previous data remains available.',
+              ),
+            ),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
     _loadGeneration++;
     reviewChanges.removeListener(_loadAllData);
+    AppHttp.sessionRevision.removeListener(_sessionChanged);
     super.dispose();
   }
 
@@ -54,6 +107,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
   void initState() {
     super.initState();
     reviewChanges.addListener(_loadAllData);
+    AppHttp.sessionRevision.addListener(_sessionChanged);
     _loadAllData();
   }
 
@@ -73,8 +127,9 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
       _loadFailed = false;
     });
     try {
-      final data =
-          await _apiService.fetchEvaluations(localId: widget.place['id_local']);
+      final data = await _apiService.fetchEvaluations(
+        localId: widget.place['id_local'],
+      );
       if (!mounted || generation != _loadGeneration) {
         return;
       }
@@ -96,10 +151,12 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
 
   double? get _reportedAverage {
     final current = comments
-        .where((row) =>
-            row is Map &&
-            row['is_current'] != false &&
-            row['is_valid'] != false)
+        .where(
+          (row) =>
+              row is Map &&
+              row['is_current'] != false &&
+              row['is_valid'] != false,
+        )
         .toList();
     if (current.isEmpty) {
       return null;
@@ -120,18 +177,26 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
 
   double get averageRating => _reportedAverage ?? 0;
 
-  String getCommentsCountString() => context.l10n.reviewCount(comments
-      .where((row) =>
-          row is Map && row['is_current'] != false && row['is_valid'] != false)
-      .length);
+  String getCommentsCountString() => context.l10n.reviewCount(
+    comments
+        .where(
+          (row) =>
+              row is Map &&
+              row['is_current'] != false &&
+              row['is_valid'] != false,
+        )
+        .length,
+  );
 
   String getLocalDisplayName(String name) => name;
 
   Future<void> _openReviewEditor() async {
     final changed = await Navigator.push<bool>(
-        context,
-        MaterialPageRoute(
-            builder: (_) => ReviewEditorScreen(place: widget.place)));
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReviewEditorScreen(place: widget.place),
+      ),
+    );
     if (mounted && changed == true) {
       await _loadAllData();
     }
@@ -145,8 +210,9 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
       child: imagePath.isNotEmpty
           ? Image.asset(
               imagePath,
-              semanticLabel: context.l10n
-                  .placeImage((widget.place['nome'] ?? '').toString()),
+              semanticLabel: context.l10n.placeImage(
+                (widget.place['nome'] ?? '').toString(),
+              ),
               width: double.infinity,
               height: 190,
               fit: BoxFit.cover,
@@ -163,20 +229,22 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
     final colors = AppColors.of(context);
 
     return Semantics(
-        image: true,
-        excludeSemantics: true,
-        label: context.l10n
-            .placeImagePlaceholder((widget.place['nome'] ?? '').toString()),
-        child: Container(
-          width: double.infinity,
-          height: 190,
-          color: colors.primarySoft,
-          child: Icon(
-            Icons.business_outlined,
-            color: colors.primaryDark,
-            size: 64,
-          ),
-        ));
+      image: true,
+      excludeSemantics: true,
+      label: context.l10n.placeImagePlaceholder(
+        (widget.place['nome'] ?? '').toString(),
+      ),
+      child: Container(
+        width: double.infinity,
+        height: 190,
+        color: colors.primarySoft,
+        child: Icon(
+          Icons.business_outlined,
+          color: colors.primaryDark,
+          size: 64,
+        ),
+      ),
+    );
   }
 
   Widget _buildPlaceHeader() {
@@ -206,9 +274,12 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
           _buildPlaceImage(),
           const SizedBox(height: 8),
           Text(
-              context.mapText('Horário de funcionamento não informado',
-                  'Opening hours not reported'),
-              style: TextStyle(color: colors.muted)),
+            context.mapText(
+              'Horário de funcionamento não informado',
+              'Opening hours not reported',
+            ),
+            style: TextStyle(color: colors.muted),
+          ),
           const SizedBox(height: 16),
           Text(
             name,
@@ -243,6 +314,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
               ],
             ),
           ],
+          PlaceMapsLink(place: widget.place),
         ],
       ),
     );
@@ -253,65 +325,87 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
     final count = comments.length;
     final label = _reportedAverage == null
         ? count == 0
-            ? context.l10n.noPlaceReviews
-            : context.l10n.placeRatingUnknown
+              ? context.l10n.noPlaceReviews
+              : context.l10n.placeRatingUnknown
         : '${context.l10n.ratingValue(context.number(averageRating))}. ${context.l10n.reviewCount(count)}';
-    final description =
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(context.l10n.userRating,
-          style: TextStyle(color: colors.text, fontWeight: FontWeight.w800)),
-      Text(
+    final description = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.l10n.userRating,
+          style: TextStyle(color: colors.text, fontWeight: FontWeight.w800),
+        ),
+        Text(
           count == 0
               ? context.mapText(
-                  'Sem avaliações no AcessoJá', 'No reviews on AcessoJá')
+                  'Sem avaliações no AcessoJá',
+                  'No reviews on AcessoJá',
+                )
               : getCommentsCountString(),
-          style: TextStyle(color: colors.muted)),
-    ]);
-    final rating =
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(context.number(averageRating),
+          style: TextStyle(color: colors.muted),
+        ),
+      ],
+    );
+    final rating = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.number(averageRating),
           style: TextStyle(
-              color: colors.text, fontSize: 30, fontWeight: FontWeight.w800)),
-      Row(
+            color: colors.text,
+            fontSize: 30,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        Row(
           mainAxisSize: MainAxisSize.min,
           children: List.generate(
-              5,
-              (index) => Icon(
-                  index < averageRating.round()
-                      ? Icons.star
-                      : Icons.star_border,
-                  size: 19,
-                  color: Colors.amber))),
-    ]);
+            5,
+            (index) => Icon(
+              index < averageRating.round() ? Icons.star : Icons.star_border,
+              size: 19,
+              color: Colors.amber,
+            ),
+          ),
+        ),
+      ],
+    );
     return Semantics(
-        label: label,
-        excludeSemantics: true,
-        child: Container(
-          margin: const EdgeInsets.only(top: 14),
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: colors.border)),
-          child: LayoutBuilder(builder: (context, bounds) {
+      label: label,
+      excludeSemantics: true,
+      child: Container(
+        margin: const EdgeInsets.only(top: 14),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: colors.border),
+        ),
+        child: LayoutBuilder(
+          builder: (context, bounds) {
             if (bounds.maxWidth < 400 ||
                 MediaQuery.textScalerOf(context).scale(14) > 22) {
               return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    description,
-                    if (_reportedAverage != null) ...[
-                      const SizedBox(height: 12),
-                      rating
-                    ],
-                  ]);
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  description,
+                  if (_reportedAverage != null) ...[
+                    const SizedBox(height: 12),
+                    rating,
+                  ],
+                ],
+              );
             }
-            return Row(children: [
-              Expanded(child: description),
-              if (_reportedAverage != null) rating
-            ]);
-          }),
-        ));
+            return Row(
+              children: [
+                Expanded(child: description),
+                if (_reportedAverage != null) rating,
+              ],
+            );
+          },
+        ),
+      ),
+    );
   }
 
   Widget _buildRouteButton() {
@@ -323,8 +417,10 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
         button: true,
         label: context.l10n.routeTo((widget.place['nome'] ?? '').toString()),
         child: ConstrainedBox(
-          constraints:
-              const BoxConstraints(minHeight: 50, minWidth: double.infinity),
+          constraints: const BoxConstraints(
+            minHeight: 50,
+            minWidth: double.infinity,
+          ),
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: colors.primary,
@@ -335,33 +431,37 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
               elevation: 0,
             ),
             onPressed: () async {
+              if (_account != AppHttp.sessionRevision.value) return;
               if (routePlace(widget.place) == null) {
-                final point = await Navigator.push<LatLng>(context,
-                    MaterialPageRoute(builder: (_) => const MapPointPicker()));
-                if (!mounted) {
+                final point = await Navigator.push<LatLng>(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MapPointPicker()),
+                );
+                if (!mounted || _account != AppHttp.sessionRevision.value) {
                   return;
                 }
                 if (point != null) {
-                  Navigator.pop(
-                      context,
-                      PlaceRouteRequest({
-                        'nome': widget.place['nome'],
-                        'source': 'manual',
-                        'latitude': point.latitude,
-                        'longitude': point.longitude
-                      }));
+                  await _requestRoute(
+                    PlaceRouteRequest({
+                      'nome': widget.place['nome'],
+                      'source': 'manual',
+                      'latitude': point.latitude,
+                      'longitude': point.longitude,
+                    }).through(RouteEntrySource.details),
+                  );
                 }
                 return;
               }
-              Navigator.pop(context, PlaceRouteRequest(widget.place));
+              await _requestRoute(
+                PlaceRouteRequest(
+                  widget.place,
+                ).through(RouteEntrySource.details),
+              );
             },
             icon: const Icon(Icons.directions_rounded, size: 20),
             label: Text(
               context.l10n.startRoute,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-              ),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
             ),
           ),
         ),
@@ -436,8 +536,9 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
                   Flexible(
                     child: Text(
                       context.mapText(
-                          'Use Avaliar para compartilhar sua experiência.',
-                          'Use Review to share your experience.'),
+                        'Use Avaliar para compartilhar sua experiência.',
+                        'Use Review to share your experience.',
+                      ),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -458,8 +559,8 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
     final colors = AppColors.of(context);
     final stars = (comment['estrelas'] as num?)?.toInt() ?? 0;
     final text = (comment['comentario'] ?? '').toString();
-    final nomeUsuario =
-        (comment['nome_usuario'] ?? context.l10n.anonymousUser).toString();
+    final nomeUsuario = (comment['nome_usuario'] ?? context.l10n.anonymousUser)
+        .toString();
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
@@ -523,31 +624,42 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
         const SizedBox(height: 26),
         if (widget.place['id_local'] is num)
           AccessibilityResultsCard(
-              localId: (widget.place['id_local'] as num).toInt(),
-              revision: _resourceRevision,
-              registeredData: widget.place,
-              onViewReviews: () async {
-                await Navigator.push<void>(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            PlaceReviewsScreen(place: widget.place)));
-                if (mounted) {
-                  await _loadAllData();
-                }
-              }),
+            localId: (widget.place['id_local'] as num).toInt(),
+            revision: _resourceRevision,
+            registeredData: widget.place,
+            onViewReviews: () async {
+              await Navigator.push<void>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PlaceReviewsScreen(place: widget.place),
+                ),
+              );
+              if (mounted) {
+                await _loadAllData();
+              }
+            },
+          ),
         if (widget.place['id_local'] is num ||
             widget.place['internal_id'] is num)
           OutlinedButton(
-              onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                      builder: (_) => PhotoGalleryScreen(
-                          localId: ((widget.place['id_local'] ??
-                                  widget.place['internal_id']) as num)
-                              .toInt()))),
-              child: Text(context.mapText('Fotos das avaliações deste local',
-                  'Review photos of this place'))),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => PhotoGalleryScreen(
+                  localId:
+                      ((widget.place['id_local'] ?? widget.place['internal_id'])
+                              as num)
+                          .toInt(),
+                ),
+              ),
+            ),
+            child: Text(
+              context.mapText(
+                'Fotos das avaliações deste local',
+                'Review photos of this place',
+              ),
+            ),
+          ),
         Text(
           context.l10n.commentsHistory,
           style: TextStyle(
@@ -567,13 +679,19 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
 
   Widget _buildEvaluationSection() {
     return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: FilledButton.icon(
-            key: const ValueKey('detail-review'),
-            onPressed: _openReviewEditor,
-            icon: const Icon(Icons.rate_review_outlined),
-            label: Text(context.mapText('Avaliar ou editar minha avaliação',
-                'Review or edit my review'))));
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: FilledButton.icon(
+        key: const ValueKey('detail-review'),
+        onPressed: _openReviewEditor,
+        icon: const Icon(Icons.rate_review_outlined),
+        label: Text(
+          context.mapText(
+            'Avaliar ou editar minha avaliação',
+            'Review or edit my review',
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildLoadingState() {
@@ -637,7 +755,7 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
         ),
         titleSpacing: 12,
         title: Text(
-          title,
+          _unavailable ? context.l10n.details : title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -647,41 +765,64 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
           ),
         ),
       ),
-      body: _loadFailed
-          ? LoadError(onRetry: _loadAllData)
-          : _isLoading
-              ? _buildLoadingState()
-              : SafeArea(
-                  top: false,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final horizontalPadding =
-                          constraints.maxWidth < 360 ? 16.0 : 24.0;
-
-                      return Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 560),
-                          child: ListView(
-                            padding: EdgeInsets.fromLTRB(
-                              horizontalPadding,
-                              8,
-                              horizontalPadding,
-                              12,
-                            ),
-                            children: [
-                              _buildPlaceHeader(),
-                              FavoriteButton(place: widget.place),
-                              _buildRatingSummary(),
-                              _buildRouteButton(),
-                              _buildCommentsSection(),
-                              _buildEvaluationSection(),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+      body: _unavailable
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  context.mapText(
+                    'Local indisponível ou sessão alterada. Volte à lista para atualizar os dados.',
+                    'Place unavailable or session changed. Return to the list to refresh data.',
                   ),
                 ),
+              ),
+            )
+          : _loadFailed
+          ? LoadError(onRetry: _loadAllData)
+          : _isLoading
+          ? _buildLoadingState()
+          : SafeArea(
+              top: false,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final horizontalPadding = constraints.maxWidth < 360
+                      ? 16.0
+                      : 24.0;
+
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 560),
+                      child: ListView(
+                        padding: EdgeInsets.fromLTRB(
+                          horizontalPadding,
+                          8,
+                          horizontalPadding,
+                          12,
+                        ),
+                        children: [
+                          if (_returnRefreshFailed)
+                            Semantics(
+                              liveRegion: true,
+                              child: Text(
+                                context.mapText(
+                                  'Não foi possível atualizar o local. Os dados anteriores continuam disponíveis.',
+                                  'Could not refresh the place. Previous data remains available.',
+                                ),
+                              ),
+                            ),
+                          _buildPlaceHeader(),
+                          FavoriteButton(place: widget.place),
+                          _buildRatingSummary(),
+                          _buildRouteButton(),
+                          _buildCommentsSection(),
+                          _buildEvaluationSection(),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
     );
   }
 }

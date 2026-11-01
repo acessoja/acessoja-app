@@ -353,12 +353,14 @@ void main() {
       final t = c.capture()!;
       final request = PlaceRouteRequest(
         c.place!.toMap(),
-        returnContext: {'id': t.id, 'origin': t.origin, 'offset': t.offset},
+        returnContext: RouteReturnContext(panel: t, origin: t.origin),
       );
       c.suspend();
       expect(c.visible, isFalse);
       expect(request.place['id_local'], 1);
-      expect(request.returnContext!['origin'], 'saved');
+      expect(request.returnContext.origin, 'saved');
+      expect(request.returnContext.panel, same(t));
+      expect(request.returnContext.panel!.offset, 90);
       expect(c.restore(t), isTrue);
       expect(c.section, PlacePanelSection.reviews);
       expect(c.scrollOffset, 90);

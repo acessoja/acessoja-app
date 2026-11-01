@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/place_preview_controller.dart';
 import 'map_place_preview.dart';
 import 'accessibility_host.dart';
+import '../services/route_service.dart';
 
 /// No route/barrier: hit testing belongs only to the visible sheet/siderail.
 class PersistentPlacePanel extends StatefulWidget {
@@ -16,8 +17,10 @@ class PersistentPlacePanel extends StatefulWidget {
     this.preferredResources = const {},
     this.outsideResults = false,
     this.onSearch,
+    this.externalNavigation = const ExternalNavigation(),
   });
   final PlacePreviewController controller;
+  final ExternalNavigation externalNavigation;
   final String Function(Map<String, dynamic>) distanceLabel;
   final ValueChanged<String> onAction;
   final ValueChanged<Rect> onGeometry;
@@ -89,6 +92,7 @@ class _PersistentPlacePanelState extends State<PersistentPlacePanel> {
         return false;
       },
       child: MapPlacePreview(
+        externalNavigation: widget.externalNavigation,
         key: _contentKey,
         place: p.toMap(),
         coordinator: c,

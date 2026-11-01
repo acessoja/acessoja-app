@@ -1,0 +1,1002 @@
+[
+  {
+    "id": "CT-59-61-001",
+    "cenario": "Mapa/painel compacto",
+    "preparacao_acao": "Selecionar A, manter o painel compacto, abrir prévia e cancelar.",
+    "esperado": "A reaparece compacto; seleção, câmera anterior, busca e filtros continuam válidos.",
+    "responsabilidade": "Widget/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-002",
+    "cenario": "Painel expandido",
+    "preparacao_acao": "Abrir A expandido na seção de acessibilidade, rolar, planejar e cancelar.",
+    "esperado": "Restaurar o mesmo local, seção, nível e offset possível; sem reconstruir outra seleção.",
+    "responsabilidade": "Widget/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-003",
+    "cenario": "Detalhes a partir do mapa",
+    "preparacao_acao": "Abrir detalhes de A, traçar rota e cancelar.",
+    "esperado": "Voltar ao mesmo detalhe; o Voltar seguinte retorna ao mapa correto, sem tela duplicada.",
+    "responsabilidade": "Integração · 59",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "O detalhe do mapa usa painel persistente; homologar o detalhe OSM isolado completo."
+  },
+  {
+    "id": "CT-59-61-004",
+    "cenario": "Salvos → detalhes",
+    "preparacao_acao": "Aplicar busca em Salvos, rolar, abrir A, traçar e cancelar.",
+    "esperado": "Restaurar detalhe de A e hierarquia Salvos; busca e posição da lista permanecem.",
+    "responsabilidade": "Integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-005",
+    "cenario": "Rota direta de Salvos",
+    "preparacao_acao": "Acionar Traçar rota diretamente em uma linha de Salvos e cancelar.",
+    "esperado": "Retornar à lista original; não inventar uma tela de detalhes intermediária.",
+    "responsabilidade": "Integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-006",
+    "cenario": "Explorar → local",
+    "preparacao_acao": "Escolher categoria em Explorar, abrir A, iniciar/encerrar uma navegação válida.",
+    "esperado": "Retornar à origem real de exploração com categoria, contexto e local pertinentes.",
+    "responsabilidade": "Integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-007",
+    "cenario": "Busca com filtros",
+    "preparacao_acao": "Pesquisar termo, aplicar filtros, selecionar A, planejar e cancelar.",
+    "esperado": "Preservar termo, filtros, ordenação e seleção válida; sem nova busca incompatível.",
+    "responsabilidade": "Integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-008",
+    "cenario": "Histórico pelas Configurações",
+    "preparacao_acao": "Abrir Configurações → Histórico, usar Traçar novamente e cancelar.",
+    "esperado": "Voltar ao histórico com Configurações como anterior; manter posição de leitura.",
+    "responsabilidade": "Integração · 59/61",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-009",
+    "cenario": "Ponto manual",
+    "preparacao_acao": "Escolher ponto sem estabelecimento, planejar e cancelar/encerrar.",
+    "esperado": "Restaurar o contexto do ponto; não cadastrar local, visita ou avaliação fictícios.",
+    "responsabilidade": "Integração · 59/61",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Fluxo manual com provedores controlados; homologar retorno de ponto em aparelho."
+  },
+  {
+    "id": "CT-59-61-010",
+    "cenario": "Recuperação de coordenada cancelada",
+    "preparacao_acao": "Em local sem ponto válido, abrir o seletor existente e desistir.",
+    "esperado": "Permanecer no contexto anterior; não iniciar planejamento com coordenada inventada.",
+    "responsabilidade": "Widget/integração · 59",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Picker preservado; homologar cancelamento em aparelho."
+  },
+  {
+    "id": "CT-59-61-011",
+    "cenario": "Recuperação de coordenada concluída",
+    "preparacao_acao": "Escolher ponto no fluxo de recuperação, consultar prévia e cancelar.",
+    "esperado": "Retorno usa o contexto original; cadastro do local só muda se houver ação própria autorizada.",
+    "responsabilidade": "Integração · 59",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Ponto manual e guardas preservados; homologar recuperação integral no aparelho."
+  },
+  {
+    "id": "CT-59-61-012",
+    "cenario": "Encaminhamento entre telas",
+    "preparacao_acao": "Exercitar todos os consumidores de PlaceRouteRequest, inclusive Configurações/Salvos.",
+    "esperado": "O contexto necessário chega ao coordenador; nenhuma chamada descarta dados silenciosamente.",
+    "responsabilidade": "Unidade/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-013",
+    "cenario": "Painel já montado",
+    "preparacao_acao": "Voltar de rota quando mapa e seu controlador continuam montados.",
+    "esperado": "Reutilizar o estado proprietário; não redefinir câmera/filtros por um snapshot desnecessário.",
+    "responsabilidade": "Widget/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-014",
+    "cenario": "Redimensionamento durante rota",
+    "preparacao_acao": "Começar em painel lateral desktop, mudar para largura móvel e sair da rota.",
+    "esperado": "Restaurar a identidade/seção em layout adequado, sem perder estado nem criar outro controlador.",
+    "responsabilidade": "Widget/browser · 59/60",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Layouts e retorno cobertos; redimensionamento durante viagem requer homologação adicional."
+  },
+  {
+    "id": "CT-59-61-015",
+    "cenario": "Identidades de fontes distintas",
+    "preparacao_acao": "Usar local interno e OSM com identificadores numéricos semelhantes.",
+    "esperado": "Retorno e marcador pertencem à fonte correta; nenhuma colisão de identidade.",
+    "responsabilidade": "Unidade/integração · 59",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Identidades/callbacks A/B cobertos; repetir colisão numérica no aparelho."
+  },
+  {
+    "id": "CT-59-61-016",
+    "cenario": "Repetição do percurso de telas",
+    "preparacao_acao": "Repetir detalhes → rota → cancelar várias vezes e depois usar Voltar.",
+    "esperado": "A pilha não cresce por restaurações duplicadas; cada Voltar alcança o destino esperado.",
+    "responsabilidade": "Integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; map_panel_cards_52_58_test; route_history_map_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-017",
+    "cenario": "Escolha inicial de origem",
+    "preparacao_acao": "Em choosingOrigin sem sessão iniciada, usar X/Voltar.",
+    "esperado": "Cancelar o planejamento e retornar sem confirmação de fim de viagem ou histórico.",
+    "responsabilidade": "Widget/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-018",
+    "cenario": "Cálculo inicial pendente",
+    "preparacao_acao": "Cancelar enquanto a primeira consulta OSRM ainda está pendente.",
+    "esperado": "Retornar imediatamente; a resposta posterior não restaura rota ou painel de navegação.",
+    "responsabilidade": "Unidade/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-019",
+    "cenario": "Prévia nunca iniciada",
+    "preparacao_acao": "Em preview inicial, usar Cancelar rota.",
+    "esperado": "Sem started/cancelled de uma sessão inexistente; origem restaurada.",
+    "responsabilidade": "Widget/integração · 59/61",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-020",
+    "cenario": "Falha no primeiro cálculo",
+    "preparacao_acao": "Produzir failed antes de qualquer início e usar a saída.",
+    "esperado": "Mostrar erro recuperável e retornar corretamente sem inventar viagem.",
+    "responsabilidade": "Widget/integração · 59/60",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-021",
+    "cenario": "X ativo → continuar",
+    "preparacao_acao": "Com running, tocar X e escolher Continuar navegando.",
+    "esperado": "Uma confirmação; manter mesma sessão, destino e estado válido, sem evento terminal.",
+    "responsabilidade": "Widget/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-022",
+    "cenario": "Back ativo → encerrar",
+    "preparacao_acao": "Com running, usar Back e confirmar Encerrar e voltar.",
+    "esperado": "Uma finalização voluntária, retorno correto e nenhuma chegada falsa.",
+    "responsabilidade": "Integração/Android · 59/61",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Back de widget/encerramento verificados; gesto Android físico pendente."
+  },
+  {
+    "id": "CT-59-61-023",
+    "cenario": "Interrompida → continuar",
+    "preparacao_acao": "Com interrupted por GPS, abrir confirmação e escolher Continuar.",
+    "esperado": "Permanecer interrupted até ação/condições válidas; não forçar running.",
+    "responsabilidade": "Widget/integração · 59",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Interrupção/retomada/confirmacão cobertas; homologar sequência completa em aparelho."
+  },
+  {
+    "id": "CT-59-61-024",
+    "cenario": "Encerrar deliberadamente",
+    "preparacao_acao": "Acionar o botão explícito Encerrar navegação.",
+    "esperado": "Executar uma intenção terminal e um retorno; não encadear confirmações/efeitos duplicados.",
+    "responsabilidade": "Widget/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-025",
+    "cenario": "Chegada → concluir",
+    "preparacao_acao": "Produzir chegada pelo controlador e usar Concluir e voltar.",
+    "esperado": "Preservar completed; não emitir cancelled na limpeza da interface.",
+    "responsabilidade": "Unidade/integração · 59/61",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-026",
+    "cenario": "Planejamento após início",
+    "preparacao_acao": "Iniciar, revisar origem/entrar em novo preview e tentar sair.",
+    "esperado": "Reconhecer que a sessão já começou; aplicar a política de confirmação/finalização adequada.",
+    "responsabilidade": "Unidade/integração · 59/61",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-027",
+    "cenario": "Desistência do diálogo",
+    "preparacao_acao": "Abrir confirmação e dispensá-la por Escape/Back ou fora, quando permitido.",
+    "esperado": "Resultado não destrutivo; sessão e contexto mantidos.",
+    "responsabilidade": "Widget · 59/60",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-028",
+    "cenario": "Menu sobre a rota",
+    "preparacao_acao": "Abrir Mais opções e pressionar Back/Escape.",
+    "esperado": "Fechar só o menu; não consumir o mesmo evento para cancelar/encerrar a rota.",
+    "responsabilidade": "Widget/browser · 59/60",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-029",
+    "cenario": "Escape sem rota",
+    "preparacao_acao": "Com apenas painel expandido/compacto, usar Escape conforme a sequência existente.",
+    "esperado": "Manter a política dos Cards 52–58, sem abrir diálogo de navegação inexistente.",
+    "responsabilidade": "Widget/browser · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-030",
+    "cenario": "Voltar normal",
+    "preparacao_acao": "Sem rota, painel ou modal, usar Voltar.",
+    "esperado": "A aplicação navega normalmente; não fica presa por canPop/interceptador global.",
+    "responsabilidade": "Integração/Android · 59",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Retorno normal permitido; saída/gesto do sistema Android pendente."
+  },
+  {
+    "id": "CT-59-61-031",
+    "cenario": "Traçar rota em duplo toque",
+    "preparacao_acao": "Acionar rapidamente a mesma entrada de rota duas vezes.",
+    "esperado": "Um planejamento válido e um contexto de retorno; sem dois empilhamentos.",
+    "responsabilidade": "Widget/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-032",
+    "cenario": "Iniciar em duplo toque",
+    "preparacao_acao": "Com GPS e prévia válidos, acionar Iniciar repetidamente.",
+    "esperado": "Uma transição efetiva de início e no máximo uma sessão autorizada.",
+    "responsabilidade": "Unidade/integração · 59/61",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-033",
+    "cenario": "Encerrar/Concluir repetidos",
+    "preparacao_acao": "Enviar duas ativações antes de a UI concluir a primeira.",
+    "esperado": "Um evento terminal permitido e uma restauração; sem erro de tela descartada.",
+    "responsabilidade": "Unidade/widget · 59/61",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-034",
+    "cenario": "X + Back + Escape",
+    "preparacao_acao": "Disparar intenções concorrentes durante running.",
+    "esperado": "Apenas um diálogo e um resultado processado para a operação.",
+    "responsabilidade": "Widget · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-035",
+    "cenario": "Chegada durante confirmação",
+    "preparacao_acao": "Abrir confirmação em running e produzir chegada válida antes da resposta.",
+    "esperado": "A resposta revalida o estado; nunca rebaixa conclusão para cancelamento.",
+    "responsabilidade": "Unidade/integração · 59/61",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-036",
+    "cenario": "Logout durante confirmação",
+    "preparacao_acao": "Abrir diálogo e encerrar a sessão de usuário antes de responder.",
+    "esperado": "Resposta antiga não restaura conteúdo privado nem grava sob outra conta.",
+    "responsabilidade": "Integração · 59/61",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-037",
+    "cenario": "Diálogo antigo de A",
+    "preparacao_acao": "Invalidar operação A e selecionar B antes de concluir o diálogo de A.",
+    "esperado": "Nenhuma ação tardia encerra B ou restaura A.",
+    "responsabilidade": "Unidade/widget · 59",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Callback antigo rejeitado após B; modal impede seleção nova; homologar substituição externa durante diálogo."
+  },
+  {
+    "id": "CT-59-61-038",
+    "cenario": "OSRM responde após cancelar",
+    "preparacao_acao": "Controlar uma resposta pendente e completá-la após a saída.",
+    "esperado": "Sem geometria, painel de rota ou câmera restaurados pela resposta velha.",
+    "responsabilidade": "Unidade/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-039",
+    "cenario": "Recálculo seguido de fim",
+    "preparacao_acao": "Com sessão iniciada, recalcular e encerrar antes da resposta.",
+    "esperado": "A resposta é descartada; sem nova sessão, chegada ou recálculo tardio indevido.",
+    "responsabilidade": "Unidade/integração · 59/61",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-040",
+    "cenario": "Destino A responde depois de B",
+    "preparacao_acao": "Iniciar consulta A, escolher B e fazer A responder por último.",
+    "esperado": "B permanece selecionado; instruções e retorno não misturam destinos.",
+    "responsabilidade": "Unidade/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-041",
+    "cenario": "Descarte com GPS pendente",
+    "preparacao_acao": "Solicitar localização e desmontar a tela antes do resultado.",
+    "esperado": "Sem setState após dispose, início de rota, restauração ou referência obsoleta.",
+    "responsabilidade": "Unidade/widget · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-042",
+    "cenario": "Callback de restauração após conta trocada",
+    "preparacao_acao": "Agendar restauração pós-frame e trocar a revisão da sessão antes de executá-la.",
+    "esperado": "Ticket antigo é rejeitado, inclusive se a tela nova já estiver montada.",
+    "responsabilidade": "Widget/integração · 59/61",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-043",
+    "cenario": "Filtro alterado durante a operação",
+    "preparacao_acao": "Capturar contexto e alterar filtros/busca de forma explícita antes do retorno.",
+    "esperado": "Preservar a intenção mais recente; não relaxar filtros para ressuscitar marcador.",
+    "responsabilidade": "Unidade/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-044",
+    "cenario": "Local removido",
+    "preparacao_acao": "Confirmar indisponibilidade/exclusão do destino antes da restauração.",
+    "esperado": "Fallback seguro e mensagem; sem detalhe fictício ou marcador artificial.",
+    "responsabilidade": "Integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-045",
+    "cenario": "Erro transitório ao restaurar",
+    "preparacao_acao": "Simular falha de rede na atualização do local ainda existente.",
+    "esperado": "Não declarar exclusão sem evidência; manter contexto/erro recuperável coerente.",
+    "responsabilidade": "Widget/integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-046",
+    "cenario": "Tela de origem descartada",
+    "preparacao_acao": "Tentar restaurar depois de a hierarquia original ter sido removida.",
+    "esperado": "Reconstrução mínima validada ou fallback; sem loop, BuildContext inválido ou tela duplicada.",
+    "responsabilidade": "Integração · 59",
+    "status": "Automatizado",
+    "evidencia": "route_stack_history_cards_59_61_test; route_return_cards_59_61_test; route_cards_07_08_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-047",
+    "cenario": "Consulta textual contextualizada",
+    "preparacao_acao": "Gerar consulta com nome, endereço e cidade/UF conhecidos, sem ID Google.",
+    "esperado": "URI de Search com query útil; não gera Directions nem busca vazia.",
+    "responsabilidade": "Unidade · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-048",
+    "cenario": "Google Place ID pertinente",
+    "preparacao_acao": "Fornecer fixture de ID Google confiável e query não vazia.",
+    "esperado": "Incluir query_place_id sem remover query; não inventar ID em produção.",
+    "responsabilidade": "Unidade · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-049",
+    "cenario": "Identidade OSM",
+    "preparacao_acao": "Usar osm:node/way/relation e IDs de catálogo externos.",
+    "esperado": "Nunca preencher query_place_id com esses valores; usar fallback definido.",
+    "responsabilidade": "Unidade · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-050",
+    "cenario": "Identidade interna",
+    "preparacao_acao": "Fornecer id_local/catalog_id sem Google Place ID.",
+    "esperado": "Não tratar o identificador numérico como identidade Google.",
+    "responsabilidade": "Unidade · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-051",
+    "cenario": "Só coordenadas",
+    "preparacao_acao": "Consultar ponto válido sem nome/endereço suficientes.",
+    "esperado": "Abrir busca de localização/pino; rótulo não promete ficha comercial confirmada.",
+    "responsabilidade": "Unidade/widget · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-052",
+    "cenario": "Sem coordenada, com endereço",
+    "preparacao_acao": "Consultar estabelecimento com texto contextualizado e ponto ausente.",
+    "esperado": "A consulta continua disponível sem exigir GPS ou iniciar recuperação de rota.",
+    "responsabilidade": "Unidade/widget · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-053",
+    "cenario": "Dados insuficientes",
+    "preparacao_acao": "Local sem nome/endereço úteis e sem ponto válido.",
+    "esperado": "Não lançar URI vazia ou usar posição atual; explicar indisponibilidade.",
+    "responsabilidade": "Unidade/widget · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-054",
+    "cenario": "Coordenada zero válida",
+    "preparacao_acao": "Usar latitude 0 ou longitude 0 como dado informado e válido.",
+    "esperado": "Não confundir zero com ausência; também não preencher ausências artificialmente.",
+    "responsabilidade": "Unidade · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-055",
+    "cenario": "Coordenadas inválidas",
+    "preparacao_acao": "Parametrizar NaN, infinito, fora de faixa e tipos impróprios.",
+    "esperado": "Recusar fallback inválido, sem URL enganosa ou exceção exposta ao usuário.",
+    "responsabilidade": "Unidade · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-056",
+    "cenario": "Ordem geográfica",
+    "preparacao_acao": "Usar coordenadas assimétricas controladas e inspecionar o parâmetro.",
+    "esperado": "Links usam latitude,longitude; não herdam a ordem do OSRM.",
+    "responsabilidade": "Unidade · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-057",
+    "cenario": "Codificação de texto",
+    "preparacao_acao": "Usar acentos, espaços, vírgula, &, #, apóstrofo e Unicode no endereço.",
+    "esperado": "Query é recuperável por decodificação e não cria parâmetros/fragmentos extras.",
+    "responsabilidade": "Unidade · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-058",
+    "cenario": "Injeção por nome/endereço",
+    "preparacao_acao": "Usar texto que contém esquema, domínio ou aparência de parâmetros.",
+    "esperado": "Host/caminho permanecem fixos; texto é só valor de query.",
+    "responsabilidade": "Unidade · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-059",
+    "cenario": "Minimização de dados do link",
+    "preparacao_acao": "Consultar local com sessão autenticada e localização disponível.",
+    "esperado": "URI não contém token, conta, preferências, origem GPS ou parâmetros de rota.",
+    "responsabilidade": "Unidade/integração · 60/61",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-060",
+    "cenario": "Prévia Google preservada",
+    "preparacao_acao": "Acionar Ver rota e inspecionar URI/efeitos.",
+    "esperado": "Directions com parâmetros suportados, distinta de Search; não cria sessão interna.",
+    "responsabilidade": "Unidade/integração · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-061",
+    "cenario": "Navegação Google preservada",
+    "preparacao_acao": "Acionar Navegar no Google Maps.",
+    "esperado": "Intenção/URI de navegação suportada e feedback correto; sem alegar início ou chegada internos.",
+    "responsabilidade": "Unidade/manual · 60/61",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-062",
+    "cenario": "Waze preservado",
+    "preparacao_acao": "Acionar Navegar no Waze com destino válido.",
+    "esperado": "Deep link HTTPS coerente; não enviar origem manual como capacidade fictícia.",
+    "responsabilidade": "Unidade/manual · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-063",
+    "cenario": "Consulta e cálculo simultâneos",
+    "preparacao_acao": "Abrir a consulta enquanto existe cálculo interno pendente e manter app ativo.",
+    "esperado": "A consulta não incrementa geração de navegação nem cancela o cálculo por efeito colateral.",
+    "responsabilidade": "Unidade/integração · 60",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Geração do link independente e sem acesso ao contador de rota; sequência concorrente específica requer homologação adicional."
+  },
+  {
+    "id": "CT-59-61-064",
+    "cenario": "Resultado externo tardio",
+    "preparacao_acao": "Lançar consulta A, trocar seleção/conta e então retornar falha de A.",
+    "esperado": "Não mostrar erro atribuído a B nem restaurar A ou seu contexto.",
+    "responsabilidade": "Widget/integração · 60",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Identidade/conta possuem guardas e atraso/seleção testado; variante integral de troca de conta na superfície pendente."
+  },
+  {
+    "id": "CT-59-61-065",
+    "cenario": "Ações por todas as fases",
+    "preparacao_acao": "Parametrizar as oito fases e a existência ou não de sessão iniciada.",
+    "esperado": "Uma ação principal coerente, secundárias pertinentes e ausência de comandos incompatíveis.",
+    "responsabilidade": "Widget · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-066",
+    "cenario": "Origem manual",
+    "preparacao_acao": "Calcular prévia a partir de ponto escolhido e tentar iniciar guia sem localização atual apta.",
+    "esperado": "Prévia permitida pelo contrato; orientação bloqueada com explicação/ação apropriada.",
+    "responsabilidade": "Unidade/widget · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-067",
+    "cenario": "Instruções indisponíveis",
+    "preparacao_acao": "Usar rota com geometria, mas sem instruções suficientes para guiar.",
+    "esperado": "Não habilitar acompanhamento fictício; preservar consulta útil quando suportada.",
+    "responsabilidade": "Unidade/widget · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-068",
+    "cenario": "GPS inválido/expirado",
+    "preparacao_acao": "Parametrizar posição ausente, antiga, futura ou imprecisa segundo o controlador.",
+    "esperado": "Não iniciar/retomar indevidamente; ação de atualização e erro compreensíveis.",
+    "responsabilidade": "Unidade/widget · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-069",
+    "cenario": "Launcher retorna false",
+    "preparacao_acao": "Falhar a abertura sem gerar mudança de ciclo de vida.",
+    "esperado": "Feedback acessível; manter fase, cálculo, seleção, ticket e histórico iguais.",
+    "responsabilidade": "Widget/integração · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-070",
+    "cenario": "Launcher lança exceção",
+    "preparacao_acao": "Produzir exceção controlada de plataforma/launcher.",
+    "esperado": "Não vazar detalhes técnicos; manter estado e permitir continuar/tentar novamente.",
+    "responsabilidade": "Widget · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-071",
+    "cenario": "Abertura pelo gesto Web",
+    "preparacao_acao": "Em Chrome real, tocar/clicar na consulta com dados já disponíveis.",
+    "esperado": "Lançamento ocorre pela interação, sem await desnecessário que quebre a ativação.",
+    "responsabilidade": "Browser · 60/61",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-072",
+    "cenario": "Consulta sem segundo plano",
+    "preparacao_acao": "Executar consulta com launcher fake e nenhuma mudança de lifecycle.",
+    "esperado": "Não chamar interrupt, begin/cancel do histórico, registro de visita ou recálculo.",
+    "responsabilidade": "Unidade/integração · 60/61",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-073",
+    "cenario": "Segundo plano real",
+    "preparacao_acao": "Durante running, abrir outro app e observar lifecycle real.",
+    "esperado": "Política central interrompe se pertinente, sem interrupção duplicada causada pelo botão.",
+    "responsabilidade": "Integração/Android · 60/61",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Lifecycle simulado/recorder cobertos; segundo plano físico pendente."
+  },
+  {
+    "id": "CT-59-61-074",
+    "cenario": "Retorno do app externo",
+    "preparacao_acao": "Voltar com GPS expirado ou sem permissão apta.",
+    "esperado": "Sem retomada automática, nova permissão inesperada, início/chegada falsos; orientar recuperação.",
+    "responsabilidade": "Integração/manual · 60",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "GPS expirado/retomada explícita cobertos; retorno de app instalado pendente."
+  },
+  {
+    "id": "CT-59-61-075",
+    "cenario": "Consulta discreta e distinta",
+    "preparacao_acao": "Inspecionar detalhes e painel expandido/compacto em espaço limitado.",
+    "esperado": "Ação próxima ao endereço, sem duplicação na mesma superfície nem novo botão grande concorrente.",
+    "responsabilidade": "Widget/visual · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-076",
+    "cenario": "Medidas e limitação do percurso",
+    "preparacao_acao": "Exibir prévia/andamento com e sem métricas disponíveis e unidade alternativa.",
+    "esperado": "Estimativas reais/localizadas, ausência honesta e aviso de percurso de carro sem certificação de acessibilidade.",
+    "responsabilidade": "Widget/visual · 60",
+    "status": "Automatizado",
+    "evidencia": "place_google_search_cards_60_test; route_cards_07_08_test; Chrome quando indicado",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-077",
+    "cenario": "Cancelamento inicial sem histórico",
+    "preparacao_acao": "Abrir/calcular prévia e cancelar sem iniciar.",
+    "esperado": "Zero chamadas de criação de sessão; também zero visita/contribuição/pontos.",
+    "responsabilidade": "Unidade/integração · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-078",
+    "cenario": "Um início autorizado",
+    "preparacao_acao": "Iniciar com consentimento vigente e disparar reconstruções/callbacks repetidos.",
+    "esperado": "Uma sessão started com identidade estável; sem multiplicação de viagens.",
+    "responsabilidade": "Unidade/integração · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-079",
+    "cenario": "Retomada da mesma sessão",
+    "preparacao_acao": "Interromper running e retomar validamente.",
+    "esperado": "Evento de retomada compatível, sem novo UUID ou started duplicado.",
+    "responsabilidade": "Unidade/integração · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-080",
+    "cenario": "Recálculo da mesma sessão",
+    "preparacao_acao": "Recalcular durante sessão iniciada e atualizar a rota.",
+    "esperado": "Evento/estimativa coerentes e mesma sessão; não criar outro deslocamento.",
+    "responsabilidade": "Unidade/integração · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-081",
+    "cenario": "Encerramento voluntário",
+    "preparacao_acao": "Encerrar antes de chegada reconhecida.",
+    "esperado": "Sem arrived/completed falsos; preservar cancelled conforme API vigente.",
+    "responsabilidade": "Unidade/integração · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-082",
+    "cenario": "Chegada única",
+    "preparacao_acao": "Fornecer leituras válidas suficientes e depois leituras/rebuilds adicionais.",
+    "esperado": "Uma chegada terminal; Concluir e voltar não cancela nem duplica seus efeitos.",
+    "responsabilidade": "Unidade/integração · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-083",
+    "cenario": "Saída externa não comprova chegada",
+    "preparacao_acao": "Abrir Google/Waze e retornar sem leituras válidas de chegada.",
+    "esperado": "Não emitir chegada, visita ou pontos devido ao link/tempo transcorrido.",
+    "responsabilidade": "Unidade/integração · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-084",
+    "cenario": "Histórico desligado",
+    "preparacao_acao": "Navegar com save_history false, tendo GPS permitido.",
+    "esperado": "Navegação utilizável, sem novos registros; consentimentos continuam independentes.",
+    "responsabilidade": "Unidade/integração · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-085",
+    "cenario": "Autorização desconhecida",
+    "preparacao_acao": "Falhar/carregar preferências lentamente antes de iniciar.",
+    "esperado": "Não coletar por padrão nem inferir permissão; navegação não depende de sucesso do histórico.",
+    "responsabilidade": "Unidade/integração · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-086",
+    "cenario": "Revogação com fila pendente",
+    "preparacao_acao": "Preparar evento e revogar consentimento/revisão antes de seu envio.",
+    "esperado": "Fila antiga é invalidada; sem replay autorizado apenas por estado antigo.",
+    "responsabilidade": "Unidade/backend se afetado · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-087",
+    "cenario": "Troca de conta e resposta antiga",
+    "preparacao_acao": "Iniciar/fazer consulta como A e trocar para B antes de resposta/retry.",
+    "esperado": "Nenhuma escrita, histórico ou contexto de A é associado/exibido a B.",
+    "responsabilidade": "Unidade/integração · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-088",
+    "cenario": "Sessão apagada e retry",
+    "preparacao_acao": "Excluir registro e completar uma tentativa antiga da mesma operação.",
+    "esperado": "Não recriar sessão apagada; respeitar conflito/revogação e sem novas identidades oportunistas.",
+    "responsabilidade": "Unidade/backend se afetado · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-089",
+    "cenario": "Falha de gravação do histórico",
+    "preparacao_acao": "Simular indisponibilidade da API durante saída ou navegação.",
+    "esperado": "UI não fica presa, não inventa sucesso e não encerra navegação por falha de histórico.",
+    "responsabilidade": "Unidade/integração · 61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-090",
+    "cenario": "Traçar novamente com privacidade",
+    "preparacao_acao": "Escolher registro antigo com origem aproximada e destino autorizado.",
+    "esperado": "Novo planejamento com GPS atual quando necessário; sem reusar origem antiga como fix nem reabrir sessão concluída.",
+    "responsabilidade": "Integração · 59/61",
+    "status": "Automatizado",
+    "evidencia": "route_history_service_test; route_history_map_test; route_stack_history_cards_59_61_test; backend_contrato.log",
+    "limite": "Evidência automatizada local. Não certifica execução manual ou aparelho."
+  },
+  {
+    "id": "CT-59-61-091",
+    "cenario": "Teclado Chrome desktop",
+    "preparacao_acao": "Usar Tab/Shift+Tab, Enter/Espaço e Escape na consulta, menu e confirmação.",
+    "esperado": "Ordem/foco visíveis, Escape no nível correto e retorno de foco útil.",
+    "responsabilidade": "Browser/a11y · 60/61",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "reading_layouts_test; route_cards_07_08_test; Chrome e logs finais",
+    "limite": "Escape e entrada reais no Chrome/menu em widget; percurso completo Tab/Shift+Tab/foco requer revisão humana."
+  },
+  {
+    "id": "CT-59-61-092",
+    "cenario": "Chrome em celular real",
+    "preparacao_acao": "Usar consulta, planejamento, cancelamento e retorno por toque.",
+    "esperado": "Layout e comportamento reais verificados; separar da emulação de viewport.",
+    "responsabilidade": "Manual móvel · 61",
+    "status": "Pendente em dispositivo",
+    "evidencia": "reading_layouts_test; route_cards_07_08_test; Chrome e logs finais",
+    "limite": "Chrome em celular físico indisponível; viewport não substitui."
+  },
+  {
+    "id": "CT-59-61-093",
+    "cenario": "Android Back/gesto físico",
+    "preparacao_acao": "Testar planejamento, running, diálogo, chegada e painel sem rota.",
+    "esperado": "Política de retorno consistente, incluindo Back preditivo quando o ambiente suportar.",
+    "responsabilidade": "Android real · 59/61",
+    "status": "Pendente em dispositivo",
+    "evidencia": "reading_layouts_test; route_cards_07_08_test; Chrome e logs finais",
+    "limite": "Android físico/predictive Back indisponível; SDK ausente."
+  },
+  {
+    "id": "CT-59-61-094",
+    "cenario": "Aplicativos externos instalados/ausentes",
+    "preparacao_acao": "Exercitar Google Maps/Waze com e sem app específico quando viável.",
+    "esperado": "Abertura/HTTPS/falha coerente, sem exigir app ausente para usar o AcessoJá.",
+    "responsabilidade": "Android/browser · 60/61",
+    "status": "Pendente em dispositivo",
+    "evidencia": "reading_layouts_test; route_cards_07_08_test; Chrome e logs finais",
+    "limite": "Google Maps/Waze instalados/ausentes indisponíveis; popup observado, página externa não carregada no laboratório."
+  },
+  {
+    "id": "CT-59-61-095",
+    "cenario": "Leitor de tela",
+    "preparacao_acao": "Percorrer consulta de endereço, estado da rota, secundárias e confirmação.",
+    "esperado": "Rótulos distintos, ordem útil e anúncios sem repetição excessiva de GPS.",
+    "responsabilidade": "Manual a11y/widget · 60/61",
+    "status": "Pendente em dispositivo",
+    "evidencia": "reading_layouts_test; route_cards_07_08_test; Chrome e logs finais",
+    "limite": "TalkBack/leitor humano indisponível; semântica automatizada é parcial."
+  },
+  {
+    "id": "CT-59-61-096",
+    "cenario": "Texto 200% e temas",
+    "preparacao_acao": "Testar telas estreitas e desktop com texto 200%, claro e escuro.",
+    "esperado": "Sem corte de ações/diálogo, contraste adequado e layout legível.",
+    "responsabilidade": "Widget/visual · 60/61",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "reading_layouts_test; route_cards_07_08_test; Chrome e logs finais",
+    "limite": "Widgets 200%/temas e capturas; contraste e percepção final requerem revisão humana."
+  },
+  {
+    "id": "CT-59-61-097",
+    "cenario": "Paisagem e teclado aberto",
+    "preparacao_acao": "Abrir origem/busca/menu em tela baixa, com teclado e safe areas.",
+    "esperado": "Controles essenciais/atribuição acessíveis; rolagem sem overflow ou foco perdido.",
+    "responsabilidade": "Widget/browser · 60/61",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "reading_layouts_test; route_cards_07_08_test; Chrome e logs finais",
+    "limite": "Paisagem/teclado em widgets; teclado/safe areas em aparelho pendentes."
+  },
+  {
+    "id": "CT-59-61-098",
+    "cenario": "PT/EN e estados de erro",
+    "preparacao_acao": "Revisar rótulos, confirmação, erro de GPS/rede e indisponibilidade nas duas línguas.",
+    "esperado": "Sem chaves técnicas aparentes, frases truncadas ou troca de intenção entre traduções.",
+    "responsabilidade": "Widget/manual · 60/61",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "reading_layouts_test; route_cards_07_08_test; Chrome e logs finais",
+    "limite": "PT/EN e erros em widgets; revisão linguística humana completa pendente."
+  },
+  {
+    "id": "CT-59-61-099",
+    "cenario": "Reinicialização segura",
+    "preparacao_acao": "Recarregar Web ou reabrir processo sem suporte prévio a restauração completa.",
+    "esperado": "Sem sessão/chegada/rota fantasma, ticket privado restaurado indevidamente ou promessa de continuidade inexistente.",
+    "responsabilidade": "Manual/integração · 61",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "reading_layouts_test; route_cards_07_08_test; Chrome e logs finais",
+    "limite": "Reload Chrome verificado; reabertura de processo Android pendente."
+  },
+  {
+    "id": "CT-59-61-100",
+    "cenario": "Regressão integrada da base final",
+    "preparacao_acao": "Executar suites pertinentes de mapa, painel, Salvos, histórico e qualidade na revisão final.",
+    "esperado": "Sem regressão das entregas anteriores; resultados e limites associados à base/ambiente corretos.",
+    "responsabilidade": "Automatizado/CI · 59/60/61",
+    "status": "Parcial / homologação complementar",
+    "evidencia": "reading_layouts_test; route_cards_07_08_test; Chrome e logs finais",
+    "limite": "Frontend local/backend focado; CI remoto/PG/Redis e homologação física pendentes."
+  }
+]
