@@ -17,6 +17,7 @@ class StrictSerializer(serializers.Serializer):
 
 
 class EvidenceQuerySerializer(StrictSerializer):
+    include_summary = serializers.BooleanField(required=False, default=False)
     local_id = serializers.IntegerField(min_value=1, required=False)
     external_id = serializers.RegexField(r"^osm:(node|way|relation):[1-9][0-9]{0,18}$", required=False)
     resource = serializers.ChoiceField(choices=RESOURCE_IDS)
@@ -47,13 +48,9 @@ class ObservationSerializer(StrictSerializer):
         if at and on:
             raise serializers.ValidationError("Use data com fuso ou somente dia, sem inventar um horário.")
         if at and (at > timezone.now() or at.date() < date(1900, 1, 1)):
-            raise serializers.ValidationError(
-                {"observed_at": ["A observação não pode ser futura ou anterior a 1900."]}
-            )
+            raise serializers.ValidationError({"observed_at": ["A observação não pode ser futura ou anterior a 1900."]})
         if on and not date(1900, 1, 1) <= on <= timezone.now().date():
-            raise serializers.ValidationError(
-                {"observed_on": ["A data deve estar entre 1900 e o dia atual em UTC."]}
-            )
+            raise serializers.ValidationError({"observed_on": ["A data deve estar entre 1900 e o dia atual em UTC."]})
         return attrs
 
 
@@ -103,9 +100,7 @@ class ReportWriteSerializer(StrictSerializer):
         if present != [fields[attrs["target_kind"]]]:
             raise serializers.ValidationError("Tipo e referência do alvo não correspondem.")
         if attrs["reason"] == "other" and len(attrs.get("description", "").strip()) < 10:
-            raise serializers.ValidationError(
-                {"description": ["Explique o contexto com pelo menos 10 caracteres."]}
-            )
+            raise serializers.ValidationError({"description": ["Explique o contexto com pelo menos 10 caracteres."]})
         return attrs
 
 

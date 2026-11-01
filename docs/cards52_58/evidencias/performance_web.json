@@ -1,0 +1,276 @@
+{
+  "base_commit": "2d3fdd2c7fcc33fb0de3b9a120787173d372a154",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.39",
+  "viewport": [
+    1000,
+    740
+  ],
+  "scope": "Same release benchmark entry on actual baseline and changed marker code; no tiles/services",
+  "rounds": [
+    {
+      "mode": "Flutter web dart2js release, CanvasKit; headless RAF intervals, not physical GPU raster timing",
+      "sdk": "Flutter 3.47.4 / Dart 3.13.3",
+      "samples": [
+        {
+          "places": 5,
+          "layout_repetitions": 80,
+          "layout_median_us": 100,
+          "layout_p95_us": 201,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.40000000000009,
+          "raf_interval_max_ms": 33.40000000000009
+        },
+        {
+          "places": 50,
+          "layout_repetitions": 80,
+          "layout_median_us": 200,
+          "layout_p95_us": 400,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.40000000000009,
+          "raf_interval_max_ms": 66.59999999999991
+        },
+        {
+          "places": 500,
+          "layout_repetitions": 80,
+          "layout_median_us": 1200,
+          "layout_p95_us": 1500,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.400000000000546,
+          "raf_interval_max_ms": 33.400000000000546
+        }
+      ],
+      "version": "before",
+      "round": 1,
+      "api_attempts": 0,
+      "external_attempts": 0,
+      "page_errors": []
+    },
+    {
+      "mode": "Flutter web dart2js release, CanvasKit; headless RAF intervals, not physical GPU raster timing",
+      "sdk": "Flutter 3.47.4 / Dart 3.13.3",
+      "samples": [
+        {
+          "places": 5,
+          "layout_repetitions": 80,
+          "layout_median_us": 99,
+          "layout_p95_us": 101,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000007,
+          "raf_interval_p95_ms": 33.40000000000009,
+          "raf_interval_max_ms": 33.40000000000009
+        },
+        {
+          "places": 50,
+          "layout_repetitions": 80,
+          "layout_median_us": 201,
+          "layout_p95_us": 400,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.40000000000009,
+          "raf_interval_max_ms": 83.30000000000018
+        },
+        {
+          "places": 500,
+          "layout_repetitions": 80,
+          "layout_median_us": 1299,
+          "layout_p95_us": 2000,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.400000000000546,
+          "raf_interval_max_ms": 33.400000000000546
+        }
+      ],
+      "version": "after",
+      "round": 1,
+      "api_attempts": 0,
+      "external_attempts": 0,
+      "page_errors": []
+    },
+    {
+      "mode": "Flutter web dart2js release, CanvasKit; headless RAF intervals, not physical GPU raster timing",
+      "sdk": "Flutter 3.47.4 / Dart 3.13.3",
+      "samples": [
+        {
+          "places": 5,
+          "layout_repetitions": 80,
+          "layout_median_us": 99,
+          "layout_p95_us": 199,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.40000000000009,
+          "raf_interval_max_ms": 33.40000000000009
+        },
+        {
+          "places": 50,
+          "layout_repetitions": 80,
+          "layout_median_us": 201,
+          "layout_p95_us": 500,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.40000000000009,
+          "raf_interval_max_ms": 66.69999999999982
+        },
+        {
+          "places": 500,
+          "layout_repetitions": 80,
+          "layout_median_us": 1200,
+          "layout_p95_us": 1500,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.400000000000546,
+          "raf_interval_max_ms": 49.899999999999636
+        }
+      ],
+      "version": "before",
+      "round": 2,
+      "api_attempts": 0,
+      "external_attempts": 0,
+      "page_errors": []
+    },
+    {
+      "mode": "Flutter web dart2js release, CanvasKit; headless RAF intervals, not physical GPU raster timing",
+      "sdk": "Flutter 3.47.4 / Dart 3.13.3",
+      "samples": [
+        {
+          "places": 5,
+          "layout_repetitions": 80,
+          "layout_median_us": 100,
+          "layout_p95_us": 200,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.40000000000009,
+          "raf_interval_max_ms": 33.5
+        },
+        {
+          "places": 50,
+          "layout_repetitions": 80,
+          "layout_median_us": 300,
+          "layout_p95_us": 500,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.40000000000009,
+          "raf_interval_max_ms": 100
+        },
+        {
+          "places": 500,
+          "layout_repetitions": 80,
+          "layout_median_us": 1900,
+          "layout_p95_us": 2700,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 50,
+          "raf_interval_max_ms": 50.100000000000364
+        }
+      ],
+      "version": "after",
+      "round": 2,
+      "api_attempts": 0,
+      "external_attempts": 0,
+      "page_errors": []
+    },
+    {
+      "mode": "Flutter web dart2js release, CanvasKit; headless RAF intervals, not physical GPU raster timing",
+      "sdk": "Flutter 3.47.4 / Dart 3.13.3",
+      "samples": [
+        {
+          "places": 5,
+          "layout_repetitions": 80,
+          "layout_median_us": 100,
+          "layout_p95_us": 200,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.40000000000009,
+          "raf_interval_max_ms": 33.40000000000009
+        },
+        {
+          "places": 50,
+          "layout_repetitions": 80,
+          "layout_median_us": 200,
+          "layout_p95_us": 500,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.40000000000009,
+          "raf_interval_max_ms": 66.69999999999982
+        },
+        {
+          "places": 500,
+          "layout_repetitions": 80,
+          "layout_median_us": 1300,
+          "layout_p95_us": 2400,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.399999999999636,
+          "raf_interval_p95_ms": 50,
+          "raf_interval_max_ms": 66.69999999999982
+        }
+      ],
+      "version": "before",
+      "round": 3,
+      "api_attempts": 0,
+      "external_attempts": 0,
+      "page_errors": []
+    },
+    {
+      "mode": "Flutter web dart2js release, CanvasKit; headless RAF intervals, not physical GPU raster timing",
+      "sdk": "Flutter 3.47.4 / Dart 3.13.3",
+      "samples": [
+        {
+          "places": 5,
+          "layout_repetitions": 80,
+          "layout_median_us": 100,
+          "layout_p95_us": 201,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.299999999999955,
+          "raf_interval_p95_ms": 33.40000000000009,
+          "raf_interval_max_ms": 33.5
+        },
+        {
+          "places": 50,
+          "layout_repetitions": 80,
+          "layout_median_us": 301,
+          "layout_p95_us": 801,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.40000000000009,
+          "raf_interval_max_ms": 100
+        },
+        {
+          "places": 500,
+          "layout_repetitions": 80,
+          "layout_median_us": 1201,
+          "layout_p95_us": 2000,
+          "selection_frames": 40,
+          "marker_parent_rebuilds": 40,
+          "raf_interval_median_ms": 33.30000000000018,
+          "raf_interval_p95_ms": 33.5,
+          "raf_interval_max_ms": 49.900000000000546
+        }
+      ],
+      "version": "after",
+      "round": 3,
+      "api_attempts": 0,
+      "external_attempts": 0,
+      "page_errors": []
+    }
+  ],
+  "browser": "151.0.7922.34"
+}

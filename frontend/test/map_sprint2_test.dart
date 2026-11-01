@@ -22,20 +22,37 @@ import 'package:flutter_application_1/widgets/map_place_preview.dart';
 import 'package:flutter_application_1/widgets/map_search_sheet.dart';
 
 final internal = <String, dynamic>{
-  'id_local': 7, 'nome': 'Biblioteca Interna', 'endereco': 'Rua Interna, 10',
-  'latitude': -16.3267, 'longitude': -48.9528, 'distancia': 8.0,
-  'categoria': 'outros', 'categoria_label': 'Outros estabelecimentos',
-  'media_estrelas': 4.5, 'quantidade_avaliacoes': 2, 'rampa_acesso': true,
-  'aberto': true, 'imagem': '',
-  'accessibility': {'rampa_acesso': {'state': 'presence_reported'}},
+  'id_local': 7,
+  'nome': 'Biblioteca Interna',
+  'endereco': 'Rua Interna, 10',
+  'latitude': -16.3267,
+  'longitude': -48.9528,
+  'distancia': 8.0,
+  'categoria': 'outros',
+  'categoria_label': 'Outros estabelecimentos',
+  'media_estrelas': 4.5,
+  'quantidade_avaliacoes': 2,
+  'rampa_acesso': true,
+  'aberto': true,
+  'imagem': '',
+  'accessibility': {
+    'rampa_acesso': {'state': 'presence_reported'},
+  },
 };
 final external = <String, dynamic>{
-  'id': 'osm:way:7', 'external_id': 'osm:way:7', 'source': 'openstreetmap',
-  'nome': 'Café Externo', 'endereco': 'Rua Externa, 20',
-  'latitude': -16.3270, 'longitude': -48.9531,
-  'categoria': 'cafeteria', 'categoria_label': 'Cafeterias',
-  'media_estrelas': null, 'has_community_reviews': false,
-  'internal_id': null, 'registration_token': 'signed-token',
+  'id': 'osm:way:7',
+  'external_id': 'osm:way:7',
+  'source': 'openstreetmap',
+  'nome': 'Café Externo',
+  'endereco': 'Rua Externa, 20',
+  'latitude': -16.3270,
+  'longitude': -48.9531,
+  'categoria': 'cafeteria',
+  'categoria_label': 'Cafeterias',
+  'media_estrelas': null,
+  'has_community_reviews': false,
+  'internal_id': null,
+  'registration_token': 'signed-token',
   'accessibility_data': <String, dynamic>{},
   'additional_data': {'addr:suburb': 'Centro'},
 };
@@ -57,52 +74,86 @@ class FakeLocation extends LocationService {
   @override
   Future<Position> currentPosition({bool requestPermission = true}) async {
     if (failure != null) {
-      throw LocationFailure(failure!, issue: switch (failure) {
-        'Permissão negada' => LocationIssue.denied,
-        'Localização bloqueada' => LocationIssue.blocked,
-        'Tempo de espera esgotado' => LocationIssue.timeout,
-        _ => LocationIssue.unavailable,
-      });
+      throw LocationFailure(
+        failure!,
+        issue: switch (failure) {
+          'Permissão negada' => LocationIssue.denied,
+          'Localização bloqueada' => LocationIssue.blocked,
+          'Tempo de espera esgotado' => LocationIssue.timeout,
+          _ => LocationIssue.unavailable,
+        },
+      );
     }
-    return Position(latitude: -16.3267, longitude: -48.9528,
-      timestamp: DateTime(2026), accuracy: accuracy, altitude: 0,
-      altitudeAccuracy: 0, heading: 0, headingAccuracy: 0, speed: 0,
-      speedAccuracy: 0);
+    return Position(
+      latitude: -16.3267,
+      longitude: -48.9528,
+      timestamp: DateTime(2026),
+      accuracy: accuracy,
+      altitude: 0,
+      altitudeAccuracy: 0,
+      heading: 0,
+      headingAccuracy: 0,
+      speed: 0,
+      speedAccuracy: 0,
+    );
   }
+
   @override
   Stream<Position> positions() => const Stream<Position>.empty();
 }
 
 Widget harness(Widget child) => AppThemeScope(
   controller: AppThemeController(),
-  child: MaterialApp(locale: const Locale('pt'),
+  child: MaterialApp(
+    locale: const Locale('pt'),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    theme: AppThemes.light(), home: child),
+    theme: AppThemes.light(),
+    home: child,
+  ),
 );
 
 http.Response jsonResponse(Object data, [int status = 200]) =>
-    http.Response.bytes(utf8.encode(jsonEncode(data)), status,
-      headers: {'content-type': 'application/json; charset=utf-8'});
+    http.Response.bytes(
+      utf8.encode(jsonEncode(data)),
+      status,
+      headers: {'content-type': 'application/json; charset=utf-8'},
+    );
 
 List<http.Request> requests = [];
-void mockApi({bool internalError = false, bool externalError = false,
-    List<Map<String, dynamic>>? externals,
-    Future<http.Response> Function(http.Request)? extra}) {
+void mockApi({
+  bool internalError = false,
+  bool externalError = false,
+  List<Map<String, dynamic>>? externals,
+  Future<http.Response> Function(http.Request)? extra,
+}) {
   AppHttp.client = MockClient((request) async {
     requests.add(request);
     if (request.url.path == '/api/locais/externos/categorias/') {
       return jsonResponse(categories);
     }
     if (request.url.path == '/api/locais/externos/') {
-      return externalError ? jsonResponse({'detail': 'Fonte externa indisponível'}, 503)
-          : jsonResponse({'results': externals ?? [external], 'truncated': false,
-              'attribution': '© OpenStreetMap contributors'});
+      return externalError
+          ? jsonResponse({'detail': 'Fonte externa indisponível'}, 503)
+          : jsonResponse({
+              'results': externals ?? [external],
+              'truncated': false,
+              'attribution': '© OpenStreetMap contributors',
+            });
     }
     if (request.url.path == '/api/locais/') {
       return internalError ? jsonResponse({}, 500) : jsonResponse([internal]);
     }
-    if (request.url.path == '/api/locais/7/') { return jsonResponse(internal); }
+    if (request.url.path == '/api/locais/7/') {
+      return jsonResponse(internal);
+    }
+    if (request.url.path == '/api/locais/91/') {
+      return jsonResponse({
+        ...internal,
+        'id_local': 91,
+        'nome': external['nome'],
+      });
+    }
     if (request.url.path.contains('perfil')) {
       return jsonResponse({'nome': 'teste'});
     }
@@ -118,10 +169,17 @@ void mockApi({bool internalError = false, bool externalError = false,
 }
 
 Future<void> pumpMap(WidgetTester tester, {LocationService? location}) async {
-  await tester.pumpWidget(harness(MainScreen(userName: 'teste',
-    trackLocation: location != null, locationService: location,
-    clock: () => DateTime(2026),
-    tileProvider: OfflineTiles())));
+  await tester.pumpWidget(
+    harness(
+      MainScreen(
+        userName: 'teste',
+        trackLocation: location != null,
+        locationService: location,
+        clock: () => DateTime(2026),
+        tileProvider: OfflineTiles(),
+      ),
+    ),
+  );
   await tester.pumpAndSettle();
   await tester.pump(const Duration(seconds: 5));
   await tester.pumpAndSettle();
@@ -154,33 +212,55 @@ Finder searchResult(String name) => find.descendant(
 );
 
 void main() {
-  setUp(() { requests = []; });
+  setUp(() {
+    requests = [];
+  });
   tearDown(() => AppHttp.client.close());
 
-  testWidgets('avaliar externo confirma cadastro e abre editor com ID interno', (tester) async {
-    AppHttp.token = 'test-session';
-    addTearDown(AppHttp.clearSession);
-    mockApi(extra: (request) async {
-      if (request.url.path.endsWith('/cadastrar/')) {
-        expect(request.headers['authorization'], 'Token test-session');
-        return jsonResponse({...internal, 'id_local': 91, 'nome': external['nome'],
-          'endereco': external['endereco'], 'osm_id': external['external_id']}, 201);
-      }
-      return jsonResponse({}, 404);
-    });
-    await pumpMap(tester);
-    await tester.tap(find.byKey(const ValueKey('map-place-osm:way:7')));
-    await tester.pumpAndSettle();
-    await tapPreview(tester, find.byKey(const ValueKey('preview-evaluate')));
-    await tester.pumpAndSettle();
-    expect(find.byType(ExternalPlaceRegistration), findsOneWidget);
-    expect(find.widgetWithText(TextFormField, 'Confirme sua senha'), findsNothing);
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirmar cadastro'));
-    await tester.pumpAndSettle();
-    final editor = tester.widget<ReviewEditorScreen>(find.byType(ReviewEditorScreen));
-    expect(editor.place['id_local'], 91);
-    expect(requests.where((r) => r.method == 'POST' && r.url.path.contains('visitas')), isEmpty);
-  });
+  testWidgets(
+    'avaliar externo confirma cadastro e abre editor com ID interno',
+    (tester) async {
+      AppHttp.token = 'test-session';
+      addTearDown(AppHttp.clearSession);
+      mockApi(
+        extra: (request) async {
+          if (request.url.path.endsWith('/cadastrar/')) {
+            expect(request.headers['authorization'], 'Token test-session');
+            return jsonResponse({
+              ...internal,
+              'id_local': 91,
+              'nome': external['nome'],
+              'endereco': external['endereco'],
+              'osm_id': external['external_id'],
+            }, 201);
+          }
+          return jsonResponse({}, 404);
+        },
+      );
+      await pumpMap(tester);
+      await tester.tap(find.byKey(const ValueKey('map-place-osm:way:7')));
+      await tester.pumpAndSettle();
+      await tapPreview(tester, find.byKey(const ValueKey('preview-evaluate')));
+      await tester.pumpAndSettle();
+      expect(find.byType(ExternalPlaceRegistration), findsOneWidget);
+      expect(
+        find.widgetWithText(TextFormField, 'Confirme sua senha'),
+        findsNothing,
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirmar cadastro'));
+      await tester.pumpAndSettle();
+      final editor = tester.widget<ReviewEditorScreen>(
+        find.byType(ReviewEditorScreen),
+      );
+      expect(editor.place['id_local'], 91);
+      expect(
+        requests.where(
+          (r) => r.method == 'POST' && r.url.path.contains('visitas'),
+        ),
+        isEmpty,
+      );
+    },
+  );
 
   test('DTO preserva distancia legada e não inventa avaliações', () {
     final own = MapPlace.internal(internal);
@@ -189,28 +269,65 @@ void main() {
     expect(own.distanceMetersFrom(-16.3267, -48.9528), closeTo(0, 0.01));
     expect(osm.rating, isNull);
     expect(osm.accessibility('rampa_acesso'), AccessibilityValue.unknown);
-    expect(MapPlace.internal({'rampa_acesso': false}).accessibility('rampa_acesso'),
-      AccessibilityValue.unknown);
+    expect(
+      MapPlace.internal({'rampa_acesso': false}).accessibility('rampa_acesso'),
+      AccessibilityValue.unknown,
+    );
     expect(own.accessibility('rampa_acesso'), AccessibilityValue.available);
   });
 
-  test('IDs compostos distinguem números iguais em fontes e tipos distintos', () {
-    final node = MapPlace.external({...external, 'external_id': 'osm:node:7'});
-    final way = MapPlace.external(external);
-    expect(mergeMapPlaces([MapPlace.internal(internal)], [node, way]), hasLength(3));
-  });
+  test(
+    'IDs compostos distinguem números iguais em fontes e tipos distintos',
+    () {
+      final node = MapPlace.external({
+        ...external,
+        'external_id': 'osm:node:7',
+      });
+      final way = MapPlace.external(external);
+      expect(
+        mergeMapPlaces([MapPlace.internal(internal)], [node, way]),
+        hasLength(3),
+      );
+    },
+  );
 
   test('deduplicação prefere vínculo explícito, mantém casos ambíguos', () {
-    final own = MapPlace.internal({...internal, 'osm_id': external['external_id']});
+    final own = MapPlace.internal({
+      ...internal,
+      'osm_id': external['external_id'],
+    });
     expect(mergeMapPlaces([own], [MapPlace.external(external)]), hasLength(1));
-    final copy = {...external, 'nome': internal['nome'], 'endereco': internal['endereco'],
-      'latitude': internal['latitude'], 'longitude': internal['longitude'],
-      'categoria': 'outros'};
-    expect(mergeMapPlaces([MapPlace.internal(internal)], [MapPlace.external(copy)]), hasLength(1));
-    expect(mergeMapPlaces([MapPlace.internal(internal),
-      MapPlace.internal({...internal, 'id_local': 8})], [MapPlace.external(copy)]), hasLength(3));
-    expect(mergeMapPlaces([MapPlace.internal(internal)],
-      [MapPlace.external({...copy, 'endereco': 'Loja diferente'})]), hasLength(2));
+    final copy = {
+      ...external,
+      'nome': internal['nome'],
+      'endereco': internal['endereco'],
+      'latitude': internal['latitude'],
+      'longitude': internal['longitude'],
+      'categoria': 'outros',
+    };
+    expect(
+      mergeMapPlaces([MapPlace.internal(internal)], [MapPlace.external(copy)]),
+      hasLength(1),
+    );
+    expect(
+      mergeMapPlaces(
+        [
+          MapPlace.internal(internal),
+          MapPlace.internal({...internal, 'id_local': 8}),
+        ],
+        [MapPlace.external(copy)],
+      ),
+      hasLength(3),
+    );
+    expect(
+      mergeMapPlaces(
+        [MapPlace.internal(internal)],
+        [
+          MapPlace.external({...copy, 'endereco': 'Loja diferente'}),
+        ],
+      ),
+      hasLength(2),
+    );
   });
 
   test('busca normaliza acentos, categoria, endereço e bairro', () {
@@ -220,48 +337,80 @@ void main() {
     }
   });
 
-  test('serviço consulta somente o proxy Django com limites e categoria', () async {
-    mockApi();
-    final result = await const PlacesService().fetchExternalPlaces(
-      latitude: -16.32, longitude: -48.95, category: 'cafeteria');
-    final request = requests.single;
-    expect(request.url.path, '/api/locais/externos/');
-    expect(request.url.queryParameters['categoria'], 'cafeteria');
-    expect(request.url.queryParameters['limite'], '100');
-    expect(result.places.single.id, 'osm:way:7');
-  });
+  test(
+    'serviço consulta somente o proxy Django com limites e categoria',
+    () async {
+      mockApi();
+      final result = await const PlacesService().fetchExternalPlaces(
+        latitude: -16.32,
+        longitude: -48.95,
+        category: 'cafeteria',
+      );
+      final request = requests.single;
+      expect(request.url.path, '/api/locais/externos/');
+      expect(request.url.queryParameters['categoria'], 'cafeteria');
+      expect(request.url.queryParameters['limite'], '100');
+      expect(result.places.single.id, 'osm:way:7');
+    },
+  );
 
   test('serviço informa falha externa sem rating fictício', () async {
     mockApi(externalError: true);
-    await expectLater(const PlacesService().fetchExternalPlaces(latitude: 0,
-      longitude: 0), throwsA(isA<PlacesException>()));
+    await expectLater(
+      const PlacesService().fetchExternalPlaces(latitude: 0, longitude: 0),
+      throwsA(isA<PlacesException>()),
+    );
   });
 
-  testWidgets('fontes usam marcadores, semântica e prévia distintos', (tester) async {
+  testWidgets('fontes usam marcadores, semântica e prévia distintos', (
+    tester,
+  ) async {
     mockApi();
     await pumpMap(tester);
-    expect(find.byKey(const ValueKey('map-place-7')), findsOneWidget);
+    expect(find.byKey(const ValueKey('map-place-acessoja:7')), findsOneWidget);
     expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsOneWidget);
-    final own = tester.widget<TextButton>(find.byKey(const ValueKey('map-place-7')));
-    final osm = tester.widget<TextButton>(find.byKey(const ValueKey('map-place-osm:way:7')));
-    expect(find.descendant(of: find.byWidget(own), matching: find.byIcon(Icons.place_outlined)), findsOneWidget);
-    expect(find.descendant(of: find.byWidget(osm), matching: find.byIcon(Icons.local_cafe_outlined)), findsOneWidget);
+    final own = tester.widget<TextButton>(
+      find.byKey(const ValueKey('map-place-acessoja:7')),
+    );
+    final osm = tester.widget<TextButton>(
+      find.byKey(const ValueKey('map-place-osm:way:7')),
+    );
+    expect(
+      find.descendant(
+        of: find.byWidget(own),
+        matching: find.byIcon(Icons.place_outlined),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byWidget(osm),
+        matching: find.byIcon(Icons.local_cafe_outlined),
+      ),
+      findsOneWidget,
+    );
     final semantics = tester.ensureSemantics();
-    expect(find.bySemanticsLabel(RegExp('OpenStreetMap.*Abrir local')), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(RegExp('OpenStreetMap.*Abrir local')),
+      findsOneWidget,
+    );
     await tester.tap(find.byKey(const ValueKey('map-place-osm:way:7')));
     await tester.pumpAndSettle();
     expect(find.byType(MapPlacePreview), findsOneWidget);
     expect(find.text('Sem avaliações no AcessoJá'), findsOneWidget);
-    expect(find.widgetWithText(OutlinedButton, 'Contribuir'), findsOneWidget);
-    expect(find.widgetWithText(ElevatedButton, 'Rota'), findsOneWidget);
+    expect(find.byKey(const ValueKey('preview-contribute')), findsOneWidget);
+    expect(find.byKey(const ValueKey('preview-route')), findsOneWidget);
     semantics.dispose();
   });
 
   testWidgets('falha externa preserva os marcadores internos', (tester) async {
     mockApi(externalError: true);
     await pumpMap(tester);
-    expect(find.byKey(const ValueKey('map-place-7')), findsOneWidget);
-    expect(find.textContaining('Locais externos indisponíveis'), findsOneWidget);
+    expect(find.byKey(const ValueKey('map-place-acessoja:7')), findsOneWidget);
+    expect(
+      find.textContaining('Locais externos indisponíveis'),
+      findsOneWidget,
+    );
     expect(find.text('Tentar fonte externa novamente'), findsOneWidget);
   });
 
@@ -272,11 +421,16 @@ void main() {
     expect(find.byKey(const ValueKey('map-retry-places')), findsOneWidget);
   });
 
-  testWidgets('busca local com debounce não chama geocodificação', (tester) async {
+  testWidgets('busca local com debounce não chama geocodificação', (
+    tester,
+  ) async {
     mockApi();
     await pumpMap(tester);
     await openSearch(tester);
-    await tester.enterText(find.byKey(const ValueKey('map-place-search')), 'cafe');
+    await tester.enterText(
+      find.byKey(const ValueKey('map-place-search')),
+      'cafe',
+    );
     await tester.pump(const Duration(milliseconds: 350));
     final result = searchResult('Café Externo');
     expect(result, findsOneWidget);
@@ -286,43 +440,65 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(MapSearchSheet), findsNothing);
     expect(find.byType(MapPlacePreview), findsOneWidget);
-    expect(tester.widget<MapPlacePreview>(find.byType(MapPlacePreview)).place['id'],
-      external['id']);
+    expect(
+      tester.widget<MapPlacePreview>(find.byType(MapPlacePreview)).place['id'],
+      external['id'],
+    );
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('controlador vive até a desmontagem da busca, inclusive ao fechar com debounce pendente', (tester) async {
-    late TextEditingController controller;
-    await tester.pumpWidget(harness(Builder(builder: (context) =>
-      ElevatedButton(onPressed: () {
-        showModalBottomSheet<void>(context: context, builder: (context) =>
-          MapSearchSheet(initialText: '', builder: (context, value) {
-            controller = value;
-            return TextField(controller: value);
-          }));
-      }, child: const Text('Abrir busca')))));
-    await tester.tap(find.text('Abrir busca'));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), 'cafe');
-    Navigator.of(tester.element(find.byType(TextField))).pop();
-    await tester.pump();
-    expect(find.byType(MapSearchSheet), findsOneWidget);
-    void listener() {}
-    controller.addListener(listener);
-    controller.removeListener(listener);
-    await tester.pumpAndSettle();
-    expect(find.byType(MapSearchSheet), findsNothing);
-    expect(tester.takeException(), isNull);
-    expect(() => controller.addListener(listener), throwsFlutterError);
-  });
+  testWidgets(
+    'controlador vive até a desmontagem da busca, inclusive ao fechar com debounce pendente',
+    (tester) async {
+      late TextEditingController controller;
+      await tester.pumpWidget(
+        harness(
+          Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showModalBottomSheet<void>(
+                  context: context,
+                  builder: (context) => MapSearchSheet(
+                    initialText: '',
+                    builder: (context, value) {
+                      controller = value;
+                      return TextField(controller: value);
+                    },
+                  ),
+                );
+              },
+              child: const Text('Abrir busca'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Abrir busca'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'cafe');
+      Navigator.of(tester.element(find.byType(TextField))).pop();
+      await tester.pump();
+      expect(find.byType(MapSearchSheet), findsOneWidget);
+      void listener() {}
+      controller.addListener(listener);
+      controller.removeListener(listener);
+      await tester.pumpAndSettle();
+      expect(find.byType(MapSearchSheet), findsNothing);
+      expect(tester.takeException(), isNull);
+      expect(() => controller.addListener(listener), throwsFlutterError);
+    },
+  );
 
-  testWidgets('filtro por origem mostra somente locais externos', (tester) async {
+  testWidgets('filtro por origem mostra somente locais externos', (
+    tester,
+  ) async {
     mockApi();
     await pumpMap(tester);
     await openSearch(tester);
     await tester.tap(find.text('Filtros'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const ValueKey('filter-source-openstreetmap')));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('filter-source-openstreetmap')),
+    );
     await tester.tap(find.byKey(const ValueKey('filter-source-openstreetmap')));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Filtrar'));
@@ -331,189 +507,327 @@ void main() {
     expect(searchResult('Café Externo'), findsOneWidget);
     expect(searchResult('Biblioteca Interna'), findsNothing);
     expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsOneWidget);
-    expect(find.byKey(const ValueKey('map-place-7')), findsNothing);
+    expect(find.byKey(const ValueKey('map-place-acessoja:7')), findsNothing);
   });
 
-  testWidgets('filtro por categoria usa a base consolidada sem enviar critérios pessoais à fonte externa', (tester) async {
-    mockApi();
-    await pumpMap(tester);
-    await openSearch(tester);
-    await tester.tap(find.text('Filtros'));
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const ValueKey('filter-category-cafeteria')));
-    await tester.tap(find.byKey(const ValueKey('filter-category-cafeteria')));
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Filtrar'));
-    await tester.tap(find.text('Filtrar'));
-    await tester.pumpAndSettle();
-    expect(requests.lastWhere((r) => r.url.path == '/api/locais/externos/')
-      .url.queryParameters.containsKey('categoria'), isFalse);
-    expect(searchResult('Biblioteca Interna'), findsNothing);
-    expect(find.byKey(const ValueKey('map-place-7')), findsNothing);
-  });
+  testWidgets(
+    'filtro por categoria usa a base consolidada sem enviar critérios pessoais à fonte externa',
+    (tester) async {
+      mockApi();
+      await pumpMap(tester);
+      await openSearch(tester);
+      await tester.tap(find.text('Filtros'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('filter-category-cafeteria')),
+      );
+      await tester.tap(find.byKey(const ValueKey('filter-category-cafeteria')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Filtrar'));
+      await tester.tap(find.text('Filtrar'));
+      await tester.pumpAndSettle();
+      expect(
+        requests
+            .lastWhere((r) => r.url.path == '/api/locais/externos/')
+            .url
+            .queryParameters
+            .containsKey('categoria'),
+        isFalse,
+      );
+      expect(searchResult('Biblioteca Interna'), findsNothing);
+      expect(find.byKey(const ValueKey('map-place-acessoja:7')), findsNothing);
+    },
+  );
 
-  testWidgets('filtro de rampa mantém o local interno e exclui informação desconhecida', (tester) async {
-    mockApi();
-    await pumpMap(tester);
-    await openSearch(tester);
-    await tester.tap(find.text('Filtros'));
-    await tester.pumpAndSettle();
-    final ramp = find.byKey(const ValueKey('filter-resource-rampa_acesso'));
-    await tester.ensureVisible(ramp);
-    await tester.tap(ramp);
-    await tester.ensureVisible(find.text('Filtrar'));
-    await tester.tap(find.text('Filtrar'));
-    await tester.pumpAndSettle();
-    expect(searchResult('Biblioteca Interna'), findsOneWidget);
-    expect(searchResult('Café Externo'), findsNothing);
-    expect(find.byKey(const ValueKey('map-place-7')), findsOneWidget);
-    expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsNothing);
-  });
+  testWidgets(
+    'filtro de rampa mantém o local interno e exclui informação desconhecida',
+    (tester) async {
+      mockApi();
+      await pumpMap(tester);
+      await openSearch(tester);
+      await tester.tap(find.text('Filtros'));
+      await tester.pumpAndSettle();
+      final ramp = find.byKey(const ValueKey('filter-resource-rampa_acesso'));
+      await tester.ensureVisible(ramp);
+      await tester.tap(ramp);
+      await tester.ensureVisible(find.text('Filtrar'));
+      await tester.tap(find.text('Filtrar'));
+      await tester.pumpAndSettle();
+      expect(searchResult('Biblioteca Interna'), findsOneWidget);
+      expect(searchResult('Café Externo'), findsNothing);
+      expect(
+        find.byKey(const ValueKey('map-place-acessoja:7')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsNothing);
+    },
+  );
 
   testWidgets('falha interna não é anunciada como vazio real', (tester) async {
     mockApi(internalError: true, externals: []);
     await pumpMap(tester);
-    expect(find.textContaining('Nenhum local corresponde aos dados e filtros atuais'), findsNothing);
-    expect(find.textContaining('Não foi possível atualizar os locais do AcessoJá'), findsOneWidget);
+    expect(
+      find.textContaining(
+        'Nenhum local corresponde aos dados e filtros atuais',
+      ),
+      findsNothing,
+    );
+    expect(
+      find.textContaining('Não foi possível atualizar os locais do AcessoJá'),
+      findsOneWidget,
+    );
     expect(find.text('Limpar filtros'), findsOneWidget);
   });
 
-  for (final failure in ['Permissão negada', 'Localização bloqueada', 'Tempo de espera esgotado']) {
-    testWidgets('localização: $failure mantém o mapa consultável', (tester) async {
+  for (final failure in [
+    'Permissão negada',
+    'Localização bloqueada',
+    'Tempo de espera esgotado',
+  ]) {
+    testWidgets('localização: $failure mantém o mapa consultável', (
+      tester,
+    ) async {
       mockApi();
       await pumpMap(tester, location: FakeLocation(failure: failure));
       final message = switch (failure) {
-        'Permissão negada' => 'Permissão de localização negada. Você pode continuar consultando o mapa.',
-        'Localização bloqueada' => 'A localização está bloqueada nas permissões. Revise as configurações.',
+        'Permissão negada' =>
+          'Permissão de localização negada. Você pode continuar consultando o mapa.',
+        'Localização bloqueada' =>
+          'A localização está bloqueada nas permissões. Revise as configurações.',
         _ => 'A localização demorou para responder. Tente novamente.',
       };
       expect(find.text(message), findsOneWidget);
-      expect(find.byKey(const ValueKey('map-place-7')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('map-place-acessoja:7')),
+        findsOneWidget,
+      );
     });
   }
 
   testWidgets('localização de baixa precisão é informada', (tester) async {
     mockApi();
     await pumpMap(tester, location: const FakeLocation(accuracy: 200));
-    expect(find.textContaining('A localização está pouco precisa'), findsOneWidget);
+    expect(
+      find.textContaining('A localização está pouco precisa'),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('rota externa usa coordenadas e não registra visita por ID OSM', (tester) async {
-    mockApi(extra: (request) async => jsonResponse({'code': 'Ok', 'routes': [{
-      'geometry': {'coordinates': [[-48.9528, -16.3267], [-48.9531, -16.3270]]},
-      'distance': 150.0, 'duration': 60.0,
-    }]}));
+  testWidgets('rota externa usa coordenadas e não registra visita por ID OSM', (
+    tester,
+  ) async {
+    mockApi(
+      extra: (request) async => jsonResponse({
+        'code': 'Ok',
+        'routes': [
+          {
+            'geometry': {
+              'coordinates': [
+                [-48.9528, -16.3267],
+                [-48.9531, -16.3270],
+              ],
+            },
+            'distance': 150.0,
+            'duration': 60.0,
+          },
+        ],
+      }),
+    );
     await pumpMap(tester, location: const FakeLocation());
     await tester.tap(find.byKey(const ValueKey('map-place-osm:way:7')));
     await tester.pumpAndSettle();
-    await tapPreview(tester, find.widgetWithText(ElevatedButton, 'Rota'));
+    await tapPreview(tester, find.byKey(const ValueKey('preview-route')));
     await tester.pumpAndSettle();
-    final route = requests.singleWhere((r) => r.url.host == 'router.project-osrm.org');
+    final route = requests.singleWhere(
+      (r) => r.url.host == 'router.project-osrm.org',
+    );
     expect(route.url.path, contains('-48.9531,-16.327'));
-    expect(requests.where((r) => r.method == 'POST' && r.url.path.contains('visitas')), isEmpty);
+    expect(
+      requests.where(
+        (r) => r.method == 'POST' && r.url.path.contains('visitas'),
+      ),
+      isEmpty,
+    );
     final notice = find.byKey(const ValueKey('map-route-accessibility-notice'));
     expect(notice, findsOneWidget);
-    expect(tester.widget<Text>(notice).data,
-      contains('A acessibilidade deste trajeto não foi verificada.'));
+    expect(
+      tester.widget<Text>(notice).data,
+      contains('A acessibilidade deste trajeto não foi verificada.'),
+    );
   });
 
-  testWidgets('contribuição abre detalhes apenas após confirmação com id_local', (tester) async {
-    mockApi(extra: (request) async {
-      if (request.url.path.endsWith('/cadastrar/')) {
-        expect(request.headers.entries.firstWhere((e) => e.key.toLowerCase() == 'authorization').value, startsWith('Basic '));
-        expect(jsonDecode(request.body)['registration_token'], 'signed-token');
-        return jsonResponse({...internal, 'id_local': 91, 'nome': external['nome'],
-          'endereco': external['endereco'], 'osm_id': external['external_id']}, 201);
-      }
-      return jsonResponse({}, 404);
-    });
+  testWidgets('confirmação externa mantém painel com id_local real', (
+    tester,
+  ) async {
+    mockApi(
+      extra: (request) async {
+        if (request.url.path.endsWith('/cadastrar/')) {
+          expect(
+            request.headers.entries
+                .firstWhere((e) => e.key.toLowerCase() == 'authorization')
+                .value,
+            startsWith('Basic '),
+          );
+          expect(
+            jsonDecode(request.body)['registration_token'],
+            'signed-token',
+          );
+          return jsonResponse({
+            ...internal,
+            'id_local': 91,
+            'nome': external['nome'],
+            'endereco': external['endereco'],
+            'osm_id': external['external_id'],
+          }, 201);
+        }
+        return jsonResponse({}, 404);
+      },
+    );
     await pumpMap(tester);
     await tester.tap(find.byKey(const ValueKey('map-place-osm:way:7')));
     await tester.pumpAndSettle();
-    await tapPreview(tester, find.widgetWithText(OutlinedButton, 'Contribuir'));
+    await tapPreview(tester, find.byKey(const ValueKey('preview-contribute')));
     await tester.pumpAndSettle();
     expect(find.byType(ExternalPlaceRegistration), findsOneWidget);
-    await tester.enterText(find.widgetWithText(TextFormField, 'Confirme sua senha'), 'Senha123!');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Confirme sua senha'),
+      'Senha123!',
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Confirmar cadastro'));
     await tester.pumpAndSettle();
-    expect(find.byType(PlaceDetailScreen), findsOneWidget);
-    final details = tester.widget<PlaceDetailScreen>(find.byType(PlaceDetailScreen));
-    expect(details.place['id_local'], 91);
+    expect(find.byType(PlaceDetailScreen), findsNothing);
+    final panel = tester.widget<MapPlacePreview>(find.byType(MapPlacePreview));
+    expect(panel.place['id_local'], 91);
+    expect(
+      requests.where(
+        (r) => r.method == 'POST' && r.url.path.contains('modal-avaliacoes'),
+      ),
+      isEmpty,
+    );
   });
 
-  testWidgets('cadastro falho não abre detalhes nem envia avaliação', (tester) async {
-    mockApi(extra: (_) async => jsonResponse({'detail': 'Dados expirados'}, 400));
-    await tester.pumpWidget(harness(ExternalPlaceRegistration(
-      place: external, userName: 'teste')));
-    await tester.enterText(find.widgetWithText(TextFormField, 'Confirme sua senha'), 'Senha123!');
+  testWidgets('cadastro falho não abre detalhes nem envia avaliação', (
+    tester,
+  ) async {
+    mockApi(
+      extra: (_) async => jsonResponse({'detail': 'Dados expirados'}, 400),
+    );
+    await tester.pumpWidget(
+      harness(ExternalPlaceRegistration(place: external, userName: 'teste')),
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Confirme sua senha'),
+      'Senha123!',
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Confirmar cadastro'));
     await tester.pumpAndSettle();
     expect(find.text('Dados expirados'), findsOneWidget);
     expect(find.byType(PlaceDetailScreen), findsNothing);
-    expect(requests.where((r) => r.url.path.contains('modal-avaliacoes')), isEmpty);
+    expect(
+      requests.where((r) => r.url.path.contains('modal-avaliacoes')),
+      isEmpty,
+    );
   });
 
-  testWidgets('resposta externa antiga não restaura a lista após mudar a região', (tester) async {
-    tester.view.physicalSize = const Size(360, 740);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final pending = Completer<http.Response>();
-    final latest = Completer<http.Response>();
-    final areaRequests = <http.Request>[];
-    var calls = 0;
-    AppHttp.client = MockClient((request) async {
-      if (request.url.path == '/api/locais/externos/') {
-        areaRequests.add(request);
-        calls++;
-        if (calls == 1) {
-          return pending.future;
+  testWidgets(
+    'resposta externa antiga não restaura a lista após mudar a região',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 740);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final pending = Completer<http.Response>();
+      final latest = Completer<http.Response>();
+      final areaRequests = <http.Request>[];
+      var calls = 0;
+      AppHttp.client = MockClient((request) async {
+        if (request.url.path == '/api/locais/externos/') {
+          areaRequests.add(request);
+          calls++;
+          if (calls == 1) {
+            return pending.future;
+          }
+          return latest.future;
         }
-        return latest.future;
-      }
-      if (request.url.path == '/api/locais/externos/categorias/') {
-        return jsonResponse(categories);
-      }
-      if (request.url.path == '/api/locais/') {
-        return jsonResponse([internal]);
-      }
-      return jsonResponse({});
-    });
-    await tester.pumpWidget(harness(MainScreen(userName: 'teste',
-      trackLocation: false, tileProvider: OfflineTiles())));
-    await tester.pump();
-    final map = tester.widget<FlutterMap>(find.byType(FlutterMap));
-    // The visible area must be within the provider's 3 km search limit.
-    map.mapController!.move(const LatLng(-16.3267, -48.9528), 17);
-    await tester.pump(const Duration(milliseconds: 150));
-    await tester.drag(find.byType(FlutterMap), const Offset(100, 0));
-    await tester.pump(const Duration(milliseconds: 450));
-    await tester.pumpAndSettle();
-    final requestedCenter = map.mapController!.camera.center;
-    final searchArea = find.byKey(const ValueKey('map-search-area'));
-    await tester.ensureVisible(searchArea);
-    await tester.pump();
-    expect(searchArea.hitTestable(), findsOneWidget);
-    await tester.tap(searchArea);
-    await tester.pump();
-    expect(calls, 2); // New query owns its own state; the backend lease limits upstream work.
-    pending.complete(jsonResponse({'results': [external], 'truncated': false}));
-    await tester.pumpAndSettle();
-    expect(calls, 2);
-    final query = areaRequests.last.url.queryParameters;
-    expect(double.parse(query['latitude']!), closeTo(requestedCenter.latitude, 0.000001));
-    expect(double.parse(query['longitude']!), closeTo(requestedCenter.longitude, 0.000001));
-    expect(query['longitude'], isNot(areaRequests.first.url.queryParameters['longitude']));
-    expect(int.parse(query['raio']!), inInclusiveRange(100, 3000));
-    await openSearch(tester);
-    expect(searchResult('Café Externo'), findsNothing);
-    latest.complete(jsonResponse({'results': [{
-      ...external, 'id': 'osm:way:8', 'external_id': 'osm:way:8', 'nome': 'Novo Café',
-      'latitude': requestedCenter.latitude, 'longitude': requestedCenter.longitude,
-    }], 'truncated': false}));
-    await tester.pumpAndSettle();
-    expect(searchResult('Novo Café'), findsOneWidget);
-    expect(searchResult('Café Externo'), findsNothing);
-    expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsNothing);
-  });
+        if (request.url.path == '/api/locais/externos/categorias/') {
+          return jsonResponse(categories);
+        }
+        if (request.url.path == '/api/locais/') {
+          return jsonResponse([internal]);
+        }
+        return jsonResponse({});
+      });
+      await tester.pumpWidget(
+        harness(
+          MainScreen(
+            userName: 'teste',
+            trackLocation: false,
+            tileProvider: OfflineTiles(),
+          ),
+        ),
+      );
+      await tester.pump();
+      final map = tester.widget<FlutterMap>(find.byType(FlutterMap));
+      // The visible area must be within the provider's 3 km search limit.
+      map.mapController!.move(const LatLng(-16.3267, -48.9528), 17);
+      await tester.pump(const Duration(milliseconds: 150));
+      await tester.drag(find.byType(FlutterMap), const Offset(100, 0));
+      await tester.pump(const Duration(milliseconds: 450));
+      await tester.pumpAndSettle();
+      final requestedCenter = map.mapController!.camera.center;
+      final searchArea = find.byKey(const ValueKey('map-search-area'));
+      await tester.ensureVisible(searchArea);
+      await tester.pump();
+      expect(searchArea.hitTestable(), findsOneWidget);
+      await tester.tap(searchArea);
+      await tester.pump();
+      expect(
+        calls,
+        2,
+      ); // New query owns its own state; the backend lease limits upstream work.
+      pending.complete(
+        jsonResponse({
+          'results': [external],
+          'truncated': false,
+        }),
+      );
+      await tester.pumpAndSettle();
+      expect(calls, 2);
+      final query = areaRequests.last.url.queryParameters;
+      expect(
+        double.parse(query['latitude']!),
+        closeTo(requestedCenter.latitude, 0.000001),
+      );
+      expect(
+        double.parse(query['longitude']!),
+        closeTo(requestedCenter.longitude, 0.000001),
+      );
+      expect(
+        query['longitude'],
+        isNot(areaRequests.first.url.queryParameters['longitude']),
+      );
+      expect(int.parse(query['raio']!), inInclusiveRange(100, 3000));
+      await openSearch(tester);
+      expect(searchResult('Café Externo'), findsNothing);
+      latest.complete(
+        jsonResponse({
+          'results': [
+            {
+              ...external,
+              'id': 'osm:way:8',
+              'external_id': 'osm:way:8',
+              'nome': 'Novo Café',
+              'latitude': requestedCenter.latitude,
+              'longitude': requestedCenter.longitude,
+            },
+          ],
+          'truncated': false,
+        }),
+      );
+      await tester.pumpAndSettle();
+      expect(searchResult('Novo Café'), findsOneWidget);
+      expect(searchResult('Café Externo'), findsNothing);
+      expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsNothing);
+    },
+  );
 }

@@ -33,8 +33,10 @@ final _place = <String, dynamic>{
   'rampa_acesso': true,
   'cardapio_braille': false,
   'media_estrelas': 4.5,
-  'accessibility': {for (final id in ['cao_guia', 'banheiro_acessivel', 'rampa_acesso'])
-    id: {'state': 'presence_reported'}},
+  'accessibility': {
+    for (final id in ['cao_guia', 'banheiro_acessivel', 'rampa_acesso'])
+      id: {'state': 'presence_reported'},
+  },
 };
 
 Widget _harness(Widget child) {
@@ -56,13 +58,15 @@ void main() {
       final path = request.url.path;
       if (path.contains('perfil')) {
         return http.Response.bytes(
-          utf8.encode(jsonEncode({
-            'nome': 'teste',
-            'nome_completo': 'Pessoa de Teste',
-            'foto_perfil': '',
-            'unidade_distancia': 'KM',
-            'permitir_sugestoes': true,
-          })),
+          utf8.encode(
+            jsonEncode({
+              'nome': 'teste',
+              'nome_completo': 'Pessoa de Teste',
+              'foto_perfil': '',
+              'unidade_distancia': 'KM',
+              'permitir_sugestoes': true,
+            }),
+          ),
           200,
         );
       }
@@ -76,10 +80,7 @@ void main() {
         return http.Response.bytes(utf8.encode(jsonEncode(_place)), 200);
       }
       if (path.contains('locais')) {
-        return http.Response.bytes(
-          utf8.encode(jsonEncode([_place])),
-          200,
-        );
+        return http.Response.bytes(utf8.encode(jsonEncode([_place])), 200);
       }
       return http.Response('{}', 404);
     });
@@ -89,8 +90,9 @@ void main() {
     AppHttp.client.close();
   });
 
-  testWidgets('Sprint 1: local da API aparece como marcador e abre detalhes',
-      (tester) async {
+  testWidgets('Sprint 1: local da API aparece como marcador e abre detalhes', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _harness(
         MainScreen(
@@ -105,18 +107,20 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
 
-    final marker = find.byKey(const ValueKey('map-place-1'));
+    final marker = find.byKey(const ValueKey('map-place-acessoja:1'));
     expect(marker, findsOneWidget);
 
     await tester.tap(marker);
     await tester.pumpAndSettle();
 
     expect(find.text('Biblioteca Municipal'), findsWidgets);
-    expect(find.text('Acessibilidade'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('preview-accessibility-more')),
+      findsOneWidget,
+    );
     expect(find.text('Rampa na entrada'), findsOneWidget);
-    expect(find.text('Informado como disponível'), findsNWidgets(3));
-    expect(find.widgetWithText(OutlinedButton, 'Detalhes'), findsOneWidget);
-    expect(find.widgetWithText(ElevatedButton, 'Rota'), findsOneWidget);
+    expect(find.byKey(const ValueKey('preview-route')), findsOneWidget);
+    expect(find.byKey(const ValueKey('preview-details')), findsOneWidget);
 
     final details = find.byKey(const ValueKey('preview-details'));
     await tester.ensureVisible(details);
@@ -125,6 +129,14 @@ void main() {
     await tester.tap(details);
     await tester.pumpAndSettle();
 
-    expect(find.byType(PlaceDetailScreen), findsOneWidget);
+    expect(find.byType(PlaceDetailScreen), findsNothing);
+    expect(
+      find.byKey(const ValueKey('panel-section-accessibility')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('resource-information-rampa_acesso')),
+      findsOneWidget,
+    );
   });
 }

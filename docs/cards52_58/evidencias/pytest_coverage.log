@@ -1,0 +1,190 @@
+........................................................................ [  9%]
+........................................................................ [ 19%]
+........................................................................ [ 29%]
+........................................................................ [ 39%]
+........................................................................ [ 49%]
+........................................................................ [ 59%]
+........................................................................ [ 69%]
+........................s.ssss..ssssssss..ss..s..sssssss.ss............. [ 79%]
+........................................................................ [ 89%]
+...........................................................sss.............s                                                [100%]
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.14-final-0 _______________
+
+Name                                                           Stmts   Miss Branch BrPart  Cover   Missing
+----------------------------------------------------------------------------------------------------------
+acessoja/__init__.py                                               0      0      0      0   100%
+acessoja/accessibility_catalog.py                                 18      0      4      0   100%
+acessoja/admin.py                                                  0      0      0      0   100%
+acessoja/api_schema.py                                            31      0      0      0   100%
+acessoja/apps.py                                                   6      0      0      0   100%
+acessoja/authentication.py                                        12      0      2      0   100%
+acessoja/health.py                                                40      0      2      0   100%
+acessoja/logging_filters.py                                        7      0      0      0   100%
+acessoja/private_admin.py                                         13      3      0      0    77%   14, 20, 23
+acessoja/schema_fixes.py                                           9      4      0      0    56%   18-30
+acessoja/security_middleware.py                                   64      5     16      1    92%   21-22, 34-35, 55
+acessoja/security_settings.py                                     67      0      8      0   100%
+acessoja/settings.py                                              73      5      8      4    89%   28->38, 248-252, 300, 314
+acessoja/settings_staging.py                                       7      7      2      0     0%   2-10
+acessoja/urls.py                                                   7      0      0      0   100%
+acessoja/views.py                                                 27      1      2      0    97%   95
+avaliacao/__init__.py                                              0      0      0      0   100%
+avaliacao/admin.py                                                 0      0      0      0   100%
+avaliacao/apps.py                                                  4      0      0      0   100%
+avaliacao/models.py                                               26      0      2      0   100%
+contribuicoes/__init__.py                                          0      0      0      0   100%
+contribuicoes/admin.py                                            12      3      0      0    75%   7, 10, 13
+contribuicoes/apps.py                                              6      0      0      0   100%
+contribuicoes/management/__init__.py                               0      0      0      0   100%
+contribuicoes/management/commands/__init__.py                      0      0      0      0   100%
+contribuicoes/management/commands/reconcile_contributions.py      34      1     12      2    93%   47, 51->exit
+contribuicoes/models.py                                           37      3      0      0    92%   17, 34, 47
+contribuicoes/serializers.py                                      56      0      4      0   100%
+contribuicoes/services.py                                        136      1     48      4    97%   142, 181->190, 187->185, 191->163
+contribuicoes/signals.py                                          17      0      4      2    90%   18->exit, 26->exit
+contribuicoes/urls.py                                              3      0      0      0   100%
+contribuicoes/views.py                                            94      2     18      0    98%   36, 53
+evidencias/__init__.py                                             0      0      0      0   100%
+evidencias/admin.py                                               90      9     12      3    84%   79, 92-93, 117->127, 122-126, 165
+evidencias/apps.py                                                 7      0      0      0   100%
+evidencias/capture.py                                            134      6     40      5    94%   43-44, 206->205, 237, 300-301, 302->exit, 324
+evidencias/exceptions.py                                           5      0      0      0   100%
+evidencias/external.py                                            41      3     18      4    88%   32->34, 35, 57, 68
+evidencias/management/__init__.py                                  0      0      0      0   100%
+evidencias/management/commands/__init__.py                         0      0      0      0   100%
+evidencias/management/commands/grant_content_moderator.py         30      4      8      3    82%   22, 27, 33-34
+evidencias/management/commands/prune_evidence_state.py            24      0      0      0   100%
+evidencias/models.py                                             134     10      2      1    92%   70, 74, 92, 131, 147, 169, 183, 220, 242, 251
+evidencias/moderation.py                                         126     16     64     12    84%   38, 59, 62, 74-75, 97, 113, 116, 143-145, 156-158, 179, 187, 188->215, 201
+evidencias/observations.py                                       121     12     22      4    87%   83, 89, 128, 158-167, 209
+evidencias/privacy.py                                             38      3     10      2    90%   81, 96-99
+evidencias/projection.py                                          83      0     24      1    99%   65->55
+evidencias/query_projection.py                                    38      0     10      1    98%   83->85
+evidencias/questionnaire_projection.py                            27      4     10      2    84%   10-12, 23
+evidencias/serializers.py                                         95      2     18      2    96%   49, 55
+evidencias/services.py                                           136     10     56     10    90%   48, 57, 76, 106, 159, 185, 187, 200, 234, 238
+evidencias/signals.py                                             14      0      6      1    95%   11->exit
+evidencias/urls.py                                                 4      0      0      0   100%
+evidencias/views.py                                              155     13     26      5    88%   111, 113, 114->116, 186, 193-195, 281-289, 310
+favoritos/__init__.py                                              0      0      0      0   100%
+favoritos/apps.py                                                  4      0      0      0   100%
+favoritos/models.py                                               12      1      0      0    92%   16
+favoritos/serializers.py                                          66      0      4      0   100%
+favoritos/urls.py                                                  5      0      0      0   100%
+favoritos/views.py                                               103      2     16      0    98%   110-111
+locais/__init__.py                                                 0      0      0      0   100%
+locais/accessibility.py                                          118      5     68      5    95%   30, 37, 64, 109, 132
+locais/accessibility_serializers.py                               44      0      0      0   100%
+locais/admin.py                                                    0      0      0      0   100%
+locais/apps.py                                                     6      0      0      0   100%
+locais/catalog_models.py                                          65      4      0      0    94%   16, 44, 63, 107
+locais/catalog_serializers.py                                     67      1      4      1    97%   79
+locais/catalog_signals.py                                         17      0      6      0   100%
+locais/catalog_views.py                                          115     12     24      6    86%   48, 68, 168, 172, 187, 204-205, 210-214
+locais/discovery.py                                               73      0     28      0   100%
+locais/external_serializers.py                                    87      0     10      0   100%
+locais/external_views.py                                         107     10     24      1    89%   126-134, 199
+locais/management/__init__.py                                      0      0      0      0   100%
+locais/management/commands/__init__.py                             0      0      0      0   100%
+locais/management/commands/ativar_lote_catalogo.py                13     13      0      0     0%   1-18
+locais/management/commands/carregar_catalogo_demo.py              20     20      2      0     0%   2-26
+locais/management/commands/check_geographic_provider.py           34      5      8      1    81%   54-57, 60
+locais/management/commands/exportar_catalogo_demo.py              10     10      0      0     0%   2-18
+locais/management/commands/importar_catalogo_osm.py               27     27      0      0     0%   1-50
+locais/management/commands/medir_catalogo_osm.py                  11     11      0      0     0%   1-16
+locais/management/commands/preparar_limite_ibge.py                16     16      0      0     0%   1-20
+locais/management/commands/seed_sprint1.py                        39      7     10      3    80%   81-82, 101, 120-123
+locais/manual_registration.py                                     62      4     14      0    92%   98-101
+locais/models.py                                                  88      5      2      0    94%   33, 64, 94, 107, 119
+locais/route_history_serializers.py                               59      4     14      4    89%   14, 27, 47, 49
+locais/route_history_views.py                                    151      0     32      0   100%
+locais/serializers.py                                            101      1     14      4    96%   53, 57->59, 68->70, 75->77
+locais/services/__init__.py                                        0      0      0      0   100%
+locais/services/accessibility.py                                  75      0     30      1    99%   50->52
+locais/services/catalog_geometry.py                              122     32     44     12    66%   43, 48-50, 53->55, 65-66, 68, 94, 96, 99, 111, 116, 137, 139, 154-171, 174
+locais/services/catalog_import.py                                182     13     72     12    90%   37, 54, 60, 116, 119->124, 121, 126, 162-163, 189, 237, 252, 303, 331
+locais/services/catalog_metrics.py                                63     14     22      5    71%   38-48, 53-61, 62->67, 75->87, 88, 91->106
+locais/services/catalog_publication.py                            44      3     10      3    89%   49, 51, 69
+locais/services/catalog_query.py                                  52      1     20      2    96%   19->25, 26
+locais/services/catalog_reader.py                                197     38     54     20    76%   21-25, 62-66, 71->73, 73->exit, 85-87, 106-108, 130->exit, 131->exit, 141, 148-149, 152-153, 161-162, 170-171, 173-174, 176-177, 182-183, 192, 194-195, 197, 204, 209-210, 250, 251->244, 254->244
+locais/services/catalog_rules.py                                  32      0      6      0   100%
+locais/services/catalog_seed_demo.py                             214     64    120     43    66%   70, 73, 79, 86, 122-123, 130, 133-134, 136, 142, 148, 151, 153, 156, 158, 175, 177, 179, 182, 185, 187, 189, 194, 203, 206, 212, 214, 217, 220, 223, 228, 230, 232, 234, 236, 240, 243, 245, 248, 250, 255-264, 268-277, 286, 291->299, 297->299, 301, 305, 316->318
+locais/services/categories.py                                     15      0     12      0   100%
+locais/services/external_places_service.py                       213      9     78     10    93%   155, 170, 179, 209, 377, 405->413, 417, 486, 493, 500, 508->520
+locais/services/geographic_runtime.py                            125     21     32      5    82%   107, 131-132, 143, 197-211, 221-227, 245-246, 275, 286-288
+locais/services/matching.py                                       40      3     18      3    90%   24, 30, 37
+locais/urls.py                                                    11      0      0      0   100%
+locais/views.py                                                  104      1     22      1    98%   143
+midia/__init__.py                                                  0      0      0      0   100%
+midia/admin.py                                                    66     11      4      2    81%   26, 52, 63, 67, 81, 93-101
+midia/apps.py                                                      6      0      0      0   100%
+midia/cleanup.py                                                  42      0     10      1    98%   41->33
+midia/exceptions.py                                               13      0      0      0   100%
+midia/image_worker.py                                             32     32      4      0     0%   3-46
+midia/legacy.py                                                   42     11     16      5    62%   20, 24-28, 34, 37-40, 48-52
+midia/management/__init__.py                                       0      0      0      0   100%
+midia/management/commands/__init__.py                              0      0      0      0   100%
+midia/management/commands/reconcile_images.py                     11      0      2      0   100%
+midia/middleware.py                                               28      2      6      0    94%   33-34
+midia/models.py                                                   91      6      0      0    93%   27, 48, 66, 90, 100, 132
+midia/moderation.py                                               77     12     32     11    79%   18, 26, 55->57, 68, 70, 73-74, 77, 81, 96, 101, 108, 127
+midia/permissions.py                                              22      1     10      2    91%   37->41, 40
+midia/privacy.py                                                  22      1      4      1    92%   42
+midia/processing.py                                               39      4     10      3    86%   21, 23, 29, 49
+midia/serializers.py                                              56      2      4      2    93%   10, 32
+midia/services.py                                                204     20     60     15    85%   36, 43, 74, 85, 87, 94, 127, 158, 183->exit, 187-189, 209, 228-230, 254, 260-262, 290, 294
+midia/signals.py                                                  26      0      8      3    91%   14->18, 19->exit, 32->exit
+midia/storage.py                                                  14      1      2      1    88%   9
+midia/urls.py                                                      3      0      0      0   100%
+midia/views.py                                                   178     15     22      6    90%   158-159, 181, 183, 188-190, 265-266, 318, 327, 348, 356-358
+modal_avaliacao/__init__.py                                        0      0      0      0   100%
+modal_avaliacao/admin.py                                          15      2      0      0    87%   14, 17
+modal_avaliacao/apps.py                                            4      0      0      0   100%
+modal_avaliacao/models.py                                         63      1     10      0    99%   104
+modal_avaliacao/operations.py                                     34      1     12      1    96%   34
+modal_avaliacao/questionnaire.py                                  65      0     28      0   100%
+modal_avaliacao/questionnaire_fields.py                          105      9     46      9    88%   31, 35-36, 38, 72, 96, 102, 124, 126, 128->130
+modal_avaliacao/result_serializers.py                             31      0      0      0   100%
+modal_avaliacao/serializers.py                                    82      3     12      1    96%   105-108
+modal_avaliacao/urls.py                                            6      0      0      0   100%
+modal_avaliacao/views.py                                         179      5     32      3    95%   85, 95-97, 227
+scripts/__init__.py                                                0      0      0      0   100%
+scripts/probe_readiness.py                                        32      9      2      0    74%   25-26, 32-38
+scripts/staging_backup.py                                        196     98     66      5    52%   62, 66-72, 79, 100, 107-149, 156, 184-213, 217-242
+scripts/staging_command.py                                        23     23      6      0     0%   2-26
+scripts/summarize_secure_logs.py                                  28      6     14      3    74%   13, 21-25, 26->11
+scripts/verify_proxy_lab.py                                      115    115     20      0     0%   6-154
+usuarios/__init__.py                                               0      0      0      0   100%
+usuarios/accessibility_preferences.py                             67      1      6      0    99%   26
+usuarios/account_serializers.py                                   66      1     12      1    97%   87
+usuarios/account_services.py                                     135      8     40      7    91%   51->53, 54-55, 68, 118-119, 124-125, 154, 175->182
+usuarios/account_urls.py                                           6      0      0      0   100%
+usuarios/account_views.py                                        119      7     14      4    92%   39, 62, 98, 112, 150, 163-164
+usuarios/backends.py                                              20      5      2      1    73%   16, 21-22, 25-27
+usuarios/deletion_journal.py                                      76     10     26      9    81%   17->exit, 31, 42-43, 51, 65, 85, 89, 92, 95, 97
+usuarios/management/__init__.py                                    0      0      0      0   100%
+usuarios/management/commands/__init__.py                           0      0      0      0   100%
+usuarios/management/commands/account_maintenance.py               33     33     10      0     0%   2-44
+usuarios/management/commands/apply_privacy_deletions.py           35     35      8      0     0%   2-42
+usuarios/management/commands/check_account_mail.py                50     50     14      0     0%   2-68
+usuarios/management/commands/init_privacy_journal.py              10     10      2      0     0%   1-15
+usuarios/management/commands/preparar_moderador_demo.py           41      7     20      6    75%   26, 31, 37, 40, 49-51, 56->exit
+usuarios/management/commands/process_account_mail.py              17     17      4      0     0%   2-24
+usuarios/management/commands/prune_account_state.py               16      0      0      0   100%
+usuarios/management/commands/smoke_account_security.py            58     58      6      0     0%   2-77
+usuarios/management/commands/sync_privacy_deletions.py            29      8     10      3    67%   17, 21, 28-37
+usuarios/models.py                                               108      4     10      1    96%   12, 120, 149, 164
+usuarios/privacy_choices.py                                       22      0      4      0   100%
+usuarios/privacy_services.py                                      79      0     10      1    99%   193->198
+usuarios/privacy_views.py                                         60      1      2      0    98%   70
+usuarios/route_history_preferences.py                             67      2     14      2    95%   58, 83
+usuarios/security_throttles.py                                    39      1      8      1    96%   21
+usuarios/serializers.py                                           20      0      4      0   100%
+usuarios/urls.py                                                   7      0      0      0   100%
+usuarios/views.py                                                 68      0      6      0   100%
+----------------------------------------------------------------------------------------------------------
+TOTAL                                                           8315   1132   1952    321    84%
+Coverage XML written to file ../coverage_cards52.xml
+Required test coverage of 80% reached. Total coverage: 84.17%
+695 passed, 29 skipped, 21 subtests passed in 180.10s (0:03:00)

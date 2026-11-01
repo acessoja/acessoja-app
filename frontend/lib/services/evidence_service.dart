@@ -154,6 +154,7 @@ class EvidenceService {
             else if (externalId != null)
               'external_id': externalId,
             'resource': resource,
+            'include_summary': 'true',
           },
         );
     if (uri.origin != endpoint.origin ||
@@ -172,6 +173,7 @@ class EvidenceService {
             .map((value) => EvidenceFact.fromJson(evidenceMap(value)))
             .toList(),
         _next(body['next'], uri),
+        evidenceMap(body['summary']),
       );
     } on FormatException {
       throw const EvidenceException(502);

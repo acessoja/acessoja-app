@@ -1,0 +1,17 @@
+00:00 +0: loading /workspace/scratch/b3b0ff1ac447/work/cards_52_58/baseline_project/frontend/test/map_panel_performance_test.dart
+00:00 +0: CT-53 repeatable layout and marker-frame baseline 5/50/500
+00:02 +1: All tests passed!
+The Flutter CLI developer tool uses Google Analytics to report usage and diagnostic
+data along with package dependencies, and crash reporting to send basic crash
+reports. This data is used to help improve the Dart platform, Flutter framework,
+and related tools.
+
+Telemetry is not sent on the very first run. To disable reporting of telemetry,
+run this terminal command:
+
+    flutter --disable-analytics
+
+If you opt out of telemetry, an opt-out event will be sent, and then no further
+information will be sent. This data is collected in accordance with the Google
+Privacy Policy (https://policies.google.com/privacy).
+

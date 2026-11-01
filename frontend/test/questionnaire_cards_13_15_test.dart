@@ -109,7 +109,6 @@ class FakeReviews extends ContributionService {
       : await reading!(localId);
 }
 
-
 // O editor mantém o botão da publicação sob o modal; selecione apenas o botão
 // que está dentro da janela antiga de acessibilidade.
 Finder originalModalSubmit() => find.descendant(
@@ -453,7 +452,10 @@ void main() {
         tester,
         find.byKey(const ValueKey('survey-rampa_acesso-no')),
       );
-      await tapVisible(tester, find.byKey(const ValueKey('survey-review-partial')));
+      await tapVisible(
+        tester,
+        find.byKey(const ValueKey('survey-review-partial')),
+      );
       await tapVisible(tester, originalModalSubmit());
       await tapVisible(tester, find.byKey(const ValueKey('survey-submit')));
       expect(service.sent!['answers']['rampa_acesso'], 'no');
@@ -485,9 +487,16 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Relatos divergentes'), findsNWidgets(8));
-      expect(find.text('Não sei: 1'), findsNWidgets(8));
-      expect(find.text('Não se aplica: 1'), findsNWidgets(8));
+      expect(
+        find.text('Há relatos diferentes sobre este recurso'),
+        findsNWidgets(8),
+      );
+      await tapVisible(
+        tester,
+        find.byKey(const ValueKey('resource-information-rampa_acesso')),
+      );
+      expect(find.text('Não sei: 1'), findsOneWidget);
+      expect(find.text('Não se aplica: 1'), findsOneWidget);
       expect(find.text('Poucas avaliações'), findsNothing);
     },
   );
@@ -522,7 +531,7 @@ void main() {
         tester,
         find.byKey(const ValueKey('resource-results-retry')),
       );
-      expect(find.text('Ainda não confirmado'), findsNWidgets(8));
+      expect(find.text('Informação desconhecida'), findsNWidgets(10));
     },
   );
   testWidgets(
@@ -653,14 +662,18 @@ void main() {
       );
       await tester.pumpWidget(screen(0));
       await tester.pumpAndSettle();
-      expect(find.text('Ainda não avaliado'), findsNWidgets(8));
+      expect(find.text('Informação desconhecida'), findsNWidgets(10));
       expect(find.text('Poucas avaliações'), findsNothing);
       service.reading = (_) async =>
           AccessibilityResults.fromJson(resultsJson(vote: 'yes'));
       await tester.pumpWidget(screen(1));
       await tester.pumpAndSettle();
       expect(find.text('Presença relatada'), findsNWidgets(8));
-      expect(find.text('Poucas avaliações'), findsNWidgets(8));
+      await tapVisible(
+        tester,
+        find.byKey(const ValueKey('resource-information-rampa_acesso')),
+      );
+      expect(find.text('Poucas avaliações'), findsOneWidget);
     },
   );
   for (final size in [

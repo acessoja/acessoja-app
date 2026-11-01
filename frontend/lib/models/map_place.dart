@@ -32,11 +32,11 @@ class MapPlace {
   final PlaceSource source;
 
   MapPlace.internal(Map<String, dynamic> value)
-      : data = Map.unmodifiable(value),
-        source = PlaceSource.acessoja;
+    : data = Map.unmodifiable(value),
+      source = PlaceSource.acessoja;
   MapPlace.external(Map<String, dynamic> value)
-      : data = Map.unmodifiable(value),
-        source = PlaceSource.openstreetmap;
+    : data = Map.unmodifiable(value),
+      source = PlaceSource.openstreetmap;
 
   bool get isExternal => source == PlaceSource.openstreetmap;
   int? get catalogId {
@@ -47,8 +47,8 @@ class MapPlace {
   Map<String, dynamic> get catalogSource => catalogId != null
       ? data
       : data['catalog_provenance'] is Map
-          ? Map<String, dynamic>.from(data['catalog_provenance'] as Map)
-          : const {};
+      ? Map<String, dynamic>.from(data['catalog_provenance'] as Map)
+      : const {};
   Map<String, dynamic> get _presentation =>
       linkedLocal.isEmpty ? data : linkedLocal;
   int? get internalId {
@@ -64,14 +64,18 @@ class MapPlace {
   }
 
   String get id => isExternal
-      ? externalId ?? 'osm:$latitude:$longitude:$name'
+      ? externalId ??
+            (catalogId != null
+                ? 'catalog:$catalogId'
+                : 'osm:$latitude:$longitude:$name')
       : 'acessoja:${internalId ?? '$latitude:$longitude:$name'}';
   String get name => (_presentation['nome'] ?? '').toString();
   String get address => (_presentation['endereco'] ?? '').toString();
   String get category => (_presentation['categoria'] ?? '').toString();
-  String get categoryLabel => (_presentation['categoria_label'] ??
-          (category.isEmpty ? 'Categoria não informada' : category))
-      .toString();
+  String get categoryLabel =>
+      (_presentation['categoria_label'] ??
+              (category.isEmpty ? 'Categoria não informada' : category))
+          .toString();
   String get sourceLabel => isExternal ? 'OpenStreetMap' : 'AcessoJá';
   double? get latitude => _coordinate(_presentation['latitude'], 90);
   double? get longitude => _coordinate(_presentation['longitude'], 180);
@@ -113,25 +117,28 @@ class MapPlace {
   }
 
   Set<PlaceSource> get origins => {
-        source,
-        if (internalId != null) PlaceSource.acessoja,
-        if (externalId != null || catalogSource.isNotEmpty)
-          PlaceSource.openstreetmap,
-      };
+    source,
+    if (internalId != null) PlaceSource.acessoja,
+    if (externalId != null || catalogSource.isNotEmpty)
+      PlaceSource.openstreetmap,
+  };
 
-  late final Map<String, dynamic> accessibilityInformation =
-      combineAccessibilityMaps([
-    if (_community['accessibility'] is Map)
-      Map<String, dynamic>.from(_community['accessibility'] as Map),
-    if (data['external_accessibility'] is Map)
-      Map<String, dynamic>.from(data['external_accessibility'] as Map),
-    if (isExternal && data['accessibility'] is Map)
-      Map<String, dynamic>.from(data['accessibility'] as Map),
-    if (data['accessibility_data'] is Map)
-      osmResourceInformation(
-        Map<String, dynamic>.from(data['accessibility_data'] as Map),
-      ),
-  ]);
+  late final Map<String, dynamic> accessibilityInformation = {
+    ...combineAccessibilityMaps([
+      if (_community['accessibility'] is Map)
+        Map<String, dynamic>.from(_community['accessibility'] as Map),
+      if (data['external_accessibility'] is Map)
+        Map<String, dynamic>.from(data['external_accessibility'] as Map),
+      if (isExternal && data['accessibility'] is Map)
+        Map<String, dynamic>.from(data['accessibility'] as Map),
+      if (data['accessibility_data'] is Map)
+        osmResourceInformation(
+          Map<String, dynamic>.from(data['accessibility_data'] as Map),
+        ),
+    ]),
+    if (data['_resource_overrides'] is Map)
+      ...Map<String, dynamic>.from(data['_resource_overrides'] as Map),
+  };
 
   AccessibilityValue accessibility(String key) =>
       _resourceValue(accessibilityInformation[key]?['state']);
@@ -141,25 +148,25 @@ class MapPlace {
       : const [];
 
   List<PlaceAccessibilityFeature> get accessibilityFeatures => [
-        for (final key in AccessibilityCatalog.ids)
-          if (accessibility(key) != AccessibilityValue.unknown)
-            PlaceAccessibilityFeature(
-              key,
-              accessibility(key),
-              _featureSources(key).contains(PlaceSource.acessoja)
-                  ? PlaceSource.acessoja
-                  : PlaceSource.openstreetmap,
-              mixedSources: _featureSources(key).length > 1,
-            ),
-        if (data['accessibility_data'] is Map)
-          for (final key in ['wheelchair', 'toilets:wheelchair'])
-            if ((data['accessibility_data'] as Map).containsKey(key))
-              PlaceAccessibilityFeature(
-                key,
-                _osmAccessibility((data['accessibility_data'] as Map)[key]),
-                PlaceSource.openstreetmap,
-              ),
-      ];
+    for (final key in AccessibilityCatalog.ids)
+      if (accessibility(key) != AccessibilityValue.unknown)
+        PlaceAccessibilityFeature(
+          key,
+          accessibility(key),
+          _featureSources(key).contains(PlaceSource.acessoja)
+              ? PlaceSource.acessoja
+              : PlaceSource.openstreetmap,
+          mixedSources: _featureSources(key).length > 1,
+        ),
+    if (data['accessibility_data'] is Map)
+      for (final key in ['wheelchair', 'toilets:wheelchair'])
+        if ((data['accessibility_data'] as Map).containsKey(key))
+          PlaceAccessibilityFeature(
+            key,
+            _osmAccessibility((data['accessibility_data'] as Map)[key]),
+            PlaceSource.openstreetmap,
+          ),
+  ];
 
   Set<PlaceSource> _featureSources(String key) {
     final evidence = accessibilityInformation[key]?['evidence'];
@@ -175,20 +182,20 @@ class MapPlace {
   }
 
   static AccessibilityValue _resourceValue(dynamic state) => switch (state) {
-        'presence_reported' => AccessibilityValue.available,
-        'absence_reported' => AccessibilityValue.unavailable,
-        'divergent' => AccessibilityValue.divergent,
-        'not_applicable' => AccessibilityValue.notApplicable,
-        'limited' => AccessibilityValue.limited,
-        _ => AccessibilityValue.unknown,
-      };
+    'presence_reported' => AccessibilityValue.available,
+    'absence_reported' => AccessibilityValue.unavailable,
+    'divergent' => AccessibilityValue.divergent,
+    'not_applicable' => AccessibilityValue.notApplicable,
+    'limited' => AccessibilityValue.limited,
+    _ => AccessibilityValue.unknown,
+  };
 
   static AccessibilityValue _osmAccessibility(dynamic value) => switch (value) {
-        'yes' || 'designated' => AccessibilityValue.available,
-        'no' => AccessibilityValue.unavailable,
-        'limited' => AccessibilityValue.limited,
-        _ => AccessibilityValue.unknown,
-      };
+    'yes' || 'designated' => AccessibilityValue.available,
+    'no' => AccessibilityValue.unavailable,
+    'limited' => AccessibilityValue.limited,
+    _ => AccessibilityValue.unknown,
+  };
 
   String? get reportedHours {
     final extra = data['additional_data'] ?? data['accessibility_data'];
@@ -205,7 +212,8 @@ class MapPlace {
     return normalizePlaceText(query).split(' ').every(haystack.contains);
   }
 
-  double? distanceMetersFrom(double lat, double lon) => hasCoordinates &&
+  double? distanceMetersFrom(double lat, double lon) =>
+      hasCoordinates &&
           lat.isFinite &&
           lon.isFinite &&
           lat.abs() <= 90 &&
@@ -216,17 +224,17 @@ class MapPlace {
   /// Adapter for the existing preview/routing/detail screens. Does not rewrite
   /// the legacy distancia field or use an OSM number as id_local.
   Map<String, dynamic> toMap() => {
-        ...data,
-        'source': isExternal ? 'openstreetmap' : 'acessoja',
-        'id': id,
-        'categoria': category,
-        'categoria_label': categoryLabel,
-        'nome': name,
-        'endereco': address,
-        'has_community_reviews': hasCommunityReviews,
-        if (hasCoordinates) 'latitude': latitude,
-        if (hasCoordinates) 'longitude': longitude,
-      };
+    ...data,
+    'source': isExternal ? 'openstreetmap' : 'acessoja',
+    'id': id,
+    'categoria': category,
+    'categoria_label': categoryLabel,
+    'nome': name,
+    'endereco': address,
+    'has_community_reviews': hasCommunityReviews,
+    if (hasCoordinates) 'latitude': latitude,
+    if (hasCoordinates) 'longitude': longitude,
+  };
 
   static double? _coordinate(dynamic value, int bound) {
     final coordinate = value is num ? value.toDouble() : null;
@@ -253,7 +261,8 @@ double mapDistanceMeters(double lat1, double lon1, double lat2, double lon2) {
   final b = lat2 * math.pi / 180;
   final deltaLat = (lat2 - lat1) * math.pi / 180;
   final deltaLon = (lon2 - lon1) * math.pi / 180;
-  final h = math.pow(math.sin(deltaLat / 2), 2) +
+  final h =
+      math.pow(math.sin(deltaLat / 2), 2) +
       math.cos(a) * math.cos(b) * math.pow(math.sin(deltaLon / 2), 2);
   return 6371000 * 2 * math.asin(math.sqrt(h.clamp(0, 1)));
 }
@@ -340,21 +349,22 @@ Map<String, dynamic> combineAccessibilityMaps(
             evidence.addAll(sourceEvidence);
           }
         }
-        final state = states.contains('divergent') ||
+        final state =
+            states.contains('divergent') ||
                 (states.contains('presence_reported') &&
                     states.contains('absence_reported'))
             ? 'divergent'
             : states.contains('presence_reported')
-                ? 'presence_reported'
-                : states.contains('absence_reported')
-                    ? 'absence_reported'
-                    : states.contains('limited')
-                        ? 'limited'
-                        : states.contains('unknown')
-                            ? 'unknown'
-                            : states.contains('not_applicable')
-                                ? 'not_applicable'
-                                : 'unknown';
+            ? 'presence_reported'
+            : states.contains('absence_reported')
+            ? 'absence_reported'
+            : states.contains('limited')
+            ? 'limited'
+            : states.contains('unknown')
+            ? 'unknown'
+            : states.contains('not_applicable')
+            ? 'not_applicable'
+            : 'unknown';
         return {'state': state, 'evidence': evidence};
       })(),
   };

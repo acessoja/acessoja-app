@@ -16,7 +16,7 @@ from .models import (
     ResourceEvidence,
     ReviewRevision,
 )
-from .projection import confirmation_stats, detail_document
+from .projection import confirmation_stats, detail_document, resource_summary
 from .serializers import (
     ChangeEvidenceSerializer,
     ConfirmationResultSerializer,
@@ -58,6 +58,17 @@ class EvidencePagination(PageNumberPagination):
     page_size = 20
 
 
+class ResourceEvidencePagination(EvidencePagination):
+    def get_paginated_response_schema(self, schema):
+        result = super().get_paginated_response_schema(schema)
+        result["properties"]["summary"] = {
+            "type": "object",
+            "additionalProperties": True,
+            "description": "Optional public resource projection across all pages when include_summary=true.",
+        }
+        return result
+
+
 def can_moderate(user):
     return bool(
         user
@@ -78,7 +89,7 @@ class PrivateResponseMixin:
 class EvidenceListView(PrivateResponseMixin, ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = EvidenceReadSerializer
-    pagination_class = EvidencePagination
+    pagination_class = ResourceEvidencePagination
 
     @extend_schema(
         tags=["Proveniência"],
@@ -107,7 +118,12 @@ class EvidenceListView(PrivateResponseMixin, ListAPIView):
         page = self.paginate_queryset(rows)
         statistics = confirmation_stats(page)
         documents = [detail_document(row, statistics, request.user) for row in page]
-        return self.get_paginated_response(EvidenceReadSerializer(documents, many=True).data)
+        response = self.get_paginated_response(EvidenceReadSerializer(documents, many=True).data)
+        if values["include_summary"]:
+            # Same public projection as venue detail, including unlinked OSM;
+            # totals are never inferred from the current pagination page.
+            response.data["summary"] = resource_summary(list(rows))[values["resource"]]
+        return response
 
 
 class EvidenceDetailView(PrivateResponseMixin, APIView):
@@ -116,9 +132,7 @@ class EvidenceDetailView(PrivateResponseMixin, APIView):
     @extend_schema(tags=["Proveniência"], responses={200: EvidenceReadSerializer, **READ_ERRORS})
     def get(self, request, evidence_id):
         row = public_target(evidence_id)
-        return Response(
-            EvidenceReadSerializer(detail_document(row, confirmation_stats([row]), request.user)).data
-        )
+        return Response(EvidenceReadSerializer(detail_document(row, confirmation_stats([row]), request.user)).data)
 
 
 class EvidenceConfirmView(PrivateResponseMixin, APIView):
@@ -135,9 +149,7 @@ class EvidenceConfirmView(PrivateResponseMixin, APIView):
         serializer = ObservationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(
-            ConfirmationResultSerializer(
-                confirm_evidence(request, evidence_id, serializer.validated_data)
-            ).data
+            ConfirmationResultSerializer(confirm_evidence(request, evidence_id, serializer.validated_data)).data
         )
 
 
@@ -268,9 +280,7 @@ class ReviewHistoryView(PrivateResponseMixin, ListAPIView):
         review = ModalAvaliacao.objects.filter(pk=review_id).first()
         if review is None or review.user_id != request.user.pk and not can_moderate(request.user):
             raise NotFound()
-        page = self.paginate_queryset(
-            ReviewRevision.objects.filter(review=review).order_by("-captured_at", "id")
-        )
+        page = self.paginate_queryset(ReviewRevision.objects.filter(review=review).order_by("-captured_at", "id"))
         return self.get_paginated_response(
             [
                 {

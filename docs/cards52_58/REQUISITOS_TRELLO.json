@@ -1,0 +1,622 @@
+{
+  "retrieved_at": "2026-10-31",
+  "readonly": true,
+  "cards": [
+    {
+      "card": 52,
+      "id": "ari:cloud:trello::card/workspace/67240c1220104a3b90fe6117/6ae29def5dfe864483ba0c27",
+      "title": "[P0][UI/UX][Cards 38–39] Simplificar recursos, fontes e datas de acessibilidade",
+      "url": "https://trello.com/c/KWtQodUV/135-p0ui-uxcards-38-39-simplificar-recursos-fontes-e-datas-de-acessibilidade",
+      "description": "**Contexto**\nEvolução visual dos Cards 38–39 do AcessoJá. Hoje AccessibilityResultsCard mostra descrições, estados, fontes, contadores por resposta, datas e ações simultâneas para cada recurso. EvidenceDetailsScreen repete datas técnicas e botões por evidência, sobrecarregando a leitura. Não alterar nem retirar os dados reais, apenas sua hierarquia visual.\n\n**Objetivo**\nDeixar claros e acessíveis os **10 recursos existentes em 4 grupos** no catálogo do projeto. Mostrar primeiro nome do recurso + situação relatada + síntese honesta de confiabilidade; disponibilizar fontes, datas, contagens, revisões e ações somente sob demanda. Não esconder estados críticos (divergências, ausência, informação desconhecida) nem confundir relato com certificação.\n\n**Lista oficial de recursos (usar IDs estáveis, não textos como chaves)**\n- Entrada e estacionamento: rampa_acesso, vagas_reservadas.\n- Uso do espaço: banheiro_acessivel, mesa_acessivel.\n- Comunicação: cardapio_braille, atendimento_libras.\n- Orientação e acolhimento: sinalizacao_tatil, cao_guia, piso_tatil, sinalizacao_visual.\nOs oito primeiros pertencem ao questionário v2; piso_tatil e sinalizacao_visual são recursos do catálogo v1, informados via evidências. Não inventar estados para recursos sem dados.\n\n**Proposta de UX**\n1. Nos detalhes do local, mostrar título Acessibilidade, aviso conciso de que se trata de relatos, lista compacta por categoria com linha clicável: recurso, situação (presença/ausência relatada, divergente, desconhecida, não aplicável) e indicador curto opcional de base (ex.: 2 relatos), sem poluição por contadores.\n2. Priorizar recursos relevantes ao perfil de preferências quando conhecido sem ocultar os outros dez; oferecer Ver todos os recursos. Não usar cor como único significado.\n3. Ao abrir um recurso, mostrar resumo e data significativa **com rótulo correto**; permitir seção expansível 'Ver fontes e histórico'. Dados detalhados somente sob solicitação: origem (comunidade / OSM / cadastro / desconhecida), observado em quando declarado, registrado em, confirmado em, importado em, edição OSM e versões.\n4. Não tratar data de importação ou do registro como visita ou observação presencial; não transformar 'desconhecido' em ausência; destacar divergências em texto perceptível e acessível.\n5. Uma ação primária 'Contribuir com informação' mostra opções autorizadas: Confirmar, Informar mudança, Denunciar; impedir ações impossíveis e distinguir denúncia de confirmação. Preservar ID e revisão de evidências, regras de autenticação e erro 409.\n6. Evitar abertura de nova página para cada bloco minúsculo, excesso de scroll e botões repetidos. Reutilizar componentes e a identidade visual atual. Textos auxiliares opcionais em expansores sem esconder informação indispensável.\n7. Estados de loading, vazio, sem fontes, fonte histórica, sem rede, paginação, retry, data desconhecida e fonte divergente devem ser coerentes. Atualizar resultados após contribuição, sem perder posição de leitura e foco.\n8. Responsividade e acessibilidade: leitor de tela, navegação Tab/Enter/Espaço/Escape, semântica de expandido/recolhido, texto ampliado, contraste, targets de toque, retorno de foco, português/inglês.\n\n**Arquivos para inspecionar**\n`frontend/lib/widgets/accessibility_results_card.dart`, `frontend/lib/widgets/feature_provenance.dart`, `frontend/lib/screens/evidence_details_screen.dart`, `frontend/lib/screens/map_place_details_screen.dart`, `frontend/lib/models/accessibility_catalog.dart`, `frontend/test/evidence_cards_38_41_test.dart`; revisar pontos de integração atuais antes de modificar. Backend somente se contrato existente não sustentar exibição adequada; não refazer o módulo evidencias.\n\n**Critérios de aceite**\nA1. Dez recursos e quatro grupos apresentados sem duplicidade.\nA2. Estado atual, inclusive divergente/desconhecido, legível antes de expandir.\nA3. Contagens, notas e datas técnicas ficam em detalhes acessíveis; não são excluídas.\nA4. Datas identificam observação vs recebimento vs importação vs confirmação.\nA5. Fontes OSM/comunidade/históricas diferenciadas; ausência de evidência sem valor fabricado.\nA6. Confirmar, informar mudança e denunciar continuam autorizados, com revisões/erros preservados.\nA7. Funciona com teclado, semântica, leitor de tela, texto ampliado e em telas pequenas.\nA8. Testes Flutter/CI passam; capturas de tela e cenários manuais documentados.\n\n**Testes mínimos**\nSem informação; só fonte OSM; 1 relato; 2 relatos conflitantes; resposta 'Não se aplica'; datas parciais; usuário anônimo/autenticado; 401/403/409; atualização do painel; teclado/semântica; local com origem externa/sem ID local.\n\n**Fora do escopo**\nNão alterar pontuação, contrato de questionário nem política de moderação. Integração de contribuições parciais é task vinculada separada.\n\n**Referências do projeto**\nCards 38–39 e Card 13; próximo card sobre contribuições parciais.\nW3C APG Accordion: https://www.w3.org/WAI/ARIA/apg/patterns/accordion/\nGOV.UK Details: https://design-system.service.gov.uk/components/details/\n\n**DoD**\nSem regressão de visualização, fontes/datas e permissões; testes automatizados e revisão visual/assistiva aprovados; PR e documentação atualizados. Status inicial: a desenvolver.",
+      "list": "Em Progresso",
+      "commentsHasMore": false,
+      "checklistsHasMore": false,
+      "checklists": [
+        {
+          "name": "Integração, testes e acessibilidade",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "Testar 10 recursos / 4 grupos e estado divergente sem cor exclusiva",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar observação ausente, fonte desconhecida, fonte OSM e ausência de evidências",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar ações conforme permissões de visitante, autor e moderador; erros 401/403/409",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar datas de observação vs registro/importação/confirmacão e histórico paginado",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Validar widget Flutter, tela pequena, português/inglês, teclado e leitor de tela",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Confirmar que a mudança visual não altera banco, pontuação ou histórico de moderação",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Atualizar documentação e anexar evidências de homologação ao PR",
+              "state": "INCOMPLETE"
+            }
+          ]
+        },
+        {
+          "name": "Frontend — hierarquia visual e fontes",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "Apresentar 10 recursos do catálogo oficial agrupados em 4 categorias, com IDs estáveis e sem duplicar registros",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Mostrar estado do recurso (presença/ausência relatada, desconhecido, divergente, não aplicável) diretamente na linha compacta",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Manter resumo curto de confiabilidade; mover descrição, respostas e contadores para detalhes expansíveis",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Criar seção 'Ver fontes e histórico' com origem, datas e revisões identificadas corretamente",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Não confundir observado em, registrado em, confirmado em, importado em e edição OSM",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Concentrar Confirmar, Informar mudança e Denunciar numa única ação contextual autorizada",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Tratar estados sem dados, sem rede, retry, loading, paginação e dados externos/legados",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Integrar lista no mapa/detalhes e permitir visualização de todos, respeitando preferências do perfil",
+              "state": "INCOMPLETE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "card": 53,
+      "id": "ari:cloud:trello::card/workspace/67240c1220104a3b90fe6117/6ae2a770406d342ce6f5d0b5",
+      "title": "[P0][UI/UX][Mapa] 3A — Painel persistente e expansível de estabelecimentos",
+      "url": "https://trello.com/c/eRiksZjA/137-p0ui-uxmapa-3a-painel-persistente-e-expans%C3%ADvel-de-estabelecimentos",
+      "description": "**Ponto 3 do AcessoJá — Task 3A | Prioridade P0 | Frontend/UI/UX | A desenvolver**\n\n**Objetivo:** substituir o resumo modal do mapa por um painel persistente com estados Fechado, Compacto e Expandido, permitindo interação com mapa e detalhes sem trocar de tela.\n\n**Base técnica identificada:** MainScreen._openLocalPreview utiliza showModalBottomSheet e MapPlacePreview; PlacePreviewController gerencia seleção e dados; MapPlaceDetailsScreen reusa o preview. Não recriar mapa/rotas/avaliações; reaproveitar os serviços e modelos.\n\n**Escopo e regras**\n1. Selecionar marcador/resultado abre painel compacto. Expandir mostra conteúdo rolável e recolher retorna ao resumo; X fecha. Somente um painel ativo, sem empilhar modais ou reconstruir a seleção.\n2. Mobile Android/Chrome: bottom sheet persistente integrado ao layout (ex.: Stack + DraggableScrollableSheet/Controller); desktop: avaliar painel lateral persistente quando houver largura, mantendo funcionalidade e semântica.\n3. Não resolver trocando apenas o interior de showModalBottomSheet: o modal atual bloqueia o mapa. O mapa precisa permanecer interativo nas áreas visíveis, sem conflito entre gestos de mapa/painel.\n4. Proporções iniciais de teste no mobile: compacto ~32%, médio ~60%, expandido ~92%; adaptar às dimensões, teclado e texto ampliado; min/max/snapSizes ajustados em homologação.\n5. Expandir e recolher por botão acessível e por teclado; gesto de arraste é opcional. Retornar/ESC no estado expandido recolhe; no compacto fecha. Foco e rótulos semânticos previsíveis.\n6. Trocar rapidamente de local altera o conteúdo do mesmo painel, cancelando/ignorando respostas atrasadas da seleção anterior; manter loading/erro/sem rede/retry sem dados fabricados.\n7. Não alterar zoom, filtros, posição de câmera ou resultados da pesquisa ao expandir/recolher; centralizar apenas por ação explícita. Fechar painel não reseta o mapa.\n8. ScrollController do DraggableScrollableSheet deve controlar o scroll interno; widgets não devem estourar a tela nem cortar ações em texto ampliado.\n9. Integrar interface de estado à MainScreen e PlacePreviewController, preparando conteúdos da Task 3B e navegação da 3C; evitar interferir no fluxo de rotas (Ponto 4).\n\n**Arquivos a inspecionar:** frontend/lib/screens/main_screen.dart; frontend/lib/widgets/map_place_preview.dart; frontend/lib/services/place_preview_controller.dart; frontend/lib/screens/map_place_details_screen.dart; testes Flutter de mapa, preview e acessibilidade.\n\n**Critérios de aceite:** 3A-01 um marcador abre compacto; 3A-02 expansível/recolhível por toque, teclado e alternativa sem arrastar; 3A-03 mapa permanece utilizável e sem conflitos; 3A-04 zoom/filtros/local persistentes; 3A-05 mudança rápida não mistura dados; 3A-06 Back/ESC/X coerentes; 3A-07 responsivo em Android/Chrome e 200% de texto; 3A-08 leitor de tela e foco corretos; 3A-09 testes Flutter, CI e homologação documentados.\n\n**Testes mínimos:** selecionar A→B durante carregamento, fechar/expandir/recolher, trocar filtros/zoom, erro e retry, teclado, leitor de tela, telas pequenas, rotação e Chrome desktop.\n\n**Dependências:** [Resumo do mapa #96](https://trello.com/c/QP5xuSEB) (finalizado); [Recursos e fontes #135](https://trello.com/c/KWtQodUV); Tasks 3B e 3C (vincular após criação).\n**Referências:** https://api.flutter.dev/flutter/widgets/DraggableScrollableSheet-class.html ; https://api.flutter.dev/flutter/widgets/DraggableScrollableController-class.html ; https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements\n**Definition of Done:** implementação e testes no CI, validação Chrome/Android e tecnologias assistivas, sem regressões; PR revisado; não marcar finalizado antecipadamente.",
+      "list": "Em Progresso",
+      "commentsHasMore": false,
+      "checklistsHasMore": false,
+      "checklists": [
+        {
+          "name": "Critérios de aceite e testes",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "CA: abrir marcador mostra painel compacto do local correto",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: expandir/recolher/fechar funciona por toque, teclado e leitor de tela, sem arrastar",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: mapa continua utilizável e não perde zoom/filtros em transições",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: troca rápida A→B durante carregamento não mistura estabelecimentos",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: Android Back, Escape e X funcionam de modo previsível",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: tela pequena, rotação e texto 200% sem overflow ou ações cortadas",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testes Flutter widget, analyze e CI; homologar Chrome desktop/móvel e Android físico",
+              "state": "INCOMPLETE"
+            }
+          ]
+        },
+        {
+          "name": "Implementação do painel",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "Substituir showModalBottomSheet por painel persistente integrado ao mapa, com estados fechado/compacto/expandido",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Disponibilizar controles Expandir/Recolher/Fechar por toque e teclado; gesto de arraste opcional",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Preservar mapa interativo, zoom, câmera, pesquisa e filtros em todas as mudanças de estado",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Suportar troca rápida de local sem empilhar painéis nem misturar dados antigos",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Adaptar layout para Chrome desktop (lateral quando adequado), tablet e telas pequenas",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Tratar loading, erro, ausência de rede e retry sem valores fabricados",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Integrar DraggableScrollableSheet/Controller ao mapa e garantir o uso correto do ScrollController do painel com tamanhos adaptáveis",
+              "state": "INCOMPLETE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "card": 54,
+      "id": "ari:cloud:trello::card/workspace/67240c1220104a3b90fe6117/6ae2a788708bf8fb6b257999",
+      "title": "[P0][Integração][Mapa] 3B — Unificar detalhes, acessibilidade, avaliações e fotos no painel",
+      "url": "https://trello.com/c/o1y3kmqm/138-p0integra%C3%A7%C3%A3omapa-3b-unificar-detalhes-acessibilidade-avalia%C3%A7%C3%B5es-e-fotos-no-painel",
+      "description": "**Ponto 3 do AcessoJá — Task 3B | Prioridade P0 | UI/UX + Integração Flutter | A desenvolver**\n\n**Objetivo:** reaproveitar o painel persistente da Task 3A para unificar os detalhes do local, reduzir botões redundantes e destacar acessibilidade, avaliações e fotografias sem perder informações ou duplicar serviços.\n\n**Diagnóstico:** MapPlacePreview contém Favoritos, Avaliar, Ver avaliações, Detalhes, Rota e Contribuir em botões grandes. MapPlaceDetailsScreen repete o preview; PlaceDetailScreen utiliza outra apresentação de avaliações e recursos. Consolidar experiência sem retirar funcionalidades.\n\n**Escopo e regras**\n1. Cabeçalho compacto: ícone/categoria, nome, endereço informado, favorito como ícone acessível e X; manter informação de origem disponível sem poluição visual.\n2. Priorizar até três recursos de acessibilidade relevantes no compacto, com estados relatados (presença, ausência, desconhecido, divergente, não aplicável). Alertas importantes sempre visíveis. Nunca selo de 'local totalmente acessível'.\n3. Resumo de avaliações: quantidade e média somente quando realmente informadas; distinguir 0 avaliações de dados ainda desconhecidos. Distância 'em linha reta' quando aplicável, nunca inventar tempo de trajeto.\n4. Ações compactas primárias: Traçar rota e Avaliar, conforme elegibilidade. Ver avaliações pelo bloco de nota/aba, favorito no cabeçalho, 'Contribuir' contextual. Remover blocos de 5-6 botões repetidos.\n5. Expandido: seções acessíveis 'Acessibilidade' (dez recursos, fontes, datas), 'Avaliações e fotos' (relatos públicos e imagens aprovadas) e 'Informações' (endereço, horários, origem e atualidade). Opcional usar tabs, desde que foco, rolagem e leitor de tela funcionem.\n6. Reutilizar Card #135 (recursos/fontes) e Card #136 (contribuição parcial). Reutilizar Card #134 (foto no editor). Fotos pendentes somente privadas ao autor; fotos rejeitadas fora da apresentação pública.\n7. Tratar local cadastrado no AcessoJá, OSM ainda não vinculado e ponto manual; não oferecer avaliação com ID inexistente, não inventar coordenadas, nota, recurso ou horário. Cadastro/vínculo externo é explícito.\n8. Informar snapshot desatualizado, ponto representativo de área em vez de entrada e origem desconhecida com textos curtos; revelar detalhes completos sob demanda e manter a atribuição/licença OSM.\n9. Após avaliar, favoritar, contribuir ou atualizar evidência, recarregar somente os dados afetados sem fechar o painel, sem apagar dados válidos nem duplicar chamadas.\n10. Não retirar PlaceDetailScreen/MapPlaceDetailsScreen sem auditoria dos fluxos externos (Salvos, Explorar, busca, mapa); reduzir duplicação por reutilização de widgets e serviços.\n\n**Arquivos a inspecionar:** frontend/lib/widgets/map_place_preview.dart, frontend/lib/screens/map_place_details_screen.dart, frontend/lib/screens/place_detail_screen.dart, frontend/lib/widgets/place_feature_summary.dart, frontend/lib/widgets/favorite_button.dart, frontend/lib/screens/place_reviews_screen.dart, frontend/lib/widgets/accessibility_results_card.dart, frontend/lib/widgets/feature_provenance.dart, frontend/lib/services/place_preview_controller.dart.\n\n**Critérios de aceite:** 3B-01 hierarquia visual aprovada, sem ações redundantes; 3B-02 dez recursos com estados corretos; 3B-03 sem valores fictícios; 3B-04 somente fotografias aprovadas em público; 3B-05 favorito, avaliações e evidências atualizam sem perder local/zoom; 3B-06 distinção OSM e cadastro interno íntegra; 3B-07 fonte, datas e atribuição preservadas; 3B-08 acessibilidade em teclado, leitor de tela e texto ampliado; 3B-09 sem regressão da privacidade e das avaliações.\n\n**Cenários de teste:** zero avaliações vs carregamento, recurso divergente/desconhecido, foto pendente/aprovada/rejeitada, local externo sem vínculo, local sem coordenada, snapshot antigo, sessão expirada, alteração de favorito, falha parcial de detalhes.\n\n**Dependências:** [Task 3A — painel](https://trello.com/c/eRiksZjA), [Card #134 — fotos](https://trello.com/c/rPOH0ToC), [Card #135 — recursos](https://trello.com/c/KWtQodUV), [Card #136 — contribuições parciais](https://trello.com/c/D4rrbMiL), [Resumo original #96](https://trello.com/c/QP5xuSEB).\n**Definition of Done:** testes e revisão visual/acessível aprovados no Chrome e Android, documentação atualizada e PR revisado. Não marcar como concluído sem homologação.",
+      "list": "Em Progresso",
+      "commentsHasMore": false,
+      "checklistsHasMore": false,
+      "checklists": [
+        {
+          "name": "Critérios de aceite e testes",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "CA: compactação reduz ações redundantes e prioriza acessibilidade",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: dez recursos, fontes e divergências aparecem corretamente quando expandidos",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: fotos aprovadas são públicas; pendentes/rejeitadas continuam privadas",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: local OSM sem vínculo, ponto manual ou coordenadas ausentes não têm dados inventados",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: avaliações, favorito e evidências atualizam sem perder seleção do mapa",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: leitor de tela, teclado, contraste e texto ampliado funcionam",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar Flutter/CI, Chrome/Android e regressões nos fluxos existentes",
+              "state": "INCOMPLETE"
+            }
+          ]
+        },
+        {
+          "name": "Integração dos conteúdos",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "Organizar cabeçalho com nome/categoria/endereço, favorito em ícone e fechamento",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Mostrar até três recursos relevantes no compacto, sem omitir alertas importantes",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Exibir média e contagem de avaliações somente se informadas; zero != desconhecido",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Centralizar ações em Traçar rota e Avaliar, com avaliações e contribuições contextuais",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "No expandido, organizar Acessibilidade, Avaliações e fotos, Informações do local",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Reutilizar os Cards 134, 135 e 136 sem duplicar mídia, questionário ou fontes",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Preservar estados OSM/interno, avisos de snapshot e atribuição OSM",
+              "state": "INCOMPLETE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "card": 55,
+      "id": "ari:cloud:trello::card/workspace/67240c1220104a3b90fe6117/6ae2a7a9fe03eb74c984249f",
+      "title": "[P0][Qualidade][Mapa] 3C — Preservar contexto, retorno e testes do painel expansível",
+      "url": "https://trello.com/c/DhW25Fcu/139-p0qualidademapa-3c-preservar-contexto-retorno-e-testes-do-painel-expans%C3%ADvel",
+      "description": "**Ponto 3 do AcessoJá — Task 3C | Prioridade P0 | Integração Flutter + QA | A desenvolver**\n\n**Objetivo:** manter local selecionado, estado do painel, câmera/zoom/filtros e foco durante navegação entre mapa, informações, avaliações, fotografias, contribuições e início de rotas; garantir testes e homologação do novo painel.\n\n**Regras funcionais**\n1. Fechado/Compacto/Expandido são estados explícitos de uma única seleção; expandir/recolher preserva identidade, dados, zoom, filtros, pesquisa e marcador.\n2. Selecionar outro marcador substitui o conteúdo no painel existente. Ignorar resultados tardios da seleção anterior e cancelar listeners/requisições obsoletas, sem apresentar dados cruzados.\n3. Ao abrir formulário de avaliação, fotos, detalhes de fontes ou contribuição, preservar origem, nível do painel, seção e posição de leitura. Voltar ou cancelar retorna ao mesmo local e atualiza somente informações alteradas.\n4. Back Android / Escape no Chrome: Expandido→Compacto, Compacto→Fechado. X fecha o painel. O foco retorna ao marcador ou controle de origem quando possível, sem ficar em elementos destruídos.\n5. Abrir 'Traçar rota' deve fornecer contexto explícito (local, origem do comando, seleção e estado anterior) ao coordenador. A correção completa de cancelar/encerrar rota voltando à tela anterior é o PONTO 4 separado: não inventar uma segunda máquina de navegação nesta task.\n6. Sessão/login: manter seleção pública e rascunhos elegíveis, limpar dados privados ao trocar de conta e não vazar fotos pendentes ou informações de outro usuário.\n7. Prevenir ações duplicadas por toque duplo, widget rebuild, resposta assíncrona ou retorno, especialmente em publicação de avaliações e uploads.\n8. Cobrir entradas por busca, filtros, favoritos/salvos, explorar, ponto manual, locais internos e OSM vinculados/não vinculados. Não transformar ponto manual em estabelecimento avaliado.\n9. Tratamento de loading, 401/403/409, ausência de rede, erro da API e retry por seção sem fechar o mapa nem inventar sucesso.\n10. Testar responsividade e acessibilidade: Android real, Chrome desktop/móvel, teclado, TalkBack/leitor de tela, texto ampliado até 200%, toque simples como alternativa ao arraste, contraste e foco correto.\n\n**Estrutura de teste automatizado**\n- Widgets: selecionar A→compacto→expandido→recolhido→fechado; atualizar A→B durante carregamento; sem setState after dispose; sem novo modal por seleção.\n- Navegação: abrir/voltar editor, avaliações, galeria privada e fontes; login, favorito e contribuição. Verificar retorno ao mesmo local/estado.\n- Regressão: zoom/filtros preservados; dados do local interno e OSM corretos; imagens públicas somente aprovadas; ações não duplicadas; local sem coordenada.\n- CI: flutter analyze, flutter test, quality gate; pytest se houver alterações de backend. Registrar evidências de homologação em Android real e Chrome e atualizar documentação.\n- Rotas: testar transmissão de contexto e abertura do fluxo existente; cancelar/encerrar/retornar serão especificados e testados integralmente no Ponto 4.\n\n**Critérios de aceite:** 3C-01 estado/local preservados; 3C-02 trocas rápidas não misturam dados; 3C-03 Back/Escape/X previsíveis; 3C-04 retorno das subações mantém origem; 3C-05 câmera/filtros não se perdem; 3C-06 OSM e internos corretos; 3C-07 troca de conta segura; 3C-08 sem duplicações de operações; 3C-09 contrato de retorno de rota disponível; 3C-10 homologação acessível e automação comprovadas.\n\n**Arquivos a inspecionar:** frontend/lib/screens/main_screen.dart, frontend/lib/widgets/map_place_preview.dart, frontend/lib/services/place_preview_controller.dart, frontend/lib/screens/place_reviews_screen.dart, frontend/lib/screens/review_editor_screen.dart, frontend/lib/screens/evidence_details_screen.dart, frontend/lib/screens/saved_places_screen.dart e testes relacionados.\n\n**Dependências:** [Task 3A](https://trello.com/c/eRiksZjA), [Task 3B](https://trello.com/c/o1y3kmqm), [Card #134](https://trello.com/c/rPOH0ToC), [Card #135](https://trello.com/c/KWtQodUV), [Card #136](https://trello.com/c/D4rrbMiL), [Mapa→Rota→Avaliação](https://trello.com/c/hh1V1a5n).\n**Referências:** https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements ; https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum ; https://api.flutter.dev/flutter/widgets/DraggableScrollableController-class.html\n**Definition of Done:** testes automatizados e homologação manual concluídos, evidências anexadas ao PR, integração sem regressões e revisão concluída; não marcar como finalizado antecipadamente.",
+      "list": "Em Progresso",
+      "commentsHasMore": false,
+      "checklistsHasMore": false,
+      "checklists": [
+        {
+          "name": "Homologação e regressões",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "Testar widget fechado/compacto/expandido e restauração após subações",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar troca rápida A→B durante carregamento e evitar setState após dispose",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar fluxo interno/OSM, favoritos, Salvos, Explorar e ponto manual",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar navegação por teclado, leitor de tela, arraste opcional, texto 200% e tela estreita",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar permissões, sessão expirada, retry e não duplicação de avaliações/uploads",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Verificar abertura de rota com contexto e registrar integração futura com Ponto 4",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Executar Flutter analyze/test e CI; homologar Chrome desktop/móvel e Android real",
+              "state": "INCOMPLETE"
+            }
+          ]
+        },
+        {
+          "name": "Navegação e preservação do contexto",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "Preservar estabelecimento, nível do painel e seção ao ir/voltar de avaliações, fotos, fontes e contribuições",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Definir Back/ESC: expandido→compacto, compacto→fechado; X fecha explicitamente",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Restaurar foco ao controle/marcador de origem sem focar elemento destruído",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Evitar race ao trocar A→B, listeners obsoletos e carregamentos duplicados",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Transmitir contexto de origem à rota sem duplicar correção do Ponto 4",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Tratar login/troca de conta, estado privado, erros 401/403/409 e retry",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Manter filtros, câmera, zoom e resultados de busca ao voltar e atualizar somente as seções alteradas",
+              "state": "INCOMPLETE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "card": 56,
+      "id": "ari:cloud:trello::card/workspace/67240c1220104a3b90fe6117/6ae331eae0f623251c8b7e36",
+      "title": "[P1][UI/UX][Mapa] 8A — Refinar ícones, contraste, seleção e legenda dos marcadores",
+      "url": "https://trello.com/c/x5QwbPUm/152-p1ui-uxmapa-8a-refinar-%C3%ADcones-contraste-sele%C3%A7%C3%A3o-e-legenda-dos-marcadores",
+      "description": "**Ponto 8 — Task 8A | Prioridade P1 | Flutter / UI/UX / Acessibilidade | Estado inicial: A desenvolver**\n\n**DECISÃO APROVADA**\nOs ícones dos marcadores identificam a categoria do local; o estado visual identifica seleção; os agrupamentos mostram a quantidade de locais. Informações sobre acessibilidade, recursos, avaliações, fotografias e fontes pertencem ao painel compacto/expandido, não a uma cor ou selo geral no pino.\n\n**OBJETIVO**\nRefinar identidade visual e legibilidade dos marcadores do mapa do AcessoJá, mantendo os onze ícones de categoria, o símbolo neutro, a linguagem visual existente e o mapa funcional. Melhorar seleção, legenda, contraste em fundos variados e responsividade sem reimplementar o algoritmo de agrupamento.\n\n**BASE REAL DO REPOSITÓRIO (REUTILIZAR)**\n- `frontend/lib/models/place_category.dart`: catálogo visual de 11 categorias e fallback.\n- `frontend/lib/widgets/adaptive_place_layer.dart`: botões, semântica, tooltips, marcador selecionado com contorno reforçado e cantos diferenciados; cluster com contagem.\n- `frontend/lib/models/map_marker_layout.dart`: geometria/hitBounds, rótulos e agrupamento.\n- `frontend/lib/widgets/map_cluster_sheet.dart`: lista de grupo e legenda do mapa.\n- `frontend/lib/screens/main_screen.dart`: mapa e seleção.\n- `frontend/lib/app_theme.dart`, `frontend/lib/l10n/map_strings.dart` e testes atuais.\nO [Card #98 — padronização dos ícones](https://trello.com/c/DpHeRP4E) e o [Card #97 — locais densos](https://trello.com/c/eSFEQ8Ji) estão finalizados. **Não reconstruir** essas implementações e não trocar `flutter_map` 6.2.1 por Google Maps.\n\n**ESCOPO E REGRAS**\n1. Conservar os 11 códigos e associações principais de categoria; futuro catálogo de subcategorias do [Card #150](https://trello.com/c/DGPagNXB) não requer um ícone exclusivo para todo subtipo. Categoria inexistente/nova: fallback neutro, sem crash.\n2. Definir padrão visual coerente (tamanho, proporção, borda, fundo e iconografia) compatível com o tema atual. Verificar contraste sobre tiles claros, escuros, com ruas e imagens variadas; não depender somente da cor para distinguir estado.\n3. Marcador NORMAL: ícone da categoria, alvo interativo efetivo >= 48x48 pixels lógicos Flutter, tooltip e nome acessível.\n4. Marcador SELECIONADO: reforço de contorno/formato já existente e, se validado visualmente, leve halo/elevação, sem ocultar outros alvos. Seleção não deve significar que o local é mais acessível.\n5. CLUSTER: contagem legível e real de membros; não usar uma categoria arbitrária como representação do agrupamento misto; preservar distinção por forma entre cluster e local individual.\n6. RÓTULOS: nome quando couber sem sobreposição, truncamento com tooltip/semântica; a falta de rótulo visual em zoom distante não pode tornar o local inacessível em busca/lista.\n7. LEGENDA: explicar ícone = tipo de local, contorno = selecionado, número = vários locais; origem e acessibilidade são descritas no painel. Manter PT/EN, símbolo desconhecido e mensagens úteis.\n8. Não adicionar cores verde/amarelo/vermelho ou porcentagens como 'acessibilidade do estabelecimento'. Dados ausentes, divergentes e limitados só são explicados no painel.\n9. Respeitar tema claro/escuro e alto contraste; coordenação com o [Card #115 — tiles escuros](https://trello.com/c/f291ePVW), **sem implementar o tema dos tiles aqui**.\n10. Não alterar IDs de locais, coordenadas, categoria persistida, fontes, avaliação ou regras de acessibilidade. Não criar assets pagos/sem licença ou depender de downloads externos em runtime.\n\n**CHECKLIST DE IMPLEMENTAÇÃO**\n- Inventariar aparência atual de 11 categorias, desconhecido, selecionado e cluster.\n- Definir tokens/variantes visuais reutilizáveis no widget existente.\n- Ajustar contraste de fundo, bordas e ícones nos temas suportados.\n- Reforçar seleção por contorno/forma, nunca somente cor.\n- Melhorar contagem de clusters e legibilidade em várias escalas.\n- Revisar rótulos, tooltip e legenda PT/EN sem poluição visual.\n- Compatibilizar com Card #150 (subcategorias) sem trocar identificadores antigos.\n- Criar/atualizar testes de widget e snapshots de estados relevantes.\n- Homologar Android real, Chrome desktop/mobile e zoom/texto ampliado.\n\n**CRITÉRIOS DE ACEITE**\n8A-01: 11 categorias íntegras; 8A-02: desconhecida = fallback neutro; 8A-03: seleção distinguível sem cor; 8A-04: cluster não sugere categoria/acessibilidade inexistente; 8A-05: nome/tooltip legíveis quando rótulo é omitido; 8A-06: alvos Flutter >=48x48 e foco visível; 8A-07: legenda explica símbolos sem interpretações falsas; 8A-08: contraste não textual conforme WCAG 1.4.11 nos estados essenciais; 8A-09: PT/EN e temas funcionando; 8A-10: sem regressão do mapa/cluster ou mudança indevida no backend; 8A-11: testes e homologação aprovados.\n\n**CENÁRIOS DE TESTE**\nMarcador comum; seleção; desfazer seleção; 11 categorias; ID desconhecido; agrupamento 2/50/500; tema claro/escuro; mapa com tile variável; texto 200%; teclado Tab/Enter; leitor de tela; dois locais com coordenadas iguais; rótulo longo; zoom baixo/alto.\n\n**ARQUIVOS PRIORITÁRIOS**\n`frontend/lib/models/place_category.dart`, `frontend/lib/widgets/adaptive_place_layer.dart`, `frontend/lib/widgets/map_cluster_sheet.dart`, `frontend/lib/app_theme.dart`, `frontend/lib/l10n/map_strings.dart`, `frontend/test/map_cards_04_06_test.dart`. Alterar layout geométrico somente com necessidade comprovada e testes.\n\n**DEPENDÊNCIAS**\n[#97 agrupamento](https://trello.com/c/eSFEQ8Ji), [#98 ícones](https://trello.com/c/DpHeRP4E), [#115 tema do tile](https://trello.com/c/f291ePVW), [#150 categorias](https://trello.com/c/DGPagNXB). Task 8B integra estado com painel; 8C valida.\n\n**REFERÊNCIAS**\nFlutter A11y: https://docs.flutter.dev/ui/accessibility\nFlutter testes: https://docs.flutter.dev/ui/accessibility/accessibility-testing\nW3C contraste não textual: https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast\n\n**DEFINITION OF DONE**\nUI revisada e validada com dados reais; Flutter analyze/test e Quality Gate aprovados; evidências Android/Chrome e PT/EN; PR/documentação revisados. Não marcar como concluído sem homologação.",
+      "list": "To do",
+      "commentsHasMore": false,
+      "checklistsHasMore": false,
+      "checklists": [
+        {
+          "name": "Acessibilidade visual e testes",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "CA: todos os onze ícones permanecem disponíveis e categoria desconhecida é neutra",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: normal, selecionado e cluster são distinguíveis também sem depender de cores",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: indicador selecionado não cobre nem impede selecionar locais próximos",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: ícone/contorno têm contraste não textual suficiente segundo WCAG 1.4.11 nos estados essenciais",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: áreas de toque >=48x48 Flutter; foco/tooltip e nome acessível corretamente",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: legenda explica que os ícones indicam categoria, não acessibilidade; sem selo fictício",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar temas, 200% de texto, categoria desconhecida, cluster de 2/50/500 e rótulos longos",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar Flutter widget/analyze, CI e validação visual em Android e Chrome, PT/EN",
+              "state": "INCOMPLETE"
+            }
+          ]
+        },
+        {
+          "name": "Visual e padrões dos marcadores",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "Revisar 11 ícones de place_category.dart e categoria desconhecida sem alterar IDs persistidos",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Definir variantes do marcador normal, selecionado, foco e cluster usando tokens do AppTheme",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Reforçar seleção por contorno/formato; evitar mudança que sugira acessibilidade do local",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Validar contraste das bordas e ícones em tiles variados, tema claro/escuro e cores do app",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Manter alvo de toque mínimo de 48×48 px lógicos e aspecto proporcional em escala de texto elevada",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Melhorar hierarquia visual da contagem de cluster e distinguir clusters de marcadores individuais",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Refinar rótulo/tooltip e truncamento sem cobrir marcadores ou controles; não criar poluição visual",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Atualizar legenda para categoria, seleção e agrupamento, mantendo PT/EN e fallback neutro",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Não implementar classificação geral de acessibilidade no marcador nem reimplementar clustering/tiles",
+              "state": "INCOMPLETE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "card": 57,
+      "id": "ari:cloud:trello::card/workspace/67240c1220104a3b90fe6117/6ae331ec8816c7f19ae2f79e",
+      "title": "[P0][Integração][Mapa] 8B — Integrar seleção, agrupamentos e painel expansível sem perder contexto",
+      "url": "https://trello.com/c/2KTeDLA1/153-p0integra%C3%A7%C3%A3omapa-8b-integrar-sele%C3%A7%C3%A3o-agrupamentos-e-painel-expans%C3%ADvel-sem-perder-contexto",
+      "description": "**Ponto 8 — Task 8B | Prioridade P0 | Flutter / UI/UX / Integração | Estado inicial: A desenvolver**\n\n**DECISÃO APROVADA**\nMarcadores identificam locais (categoria, seleção, agrupamento), enquanto a acessibilidade é explicada no painel do estabelecimento. Não transferir estados de rampas/banheiros/nota geral para cores ou símbolos de pinos.\n\n**OBJETIVO**\nIntegrar `AdaptivePlaceLayer`, agrupamentos e seleção de estabelecimentos ao painel persistente e expansível dos [Cards #137–139](https://trello.com/c/eRiksZjA), garantindo contexto correto quando o usuário filtra, faz busca, muda zoom, expande/recolhe ou seleciona outro local.\n\n**BASE IMPLEMENTADA (REUTILIZAR)**\n`frontend/lib/widgets/adaptive_place_layer.dart`, `frontend/lib/models/map_marker_layout.dart`, `frontend/lib/widgets/map_cluster_sheet.dart`, `frontend/lib/screens/main_screen.dart`, `frontend/lib/widgets/map_place_preview.dart`, `frontend/lib/services/place_preview_controller.dart`, `frontend/lib/models/map_place.dart`; `flutter_map: ^6.2.1`. O algoritmo `layoutPlaceMarkers` usa coordenadas de tela, células estáveis, união por colisão e preservação de membros. O painel expansível é escopo dos Cards #137–139; adaptar interface por contrato, sem criar segundo controlador.\n\n**REGRAS DE INTERAÇÃO**\n1. Selecionar marcador individual define um `selectedId` estável e abre painel COMPACTO do local correto. Atualizar seleção visual, foco e semântica em sincronismo com o painel; não criar múltiplos modais.\n2. EXPANDIR/RECOLHER painel não deve mudar `selectedId`, câmera, zoom, filtros, busca ou estado do local. Fechar explicitamente limpa somente o estado de preview, respeitando o contrato do Card #139.\n3. Selecionar outro marcador A→B enquanto detalhes de A carregam nunca pode mostrar A no painel de B; ignorar respostas tardias/cancelar listeners obsoletos.\n4. Selecionar CLUSTER mostra quantidade real de membros, permite escolher qualquer estabelecimento e, quando apropriado, opção de aproximar (sem forçar zoom). Inclusão de membro selecionado num cluster deve permanecer perceptível. Coordenadas coincidentes nunca tornam um local inalcançável.\n5. Ao escolher membro de cluster, manter identidade real e origem (`acessoja` vs `openstreetmap`); lista existente deve preservar rótulos, categoria, endereço, seleção e acesso por teclado.\n6. Ao mudar zoom/arrastar mapa, agrupamentos/rótulos podem mudar geometricamente mas cada membro conserva seu ID; nunca trocar alvo de clique, selecionar local adjacente por colisão, duplicar ou perder local.\n7. Integrar `reservedInsets` às dimensões REAIS do painel expansível, barras de busca, botões sobrepostos, safe areas e orientação; não supor altura fixa do painel compacto. Labels e alvos não ficam atrás do painel ou controles críticos.\n8. Recalcular layouts somente quando relevante (câmera/viewport/filtros/dados/seleção), sem novas chamadas HTTP por reconstrução de marcador. Não introduzir `setState` em cascata, flicker ou travamento perceptível.\n9. Busca/filtros #146–151 atualizam os membros do mapa e clusters conforme o conjunto realmente exibido; Priorizar mantém os locais, altera relevância/ordem de apresentação, **não a condição de acessibilidade do marcador**. Todos/Qualquer podem restringir; agrupamento informa quantidade de locais após filtros, não total bruto da API.\n10. Quando uma fonte falhar, não apagar locais válidos de outra fonte; não criar marcador para coordenada ausente/inválida. OSM não vinculado continua somente com ações permitidas; preservar atribuição.\n11. Evitar entradas semânticas duplicadas do mesmo local quando ícone e rótulo são ambos botões; proporcionar uma rota de foco clara e previsível, mantendo rótulo visual clicável quando necessário. Leitor de tela deve anunciar nome, categoria, origem, selecionado e ação, sem afirmar recursos de acessibilidade.\n12. Se o mapa não for plenamente explorável por navegação de teclado/leitor de tela em grande densidade, oferecer caminho equivalente via resultados/agrupamento/lista, sem obrigar arraste do mapa.\n13. Ao entrar em rota a partir do painel, repassar origem para o [Card #140](https://trello.com/c/g8eOebx5); ao retornar, seleção e contexto devem restaurar conforme #139. Não implementar política duplicada de encerramento.\n14. Coordenar layouts responsivos com [Card #115](https://trello.com/c/f291ePVW) (tiles escuros) e [Card #150](https://trello.com/c/DGPagNXB) (subcategorias), sem duplicar essas tarefas.\n\n**CHECKLIST DE IMPLEMENTAÇÃO**\n- Auditar passagem de `selectedId`, `onSelect`, `onCluster`, preview e lista dos agrupamentos.\n- Definir contrato único de seleção entre MainScreen, AdaptivePlaceLayer e painel #137–139.\n- Integrar reservedInsets dinâmicos a alturas do painel e barras existentes.\n- Preservar estabilidade de IDs e todos os membros em zoom/agrupamento/filtro.\n- Proteger concorrência e transições A→B dos detalhes.\n- Melhorar teclado/semântica/foco e disponibilizar alternativa por lista.\n- Preservar origem interna/externa e limite de ações OSM.\n- Coordenar retorno de rota e atualização dos filtros #146–151.\n- Testar cenário denso, múltiplas coordenadas iguais e redimensionamentos.\n\n**CRITÉRIOS DE ACEITE**\n8B-01 marcador abre painel compacto correto; 8B-02 expandir/recolher mantém seleção/zoom/filtros; 8B-03 troca A→B não mistura dados; 8B-04 cluster conta membros exibidos e lista todos; 8B-05 todos os membros com mesma coordenada são escolhíveis; 8B-06 layout evita sobreposição com painel/barras; 8B-07 mudanças de zoom/filtros não duplicam nem perdem IDs; 8B-08 OSM e locais internos preservam origem; 8B-09 sem selo fictício nos marcadores; 8B-10 um percurso acessível de foco por local/alternativa equivalente; 8B-11 rota/retorno respeitam #139/#140; 8B-12 testes Flutter e homologação Android/Chrome aprovados.\n\n**CENÁRIOS BDD**\nA) tocar Café -> abre compacto com Café selecionado; B) expandir/recolher -> câmera e seleção invariantes; C) A→B durante API atrasada -> detalhes B apenas; D) 3 locais na mesma coordenada -> lista permite os três; E) zoom reagrupa mas ID permanece; F) filtro Tudo/Qualquer altera cluster sem duplicar; G) Priorizar não remove locais; H) redimensionar para painel expandido não oculta alvos sem alternativa; I) Back de rota restaura contexto; J) teclado/leitor de tela identifica local e grupo sem foco duplicado.\n\n**ARQUIVOS**\n`frontend/lib/widgets/adaptive_place_layer.dart`, `frontend/lib/models/map_marker_layout.dart`, `frontend/lib/widgets/map_cluster_sheet.dart`, `frontend/lib/screens/main_screen.dart`, `frontend/lib/widgets/map_place_preview.dart`, `frontend/lib/services/place_preview_controller.dart`, testes de mapa/navegação/integração. Adaptar somente o necessário.\n\n**DEPENDÊNCIAS**\n[#137 painel](https://trello.com/c/eRiksZjA), [#138 detalhes](https://trello.com/c/o1y3kmqm), [#139 estado](https://trello.com/c/DhW25Fcu), [#140 retorno rotas](https://trello.com/c/g8eOebx5), [#146 personalização](https://trello.com/c/VEfreM1W), [#149 filtros](https://trello.com/c/wx1zx2r7), [#97 agrupamentos](https://trello.com/c/eSFEQ8Ji), #8A visual e #8C testes.\n\n**REFERÊNCIAS**\nGoogle clustering (conceito, NÃO trocar biblioteca): https://developers.google.com/maps/documentation/javascript/marker-clustering\nFlutter semantics: https://docs.flutter.dev/ui/accessibility\nFlutter-map 6.2.1: https://pub.dev/packages/flutter_map/versions/6.2.1\n\n**DEFINITION OF DONE**\nContratos e interações implementados com o painel real; testes e CI aprovados; homologação de seleção, agrupamentos, filtros, teclado, leitor de tela e desempenho Android/Chrome documentada; PR revisado. A desenvolver.",
+      "list": "To do",
+      "commentsHasMore": false,
+      "checklistsHasMore": false,
+      "checklists": [
+        {
+          "name": "Comportamento e critérios de aceite",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "CA: selecionar local abre painel compacto do local correto com marcador destacado",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: expandir/recolher mantém local, zoom, filtros e posição da câmera",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: selecionar B enquanto A carrega nunca exibe A no painel de B",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: grupo informa o total do conjunto exibido, não uma contagem desatualizada",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: locais de coordenadas coincidentes permanecem acessíveis individualmente",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: mudança de zoom e tela não duplica IDs, perde locais nem deixa botões atrás do painel",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: mapa interno/externo continua com fontes, vínculos e ações corretos",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "CA: foco de teclado/leitor de tela possui percurso coerente e alternativa por lista",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "BDD: filtros Todos/Qualquer alteram clusters; Priorizar mantém os locais elegíveis",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "BDD: retorno de rota restaura seleção; testes integração Flutter, Android/Chrome e CI",
+              "state": "INCOMPLETE"
+            }
+          ]
+        },
+        {
+          "name": "Integração de marcadores e contexto",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "Auditar selectedId, onSelect, onCluster e o contrato de painel persistente dos Cards #137–139",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Selecionar marcador abre painel compacto correto sem empilhar modais/duplicar seleção",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Expandir/recolher/fechar painel segue contexto aprovado, sem alterar câmera/zoom/filtros",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Troca rápida A→B com requisição assíncrona não mostra dados de A em B",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Cluster mantém todos os IDs; lista permite escolher qualquer membro, inclusive coordenadas iguais",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Calcular reservedInsets com dimensões reais do painel e controles sobrepostos, sem alvos encobertos",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Preservar marcadores durante pan, zoom, resize, alteração de filtro e atualização de local",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Integrar resultados priorizados/filtrados dos Cards #146–151 sem alterar significado dos ícones",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Preservar origem AcessoJá/OSM, permissões de local não vinculado e erros de fontes separadamente",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Evitar rebuilds e chamadas HTTP redundantes por gestos; compatibilidade de volta das rotas #140",
+              "state": "INCOMPLETE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "card": 58,
+      "id": "ari:cloud:trello::card/workspace/67240c1220104a3b90fe6117/6ae331ef47858ad38876d6fb",
+      "title": "[P0][Qualidade][A11y] 8C — Homologar marcadores, agrupamentos, semântica e desempenho do mapa",
+      "url": "https://trello.com/c/1tOp1YAH/154-p0qualidadea11y-8c-homologar-marcadores-agrupamentos-sem%C3%A2ntica-e-desempenho-do-mapa",
+      "description": "**Ponto 8 — Task 8C | Prioridade P0 | QA / Flutter / Integração / Acessibilidade | Estado inicial: A desenvolver**\n\n**OBJETIVO**\nHomologar as melhorias visuais e funcionais dos Cards 8A/8B sem regressão dos Cards #97/#98 (já finalizados), garantindo acessibilidade e desempenho real em áreas com muitos estabelecimentos.\n\n**MATRIZ DE TESTES OBRIGATÓRIA**\n1. CATEGORIAS: validar todos os 11 ícones de `placeCategoryVisuals`, fallback neutro e códigos desconhecidos (inclusive futuro subtipo #150). Nenhum símbolo sugere acessibilidade certificada.\n2. ESTADOS VISUAIS: normal, selecionado, foco, cluster 2/50/500, nome curto/longo, tema claro/escuro, contraste de contorno e ícone sobre tiles variáveis. Distinguir seleção por forma/espessura, nunca exclusivamente por cor.\n3. LAYOUT: touch targets >=48x48 Flutter, rótulos não encobrem alvos/controles reservados, coordenadas idênticas continuam selecionáveis, zoom e movimento da câmera não deslocam marcador do destino, rotação/tela estreita/texto 200% sem overflow.\n4. AGRUPAMENTOS: cada local pertence a exatamente um cluster ou símbolo visível conforme viewport/filtros; nenhum ID duplicado ou perdido ao agrupar; contagem exata do conjunto exibido; lista acessível escolhe todos os membros mesmo com coordenadas iguais.\n5. SELEÇÃO/PAINEL: selecionar marcador abre painel compacto correto; mudar A→B com resposta tardia não mistura dados; expandir/recolher mantém identidade/zoom/filtros; fechar e selecionar outro local respeita #139.\n6. FILTROS: Priorizar do #146 não exclui locais; Todos/Qualquer do #149 filtram; cluster corresponde aos resultados realmente exibidos, não a totais gerais externos; dados OSM limitados não geram contagem fictícia.\n7. A11Y: foco de teclado Chrome Tab/Enter/Space/Escape, um percurso semântico claro por local ou alternativa por lista; TalkBack em Android e leitor de tela web; nome, categoria, origem, estado selecionado, contagem de membros e ação corretos; sem foco duplicado desnecessário.\n8. PRIVACIDADE/VERACIDADE: origem OSM/AcessoJá não é confundida com certificação; não enviar preferências pessoais do #146 a terceiros; nenhum ícone de foto/nota/estado não verificado; local sem coordenada não cria ponto inventado.\n9. PERFORMANCE: aproveitar testes existentes com 5, 50, 500 locais; medir antes/depois tempo de layout, frames e reconstruções do painel em Android físico e Chrome. Definir limites de regressão com baseline e dispositivo identificados; NÃO inventar meta em ms sem medição real. Testar cache de medições, atualização rápida de filtros, zoom e resize.\n10. REGRESSÕES: não substituir `flutter_map` 6.2.1, não reimplementar clustering, não quebrar qualidade gate, mapa, search, navegação, favoritos, avaliações, fotos, rotas ou catálogo OSM.\n\n**CHECKLIST DE EXECUÇÃO**\n- Revisar os testes atuais em `frontend/test/map_cards_04_06_test.dart` (5/50/500, cluster, keyboard, redimensionamento).\n- Criar casos de widget para categorias, seleção, rótulos, legenda, temas e cluster misto.\n- Testar geometria `layoutPlaceMarkers`: ausência de coordenada, viewport, reservedInsets, coincidências, zoom, orientação e ID estável.\n- Testar interação com `MainScreen`, painel #137–139 e filtros #146–151.\n- Validar semântica e foco com as Flutter accessibility guidelines e inspeção web DOM.\n- Homologar no Android real com TalkBack e Chrome desktop/mobile com teclado/leitor.\n- Medir performance nos conjuntos 5, 50 e 500, registrar baseline/ambiente e diferenças.\n- Executar `flutter analyze`, `flutter test` e CI Quality Gate; `pytest` se algum contrato backend foi alterado.\n- Documentar prints/evidências e regressões; submeter PR para revisão.\n\n**CRITÉRIOS DE ACEITE**\n8C-01 onze categorias e fallback íntegros; 8C-02 seleção não depende só de cor; 8C-03 número de membros e IDs corretos; 8C-04 alvos e rótulos não se sobrepõem indevidamente; 8C-05 qualquer membro coincidente selecionável; 8C-06 painel sincronizado com marcador; 8C-07 filtros não duplicam/escondem locais além das regras; 8C-08 textos/estados não sugerem certificação; 8C-09 foco/semântica de teclado/TalkBack/Chrome; 8C-10 responsividade/texto 200%; 8C-11 performance medida sem regressão não justificada; 8C-12 CI aprovado, testes documentados e Chrome/Android homologados.\n\n**CENÁRIOS BDD**\nA) categoria desconhecida => pino neutro; B) seleção destaca contorno e abre local; C) abrir cluster de três pontos coincidentes => os três elegíveis; D) filtro reduz grupo => número atualizado; E) priorização mantém membros; F) expandir painel => seleção/câmera estáveis; G) troca rápida A/B => somente B; H) teclado abre cluster e lista todos; I) usuário sem GPS/sem coords => nada inventado; J) tema/escala grandes => legibilidade preservada.\n\n**ARQUIVOS/SUÍTES**\n`frontend/test/map_cards_04_06_test.dart`, `frontend/test/map_sprint2_test.dart`, `frontend/test/map_navigation_contributions_test.dart`, `frontend/lib/models/map_marker_layout.dart`, `frontend/lib/widgets/adaptive_place_layer.dart`, `frontend/lib/widgets/map_cluster_sheet.dart`, `frontend/lib/screens/main_screen.dart`. Expandir testes existentes em vez de duplicá-los.\n\n**DEPENDÊNCIAS**\nTask 8A, Task 8B, [#97](https://trello.com/c/eSFEQ8Ji), [#98](https://trello.com/c/DpHeRP4E), [#137–139](https://trello.com/c/eRiksZjA), [#146](https://trello.com/c/VEfreM1W), [#149](https://trello.com/c/wx1zx2r7), [#151](https://trello.com/c/M5CiklWa).\n\n**REFERÊNCIAS**\nFlutter A11y testing: https://docs.flutter.dev/ui/accessibility/accessibility-testing\nWCAG 2.2: https://www.w3.org/TR/WCAG22/\nFlutter-map markers: https://docs.fleaflet.dev/layers/marker-layer\n\n**DEFINITION OF DONE**\nTeste automatizado, homologação manual acessível e evidência de performance real registrados; Quality Gate e PR aprovados. NÃO marcar finalizado só pela aparência visual.",
+      "list": "To do",
+      "commentsHasMore": false,
+      "checklistsHasMore": false,
+      "checklists": [
+        {
+          "name": "Homologação acessível e performance",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "Executar Flutter accessibility Guideline API para alvos rotulados, tamanho e contraste",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Validar visual com TalkBack no Android real e semântica no Chrome com leitor de tela",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Homologar Tab/Enter/Escape, retorno de foco e escolha por lista para áreas densas",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Validar contraste em tiles diferentes, tema claro/escuro e escala de texto 200%",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Medir baseline vs versão nova com 5/50/500 locais em Android físico e Chrome; registrar tempo de layout/frames",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Definir tolerâncias de regressão com base em dados reais, sem inventar metas de milissegundos",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Executar flutter analyze, flutter test e Quality Gate; pytest apenas se houver alterações backend",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Registrar evidências, ambiente/dispositivo, problemas conhecidos, PR e revisão antes de concluir",
+              "state": "INCOMPLETE"
+            }
+          ]
+        },
+        {
+          "name": "Matriz de regressão do mapa",
+          "checkItemsHasMore": false,
+          "items": [
+            {
+              "name": "Validar onze categorias, fallback neutro, seleção/foco/cluster e legenda em PT/EN",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar layoutPlaceMarkers com 5, 50 e 500 locais e contagem/identidade após agrupamento",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar coordenadas coincidentes, ausência de coordenadas e marcador selecionado dentro do cluster",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar colisão de hitBounds, labels, reservedInsets e alteração de orientação/tamanho",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar zoom/pan/redimensionamento com câmera real e sem chamadas HTTP por layout",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar painel #137–139 e retorno de rota #140 com seleção e câmera preservadas",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar busca/filtros #146–151, Priorizar versus Todos/Qualquer e OSM/interno",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar requisição tardia A→B, mudança rápida de filtro e ausência de dados inventados",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Testar teclado/leitor de tela sem duplicações semânticas de ícone/rótulo",
+              "state": "INCOMPLETE"
+            },
+            {
+              "name": "Verificar que os ícones não afirmam acessibilidade certificada nem expõem dados privados",
+              "state": "INCOMPLETE"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

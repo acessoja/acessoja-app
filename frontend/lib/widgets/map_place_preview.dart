@@ -1,31 +1,22 @@
 import 'package:flutter/material.dart';
-import '../screens/evidence_details_screen.dart';
-import 'feature_provenance.dart';
-import '../models/evidence.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../app_theme.dart';
 import '../l10n/map_strings.dart';
 import '../l10n/strings.dart';
 import '../models/map_place.dart';
 import '../models/place_category.dart';
+import '../models/evidence.dart';
+import '../services/place_preview_controller.dart';
+import '../services/app_http.dart';
 import 'favorite_button.dart';
+import 'resource_information_list.dart';
+import 'accessibility_results_card.dart';
+import 'place_reviews_section.dart';
 
-import 'package:url_launcher/url_launcher.dart';
-
-/// Read-only information; registration is a separate, explicit action.
+/// Shared information surface. Presentation is owned by the map coordinator;
+/// standalone detail routes retain this content without changing their callers.
 class MapPlacePreview extends StatefulWidget {
-  final Map<String, dynamic> place;
-  final String distanceLabel;
-  final VoidCallback onDetailsPressed;
-  final VoidCallback? onRoutePressed;
-  final VoidCallback? onEvaluatePressed;
-  final VoidCallback? onReviewsPressed;
-  final VoidCallback? onContributePressed;
-  final VoidCallback? onClosePressed;
-  final VoidCallback? onRetryDetails;
-  final bool loadingDetails;
-  final bool detailsFailed;
-  final bool detailed;
   const MapPlacePreview({
     super.key,
     required this.place,
@@ -40,229 +31,184 @@ class MapPlacePreview extends StatefulWidget {
     this.loadingDetails = false,
     this.detailsFailed = false,
     this.detailed = false,
+    this.coordinator,
+    this.scrollController,
+    this.preferredResources = const {},
+    this.outsideResults = false,
+    this.onSearchPressed,
+    this.onPickPointPressed,
   });
+  final Map<String, dynamic> place;
+  final String distanceLabel;
+  final VoidCallback onDetailsPressed;
+  final VoidCallback? onRoutePressed,
+      onEvaluatePressed,
+      onReviewsPressed,
+      onContributePressed,
+      onClosePressed,
+      onRetryDetails,
+      onSearchPressed;
+  final VoidCallback? onPickPointPressed;
+  final bool loadingDetails, detailsFailed, detailed, outsideResults;
+  final PlacePreviewController? coordinator;
+  final ScrollController? scrollController;
+  final Set<String> preferredResources;
   @override
   State<MapPlacePreview> createState() => _MapPlacePreviewState();
 }
 
 class _MapPlacePreviewState extends State<MapPlacePreview> {
-  bool _allResources = false;
+  PlacePanelSection _section = PlacePanelSection.accessibility;
+  final _visited = <PlacePanelSection>{};
+  bool _expanded = false;
+  int _session = AppHttp.sessionRevision.value;
   @override
-  void didUpdateWidget(covariant MapPlacePreview oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.place['id'] != oldWidget.place['id']) {
-      _allResources = false;
+  void initState() {
+    super.initState();
+    AppHttp.sessionRevision.addListener(_sessionChanged);
+  }
+
+  void _sessionChanged() {
+    if (mounted) {
+      setState(() {
+        _session = AppHttp.sessionRevision.value;
+        _visited.clear();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    AppHttp.sessionRevision.removeListener(_sessionChanged);
+    super.dispose();
+  }
+
+  MapPlace get model => widget.place['source'] == 'openstreetmap'
+      ? MapPlace.external(widget.place)
+      : MapPlace.internal(widget.place);
+  bool get expanded =>
+      widget.detailed ||
+      (widget.coordinator == null
+          ? _expanded
+          : widget.coordinator!.level == PlacePanelLevel.expanded);
+  PlacePanelSection get section => widget.coordinator?.section ?? _section;
+  void show(PlacePanelSection value) {
+    if (widget.coordinator != null) {
+      widget.coordinator!.showSection(value);
+    } else {
+      setState(() {
+        _expanded = true;
+        _section = value;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    final model = widget.place['source'] == 'openstreetmap'
-        ? MapPlace.external(widget.place)
-        : MapPlace.internal(widget.place);
-    final features = model.accessibilityFeatures;
-    final visible =
-        widget.detailed || _allResources ? features : features.take(3);
-    final count = model.reviewCount;
-    final rating = model.rating;
-    final snapshot = DateTime.tryParse(
-        model.catalogSource['source_snapshot_at']?.toString() ?? '');
-    final reviewText = count == 0
+    final p = model, colors = AppColors.of(context);
+    if (expanded) {
+      _visited.add(section);
+    }
+    final ticket = widget.coordinator?.capture();
+    void projection(String id, Map<String, dynamic> value) {
+      final c = widget.coordinator;
+      if (c != null && c.owns(ticket)) {
+        c.applyResourceProjection(id, value);
+      }
+    }
+
+    final count = p.reviewCount, rating = p.rating;
+    final reviews = count == null
+        ? context.mapText(
+            'Quantidade de avaliações não informada',
+            'Review count not reported',
+          )
+        : count == 0
         ? context.mapText(
             'Sem avaliações no AcessoJá',
             'No reviews on AcessoJá',
           )
-        : count == null
-            ? context.mapText(
-                'Avaliações ainda não informadas',
-                'Reviews not yet reported',
-              )
-            : '${context.l10n.reviewCount(count)} · ${rating == null ? context.mapText('Média não informada', 'Average not reported') : '${context.number(rating)} / 5'}';
-    final actions = <Widget>[
-      FavoriteButton(place: widget.place),
-      FilledButton.icon(
-        key: const ValueKey('preview-evaluate'),
-        onPressed: widget.onEvaluatePressed,
-        icon: const Icon(Icons.rate_review_outlined),
-        label: Text(context.mapText('Avaliar', 'Review')),
-      ),
-      OutlinedButton.icon(
-        key: const ValueKey('preview-reviews'),
-        onPressed: widget.onReviewsPressed,
-        icon: const Icon(Icons.reviews_outlined),
-        label: Text(context.mapText('Ver avaliações', 'View reviews')),
-      ),
-      if (!widget.detailed)
-        OutlinedButton.icon(
-          key: const ValueKey('preview-details'),
-          onPressed: widget.onDetailsPressed,
-          icon: const Icon(Icons.info_outline),
-          label: Text(context.l10n.details),
-        ),
-      ElevatedButton.icon(
-        key: const ValueKey('preview-route'),
-        onPressed: widget.onRoutePressed,
-        icon: const Icon(Icons.directions_outlined),
-        label: Text(context.l10n.route),
-      ),
-      if (widget.onContributePressed != null)
-        OutlinedButton.icon(
-          key: const ValueKey('preview-contribute'),
-          onPressed: widget.onContributePressed,
-          icon: const Icon(Icons.add_location_alt_outlined),
-          label: Text(context.mapText('Contribuir', 'Contribute')),
-        ),
-    ];
-    return SafeArea(
-      top: false,
-      child: SingleChildScrollView(
-        key: const ValueKey('map-preview-scroll'),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ExcludeSemantics(
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: colors.primarySoft,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(
-                        categoryVisual(model.category).icon,
-                        color: colors.primaryDark,
-                        size: 26,
-                      ),
-                    ),
+        : '${context.l10n.reviewCount(count)} · ${rating == null ? context.mapText('Média não informada', 'Average not reported') : '${context.number(rating)} / 5'}';
+    return SingleChildScrollView(
+      key: const ValueKey('map-preview-scroll'),
+      controller: widget.scrollController,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ExcludeSemantics(
+                  child: Icon(
+                    categoryVisual(p.category).icon,
+                    color: colors.primaryDark,
+                    size: 28,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Focus(
+                    autofocus: widget.coordinator != null,
+                    skipTraversal: true,
                     child: Semantics(
                       header: true,
-                      container: true,
+                      expanded: expanded,
                       child: Text(
-                        context.placeName(model),
-                        style: TextStyle(
-                          color: colors.text,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                        ),
+                        context.placeName(p),
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),
                   ),
-                  if (widget.onClosePressed != null)
-                    IconButton(
-                      key: const ValueKey('preview-close'),
-                      tooltip: context.mapText(
-                        'Fechar resumo',
-                        'Close summary',
-                      ),
-                      onPressed: widget.onClosePressed,
-                      icon: const Icon(Icons.close),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                context.placeCategory(model),
-                style: TextStyle(
-                  color: colors.text,
-                  fontWeight: FontWeight.w600,
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                context.placeAddress(model),
-                style: TextStyle(color: colors.text),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${context.mapText('Dados do local', 'Place data')}: ${model.sourceLabel}',
-                style: TextStyle(color: colors.muted),
-              ),
-              if (model.isExternal && model.internalId != null)
-                Text(
-                  context.mapText(
-                    'Associado a um registro do AcessoJá',
-                    'Linked to an AcessoJá record',
-                  ),
+                FavoriteButton(
+                  key: ValueKey('panel-favorite-${p.id}'),
+                  place: widget.place,
+                  compact: true,
+                  onResolved: (local) async {
+                    final c = widget.coordinator;
+                    if (c != null && c.owns(ticket)) {
+                      await c.reconcile(MapPlace.internal(local), ticket!);
+                    }
+                  },
                 ),
-              if (model.catalogSource.isNotEmpty) ...[
-                if (snapshot != null &&
-                    DateTime.now().difference(snapshot) >
-                        const Duration(days: 30))
-                  Text(context.mapText(
-                      'Snapshot com mais de 30 dias. Confirme as informações do local.',
-                      'Snapshot is over 30 days old. Confirm the place information.')),
-                Text(
-                  context.mapText(
-                        'Catálogo municipal · snapshot: ',
-                        'Municipal catalog · snapshot: ',
-                      ) +
-                      (model.catalogSource['source_snapshot_at']
-                              ?.toString()
-                              .split('T')
-                              .first ??
-                          context.mapText('data desconhecida', 'unknown date')),
-                ),
-                if (model.catalogSource['source_observed_in_current_batch'] ==
-                        false ||
-                    model.catalogSource['source_status'] == 'not_seen')
-                  Text(
-                    context.mapText(
-                      'Dado mantido de snapshot anterior; disponibilidade atual não confirmada.',
-                      'Retained from an earlier snapshot; current availability unconfirmed.',
-                    ),
+                if (widget.onClosePressed != null)
+                  IconButton(
+                    key: const ValueKey('preview-close'),
+                    tooltip: context.mapText('Fechar resumo', 'Close summary'),
+                    onPressed: widget.onClosePressed,
+                    icon: const Icon(Icons.close),
                   ),
-                if (model.catalogSource['point_method'] == 'point_on_surface')
-                  Text(
-                    context.mapText(
-                      'Ponto representativo da área; não comprova a entrada do local.',
-                      'Representative area point; the entrance is not confirmed.',
-                    ),
-                  ),
-                if (model.catalogSource['access_restriction'] == true)
-                  Text(
-                    context.mapText(
-                      'Acesso sujeito a condições informadas pelo OSM.',
-                      'OSM reports conditional access.',
-                    ),
-                  ),
-                TextButton(
-                  style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
-                  onPressed: () => launchUrl(
-                    Uri.parse('https://www.openstreetmap.org/copyright'),
-                  ),
-                  child: const Text('© OpenStreetMap contributors · ODbL'),
-                ),
               ],
-              const SizedBox(height: 12),
-              if (model.missingResources.isNotEmpty)
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    context.mapText(
-                          'Informações incompletas: ',
-                          'Incomplete information: ',
-                        ) +
-                        model.missingResources
-                            .map(context.featureLabel)
-                            .join(', '),
+            ),
+            Text('${context.placeCategory(p)} · ${p.sourceLabel}'),
+            Text(context.placeAddress(p)),
+            if (widget.outsideResults)
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  context.mapText(
+                    'Este local está fora dos resultados atuais. A consulta permanece aberta.',
+                    'This place is outside the current results. Its information remains open.',
                   ),
                 ),
-              _information(
-                icon: rating == null
-                    ? Icons.reviews_outlined
-                    : Icons.star_rounded,
-                label: reviewText,
               ),
+            if (widget.coordinator?.unavailable == true) ...[
+              Text(
+                context.mapText(
+                  'Local indisponível. Os dados não podem ser exibidos.',
+                  'Place unavailable. Its information cannot be displayed.',
+                ),
+              ),
+              if (widget.onRetryDetails != null)
+                TextButton(
+                  onPressed: widget.onRetryDetails,
+                  child: Text(
+                    context.mapText('Atualizar dados', 'Refresh data'),
+                  ),
+                ),
+            ] else ...[
               if (widget.loadingDetails)
                 Semantics(
                   liveRegion: true,
@@ -274,232 +220,283 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                   ),
                 ),
               if (widget.detailsFailed) ...[
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    context.mapText(
-                      'Não foi possível atualizar as informações. Os dados já recebidos continuam disponíveis.',
-                      'Could not refresh information. Previously received data remains available.',
-                    ),
-                  ),
-                ),
-                if (widget.onRetryDetails != null)
-                  TextButton(
-                    key: const ValueKey('preview-retry'),
-                    onPressed: widget.onRetryDetails,
-                    child: Text(
-                      context.mapText('Tentar novamente', 'Try again'),
-                    ),
-                  ),
-              ],
-              if (widget.distanceLabel.isNotEmpty && model.hasCoordinates) ...[
-                const SizedBox(height: 8),
-                _information(
-                  icon: Icons.near_me_outlined,
-                  label: widget.distanceLabel ==
-                              context.mapText(
-                                'Distância indisponível',
-                                'Distance unavailable',
-                              ) ||
-                          widget.distanceLabel.contains(':')
-                      ? widget.distanceLabel
-                      : '${context.mapText('Em linha reta', 'Straight-line distance')}: ${widget.distanceLabel}',
-                ),
-              ],
-              const SizedBox(height: 12),
-              Text(
-                model.reportedHours == null
-                    ? context.mapText(
-                        'Horário de funcionamento não informado',
-                        'Opening hours not reported',
-                      )
-                    : '${context.mapText('Horário informado no OpenStreetMap', 'Opening hours reported on OpenStreetMap')}: ${model.reportedHours}',
-                style: TextStyle(color: colors.muted),
-              ),
-              const SizedBox(height: 16),
-              Semantics(
-                header: true,
-                container: true,
-                child: Text(
-                  context.l10n.accessibility,
-                  style: TextStyle(
-                    color: colors.text,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              if (features.isEmpty)
                 Text(
                   context.mapText(
-                    'Acessibilidade ainda não informada',
-                    'Accessibility not yet reported',
+                    'Não foi possível atualizar as informações. Os dados já recebidos continuam disponíveis.',
+                    'Could not refresh information. Previously received data remains available.',
                   ),
                 ),
-              for (final feature in visible)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _feature(feature, model),
-                ),
-              if (features.length > 3 && !widget.detailed)
                 TextButton(
-                  key: const ValueKey('preview-accessibility-more'),
-                  onPressed: () =>
-                      setState(() => _allResources = !_allResources),
-                  child: Text(
-                    _allResources
-                        ? context.mapText(
-                            'Mostrar menos recursos',
-                            'Show fewer features',
-                          )
-                        : context.mapText(
-                            'Ver todos os recursos (${features.length})',
-                            'View all features (${features.length})',
-                          ),
+                  key: const ValueKey('preview-retry'),
+                  onPressed: widget.onRetryDetails,
+                  child: Text(context.mapText('Tentar novamente', 'Try again')),
+                ),
+              ],
+              Text(reviews, key: const ValueKey('preview-rating')),
+              if (widget.distanceLabel.isNotEmpty) Text(widget.distanceLabel),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  FilledButton.icon(
+                    key: const ValueKey('preview-route'),
+                    onPressed: widget.onRoutePressed,
+                    icon: const Icon(Icons.directions_outlined),
+                    label: Text(context.l10n.route),
                   ),
-                ),
-              const SizedBox(height: 8),
-              Text(
-                context.mapText(
-                  'Recursos não informados têm acessibilidade desconhecida. Dados colaborativos não são uma certificação.',
-                  'Unreported features have unknown accessibility. Community data is not a certification.',
-                ),
-                style: TextStyle(color: colors.muted),
+                  OutlinedButton.icon(
+                    key: const ValueKey('preview-evaluate'),
+                    onPressed: widget.onEvaluatePressed,
+                    icon: const Icon(Icons.rate_review_outlined),
+                    label: Text(context.mapText('Avaliar', 'Review')),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final width = constraints.maxWidth < 460
-                      ? constraints.maxWidth
-                      : (constraints.maxWidth - 10) / 2;
-                  return Wrap(
-                    spacing: 10,
-                    runSpacing: 8,
-                    children: [
-                      for (final action in actions)
-                        SizedBox(
-                          width: width,
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(minHeight: 48),
-                            child: action,
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
-              if (widget.onReviewsPressed == null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    context.mapText(
-                      'As avaliações precisam de um registro associado no AcessoJá.',
-                      'Reviews require a linked AcessoJá record.',
-                    ),
+              if (widget.onRoutePressed == null)
+                Text(
+                  context.mapText(
+                    'Rota indisponível: coordenadas não informadas.',
+                    'Route unavailable: coordinates not reported.',
                   ),
                 ),
               if (widget.onEvaluatePressed == null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                Text(
+                  context.mapText(
+                    'A avaliação precisa de um cadastro válido.',
+                    'Reviewing requires a valid place record.',
+                  ),
+                ),
+              if (!expanded) ...[
+                ResourceInformationList(
+                  onProjection: widget.coordinator == null ? null : projection,
+                  information: p.accessibilityInformation,
+                  localId: p.internalId,
+                  externalId: p.externalId,
+                  compact: true,
+                  preferred: widget.preferredResources,
+                  onViewAll: () => show(PlacePanelSection.accessibility),
+                ),
+                TextButton(
+                  key: const ValueKey('preview-details'),
+                  onPressed:
+                      widget.coordinator?.expand ?? widget.onDetailsPressed,
                   child: Text(
                     context.mapText(
-                      'A avaliação precisa de um cadastro válido.',
-                      'Reviewing requires a valid place record.',
+                      'Expandir informações',
+                      'Expand information',
                     ),
                   ),
                 ),
-              if (widget.onRoutePressed == null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    context.mapText(
-                      'Rota indisponível: coordenadas não informadas.',
-                      'Route unavailable: coordinates not reported.',
-                    ),
-                  ),
+              ],
+              if (expanded) ...[
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final entry in [
+                      (
+                        PlacePanelSection.accessibility,
+                        'Acessibilidade',
+                        'Accessibility',
+                      ),
+                      (
+                        PlacePanelSection.reviews,
+                        'Avaliações e fotos',
+                        'Reviews and photos',
+                      ),
+                      (
+                        PlacePanelSection.information,
+                        'Informações',
+                        'Information',
+                      ),
+                    ])
+                      ChoiceChip(
+                        key: ValueKey('panel-section-${entry.$1.name}'),
+                        selected: section == entry.$1,
+                        label: Text(context.mapText(entry.$2, entry.$3)),
+                        onSelected: (_) => show(entry.$1),
+                      ),
+                    if (!widget.detailed)
+                      TextButton(
+                        key: const ValueKey('preview-collapse'),
+                        onPressed: () {
+                          if (widget.coordinator != null) {
+                            widget.coordinator!.collapse();
+                          } else {
+                            setState(() => _expanded = false);
+                          }
+                        },
+                        child: Text(
+                          context.mapText('Recolher painel', 'Collapse panel'),
+                        ),
+                      ),
+                  ],
                 ),
+                // Retain visited section states across tab changes and resizing. A section is
+                // fetched only on its first visit or an explicit revision invalidation.
+                for (final value in _visited)
+                  Offstage(
+                    offstage: section != value,
+                    child: switch (value) {
+                      PlacePanelSection.accessibility =>
+                        p.internalId == null
+                            ? ResourceInformationList(
+                                onProjection: widget.coordinator == null
+                                    ? null
+                                    : projection,
+                                information: p.accessibilityInformation,
+                                externalId: p.externalId,
+                                preferred: widget.preferredResources,
+                                onChanged: widget.onRetryDetails,
+                              )
+                            : AccessibilityResultsCard(
+                                key: ValueKey(
+                                  'panel-resources-${p.id}:$_session',
+                                ),
+                                localId: p.internalId!,
+                                registeredData: {
+                                  ...p.toMap(),
+                                  'accessibility': p.accessibilityInformation,
+                                },
+                                onResourceProjection: widget.coordinator == null
+                                    ? null
+                                    : projection,
+                                revision:
+                                    widget.coordinator?.resourceRevision ?? 0,
+                              ),
+                      PlacePanelSection.reviews => PlaceReviewsSection(
+                        key: ValueKey('panel-reviews-${p.id}:$_session'),
+                        place: p,
+                        revision: widget.coordinator?.reviewsRevision ?? 0,
+                        onViewReviews: widget.onReviewsPressed,
+                      ),
+                      PlacePanelSection.information => _information(context, p),
+                    },
+                  ),
+              ],
               if (widget.onContributePressed != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
+                TextButton.icon(
+                  key: const ValueKey('preview-contribute'),
+                  onPressed: widget.onContributePressed,
+                  icon: const Icon(Icons.add_location_alt_outlined),
+                  label: Text(
                     context.mapText(
-                      'Contribuir solicita confirmação do cadastro deste local.',
-                      'Contributing asks you to confirm registration of this place.',
+                      'Confirmar cadastro deste local',
+                      'Confirm this place record',
                     ),
+                  ),
+                ),
+              if (widget.onReviewsPressed == null &&
+                  expanded &&
+                  section == PlacePanelSection.reviews)
+                Text(
+                  context.mapText(
+                    'As avaliações precisam de um registro associado no AcessoJá.',
+                    'Reviews require a linked AcessoJá record.',
                   ),
                 ),
             ],
-          ),
+            if (widget.onPickPointPressed != null)
+              TextButton(
+                onPressed: widget.onPickPointPressed,
+                child: Text(
+                  context.mapText(
+                    'Escolher ponto para a rota',
+                    'Choose a route point',
+                  ),
+                ),
+              ),
+            if (widget.onSearchPressed != null)
+              TextButton.icon(
+                key: const ValueKey('panel-open-search'),
+                onPressed: widget.onSearchPressed,
+                icon: const Icon(Icons.search),
+                label: Text(
+                  context.mapText('Buscar outro local', 'Search another place'),
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _information({required IconData icon, required String label}) => Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ExcludeSemantics(
-            child:
-                Icon(icon, size: 20, color: AppColors.of(context).primaryDark),
-          ),
-          const SizedBox(width: 8),
-          Expanded(child: Text(label)),
-        ],
-      );
-
-  Widget _feature(PlaceAccessibilityFeature feature, MapPlace model) {
-    final colors = AppColors.of(context);
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: colors.surfaceElevated,
-        border: Border.all(color: colors.border),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ExcludeSemantics(
-            child: Icon(
-              accessibilityIcon(feature.key),
-              color: colors.primaryDark,
-              size: 22,
+  Widget _information(BuildContext context, MapPlace p) {
+    final snapshot = evidenceDate(p.catalogSource['source_snapshot_at']);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '${context.mapText('Dados do local', 'Place data')}: ${p.sourceLabel}',
+        ),
+        if (p.externalId != null && p.internalId != null)
+          Text(
+            context.mapText(
+              'Registro do AcessoJá vinculado ao OpenStreetMap',
+              'Linked to an AcessoJá record',
             ),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  context.featureLabel(feature.key),
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                Text(context.featureValue(feature.value)),
-                FeatureProvenance(
-                    information: evidenceMap(
-                        model.accessibilityInformation[feature.key])),
-                if (model.internalId != null || model.externalId != null)
-                  TextButton(
-                      onPressed: () async {
-                        await Navigator.push(
-                            context,
-                            MaterialPageRoute<void>(
-                                builder: (_) => EvidenceDetailsScreen(
-                                    localId: model.internalId,
-                                    externalId: model.externalId,
-                                    resource: feature.key)));
-                        if (mounted) {
-                          widget.onRetryDetails?.call();
-                        }
-                      },
-                      child: Text(context.mapText(
-                          'Ver fontes e datas', 'View sources and dates'))),
-              ],
-            ),
+        Text(
+          p.reportedHours == null
+              ? context.mapText(
+                  'Horário de funcionamento não informado',
+                  'Opening hours not reported',
+                )
+              : '${context.mapText('Horário informado no OpenStreetMap', 'Opening hours reported on OpenStreetMap')}: ${p.reportedHours}',
+        ),
+        if (p.hasCoordinates)
+          Text(
+            '${context.mapText('Coordenadas informadas', 'Reported coordinates')}: ${p.latitude}, ${p.longitude}',
           ),
+        for (final feature in p.accessibilityFeatures.where(
+          (f) => f.key == 'wheelchair',
+        ))
+          Text(
+            '${context.featureLabel(feature.key)} (OpenStreetMap): ${context.featureValue(feature.value)}',
+          ),
+        if (p.catalogSource.isNotEmpty) ...[
+          Text(
+            '${context.mapText('Snapshot do catálogo', 'Catalog snapshot')}: ${snapshot == null ? context.mapText('data desconhecida', 'unknown date') : MaterialLocalizations.of(context).formatShortDate(snapshot.toLocal())}',
+          ),
+          if (snapshot != null &&
+              DateTime.now().difference(snapshot) > const Duration(days: 30))
+            Text(
+              context.mapText(
+                'Snapshot com mais de 30 dias. Confirme as informações do local.',
+                'Snapshot is over 30 days old. Confirm the place information.',
+              ),
+            ),
+          if (p.catalogSource['source_observed_in_current_batch'] == false ||
+              p.catalogSource['source_status'] == 'not_seen')
+            Text(
+              context.mapText(
+                'Dado mantido de snapshot anterior; disponibilidade atual não confirmada.',
+                'Retained from an earlier snapshot; current availability unconfirmed.',
+              ),
+            ),
+          if (p.catalogSource['point_method'] == 'point_on_surface')
+            Text(
+              context.mapText(
+                'Ponto representativo da área; não comprova a entrada do local.',
+                'Representative area point; the entrance is not confirmed.',
+              ),
+            ),
+          if (p.catalogSource['access_restriction'] == true)
+            Text(
+              context.mapText(
+                'Acesso sujeito a condições informadas pelo OSM.',
+                'OSM reports conditional access.',
+              ),
+            ),
         ],
-      ),
+        if (p.origins.contains(PlaceSource.openstreetmap))
+          TextButton(
+            onPressed: () =>
+                launchUrl(Uri.parse('https://www.openstreetmap.org/copyright')),
+            child: const Text('© OpenStreetMap contributors · ODbL'),
+          ),
+      ],
     );
   }
 }
