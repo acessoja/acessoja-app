@@ -1,0 +1,57 @@
+00:00 +0: loading /workspace/scratch/b3b0ff1ac447/work/cards59_61/project/frontend/test/route_return_cards_59_61_test.dart
+00:00 +0: CT069 external false leaves running unchanged
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: NavigationPhase:<NavigationPhase.running>
+  Actual: NavigationPhase:<NavigationPhase.interrupted>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///workspace/scratch/b3b0ff1ac447/work/cards59_61/project/frontend/test/route_return_cards_59_61_test.dart:76:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///workspace/scratch/b3b0ff1ac447/work/cards59_61/project/frontend/test/route_return_cards_59_61_test.dart line 76
+The test description was:
+  CT069 external false leaves running unchanged
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:03 +0 -1: CT069 external false leaves running unchanged [E]
+  Test failed. See exception logs above.
+  The test description was: CT069 external false leaves running unchanged
+
+00:03 +0 -1: CT021 CT034 close and Back share one non-destructive confirmation
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Encerrar navegação?": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///workspace/scratch/b3b0ff1ac447/work/cards59_61/project/frontend/test/route_return_cards_59_61_test.dart:89:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///workspace/scratch/b3b0ff1ac447/work/cards59_61/project/frontend/test/route_return_cards_59_61_test.dart line 89
+The test description was:
+  CT021 CT034 close and Back share one non-destructive confirmation
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:04 +0 -2: CT021 CT034 close and Back share one non-destructive confirmation [E]
+  Test failed. See exception logs above.
+  The test description was: CT021 CT034 close and Back share one non-destructive confirmation
+
+00:04 +0 -2: Some tests failed.
+
+Failing tests:
+  /workspace/scratch/b3b0ff1ac447/work/cards59_61/project/frontend/test/route_return_cards_59_61_test.dart: CT021 CT034 close and Back share one non-destructive confirmation
+  /workspace/scratch/b3b0ff1ac447/work/cards59_61/project/frontend/test/route_return_cards_59_61_test.dart: CT069 external false leaves running unchanged

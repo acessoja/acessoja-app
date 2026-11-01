@@ -27,7 +27,12 @@ import '../l10n/accessibility_strings.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String userName;
-  const SettingsScreen({super.key, required this.userName});
+  final RouteRequestHandler? onRouteRequested;
+  const SettingsScreen({
+    super.key,
+    required this.userName,
+    this.onRouteRequested,
+  });
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -114,7 +119,15 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
     if (!mounted) return;
     if (result is PlaceRouteRequest ||
         screen is RouteHistoryScreen && routePlace(result) != null) {
-      Navigator.pop(context, result);
+      await dispatchRouteRequest(
+        context,
+        result is PlaceRouteRequest
+            ? result.through(RouteEntrySource.settings)
+            : PlaceRouteRequest(
+                routePlace(result)!,
+              ).through(RouteEntrySource.settings),
+        widget.onRouteRequested,
+      );
       return;
     }
     _loadProfile();
@@ -150,8 +163,9 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
     final colors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final avatarImage = _avatarImage();
-    final displayName =
-        _nomeCompleto.isNotEmpty ? _nomeCompleto : widget.userName;
+    final displayName = _nomeCompleto.isNotEmpty
+        ? _nomeCompleto
+        : widget.userName;
     final headerBackground = isDark ? colors.primarySoft : colors.primaryDark;
     final headerText = isDark ? colors.primaryDark : colors.onPrimary;
     final headerMuted = headerText;
@@ -160,9 +174,8 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
       button: true,
       label: context.l10n.profileOf(displayName),
       child: InkWell(
-        onTap: () => _navigateTo(
-          InformacoesPessoaisScreen(userName: widget.userName),
-        ),
+        onTap: () =>
+            _navigateTo(InformacoesPessoaisScreen(userName: widget.userName)),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(18),
@@ -351,10 +364,7 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
           icon: const Icon(Icons.logout_rounded, size: 19),
           label: Text(
             context.l10n.signOut,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
           ),
           style: OutlinedButton.styleFrom(
             foregroundColor: colors.danger,
@@ -407,17 +417,18 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
               tooltip: context.l10n.readingOpen,
               onPressed: () => showAccessibilityPanel(context),
               icon: const Icon(Icons.accessibility_new),
-            )
+            ),
         ],
         backgroundColor: colors.pageBackground,
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        toolbarHeight: (MediaQuery.textScalerOf(context).scale(19) *
-                    (Theme.of(context).appBarTheme.titleTextStyle?.height ??
-                        1.2) +
-                16)
-            .clamp(70.0, double.infinity),
+        toolbarHeight:
+            (MediaQuery.textScalerOf(context).scale(19) *
+                        (Theme.of(context).appBarTheme.titleTextStyle?.height ??
+                            1.2) +
+                    16)
+                .clamp(70.0, double.infinity),
         leadingWidth: 72,
         leading: Padding(
           padding: const EdgeInsets.only(left: 12),
@@ -437,133 +448,158 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
         child: _loadFailed
             ? LoadError(onRetry: _loadProfile)
             : _isLoading
-                ? _buildLoadingState()
-                : LayoutBuilder(
-                    builder: (context, constraints) {
-                      final horizontalPadding =
-                          constraints.maxWidth < 360 ? 16.0 : 24.0;
+            ? _buildLoadingState()
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  final horizontalPadding = constraints.maxWidth < 360
+                      ? 16.0
+                      : 24.0;
 
-                      return Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 560),
-                          child: SingleChildScrollView(
-                            keyboardDismissBehavior:
-                                ScrollViewKeyboardDismissBehavior.onDrag,
-                            padding: EdgeInsets.fromLTRB(
-                              horizontalPadding,
-                              8,
-                              horizontalPadding,
-                              24,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const ReadingSettingsEntry(),
-                                _buildProfileHeader(),
-                                const SizedBox(height: 24),
-                                Text(
-                                  context.l10n.manageAccount,
-                                  style: TextStyle(
-                                    color: colors.text,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                _menuTile(
-                                  icon: Icons.accessibility_new,
-                                  label: context.preferencesTitle,
-                                  description: context.accessibilityText(
-                                      'Recursos importantes para minha busca',
-                                      'Features important to my search'),
-                                  onTap: () => _navigateTo(
-                                      const AccessibilityPreferencesScreen()),
-                                ),
-                                _menuTile(
-                                  icon: Icons.settings_outlined,
-                                  label: context.l10n.generalSettings,
-                                  description: context.l10n.settingsDescription,
-                                  onTap: () => _navigateTo(
-                                    ConfiguracoesGeraisScreen(
-                                      userName: widget.userName,
-                                    ),
-                                  ),
-                                ),
-                                _menuTile(
-                                  icon: Icons.history_rounded,
-                                  label: context.l10n.routeHistoryTitle,
-                                  description: context.l10n.routeHistoryHint,
-                                  onTap: () =>
-                                      _navigateTo(const RouteHistoryScreen()),
-                                ),
-                                _menuTile(
-                                  icon: Icons.bookmark_border_rounded,
-                                  label: context.l10n.savedPlacesTitle,
-                                  description: context.l10n.savedDescription,
-                                  onTap: () => _navigateTo(
-                                    SavedPlacesScreen(
-                                        userName: widget.userName,
-                                        unidadeDistancia: _unit),
-                                  ),
-                                ),
-                                _menuTile(
-                                  icon: Icons.flag_outlined,
-                                  label: accountText(
-                                      context,
-                                      'Denúncias e revisões',
-                                      'Reports and revisions'),
-                                  description: accountText(
-                                      context,
-                                      'Meus protocolos e orientações recebidas',
-                                      'My protocols and received guidance'),
-                                  onTap: () =>
-                                      _navigateTo(const OwnReportsScreen()),
-                                ),
-                                _menuTile(
-                                  icon: Icons.lock_outline_rounded,
-                                  label: accountText(
-                                      context,
-                                      'Privacidade e meus dados',
-                                      'Privacy and my data'),
-                                  description: context.l10n.privacyDescription,
-                                  onTap: () => _navigateTo(
-                                    PersonalDataScreen(
-                                        userName: widget.userName),
-                                  ),
-                                ),
-                                _menuTile(
-                                  icon: Icons.person_outline_rounded,
-                                  label: context.l10n.personalInformation,
-                                  description: context.l10n.personalDescription,
-                                  onTap: () => _navigateTo(
-                                    InformacoesPessoaisScreen(
-                                      userName: widget.userName,
-                                    ),
-                                  ),
-                                ),
-                                _menuTile(
-                                  icon: Icons.balance_rounded,
-                                  label: context.l10n.rightsTitle,
-                                  description: context.l10n.rightsDescription,
-                                  onTap: () => Navigator.of(context)
-                                      .push(RightsScreen.route()),
-                                ),
-                                _menuTile(
-                                  icon: Icons.help_outline_rounded,
-                                  label: context.l10n.help,
-                                  description: context.l10n.helpDescription,
-                                  onTap: () => _navigateTo(const AjudaScreen()),
-                                ),
-                                const SizedBox(height: 14),
-                                _buildLogoutButton(),
-                                const SizedBox(height: 8),
-                              ],
-                            ),
-                          ),
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 560),
+                      child: SingleChildScrollView(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        padding: EdgeInsets.fromLTRB(
+                          horizontalPadding,
+                          8,
+                          horizontalPadding,
+                          24,
                         ),
-                      );
-                    },
-                  ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const ReadingSettingsEntry(),
+                            _buildProfileHeader(),
+                            const SizedBox(height: 24),
+                            Text(
+                              context.l10n.manageAccount,
+                              style: TextStyle(
+                                color: colors.text,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            _menuTile(
+                              icon: Icons.accessibility_new,
+                              label: context.preferencesTitle,
+                              description: context.accessibilityText(
+                                'Recursos importantes para minha busca',
+                                'Features important to my search',
+                              ),
+                              onTap: () => _navigateTo(
+                                const AccessibilityPreferencesScreen(),
+                              ),
+                            ),
+                            _menuTile(
+                              icon: Icons.settings_outlined,
+                              label: context.l10n.generalSettings,
+                              description: context.l10n.settingsDescription,
+                              onTap: () => _navigateTo(
+                                ConfiguracoesGeraisScreen(
+                                  userName: widget.userName,
+                                ),
+                              ),
+                            ),
+                            _menuTile(
+                              icon: Icons.history_rounded,
+                              label: context.l10n.routeHistoryTitle,
+                              description: context.l10n.routeHistoryHint,
+                              onTap: () => _navigateTo(
+                                RouteHistoryScreen(
+                                  onRouteRequested:
+                                      widget.onRouteRequested == null
+                                      ? null
+                                      : (request) => widget.onRouteRequested!(
+                                          request.through(
+                                            RouteEntrySource.settings,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ),
+                            _menuTile(
+                              icon: Icons.bookmark_border_rounded,
+                              label: context.l10n.savedPlacesTitle,
+                              description: context.l10n.savedDescription,
+                              onTap: () => _navigateTo(
+                                SavedPlacesScreen(
+                                  userName: widget.userName,
+                                  unidadeDistancia: _unit,
+                                  onRouteRequested:
+                                      widget.onRouteRequested == null
+                                      ? null
+                                      : (request) => widget.onRouteRequested!(
+                                          request.through(
+                                            RouteEntrySource.settings,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ),
+                            _menuTile(
+                              icon: Icons.flag_outlined,
+                              label: accountText(
+                                context,
+                                'Denúncias e revisões',
+                                'Reports and revisions',
+                              ),
+                              description: accountText(
+                                context,
+                                'Meus protocolos e orientações recebidas',
+                                'My protocols and received guidance',
+                              ),
+                              onTap: () =>
+                                  _navigateTo(const OwnReportsScreen()),
+                            ),
+                            _menuTile(
+                              icon: Icons.lock_outline_rounded,
+                              label: accountText(
+                                context,
+                                'Privacidade e meus dados',
+                                'Privacy and my data',
+                              ),
+                              description: context.l10n.privacyDescription,
+                              onTap: () => _navigateTo(
+                                PersonalDataScreen(userName: widget.userName),
+                              ),
+                            ),
+                            _menuTile(
+                              icon: Icons.person_outline_rounded,
+                              label: context.l10n.personalInformation,
+                              description: context.l10n.personalDescription,
+                              onTap: () => _navigateTo(
+                                InformacoesPessoaisScreen(
+                                  userName: widget.userName,
+                                ),
+                              ),
+                            ),
+                            _menuTile(
+                              icon: Icons.balance_rounded,
+                              label: context.l10n.rightsTitle,
+                              description: context.l10n.rightsDescription,
+                              onTap: () => Navigator.of(
+                                context,
+                              ).push(RightsScreen.route()),
+                            ),
+                            _menuTile(
+                              icon: Icons.help_outline_rounded,
+                              label: context.l10n.help,
+                              description: context.l10n.helpDescription,
+                              onTap: () => _navigateTo(const AjudaScreen()),
+                            ),
+                            const SizedBox(height: 14),
+                            _buildLogoutButton(),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
       ),
     );
   }

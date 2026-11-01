@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "idioma": "pt-BR",
+  "projeto": "AcessoJá",
+  "usuario": {
+    "ambiente": "Windows PowerShell, C:\\Users\\USER\\acessoja-app",
+    "preferencia": "Chrome/Web; não depender de Android SDK",
+    "trabalho": "Executar tarefas completas com atenção a cada card; preservar trabalho existente; não pedir confirmações repetidas."
+  },
+  "base": {
+    "repo": "acessoja/acessoja-app",
+    "commit": "d7f2a5d068e630001c98b1a6630203dfe0f2f0d1",
+    "origem": "arquivo main imutável, não checkout Git; não inferir branch atual do computador do usuário",
+    "sha256_zip": "ab9f2a974be33acddcfcabbf0952d6ace355f735be18dc3cd14c7926f7412c2d"
+  },
+  "pacote": {
+    "cards": [
+      59,
+      60,
+      61
+    ],
+    "trello": {
+      "59": "4A/g8eOebx5",
+      "60": "4B/ZD88mlLo",
+      "61": "4C/sNkAhxwS"
+    },
+    "anteriores": "52–58 já integrados; não reaplicar ZIP antigo",
+    "proximo_card": 62,
+    "estado": "implementado_com_homologacao_pendente"
+  },
+  "stack": {
+    "frontend": "Flutter 3.47.4/Dart 3.13.3, flutter_map, OSRM carro, url_launcher",
+    "backend": "Django 5.2.18/DRF, sem alteração neste pacote"
+  },
+  "decisoes": [
+    "Encaminhar PlaceRouteRequest inteiro e RouteReturnContext tipado.",
+    "Manter pilha real montada; RoutePlanningScreen apresenta o controlador/GPS/recorder compartilhados.",
+    "Retorno valida conta/operação/revisões/ticket; intenção recente de câmera/filtro prevalece.",
+    "Cada origem é vinculada à conta que a abriu; callback renderizado por A não cria pedido de B.",
+    "Sessão iniciada é distinta da fase; X/Back/Escape confirmam uma vez; chegada não vira cancelled.",
+    "Search separado de Directions/Waze; sem associação de ID Google nem origem GPS no link.",
+    "Launcher não invalida cálculo nem interrompe; lifecycle central permanece.",
+    "Histórico/visitas/GPS têm autorizações independentes; sem novos eventos/status."
+  ],
+  "historico": {
+    "preferencias": [
+      "save_history",
+      "save_origin",
+      "revision"
+    ],
+    "eventos": [
+      "started",
+      "recalculated",
+      "resumed",
+      "interrupted",
+      "arrived",
+      "cancelled"
+    ],
+    "estados": [
+      "in_progress",
+      "interrupted",
+      "completed",
+      "cancelled"
+    ],
+    "privacidade": "não coleta por padrão/desconhecido; origem aproximada só autorizada; nenhum rastro GPS; sem replay após revogação/conta/deleção",
+    "tracar_novamente": "planejamento novo, GPS atual, sem reativar UUID ou origem antiga"
+  },
+  "validacao": {
+    "flutter_analyze": "aprovado",
+    "flutter_tests": 1029,
+    "web_build": "aprovado",
+    "backend_focado": 36,
+    "flake8": "aprovado",
+    "chrome_status": "passed",
+    "chrome_steps": 13,
+    "provider_google_loaded": false,
+    "apk": "SDK ausente",
+    "instalador_testes": 7
+  },
+  "pendencias": [
+    "Android físico e predictive Back",
+    "Chrome em celular real",
+    "TalkBack/leitor humano",
+    "Google Maps/Waze instalados",
+    "carregamento final do Google nesta rede",
+    "CI remota/PG/Redis"
+  ],
+  "autorizacao": {
+    "executado": "código/testes/documentação/delta",
+    "nao_executado": [
+      "commit",
+      "push",
+      "PR",
+      "merge",
+      "deploy",
+      "alterar Trello"
+    ],
+    "nao_inferir_permissao_pr_novo": true
+  },
+  "retomar": [
+    "Ler IMPLEMENTACAO, AUDITORIA, VALIDACAO, matriz_cenarios e manifesto.",
+    "Conferir AGENTS/base atual antes de editar; não assumir que o SHA permanece main.",
+    "Aplicar com hash/backup, preservar arquivos divergentes.",
+    "Separar implementação, teste local, CI e homologação física.",
+    "Obter prompt completo do próximo card; não inventar requisitos posteriores."
+  ],
+  "arquivos": {
+    "requisitos": "docs/cards59_61/REQUISITOS.md",
+    "aplicacao": "docs/cards59_61/IMPLEMENTACAO.md",
+    "auditoria": "docs/cards59_61/AUDITORIA.md",
+    "validacao": "docs/cards59_61/VALIDACAO.md",
+    "matriz": "docs/cards59_61/matriz_cenarios.json",
+    "evidencias": "docs/cards59_61/evidencias/"
+  }
+}

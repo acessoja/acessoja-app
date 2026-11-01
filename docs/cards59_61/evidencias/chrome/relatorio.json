@@ -1,0 +1,185 @@
+{
+  "started_at": "2026-11-01T16:55:57.965154+00:00",
+  "status": "passed",
+  "scope": "Compiled Flutter release + real Django/SQLite + synthetic user/places",
+  "controlled": [
+    "Browser geolocation",
+    "OSRM response",
+    "External map tiles disabled"
+  ],
+  "pending": [
+    "Physical Android and predictive Back",
+    "Real mobile Chrome",
+    "Installed Google Maps/Waze",
+    "Human screen reader",
+    "PostgreSQL/Redis CI"
+  ],
+  "steps": [
+    {
+      "name": "Login real e mapa disponível",
+      "status": "passed"
+    },
+    {
+      "name": "CT001 CT075 consulta junto ao endereço no painel expandido",
+      "status": "passed",
+      "screenshot": "01_endereco_consulta.png"
+    },
+    {
+      "name": "CT059 CT071 CT072 gesto de ponteiro abriu Search nativo, sem histórico ou visita",
+      "status": "passed"
+    },
+    {
+      "name": "CT017 planejamento antes de iniciar",
+      "status": "passed",
+      "screenshot": "02_planejamento.png"
+    },
+    {
+      "name": "CT002 retorno ao mesmo painel expandido",
+      "status": "passed",
+      "screenshot": "03_retorno_painel.png"
+    },
+    {
+      "name": "CT004 CT016 detalhes preservados após rota 1",
+      "status": "passed"
+    },
+    {
+      "name": "CT084 acompanhamento Web com GPS emulado e histórico desligado",
+      "status": "passed",
+      "screenshot": "07_navegacao_web.png"
+    },
+    {
+      "name": "CT021 CT091 Escape abre confirmação de saída",
+      "status": "passed",
+      "screenshot": "08_confirmacao.png"
+    },
+    {
+      "name": "CT004 CT016 detalhes preservados após rota 2",
+      "status": "passed"
+    },
+    {
+      "name": "Detalhe preservado e consulta única no endereço",
+      "status": "passed",
+      "screenshot": "04_detalhe_retorno.png"
+    },
+    {
+      "name": "CT004 busca original de Salvos preservada",
+      "status": "passed",
+      "screenshot": "05_salvos_busca.png"
+    },
+    {
+      "name": "Viewport móvel emulado: Salvos preservado",
+      "status": "passed",
+      "screenshot": "06_mobile_salvos.png"
+    },
+    {
+      "name": "CT099 reload não ressuscita navegação ou histórico",
+      "status": "passed"
+    }
+  ],
+  "browser": "156.0.8078.80",
+  "external_launch": {
+    "uri": "https://www.google.com/maps/search/?api=1&query=Biblioteca+das+Rotas%2C+Rua+Sint%C3%A9tica%2C+59",
+    "trusted_activation": true,
+    "native_window_returned": false,
+    "popup_observed": true,
+    "popup_url": "chrome-error://chromewebdata/",
+    "noopener": true,
+    "provider_page_loaded": false,
+    "provider_load_observation": "Provider rendering is not certified; inspect popup_url separately.",
+    "note": "Trusted popup is observed. noopener can return null despite success. Provider rendering, installed apps and business identity are not certified."
+  },
+  "page_errors": [],
+  "api_requests": [
+    {
+      "method": "POST",
+      "path": "/api/login/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usuarios/me/route-history-preferences/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usuarios/perfil/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/catalogo/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/externos/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/catalogo/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/1/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/favoritos/estado/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/avaliacoes/modal-avaliacoes/recursos/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/avaliacoes/modal-avaliacoes/recursos/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/favoritos/estado/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/favoritos/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/favoritos/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/avaliacoes/modal-avaliacoes/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/avaliacoes/modal-avaliacoes/recursos/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/favoritos/estado/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/1/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/catalogo/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/locais/1/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/favoritos/"
+    }
+  ],
+  "history_rows": 0,
+  "visit_rows": 0,
+  "persisted_source_places": 1
+}
