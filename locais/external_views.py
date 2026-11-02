@@ -81,7 +81,7 @@ class ExternalPlacesAPIView(GeographicAPIView):
         serializer = ExternalSearchSerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
         result = ExternalPlacesService().search(**serializer.validated_data)
-        project_remote_places(result['results'])
+        project_remote_places(result["results"])
         # Read-time matching annotates; it never writes to the database.
         candidates = list(Local.objects.all())
         matches = {}
@@ -123,7 +123,7 @@ class GeocodeAPIView(GeographicAPIView):
         serializer = GeocodeQuerySerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
         result = geocode(serializer.validated_data)
-        project_remote_places([row['place'] for row in result if row.get('place')])
+        project_remote_places([row["place"] for row in result if row.get("place")])
         for row in result:
             place = row.get("place")
             if not place:
@@ -189,6 +189,7 @@ class ExternalImportAPIView(GeographicAPIView):
                     latitude=place["latitude"],
                     longitude=place["longitude"],
                     categoria=place["categoria"],
+                    subcategoria=place.get("subcategoria", ""),
                     # Legacy required field: zero is an unmeasured placeholder, never a GPS distance.
                     distancia=0,
                 )

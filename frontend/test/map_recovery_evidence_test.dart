@@ -1,3 +1,4 @@
+import 'discovery_fixture.dart';
 import 'package:flutter_application_1/widgets/adaptive_place_layer.dart';
 // Widget-rendered, synthetic evidence. No live GPS, tiles, provider or personal data.
 import 'dart:async';
@@ -46,8 +47,12 @@ void main() {
           },
       ];
       AppHttp.client = MockClient((request) async {
-        if (request.url.path == '/api/locais/') {
-          return map.jsonResponse({'count': 8, 'next': null, 'results': rows});
+        if ((request.url.path == '/api/locais/' ||
+            request.url.path == '/api/locais/descoberta/')) {
+          return asDiscoveryResponse(
+            request,
+            map.jsonResponse({'count': 8, 'next': null, 'results': rows}),
+          );
         }
         if (request.url.path == '/api/locais/externos/') {
           externalCalls++;
@@ -122,24 +127,29 @@ void main() {
       controller.move(const LatLng(-16.3267, -48.9528), 17);
       await tester.pump(const Duration(milliseconds: 150));
       await tester.pumpAndSettle();
-      expect(
-        tester
-            .widget<AdaptivePlaceLayer>(find.byType(AdaptivePlaceLayer))
-            .places
-            .any((p) => p.id == 'osm:way:7'),
-        isTrue,
-      );
+      Future<void> expectRegionalMarker() async {
+        final toggle = find.byKey(const ValueKey('toggle-regional-scope'));
+        await tester.ensureVisible(toggle);
+        await tester.tap(toggle);
+        await tester.pump(const Duration(milliseconds: 350));
+        expect(
+          tester
+              .widget<AdaptivePlaceLayer>(find.byType(AdaptivePlaceLayer))
+              .places
+              .any((p) => p.id == 'osm:way:7'),
+          isTrue,
+        );
+        await tester.ensureVisible(toggle);
+        await tester.tap(toggle);
+        await tester.pump(const Duration(milliseconds: 350));
+      }
+
+      await expectRegionalMarker();
       expect(find.text('4'), findsOneWidget);
-      await capture('01_cinco_locais_e_cluster');
+      await capture('01_escopo_consolidado_e_consulta_regional_separados');
       refresh = Completer<http.Response>();
       await refreshExternal();
-      expect(
-        tester
-            .widget<AdaptivePlaceLayer>(find.byType(AdaptivePlaceLayer))
-            .places
-            .any((p) => p.id == 'osm:way:7'),
-        isTrue,
-      );
+      await expectRegionalMarker();
       expect(find.text('Buscando locais externos…'), findsOneWidget);
       refresh.complete(
         map.jsonResponse({
@@ -151,13 +161,7 @@ void main() {
         }, 503),
       );
       await tester.pumpAndSettle();
-      expect(
-        tester
-            .widget<AdaptivePlaceLayer>(find.byType(AdaptivePlaceLayer))
-            .places
-            .any((p) => p.id == 'osm:way:7'),
-        isTrue,
-      );
+      await expectRegionalMarker();
       expect(find.text('4'), findsOneWidget);
       expect(
         find.textContaining('Mostrando dados externos anteriores'),

@@ -2,6 +2,8 @@ import '../reading_presentation.dart';
 import '../widgets/preference_controls.dart';
 import '../widgets/safe_state.dart';
 import '../l10n/strings.dart';
+import '../l10n/account_strings.dart';
+import '../services/app_http.dart';
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../services/api_service.dart';
@@ -23,13 +25,19 @@ class LoginScreen extends StatefulWidget {
   /// Serviço usado para autenticar o usuário.
   /// Em produção usa [HttpApiService]; nos testes pode receber um mock.
   final ApiService? apiService;
+  final VoidCallback? onGuest;
 
   /// Permite controlar, em testes, o que acontece após um login
   /// bem-sucedido, evitando navegar para a [MainScreen] real.
   final void Function(BuildContext context, Map<String, dynamic> user)?
-      onLoginSuccess;
+  onLoginSuccess;
 
-  const LoginScreen({super.key, this.apiService, this.onLoginSuccess});
+  const LoginScreen({
+    super.key,
+    this.apiService,
+    this.onGuest,
+    this.onLoginSuccess,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -55,9 +63,9 @@ class _LoginScreenState extends SafeState<LoginScreen> {
     final password = _passwordController.text;
 
     if (nome.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.requiredFields)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.requiredFields)));
       return;
     }
 
@@ -79,35 +87,40 @@ class _LoginScreenState extends SafeState<LoginScreen> {
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => MainScreen(
-              userName: user['nome'],
-            ),
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                MainScreen(userName: user['nome']),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 0.08);
-              const end = Offset.zero;
-              const curve = Curves.easeInOutCubic;
+                  const begin = Offset(0.0, 0.08);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOutCubic;
 
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              final fadeTween = Tween<double>(begin: 0.0, end: 1.0);
+                  final tween = Tween(
+                    begin: begin,
+                    end: end,
+                  ).chain(CurveTween(curve: curve));
+                  final fadeTween = Tween<double>(begin: 0.0, end: 1.0);
 
-              return FadeTransition(
-                opacity: animation.drive(fadeTween),
-                child: SlideTransition(
-                  position: animation.drive(tween),
-                  child: child,
-                ),
-              );
-            },
+                  return FadeTransition(
+                    opacity: animation.drive(fadeTween),
+                    child: SlideTransition(
+                      position: animation.drive(tween),
+                      child: child,
+                    ),
+                  );
+                },
             transitionDuration: const Duration(milliseconds: 600),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.apiMessage(result.message,
-                fallback: context.l10n.invalidCredentials)),
+            content: Text(
+              context.apiMessage(
+                result.message,
+                fallback: context.l10n.invalidCredentials,
+              ),
+            ),
           ),
         );
       }
@@ -115,9 +128,9 @@ class _LoginScreenState extends SafeState<LoginScreen> {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.connectionError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.connectionError)));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -129,9 +142,7 @@ class _LoginScreenState extends SafeState<LoginScreen> {
         content: Text(context.l10n.socialUnavailable(provider)),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -143,11 +154,14 @@ class _LoginScreenState extends SafeState<LoginScreen> {
     return Scaffold(
       backgroundColor: colors.pageBackground,
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(actions: const [
-        Padding(
+      appBar: AppBar(
+        actions: const [
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: LanguageSelector())
-      ]),
+            child: LanguageSelector(),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, _) {
@@ -238,9 +252,11 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                               alignment: Alignment.centerRight,
                               child: TextButton(
                                 onPressed: () => Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                        builder: (_) =>
-                                            const PasswordRecoveryScreen())),
+                                  MaterialPageRoute<void>(
+                                    builder: (_) =>
+                                        const PasswordRecoveryScreen(),
+                                  ),
+                                ),
                                 style: TextButton.styleFrom(
                                   foregroundColor: colors.primaryDark,
                                   padding: const EdgeInsets.symmetric(
@@ -277,26 +293,63 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                                         width: 22,
                                         height: 22,
                                         child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: colors.onPrimary))
+                                          strokeWidth: 2,
+                                          color: colors.onPrimary,
+                                        ),
+                                      )
                                     : Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
                                           Flexible(
-                                              child: Text(
-                                            context.l10n.signIn,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
+                                            child: Text(
+                                              context.l10n.signIn,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700,
+                                              ),
                                             ),
-                                          )),
+                                          ),
                                           const SizedBox(width: 8),
                                           const Icon(
-                                              Icons.arrow_forward_rounded,
-                                              size: 19),
+                                            Icons.arrow_forward_rounded,
+                                            size: 19,
+                                          ),
                                         ],
                                       ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            TextButton(
+                              key: const ValueKey('login-explore-guest'),
+                              onPressed: _isSubmitting
+                                  ? null
+                                  : () {
+                                      AppHttp.clearSession();
+                                      if (widget.onGuest != null) {
+                                        widget.onGuest!();
+                                        return;
+                                      }
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute<void>(
+                                          builder: (_) => MainScreen(
+                                            userName: accountText(
+                                              context,
+                                              'Visitante',
+                                              'Visitor',
+                                            ),
+                                            isGuest: true,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                              child: Text(
+                                accountText(
+                                  context,
+                                  'Explorar sem conta',
+                                  'Explore without an account',
+                                ),
                               ),
                             ),
                             const SizedBox(height: 14),
@@ -380,10 +433,7 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                       Text(
                         context.l10n.tagline,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: colors.muted,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: colors.muted, fontSize: 12),
                       ),
                     ],
                   ),
@@ -438,15 +488,16 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                 ),
               const SizedBox(width: 8),
               Flexible(
-                  child: Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: colors.text,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: colors.text,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              )),
+              ),
             ],
           ),
         ),
@@ -472,7 +523,7 @@ class _LoginScreenState extends SafeState<LoginScreen> {
         controller: controller,
         obscureText: obscure,
         autofillHints: [
-          obscure ? AutofillHints.password : AutofillHints.username
+          obscure ? AutofillHints.password : AutofillHints.username,
         ],
         textInputAction: obscure ? TextInputAction.done : TextInputAction.next,
         onSubmitted: obscure ? (_) => _login(context) : null,
@@ -484,14 +535,8 @@ class _LoginScreenState extends SafeState<LoginScreen> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          hintStyle: TextStyle(
-            color: colors.muted,
-            fontSize: 14,
-          ),
-          labelStyle: TextStyle(
-            color: colors.muted,
-            fontSize: 14,
-          ),
+          hintStyle: TextStyle(color: colors.muted, fontSize: 14),
+          labelStyle: TextStyle(color: colors.muted, fontSize: 14),
           floatingLabelStyle: TextStyle(
             color: primaryColor,
             fontWeight: FontWeight.w600,

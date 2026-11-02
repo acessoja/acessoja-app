@@ -72,6 +72,7 @@ class MapPlace {
   String get name => (_presentation['nome'] ?? '').toString();
   String get address => (_presentation['endereco'] ?? '').toString();
   String get category => (_presentation['categoria'] ?? '').toString();
+  String get subcategory => (_presentation["subcategoria"] ?? "").toString();
   String get categoryLabel =>
       (_presentation['categoria_label'] ??
               (category.isEmpty ? 'Categoria não informada' : category))
@@ -123,6 +124,21 @@ class MapPlace {
       PlaceSource.openstreetmap,
   };
 
+  Map<String, dynamic> get _legacyOsmInformation {
+    final raw = data['accessibility_data'];
+    if (raw is! Map) return const {};
+    final authoritative = data['accessibility'];
+    final external = data['external_accessibility'];
+    return {
+      for (final entry in osmResourceInformation(
+        Map<String, dynamic>.from(raw),
+      ).entries)
+        if (!(authoritative is Map && authoritative.containsKey(entry.key)) &&
+            !(external is Map && external.containsKey(entry.key)))
+          entry.key: entry.value,
+    };
+  }
+
   late final Map<String, dynamic> accessibilityInformation = {
     ...combineAccessibilityMaps([
       if (_community['accessibility'] is Map)
@@ -131,10 +147,7 @@ class MapPlace {
         Map<String, dynamic>.from(data['external_accessibility'] as Map),
       if (isExternal && data['accessibility'] is Map)
         Map<String, dynamic>.from(data['accessibility'] as Map),
-      if (data['accessibility_data'] is Map)
-        osmResourceInformation(
-          Map<String, dynamic>.from(data['accessibility_data'] as Map),
-        ),
+      _legacyOsmInformation,
     ]),
     if (data['_resource_overrides'] is Map)
       ...Map<String, dynamic>.from(data['_resource_overrides'] as Map),

@@ -1,0 +1,57 @@
+{
+  "started_at": "2026-11-02T00:53:20.792000+00:00",
+  "database": "sqlite",
+  "django": "5.2.18",
+  "scope": "Synthetic mixed-source APIClient; request SQL counts, wall time and process peak RSS including setup. Not production, PostgreSQL, browser or SLA.",
+  "samples": [
+    {
+      "internal": 100,
+      "osm": 25,
+      "count": 125,
+      "latency_ms": [
+        346.98,
+        56.37,
+        56.25
+      ],
+      "sql_queries": [
+        9,
+        6,
+        6
+      ],
+      "process_peak_rss_kib": 82696
+    },
+    {
+      "internal": 500,
+      "osm": 125,
+      "count": 625,
+      "latency_ms": [
+        276.39,
+        198.03,
+        277.06
+      ],
+      "sql_queries": [
+        6,
+        6,
+        6
+      ],
+      "process_peak_rss_kib": 92212
+    },
+    {
+      "internal": 1000,
+      "osm": 250,
+      "count": 1250,
+      "latency_ms": [
+        882.82,
+        908.06,
+        813.21
+      ],
+      "sql_queries": [
+        6,
+        6,
+        6
+      ],
+      "process_peak_rss_kib": 107188
+    }
+  ],
+  "finished_at": "2026-11-02T00:53:37.862286+00:00"
+}

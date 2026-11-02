@@ -27,7 +27,8 @@ class DiscoveryController extends ChangeNotifier {
   String? catalogVersion;
   bool complete = true, available = true, restartRequired = false;
   static const maxLoaded = 1000;
-  bool get atLimit => catalog && places.length >= maxLoaded && next != null;
+  bool get atLimit =>
+      (catalog || query.unified) && places.length >= maxLoaded && next != null;
   Timer? _timer;
   final _visited = <String>{};
   bool _firstPending = true;
@@ -125,7 +126,9 @@ class DiscoveryController extends ChangeNotifier {
         return;
       }
       error = failure;
-      if (catalog && failure is PlacesException && failure.status == 409) {
+      if ((catalog || query.unified) &&
+          failure is PlacesException &&
+          failure.status == 409) {
         restartRequired = true;
       }
       if (failure is PlacesException &&
@@ -144,7 +147,11 @@ class DiscoveryController extends ChangeNotifier {
   /// Loads the remaining stable catalog pages on explicit user action.
   /// Honors the existing 1,000-POI budget and stops on query/session changes.
   Future<void> loadRemaining() async {
-    if (_disposed || loading || _loadingRemaining || !catalog || restartRequired) {
+    if (_disposed ||
+        loading ||
+        _loadingRemaining ||
+        !catalog ||
+        restartRequired) {
       return;
     }
     final generation = _generation;
@@ -192,11 +199,11 @@ class ExternalDiscoveryController extends ChangeNotifier {
     DateTime Function()? clock,
     Duration? freshFor,
     Duration? maxAge,
-  })  : now = clock ?? DateTime.now,
-        freshFor =
-            freshFor ?? const Duration(seconds: Config.externalFreshSeconds),
-        maxAge =
-            maxAge ?? const Duration(seconds: Config.externalMaxAgeSeconds) {
+  }) : now = clock ?? DateTime.now,
+       freshFor =
+           freshFor ?? const Duration(seconds: Config.externalFreshSeconds),
+       maxAge =
+           maxAge ?? const Duration(seconds: Config.externalMaxAgeSeconds) {
     AppHttp.sessionRevision.addListener(clear);
   }
   ExternalAreaQuery? query;
@@ -217,9 +224,9 @@ class ExternalDiscoveryController extends ChangeNotifier {
   int get waitSeconds => retryUntil == null
       ? 0
       : ((retryUntil!.difference(now()).inMilliseconds) / 1000).ceil().clamp(
-            0,
-            9007199254740991,
-          );
+          0,
+          9007199254740991,
+        );
   void _emit() {
     if (!_disposed) {
       notifyListeners();
@@ -286,8 +293,8 @@ class ExternalDiscoveryController extends ChangeNotifier {
       final received = now();
       final fetched =
           result.fetchedAt == null || result.fetchedAt!.isAfter(received)
-              ? received
-              : result.fetchedAt!;
+          ? received
+          : result.fetchedAt!;
       final validSeconds = (result.validSeconds ?? maxAge.inSeconds).clamp(
         1,
         maxAge.inSeconds.clamp(1, 86400),
@@ -325,12 +332,13 @@ class ExternalDiscoveryController extends ChangeNotifier {
               code: failure is TimeoutException
                   ? 'client_timeout'
                   : failure is FormatException
-                      ? 'invalid_response'
-                      : 'client_network',
+                  ? 'invalid_response'
+                  : 'client_network',
               stage: 'client',
             );
       final wait = error!.retryAfterSeconds ?? (error!.status == 429 ? 60 : 15);
-      _blockedForever = (!error!.retryable &&
+      _blockedForever =
+          (!error!.retryable &&
               error!.retrySource == 'upstream' &&
               error!.retryAfterSeconds == null) ||
           wait > 253402300799;
@@ -351,8 +359,7 @@ class ExternalDiscoveryController extends ChangeNotifier {
       freshUntil,
       validUntil,
       retryUntil,
-    ].whereType<DateTime>().where((t) => t.isAfter(current)).toList()
-      ..sort();
+    ].whereType<DateTime>().where((t) => t.isAfter(current)).toList()..sort();
     if (deadlines.isEmpty) {
       return;
     }

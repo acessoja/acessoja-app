@@ -1,3 +1,4 @@
+import 'discovery_fixture.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -41,7 +42,14 @@ void main() {
           ),
         );
       }
-      if (request.url.path == '/api/locais/') return f.response([f.own]);
+      if ((request.url.path == '/api/locais/' ||
+          request.url.path == '/api/locais/descoberta/')) {
+        return asDiscoveryResponse(
+          request,
+          f.response([f.own]),
+          additional: [f.osm],
+        );
+      }
       if (request.url.path == '/api/locais/7/') {
         return f.response(f.own, placeStatus);
       }

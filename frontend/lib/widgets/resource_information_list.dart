@@ -48,10 +48,24 @@ class ResourceInformationList extends StatelessWidget {
                 .indexOf(a)
                 .compareTo(AccessibilityCatalog.resources.indexOf(b));
     });
-    final divergent = resources
-        .where((r) => info(r.id)['state'] == 'divergent')
-        .toList();
     final shown = compact ? resources.take(3).toList() : resources;
+    final warnings = resources
+        .where(
+          (r) =>
+              {
+                'divergent',
+                'absence_reported',
+                'limited',
+              }.contains(info(r.id)['state']) &&
+              !shown.contains(r),
+        )
+        .toList();
+    final parts = !compact && preferred.isNotEmpty
+        ? [
+            shown.where((r) => preferred.contains(r.id)).toList(),
+            shown.where((r) => !preferred.contains(r.id)).toList(),
+          ]
+        : [shown];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -62,44 +76,65 @@ class ResourceInformationList extends StatelessWidget {
             'Reported information; it does not certify accessibility.',
           ),
         ),
-        if (compact && divergent.any((r) => !shown.contains(r)))
+        if (compact && warnings.isNotEmpty)
           Semantics(
             liveRegion: true,
             child: Text(
               accountText(
                 context,
-                'Há relatos divergentes em outros recursos. Verifique todos os recursos.',
-                'Other features have conflicting reports. Check all features.',
+                'Há alertas em ${warnings.length} outros recursos: ${warnings.map((r) => evidenceValue(context, info(r.id)["state"] as String)).toSet().join(", ")}. Verifique todos os recursos.',
+                'Warnings in ${warnings.length} other features: ${warnings.map((r) => evidenceValue(context, info(r.id)["state"] as String)).toSet().join(", ")}. Check all features.',
               ),
             ),
           ),
-        for (final group
-            in compact ? <String>['compact'] : SurveyContract.groups) ...[
-          if (!compact)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Semantics(
-                header: true,
+        for (var part = 0; part < parts.length; part++) ...[
+          if (!compact && preferred.isNotEmpty)
+            Semantics(
+              header: true,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 12),
                 child: Text(
-                  SurveyContract.group(context, group),
-                  style: Theme.of(context).textTheme.titleSmall,
+                  accountText(
+                    context,
+                    part == 0
+                        ? 'Recursos importantes para sua busca'
+                        : 'Outros recursos de acessibilidade',
+                    part == 0
+                        ? 'Features important for your search'
+                        : 'Other accessibility features',
+                  ),
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
             ),
-          for (final resource in shown.where(
-            (r) => compact || r.group == group,
-          ))
-            _ResourceRow(
-              key: ValueKey('resource-information-${resource.id}'),
-              resource: resource,
-              information: info(resource.id),
-              result: results.where((r) => r.id == resource.id).firstOrNull,
-              localId: localId,
-              externalId: externalId,
-              compact: compact,
-              onChanged: onChanged,
-              onProjection: onProjection,
-            ),
+          for (final group
+              in compact ? <String>['compact'] : SurveyContract.groups) ...[
+            if (!compact && parts[part].any((r) => r.group == group))
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    SurveyContract.group(context, group),
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+              ),
+            for (final resource in parts[part].where(
+              (r) => compact || r.group == group,
+            ))
+              _ResourceRow(
+                key: ValueKey('resource-information-${resource.id}'),
+                resource: resource,
+                information: info(resource.id),
+                result: results.where((r) => r.id == resource.id).firstOrNull,
+                localId: localId,
+                externalId: externalId,
+                compact: compact,
+                onChanged: onChanged,
+                onProjection: onProjection,
+              ),
+          ],
         ],
         if (compact && onViewAll != null)
           TextButton(

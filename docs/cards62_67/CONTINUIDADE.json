@@ -1,0 +1,100 @@
+{
+  "project": "AcessoJá",
+  "language": "pt-BR",
+  "timezone": "America/Sao_Paulo",
+  "cards": [
+    62,
+    63,
+    64,
+    65,
+    66,
+    67
+  ],
+  "next_card": 68,
+  "repository": "acessoja/acessoja-app",
+  "base": {
+    "repo": "acessoja/acessoja-app",
+    "branch": "main",
+    "commit": "6684c06ee19a93ccb446c37fbd78c7be6755cb29",
+    "archive_sha256": "ed5f49d7ed15ed650f3b279cbebdbf67fb9337703c197ab282a70dcc66cad235",
+    "files": 782
+  },
+  "canonical_artifact_library_id": "libfile_ca6e61956d288191a69675d5bcd9ccb3",
+  "artifact_name": "AcessoJa_Cards62_63_64_65_66_67.zip",
+  "version_identity": "base commit + source hashes in VERSAO.json; no new Git commit",
+  "constraints": [
+    "Audit before new edits",
+    "Preserve Flutter/Django architecture, models, API and migrations",
+    "No branch, commit, push, PR or Git-history mutation without explicit current authorization",
+    "No Trello changes authorized",
+    "Do not claim unexecuted tests passed",
+    "No subagents unless explicitly requested"
+  ],
+  "completed": {
+    "pytest": {
+      "passed": 776,
+      "skipped": 30,
+      "subtests_passed": 21,
+      "coverage_percent": 84.56,
+      "threshold_percent": 80,
+      "database": "SQLite"
+    },
+    "flutter": {
+      "passed": 1083,
+      "analyze": "no issues",
+      "web_build": "passed",
+      "apk": "blocked: Android SDK missing"
+    },
+    "browser": {
+      "discovery": {
+        "status": "passed",
+        "steps": 17,
+        "browser": "156.0.8078.80"
+      },
+      "panel": {
+        "status": "passed",
+        "steps": 15,
+        "browser": "156.0.8078.80"
+      },
+      "routes": {
+        "status": "passed",
+        "steps": 13,
+        "browser": "156.0.8078.80"
+      }
+    },
+    "source_manifest_sha256": "2be2526300870ba6aa6a13c83e55cc692e5e2b8748939981f92bfc105817c1f6",
+    "base_commit": "6684c06ee19a93ccb446c37fbd78c7be6755cb29",
+    "criteria": 73,
+    "planned_scenarios": 106,
+    "all_scenarios_approved": false,
+    "git_writes": false,
+    "trello_writes": false
+  },
+  "implementation_report": "IMPLEMENTACAO.md",
+  "requirements": "REQUISITOS.md",
+  "criteria_matrix": "MATRIZ_ACEITE.json",
+  "scenario_matrix": "MATRIZ_CENARIOS.json",
+  "pending": [
+    "PostgreSQL mandatory validation",
+    "Physical Android/Chrome mobile",
+    "Human keyboard/screen-reader homologation",
+    "Remote CI",
+    "Remaining partial scenario clauses in matrix"
+  ],
+  "critical_invariants": [
+    "Only presence_reported scores; unknown opt-in only for filtering",
+    "Personal immutable snapshot stays off until explicit apply",
+    "Personal snapshot in authenticated POST body only; manual filters keep ownership",
+    "Global canonical ranking before paging within declared bounded scope",
+    "Panel and search share current authorized evidence; old tags cannot resurrect withdrawn facts",
+    "Category names never infer subtypes; conflicting current assertions remain unknown",
+    "Contribution/reward accounting unchanged; no personal score persisted"
+  ],
+  "recovery": [
+    "Extract ZIP and read LEIA-ME.md",
+    "Run installer --check against current checkout; preserve divergences",
+    "Read audit and matrices before edits",
+    "Recreate disposable test runtime from project versions; old runtime artifacts may be pruned",
+    "Finish mandatory blocked homologations before closing cards"
+  ]
+}

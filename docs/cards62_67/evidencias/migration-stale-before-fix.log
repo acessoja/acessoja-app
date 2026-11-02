@@ -1,0 +1,138 @@
+sF                                                                       [100%]
+=================================== FAILURES ===================================
+_________ test_category_migration_additional_sqlite_fixture_integrity __________
+
+    @pytest.mark.django_db(transaction=True)
+    def test_category_migration_additional_sqlite_fixture_integrity():
+        if connection.vendor != "sqlite":
+            pytest.skip("Supplementary SQLite check only.")
+>       exercise_migration()
+
+locais/test_category_migration.py:155: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def exercise_migration():
+        executor = MigrationExecutor(connection)
+        latest = executor.loader.graph.leaf_nodes()
+        old = [node for node in latest if node[0] != "locais"] + [("locais", "0011_municipal_catalog")]
+        try:
+            executor.migrate(old)
+            apps = executor.loader.project_state(old).apps
+            Local = apps.get_model("locais", "Local")
+            User = apps.get_model("usuarios", "Usuario")
+            Favorite = apps.get_model("favoritos", "Favorito")
+            Visit = apps.get_model("locais", "VisitaRecente")
+            Review = apps.get_model("modal_avaliacao", "ModalAvaliacao")
+            Asset = apps.get_model("midia", "ImageAsset")
+            Photo = apps.get_model("midia", "ReviewPhoto")
+            PhotoRevision = apps.get_model("midia", "PhotoRevision")
+            Evidence = apps.get_model("evidencias", "ResourceEvidence")
+            EvidenceRevision = apps.get_model("evidencias", "EvidenceRevision")
+            Event = apps.get_model("contribuicoes", "ContributionPointEvent")
+            Activity = apps.get_model("contribuicoes", "PointActivity")
+            owner = User.objects.create(
+                nome="migration-only", email="migration@example.invalid", password="!", data_criacao=timezone.now()
+            )
+            known = Local.objects.create(
+                nome="Hospital by name is not evidence", endereco="Synthetic", distancia=0, categoria="saude"
+            )
+            unknown = Local.objects.create(
+                nome="Hospital without tags", endereco="Synthetic", distancia=0, categoria="saude"
+            )
+            stale = Local.objects.create(
+                nome="Old catalog assertion", endereco="Synthetic", distancia=0, categoria="saude"
+            )
+            Favorite.objects.create(user_id=owner.pk, local_id=known.pk)
+            Visit.objects.create(user_id=owner.pk, local_id=known.pk)
+            review = Review.objects.create(user_id=owner.pk, local_id=known.pk, estrelas=4)
+            asset = Asset.objects.create(
+                owner_id=owner.pk,
+                purpose="photo",
+                state="ready",
+                image_key="migration/image.jpg",
+                thumb_key="migration/thumb.jpg",
+            )
+            photo = Photo.objects.create(owner_id=owner.pk, review_id=review.pk)
+            photo_revision = PhotoRevision.objects.create(
+                photo_id=photo.pk,
+                owner_id=owner.pk,
+                asset_id=asset.pk,
+                description="Synthetic migration metadata",
+                state="approved",
+            )
+            Photo.objects.filter(pk=photo.pk).update(current_revision_id=photo_revision.pk)
+            evidence = Evidence.objects.create(
+                key="migration:resource",
+                resource="rampa_acesso",
+                kind="registration",
+                source="registration",
+                local_id=known.pk,
+                owner_id=owner.pk,
+            )
+            evidence_revision = EvidenceRevision.objects.create(
+                evidence_id=evidence.pk,
+                number=1,
+                fingerprint="synthetic",
+                state="presence_reported",
+                received_at=timezone.now(),
+            )
+            Evidence.objects.filter(pk=evidence.pk).update(current_revision_id=evidence_revision.pk)
+            event = Event.objects.create(
+                user_id=owner.pk,
+                local_id=known.pk,
+                evaluation_id=review.pk,
+                action="accessibility",
+                points=5,
+                idempotency_key="migration:event",
+            )
+            Activity.objects.create(event_id=event.pk, delta=5, idempotency_key="migration:activity")
+            related = [Favorite, Visit, Review, Asset, Photo, PhotoRevision, Evidence, EvidenceRevision, Event, Activity]
+            snapshots = [list(model.objects.order_by("pk").values()) for model in related]
+            Scope = apps.get_model("locais", "CatalogScope")
+            Batch = apps.get_model("locais", "CatalogBatch")
+            POI = apps.get_model("locais", "CatalogPOI")
+            Entry = apps.get_model("locais", "CatalogEntry")
+            scope, _ = Scope.objects.get_or_create(pk="5201108")
+            batch = Batch.objects.create(scope=scope, fingerprint="migration", rules_version="test", boundary_hash="test")
+            scope.active_batch = batch
+            scope.save()
+            poi = POI.objects.create(osm_type="node", osm_number=880001, external_id="osm:node:880001", local_id=known.pk)
+            Entry.objects.create(
+                batch=batch,
+                observed_in=batch,
+                poi=poi,
+                display_name="Verified",
+                category="saude",
+                latitude=0,
+                longitude=0,
+                geometry_type="Point",
+                point_method="original",
+                tags={"amenity": "hospital"},
+                content_hash="test",
+            )
+            stale_poi = POI.objects.create(
+                osm_type="node", osm_number=880002, external_id="osm:node:880002", local_id=stale.pk
+            )
+            Entry.objects.create(
+                batch=batch, observed_in=batch, poi=stale_poi, display_name="Not observed",
+                category="saude", latitude=0, longitude=0, geometry_type="Point", point_method="original",
+                tags={"amenity": "hospital"}, source_status="not_seen", content_hash="stale",
+            )
+            ids = list(Local.objects.order_by("pk").values_list("pk", flat=True))
+            executor = MigrationExecutor(connection)
+            executor.migrate(latest)
+            current = executor.loader.project_state(latest).apps.get_model("locais", "Local")
+            assert list(current.objects.order_by("pk").values_list("pk", flat=True)) == ids
+            assert current.objects.get(pk=known.pk).subcategoria == "hospital"
+            assert current.objects.get(pk=unknown.pk).subcategoria == ""
+>           assert current.objects.get(pk=stale.pk).subcategoria == ""
+E           AssertionError: assert 'hospital' == ''
+E             
+E             + hospital
+
+locais/test_category_migration.py:123: AssertionError
+=========================== short test summary info ============================
+FAILED locais/test_category_migration.py::test_category_migration_additional_sqlite_fixture_integrity - AssertionError: assert 'hospital' == ''
+  
+  + hospital
+1 failed, 1 skipped in 4.05s

@@ -15,6 +15,7 @@ class PersistentPlacePanel extends StatefulWidget {
     required this.onGeometry,
     required this.onClose,
     this.preferredResources = const {},
+    this.matchResources = const {},
     this.outsideResults = false,
     this.onSearch,
     this.externalNavigation = const ExternalNavigation(),
@@ -25,7 +26,7 @@ class PersistentPlacePanel extends StatefulWidget {
   final ValueChanged<String> onAction;
   final ValueChanged<Rect> onGeometry;
   final VoidCallback onClose;
-  final Set<String> preferredResources;
+  final Set<String> preferredResources, matchResources;
   final bool outsideResults;
   final VoidCallback? onSearch;
   @override
@@ -98,6 +99,7 @@ class _PersistentPlacePanelState extends State<PersistentPlacePanel> {
         coordinator: c,
         scrollController: scroll,
         preferredResources: widget.preferredResources,
+        matchResources: widget.matchResources,
         outsideResults: widget.outsideResults,
         distanceLabel: widget.distanceLabel(p.toMap()),
         loadingDetails: c.loading,

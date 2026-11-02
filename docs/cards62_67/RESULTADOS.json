@@ -1,0 +1,40 @@
+{
+  "pytest": {
+    "passed": 776,
+    "skipped": 30,
+    "subtests_passed": 21,
+    "coverage_percent": 84.56,
+    "threshold_percent": 80,
+    "database": "SQLite"
+  },
+  "flutter": {
+    "passed": 1083,
+    "analyze": "no issues",
+    "web_build": "passed",
+    "apk": "blocked: Android SDK missing"
+  },
+  "browser": {
+    "discovery": {
+      "status": "passed",
+      "steps": 17,
+      "browser": "156.0.8078.80"
+    },
+    "panel": {
+      "status": "passed",
+      "steps": 15,
+      "browser": "156.0.8078.80"
+    },
+    "routes": {
+      "status": "passed",
+      "steps": 13,
+      "browser": "156.0.8078.80"
+    }
+  },
+  "source_manifest_sha256": "2be2526300870ba6aa6a13c83e55cc692e5e2b8748939981f92bfc105817c1f6",
+  "base_commit": "6684c06ee19a93ccb446c37fbd78c7be6755cb29",
+  "criteria": 73,
+  "planned_scenarios": 106,
+  "all_scenarios_approved": false,
+  "git_writes": false,
+  "trello_writes": false
+}

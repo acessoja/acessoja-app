@@ -1,0 +1,16 @@
+{
+  "base": {
+    "repo": "acessoja/acessoja-app",
+    "branch": "main",
+    "commit": "6684c06ee19a93ccb446c37fbd78c7be6755cb29",
+    "archive_sha256": "ed5f49d7ed15ed650f3b279cbebdbf67fb9337703c197ab282a70dcc66cad235",
+    "files": 782
+  },
+  "source_file_count": 61,
+  "source_manifest_sha256": "2be2526300870ba6aa6a13c83e55cc692e5e2b8748939981f92bfc105817c1f6",
+  "build_sha256": "333723212c857e3636b9b9920399b3c6897e3b50484c31fa1d7e9742aa388cae",
+  "built_for": "http://127.0.0.1:8001 laboratory only",
+  "delivered_at": "2026-11-02T01:32:58.760359+00:00",
+  "git_operations": [],
+  "status": "Code delivered; full acceptance blocked by PostgreSQL, physical Android/mobile Chrome, human assistive reading and remote CI"
+}

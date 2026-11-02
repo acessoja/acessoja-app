@@ -320,3 +320,5 @@ IMAGE_MAX_PHOTOS = 5
 PRIVATE_IMAGE_ROOT = os.path.join(globals()["MEDIA_ROOT"], "images")
 SECURITY_RATES.update({"image_upload": (60, 20, 3600), "avatar_change": (60, 15, 3600)})
 MIDDLEWARE.insert(0, "midia.middleware.ImageUploadPolicyMiddleware")
+
+DEFAULT_EXCEPTION_REPORTER_FILTER = "acessoja.logging_filters.PrivateDiscoveryReporterFilter"

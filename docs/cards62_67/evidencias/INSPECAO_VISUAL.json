@@ -1,0 +1,9 @@
+{
+  "before_build_sha256": "4703613ba5aa6defdc73097a4cd4ca00957b6b1463704428dda412837fa5785d",
+  "before": "collision-before.png",
+  "observed": "Floating accessibility button obscured the places-count badge beside map search at 390x844 / 200%",
+  "after_build_sha256": "333723212c857e3636b9b9920399b3c6897e3b50484c31fa1d7e9742aa388cae",
+  "after": "browser-discovery/06_mobile_200.png",
+  "automated": "Non-overlapping semantic bounding rectangles asserted; widget test preserves saved position",
+  "manual_scope": "Agent inspected screenshots, not human screen-reader or physical touch certification"
+}

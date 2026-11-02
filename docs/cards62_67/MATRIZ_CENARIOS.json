@@ -1,0 +1,4085 @@
+[
+  {
+    "id": "T001",
+    "nature": "P/R",
+    "expected": "Abrir mapa com conta que tem escolhas salvas. Personalização fica off, o painel usa apresentação padrão e não há busca pessoal automática.",
+    "planned_execution": "FT, MCP, AND",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T001 T036 real login starts without applying saved preferences",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T002",
+    "nature": "P",
+    "expected": "Acionar Usar minhas preferências. Carregar a seleção da própria conta e aplicar snapshot em Priorizar; loading e confirmação correspondem à operação atual.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_private_priority_global_pages_keeps_zero_and_does_not_persist"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T002 T004 T053 T075 private persistent prioritization keeps zero-score places",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T003",
+    "nature": "P/R",
+    "expected": "Alternar explicitamente Priorizar → Todos → Pelo menos um → desligado no bloco pertinente. UI, consulta e resultado usam a operação indicada; o rigoroso inicia em Todos.",
+    "planned_execution": "PY, FT, MCP, AND",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T004",
+    "nature": "P/R",
+    "expected": "Comparar IDs elegíveis antes/depois de Priorizar sobre fixture estável. O conjunto é idêntico; somente a ordem e o resumo de correspondência mudam.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_private_priority_global_pages_keeps_zero_and_does_not_persist"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T002 T004 T053 T075 private persistent prioritization keeps zero-score places",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T005",
+    "nature": "P",
+    "expected": "Seleção de três recursos sobre P3/P2/P1/P0. Obter scores 3/2/1/0 nessa ordem; usar asserção sobre IDs e contagens esperadas, não apenas sobre presença de textos.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [],
+    "status": "automacao_comprovada_no_escopo"
+  },
+  {
+    "id": "T006",
+    "nature": "N/R",
+    "expected": "Parametrizar os seis estados e informação ausente. Somente presence_reported soma um; ausência/divergência/limitação/não aplicabilidade/unknown mantêm significado e avisos.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[absence_reported]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[divergent]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[invalid]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[limited]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[not_applicable]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[unknown]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_present]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_excluded]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[conflicting_and_partial]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[limited_not_applicable_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[no_applicable_presence]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_absence]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_excluded]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_absent_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_divergent_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_limited_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_not_applicable_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_unknown_opt_in_never_scores_or_accepts_absence"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T007",
+    "nature": "N/R",
+    "expected": "Repetir ID na seleção válida e oferecer o mesmo recurso por fontes vinculadas. Deduplicar seleção/evidência conforme contrato; X e Y não aumentam indevidamente.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T008",
+    "nature": "P/N",
+    "expected": "Em Todos, testar pares presença/presença, presença/ausência, presença/unknown. Sem opt-in, somente o primeiro par entra; conferir IDs, count e estados.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[absence_reported]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[divergent]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[invalid]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[limited]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[not_applicable]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[unknown]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_present]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_excluded]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[conflicting_and_partial]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[limited_not_applicable_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[no_applicable_presence]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_absence]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_excluded]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_absent_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_divergent_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_limited_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_not_applicable_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_unknown_opt_in_never_scores_or_accepts_absence"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T008 T009 persisted personal all and any use the applied snapshot",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T009",
+    "nature": "P/N",
+    "expected": "Nos mesmos pares, ativar Pelo menos um. Um recurso presente permite inclusão, mesmo que outro seja ausente; nenhum estado do outro recurso é alterado.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[absence_reported]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[divergent]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[invalid]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[limited]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[not_applicable]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[unknown]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_present]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_excluded]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[conflicting_and_partial]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[limited_not_applicable_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[no_applicable_presence]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_absence]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_excluded]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_absent_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_divergent_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_limited_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_not_applicable_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_unknown_opt_in_never_scores_or_accepts_absence"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T008 T009 persisted personal all and any use the applied snapshot",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T010",
+    "nature": "P/N",
+    "expected": "Testar unknown/unknown e presença/unknown com opt-in off/on em Todos/Qualquer. Unknown só participa da elegibilidade com opt-in, sem somar score; um recurso presente continua satisfazendo OR.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[absence_reported]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[divergent]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[invalid]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[limited]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[not_applicable]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[unknown]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_present]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_excluded]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[conflicting_and_partial]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[limited_not_applicable_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[no_applicable_presence]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_absence]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_excluded]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_absent_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_divergent_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_limited_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_not_applicable_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_unknown_opt_in_never_scores_or_accepts_absence"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [],
+    "status": "automacao_comprovada_no_escopo"
+  },
+  {
+    "id": "T011",
+    "nature": "N",
+    "expected": "Com opt-in ativo, testar unknown/ausente, unknown/divergente, unknown/limitado e unknown/não aplicável. Todos não aceita o par; Qualquer pode aceitar pelo unknown, sem declarar os demais como presentes.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[absence_reported]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[divergent]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[invalid]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[limited]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[not_applicable]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[unknown]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_present]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_excluded]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[conflicting_and_partial]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[limited_not_applicable_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[no_applicable_presence]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_absence]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_excluded]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_absent_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_divergent_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_limited_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_not_applicable_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_unknown_opt_in_never_scores_or_accepts_absence"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [],
+    "status": "automacao_comprovada_no_escopo"
+  },
+  {
+    "id": "T012",
+    "nature": "P/N",
+    "expected": "Em Priorizar, usar conjunto inteiro com dados desconhecidos. Todos os elegíveis permanecem, score zero e desempate estável; não oferecer certificação nem eliminar a lista.",
+    "planned_execution": "PY, FT, MCP",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_private_priority_global_pages_keeps_zero_and_does_not_persist"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T013",
+    "nature": "P/R",
+    "expected": "Seleção vazia em cada modo. O filtro de recursos é neutro e os demais grupos continuam valendo; OR vazio não gera conjunto vazio.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[absence_reported]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[divergent]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[invalid]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[limited]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[not_applicable]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_only_reported_presence_scores[unknown]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_present]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_excluded]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[conflicting_and_partial]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[limited_not_applicable_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[no_applicable_presence]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_absence]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_excluded]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_absent_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_divergent_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_limited_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_not_applicable_opt_in]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_unknown_opt_in_never_scores_or_accepts_absence"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T014",
+    "nature": "P/N",
+    "expected": "Combinar texto, fonte, categoria/subtipo, bbox e uma seleção de ranking. Priorizar conserva apenas quem passa nesses grupos; score alto não permite furar um filtro independente.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]"
+      }
+    ],
+    "pending": [
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T015",
+    "nature": "P",
+    "expected": "Empatar score e escolher nome como secundário. Aplicar normalização documentada e ID estável ao final; repetir consulta e comparar ordem.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_score_before_distance_name_and_missing_coordinates"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T016",
+    "nature": "P/R",
+    "expected": "Empatar score e escolher avaliações como secundário, quando oferecido. Usar somente média/quantidade autorizadas pela projeção existente; não interpretar estrelas como presença de recurso.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_backend_rating_uses_unrounded_visible_average_before_auxiliary_count"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T017",
+    "nature": "N/R",
+    "expected": "Empatar score com proximidade válida, origem ausente/inválida e locais sem coordenadas. Preservar score primário; fallback de UI é explícito e API não aceita origem inválida nem distância zero inventada.",
+    "planned_execution": "PY, FT, AND",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_score_before_distance_name_and_missing_coordinates"
+      }
+    ],
+    "pending": [
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T018",
+    "nature": "P/R",
+    "expected": "Empatar score, secundário e nome, incluindo fontes diferentes. A identidade canônica desempata de modo estável, sem depender da ordem de chegada das respostas.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T019",
+    "nature": "P/N",
+    "expected": "Com uma e várias escolhas, conferir X/Y após deduplicação e estados reais em PT/EN. Nenhuma superfície usa percentual, selo, certificado ou “mais acessível” para esse score.",
+    "planned_execution": "FT, MCP, AND",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T019 T081 compact personal summary",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T020",
+    "nature": "P/N",
+    "expected": "Remover a última seleção ou ter zero escolhas válidas. Não exibir 0 de 0 nem score enganoso; informar configuração indisponível/vazia sem substituir a busca.",
+    "planned_execution": "FT, MCP",
+    "actual": [],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  },
+  {
+    "id": "T021",
+    "nature": "P/R",
+    "expected": "Partir de restrição manual e aplicar preferências em Priorizar. A restrição manual mantém o conjunto elegível e a preferência ordena dentro dele; origem e alcance aparecem na UI.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T022",
+    "nature": "P/R",
+    "expected": "Desligar a personalização após T021 e depois reaplicar. Critérios manuais permanecem idênticos; só efeitos pessoais são retirados/recriados por ação explícita.",
+    "planned_execution": "FT, MCP, E2E",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T022 T076 disable personal selection and third-party transport checks",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T023",
+    "nature": "P/N",
+    "expected": "Usar rigoroso pessoal com Todos e mudar explicitamente para Pelo menos um, mantendo outro bloco manual. AND entre blocos e operador dentro de cada bloco seguem o contrato, sem modo oculto.",
+    "planned_execution": "PY, FT, MCP",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T024",
+    "nature": "P/R",
+    "expected": "Ativar unknown em rascunho de filtragem e alternar para Priorizar. Opção não altera score nem elegibilidade nesse modo; parâmetros conflitantes não são enviados; retorno à filtragem respeita o estado documentado.",
+    "planned_execution": "PY, FT",
+    "actual": [],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  },
+  {
+    "id": "T025",
+    "nature": "P/R",
+    "expected": "Editar modo, recursos, categorias e filhos no rascunho. Até Aplicar não mudar critérios/resultados nem disparar busca de aplicação; Aplicar faz um commit e uma nova consulta lógica.",
+    "planned_execution": "FT, MCP, E2E",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T026",
+    "nature": "N/R",
+    "expected": "Editar rascunho e cancelar por botão, Escape, Back e fechamento externo suportado. Resultado, modo e chips anteriores permanecem; foco retorna ao acionador conforme ambiente.",
+    "planned_execution": "FT, MCP, AND",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T027",
+    "nature": "P/R",
+    "expected": "Com busca pessoal aplicada, editar e salvar o cadastro no perfil. Cadastro muda no servidor, mas snapshot, modo, ranking e detalhe da busca ativa não mudam automaticamente.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_private_snapshot_not_implicitly_replaced_by_profile_edits"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T027 saved profile persists without changing applied search",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T028",
+    "nature": "P",
+    "expected": "Após T027, pedir reaplicação explícita. Carregar novo cadastro e atualizar a busca, preservando os filtros manuais independentes.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_private_snapshot_not_implicitly_replaced_by_profile_edits"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T028 explicit reapply reads the latest private profile",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T029",
+    "nature": "P/R",
+    "expected": "Reproduzir consultas antigas sem operador/subtipo nos formatos legado e paginado. Manter envelopes, Todos como padrão e semântica dos parâmetros antigos.",
+    "planned_execution": "PY, E2E",
+    "actual": [],
+    "pending": [
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  },
+  {
+    "id": "T030",
+    "nature": "N",
+    "expected": "Enviar enum inválido, ID inválido, lista malformada, booleano inválido, parâmetro desconhecido e chave repetida. Retornar 400 estruturado, sem aceitação silenciosa; ID repetido em CSV válido segue deduplicação legada.",
+    "planned_execution": "PY",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_pair_all_write_paths_and_database_constraint"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[categorias=educacao&subcategorias=hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[combinacao_recursos=x]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[incluir_desconhecidos=1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&combinacao_recursos=todos]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&incluir_desconhecidos=false]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=x]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[ordering=proximity]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[owner=1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[page=2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=rampa_acesso,,piso_tatil]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x&recursos=y]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=DROP%20TABLE]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=hospital&subcategorias=escola]"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T031",
+    "nature": "N/R",
+    "expected": "Iniciar leitura de preferências e modificar filtro antes da resposta. Resposta antiga não substitui a escolha nova; mensagem de reaplicação é clara e não restaura estado anterior.",
+    "planned_execution": "FT, MCP",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T032",
+    "nature": "N/R",
+    "expected": "Requisitar página seguinte, trocar modo/recurso e entregar a página antiga por último. Descartá-la; a consulta nova mantém count, loading, next e conteúdo próprios.",
+    "planned_execution": "FT, E2E",
+    "actual": [],
+    "pending": [
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  },
+  {
+    "id": "T033",
+    "nature": "N/R",
+    "expected": "Selecionar A, iniciar atualização de detalhe e selecionar B enquanto busca/filtros mudam. Nenhuma resposta de A entra em B nem desloca marcador/rolagem/foco atuais.",
+    "planned_execution": "FT, MCP, E2E",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T034",
+    "nature": "P/R",
+    "expected": "Remover chips manuais/pessoais e limpar critérios ativos. Só o critério anunciado é removido; vínculos pai/filho são normalizados e nenhuma ação chama DELETE do cadastro salvo.",
+    "planned_execution": "PY, FT, MCP",
+    "actual": [],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  },
+  {
+    "id": "T035",
+    "nature": "P/R",
+    "expected": "Recurso originado de preferência é tocado duas vezes no rascunho, retornando ao valor inicial. Commit preserva a decisão manual/ownership; desligar/reaplicar não ressuscita um filtro removido indevidamente.",
+    "planned_execution": "FT",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T036",
+    "nature": "P/R",
+    "expected": "Visitante usa busca, categorias/filhos e os três modos manuais. Fluxos funcionam sem login; apenas o acesso ao cadastro pessoal solicita autenticação.",
+    "planned_execution": "PY, FT, MCP, E2E",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T001 T036 real login starts without applying saved preferences",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T036 T067 actual visitor entry keeps discovery public",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T037",
+    "nature": "P/R",
+    "expected": "Comparar os onze IDs dos pais antes/depois e executar filtros somente por categoria. Nenhum pai desaparece, muda de ID ou deixa de incluir seu conjunto anterior sem motivo de dados.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_catalog_contract_has_ten_resources_and_generated_flutter_children"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_generated_category_catalog_command_checks_real_contract"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T038",
+    "nature": "P",
+    "expected": "Conferir catálogo versionado de filhos: ID único/estável, pai válido e rótulos PT/EN. Backend e Flutter interpretam as mesmas relações e não dependem de label traduzida para filtrar.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_catalog_contract_has_ten_resources_and_generated_flutter_children"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_generated_category_catalog_command_checks_real_contract"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T039",
+    "nature": "P/R",
+    "expected": "Criar legado com categoria e sem filho. Consulta ampla pelo pai o inclui; apresentar classificação detalhada desconhecida sem inventar subtipo.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T039 T040 T097 persisted hierarchy preserves legacy and cancel leaves search intact",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T040",
+    "nature": "P/N",
+    "expected": "Criar hospital, clínica, consultório e legado de Saúde. Selecionar hospital retorna apenas hospital demonstrável; selecionar dois filhos combina por OR.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T039 T040 T097 persisted hierarchy preserves legacy and cancel leaves search intact",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T041",
+    "nature": "P/N",
+    "expected": "Importar fixtures `shop=convenience` e `shop=supermarket`. Ambos pertencem a Supermercado; filtro filho distingue conveniência de supermercado sem usar o nome.",
+    "planned_execution": "PY",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_current_linked_tags_classify_legacy_and_conflicts_are_unknown_in_list_and_detail"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_multiple_linked_type_assertions_are_deduplicated_or_marked_unknown_independent_of_order"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T042",
+    "nature": "P/N",
+    "expected": "Usar biblioteca/cinema/teatro/centro comunitário com tags reconhecidas. Mantê-los no pai Outros e distinguí-los pelos filhos; um registro apenas com nome “Cinema” não ganha classificação.",
+    "planned_execution": "PY",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_current_linked_tags_classify_legacy_and_conflicts_are_unknown_in_list_and_detail"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_multiple_linked_type_assertions_are_deduplicated_or_marked_unknown_independent_of_order"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T043",
+    "nature": "N",
+    "expected": "Criar “Hospital Exemplo” sem tag/classificação e uma clínica cujo nome contém “Hospital”. Não inferir filho por nome, descrição ou recursos; respeitar classificação validada/ausência de dado.",
+    "planned_execution": "PY",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_current_linked_tags_classify_legacy_and_conflicts_are_unknown_in_list_and_detail"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_multiple_linked_type_assertions_are_deduplicated_or_marked_unknown_independent_of_order"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T044",
+    "nature": "N/R",
+    "expected": "Tags ausentes, vazio, dados legados e chaves não reconhecidas. Preservar pai quando válido, deixar filho não informado e não incluir em seleção específica sem evidência.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_current_linked_tags_classify_legacy_and_conflicts_are_unknown_in_list_and_detail"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_multiple_linked_type_assertions_are_deduplicated_or_marked_unknown_independent_of_order"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T045",
+    "nature": "P/R",
+    "expected": "Saúde com Hospital + Educação ampla, depois dois filhos de Saúde. OR entre pais e OR entre filhos do mesmo pai, com AND nos outros grupos; count e chips refletem exatamente a consulta.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T046",
+    "nature": "N",
+    "expected": "Consultar filho inexistente ou filho de Saúde com apenas Educação como pai explícito. Retornar 400; filho sem pais usa a normalização documentada pelo catálogo e não um pai arbitrário.",
+    "planned_execution": "PY",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_pair_all_write_paths_and_database_constraint"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[categorias=educacao&subcategorias=hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[combinacao_recursos=x]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[incluir_desconhecidos=1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&combinacao_recursos=todos]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&incluir_desconhecidos=false]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=x]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[ordering=proximity]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[owner=1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[page=2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=rampa_acesso,,piso_tatil]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x&recursos=y]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=DROP%20TABLE]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=hospital&subcategorias=escola]"
+      }
+    ],
+    "pending": [],
+    "status": "automacao_comprovada_no_escopo"
+  },
+  {
+    "id": "T047",
+    "nature": "N",
+    "expected": "Enviar tags contraditórias ou mais de um candidato ao filho. Aplicar precedência documentada ou deixar desconhecido; a ordem de um dicionário/resultado externo não escolhe silenciosamente o subtipo.",
+    "planned_execution": "PY",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_current_linked_tags_classify_legacy_and_conflicts_are_unknown_in_list_and_detail"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_multiple_linked_type_assertions_are_deduplicated_or_marked_unknown_independent_of_order"
+      }
+    ],
+    "pending": [],
+    "status": "automacao_comprovada_no_escopo"
+  },
+  {
+    "id": "T048",
+    "nature": "N",
+    "expected": "IDs com fragmentos QL/SQL, tags livres e texto semelhante a predicado. Recusar entrada inválida e comprovar que chamadas externas só usam expressões da allowlist; nenhuma inferência por texto.",
+    "planned_execution": "PY",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_pair_all_write_paths_and_database_constraint"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[categorias=educacao&subcategorias=hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[combinacao_recursos=x]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[incluir_desconhecidos=1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&combinacao_recursos=todos]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&incluir_desconhecidos=false]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=x]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[ordering=proximity]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[owner=1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[page=2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=rampa_acesso,,piso_tatil]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x&recursos=y]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=DROP%20TABLE]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=hospital&subcategorias=escola]"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T049",
+    "nature": "P/R",
+    "expected": "Na árvore de categorias, selecionar pai/filhos, buscar texto no seletor e limpar esse texto. Seleções não visíveis persistem no rascunho; estado parcial do pai e labels PT/EN continuam corretos.",
+    "planned_execution": "FT, MCP",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T050",
+    "nature": "P/R",
+    "expected": "Aplicar migration em banco de teste com locais, vínculos OSM, avaliações, favoritos, fotos, evidências e pontos. IDs/contagens/relações anteriores permanecem; novo campo aceita ausência.",
+    "planned_execution": "PY em PostgreSQL",
+    "actual": [
+      {
+        "tool": "Pytest SQLite",
+        "result": "supplementary migration test passed",
+        "ref": "locais/test_category_migration.py::test_category_migration_additional_sqlite_fixture_integrity"
+      }
+    ],
+    "pending": [
+      "Mandatory PostgreSQL execution blocked; SQLite forward/reverse is supplementary only",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "bloqueado_ambiente_obrigatorio"
+  },
+  {
+    "id": "T051",
+    "nature": "N/R",
+    "expected": "Gravar par pai/filho incompatível por cada caminho de escrita/importação afetado. Rejeitar antes de persistir ou validar o lote conforme contrato; não deixar validação exclusiva na UI.",
+    "planned_execution": "PY",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_pair_all_write_paths_and_database_constraint"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[categorias=educacao&subcategorias=hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[combinacao_recursos=x]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[incluir_desconhecidos=1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&combinacao_recursos=todos]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&incluir_desconhecidos=false]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=x]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[ordering=proximity]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[owner=1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[page=2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=rampa_acesso,,piso_tatil]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x&recursos=y]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=DROP%20TABLE]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=hospital&subcategorias=escola]"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T052",
+    "nature": "P/N/R",
+    "expected": "Em PostgreSQL descartável, aplicar e reverter migration. Comprovar preservação dos dados antigos e registrar a perda esperada do novo campo ao removê-lo; reaplicar e verificar integridade.",
+    "planned_execution": "PY em PostgreSQL",
+    "actual": [
+      {
+        "tool": "Pytest SQLite",
+        "result": "supplementary migration test passed",
+        "ref": "locais/test_category_migration.py::test_category_migration_additional_sqlite_fixture_integrity"
+      }
+    ],
+    "pending": [
+      "Mandatory PostgreSQL execution blocked; SQLite forward/reverse is supplementary only",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "bloqueado_ambiente_obrigatorio"
+  },
+  {
+    "id": "T053",
+    "nature": "P/R",
+    "expected": "Colocar o local de score máximo depois da página 1 pela ordem antiga. Em Priorizar ele aparece na primeira página correta, inclusive quando pertence a outra fonte elegível.",
+    "planned_execution": "PY, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_private_priority_global_pages_keeps_zero_and_does_not_persist"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T002 T004 T053 T075 private persistent prioritization keeps zero-score places",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T054",
+    "nature": "P/R",
+    "expected": "Aplicar Todos/Qualquer e filho específico em conjunto com várias páginas. Filtrar antes de count/paginação; não retornar página vazia artificial enquanto há correspondências adiante.",
+    "planned_execution": "PY, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T054 T055 private continuation reads persisted second page",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T055",
+    "nature": "P/R",
+    "expected": "Percorrer todas as páginas de fixture estável com empates e repetir a consulta. União de IDs é o conjunto esperado, sem repetidos/omitidos e com fronteiras na ordem documentada.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_private_priority_global_pages_keeps_zero_and_does_not_persist"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T054 T055 private continuation reads persisted second page",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T056",
+    "nature": "N/R",
+    "expected": "Alterar separadamente modo, operador, IDs, filhos, texto, fonte, origem, bbox, versão e snapshot pessoal. Cada mudança pertinente altera a identidade privada e invalida continuação antiga; nada vaza por log público.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_classification_change_invalidates_continuation"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_cursor_expires_and_rejects_post_query_identity_injection"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T057",
+    "nature": "N/R",
+    "expected": "Falhar a página seguinte e tentar novamente. Manter páginas válidas compatíveis, mostrar erro de continuação, anexar uma vez e não avançar cursor/página no erro.",
+    "planned_execution": "FT, MCP, E2E",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T058",
+    "nature": "P/R",
+    "expected": "Mesmo local no cadastro interno, catálogo OSM e recorte externo com vínculo confirmado. Um ID canônico, um marcador e um item no count; cada recurso soma no máximo uma vez.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T059",
+    "nature": "N/R",
+    "expected": "No local vinculado, combinar evidências públicas conflitantes e evidências pendentes/privadas. Ranking/filtro e painel usam a mesma projeção autorizada, sem promover conteúdo privado nem ocultar divergência.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_accessibility_api::test_community_unknown_na_divergence_and_private_visibility"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_withdrawn_osm_evidence_cannot_reappear_through_raw_tag_in_discovery_or_panel"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T060",
+    "nature": "N/R",
+    "expected": "Dois estabelecimentos homônimos próximos sem vínculo confirmado. Manter ambos; não fundir só por nome/proximidade nem somar seus recursos como se fossem um.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T061",
+    "nature": "N",
+    "expected": "Fonte limitada/truncada/recorte regional e limite de itens carregados. Informar alcance e cobertura parcial; não chamar ranking do recorte de ranking completo da cidade.",
+    "planned_execution": "PY, FT, MCP",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_catalog::test_api_sql_filters_and_snapshot_version"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_server_limit_is_explicit_not_global"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T062",
+    "nature": "N/R",
+    "expected": "Fonte indisponível, resposta parcial inválida, timeout e retry. Distinguir de vazio válido; preservar dados antigos apenas quando compatíveis com a política de validade e indicar essa condição.",
+    "planned_execution": "PY, FT, MCP",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_catalog::test_partial_failure_absence_reappearance_and_rollback"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T063",
+    "nature": "N/R",
+    "expected": "Mudar versão do catálogo entre páginas. Responder/tratar 409 conforme contrato, não anexar página nova à antiga; oferecer reinício preservando critérios e contexto permitido.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_classification_change_invalidates_continuation"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_cursor_expires_and_rejects_post_query_identity_injection"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T064",
+    "nature": "N/R",
+    "expected": "Alterar evidência/classificação que afeta score enquanto pagina. Aplicar política de versão/snapshot/reinício declarada, sem prometer congelamento inexistente nem misturar versões silenciosamente.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_classification_change_invalidates_continuation"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_cursor_expires_and_rejects_post_query_identity_injection"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T065",
+    "nature": "N/R",
+    "expected": "Medir busca com dataset representativo e mais de uma página/fonte. Registrar consultas/latência/memória pertinentes; confirmar ausência de N+1 novo, carga ilimitada no cliente ou sorting que anule a relevância.",
+    "planned_execution": "PY, FT; E2E para o fluxo",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_projection_uses_constant_query_count"
+      }
+    ],
+    "pending": [
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T066",
+    "nature": "P/N",
+    "expected": "Variar área, bbox de borda/antimeridiano quando suportado, origem, ausência de coordenadas e fontes disponíveis. Resultado/count/escopo são consistentes; dados fora da região não entram por score alto.",
+    "planned_execution": "PY, FT, MCP",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_catalog::test_api_sql_filters_and_snapshot_version"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_server_limit_is_explicit_not_global"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T067",
+    "nature": "N/R",
+    "expected": "Sem autenticação, tentar ler/alterar preferências e consulta privada. Negar acesso conforme contrato; manter GET/filtros públicos funcionando sem cadastro.",
+    "planned_execution": "PY, MCP",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_private_session_authentication_keeps_csrf_and_expiration"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[delete]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[get]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[patch]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[put]"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T036 T067 actual visitor entry keeps discovery public",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T068",
+    "nature": "N/R",
+    "expected": "Conta A usa GET/PUT/PATCH/DELETE de preferências e tenta fornecer ID/nome da B em corpo/query. Operações válidas afetam só A e tentativas de escolher identidade são recusadas.",
+    "planned_execution": "PY",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body0]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body3]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body4]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body5]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body6]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body7]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body8]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_swapping_authentication_changes_only_the_private_owner"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T069",
+    "nature": "N/R",
+    "expected": "Inspecionar perfil público, login/listagem de usuários, avaliações, fotos e ficha do local após aplicar preferências. Nenhum campo do cadastro pessoal ou score pessoal foi incorporado a respostas públicas.",
+    "planned_execution": "PY",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_preferences_are_not_in_profile_login_users_or_public_reviews"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T070",
+    "nature": "N/R",
+    "expected": "Iniciar leitura de preferências e logout antes da resposta. Descartar dados, erro e loading antigos; o mapa não reaplica nem mostra o snapshot anterior.",
+    "planned_execution": "FT, E2E, AND",
+    "actual": [],
+    "pending": [
+      "Physical Android not executed",
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  },
+  {
+    "id": "T071",
+    "nature": "N/R",
+    "expected": "Conta A inicia busca/página privada, sai e B entra antes da resposta. Nenhuma página, destaque ou seleção de A aparece em B; nova sessão começa sem aplicação automática.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_classification_change_invalidates_continuation"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_cursor_expires_and_rejects_post_query_identity_injection"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T071 T073 T099 real late owner response discarded across logout and account switch",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T072",
+    "nature": "N/R",
+    "expected": "Expirar sessão e retornar 401 durante busca pessoal. Limpar estado privado conforme contrato e invalidar continuações; preservar uso público/manual possível sem revelar o snapshot antigo.",
+    "planned_execution": "PY, FT, MCP",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_private_session_authentication_keeps_csrf_and_expiration"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[delete]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[get]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[patch]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[put]"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T073",
+    "nature": "N/R",
+    "expected": "Entregar sucesso/erro/finally de operações antigas fora de ordem, inclusive após dispose. Só a operação atual pode alterar loading, mensagem, next, recursos e painel.",
+    "planned_execution": "FT",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T071 T073 T099 real late owner response discarded across logout and account switch",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T074",
+    "nature": "P/N/R",
+    "expected": "Fechar/reabrir app/aba e entrar novamente, com escolhas salvas no servidor. Personalização inicia desligada; não restaurar snapshot pessoal via cache global/disco/histórico.",
+    "planned_execution": "FT, MCP, AND",
+    "actual": [],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  },
+  {
+    "id": "T075",
+    "nature": "N",
+    "expected": "Aplicar preferência e percorrer páginas, voltar/avançar e compartilhar ficha. Seleção pessoal não consta de URL, fragmento, next/previous público, histórico ou referrer; canal privado transporta-a apenas no contrato autorizado.",
+    "planned_execution": "PY, MCP, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_public_pages_version_and_private_headers"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T002 T004 T053 T075 private persistent prioritization keeps zero-score places",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T076",
+    "nature": "N",
+    "expected": "Interceptar requisições a OSM/Overpass, geocoder, tiles, rotas e analytics durante personalização. Não enviar snapshot, token, identidade de conta ou indicadores privados; consultas públicas usam apenas dados permitidos.",
+    "planned_execution": "PY, FT, MCP",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T022 T076 disable personal selection and third-party transport checks",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T077",
+    "nature": "N",
+    "expected": "Provocar erro de validação, rede e servidor em busca privada e inspecionar logs/telemetria de teste. Redigir seleções, corpos e credenciais; relatório também não expõe dados reais.",
+    "planned_execution": "PY; MCP para rede/console",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_private_context_is_sanitized[None]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_private_context_is_sanitized[personalization1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_private_context_is_sanitized[personalization2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_private_context_is_sanitized[personalization3]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_private_context_is_sanitized[personalization4]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_invalid_private_context_is_sanitized[personalization5]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_private_logging_redacts_body_and_credentials"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T078",
+    "nature": "N/R",
+    "expected": "Comparar respostas de A/B e headers de preferências/descoberta privada. private/no-store e variação correta; score/seleção não são reutilizados por cache compartilhado nem persistidos no local público.",
+    "planned_execution": "PY, E2E",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_private_priority_global_pages_keeps_zero_and_does_not_persist"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_public_pages_version_and_private_headers"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T079",
+    "nature": "N",
+    "expected": "Tentar continuar busca com contexto/versão de outra conta e link next adulterado, host externo ou query incompatível. Recusar antes de enviar token a terceiros; não reutilizar sessão/snapshot alheio.",
+    "planned_execution": "PY, FT",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_classification_change_invalidates_continuation"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_cursor_expires_and_rejects_post_query_identity_injection"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "locais.test_discovery_integrated::test_public_pages_version_and_private_headers"
+      },
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [],
+    "status": "automacao_comprovada_no_escopo"
+  },
+  {
+    "id": "T080",
+    "nature": "N/R",
+    "expected": "Cadastrar escolhas vazias, ID descontinuado e payload inválido; simular falha ao carregar. Preservar cadastro/busca conforme contrato, comunicar indisponibilidade e nunca pedir diagnóstico/CID ou remover escolha antiga silenciosamente.",
+    "planned_execution": "PY, FT, MCP",
+    "actual": [
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-None]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-True]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-body1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-body2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-rampa_acesso]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-None]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-True]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-body1]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-body2]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-rampa_acesso]"
+      },
+      {
+        "tool": "Pytest",
+        "result": "passed in SQLite",
+        "ref": "usuarios.test_accessibility_preferences::test_unknown_retired_choice_is_reported_until_explicitly_removed"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T081",
+    "nature": "P",
+    "expected": "Com snapshot pessoal ativo, abrir painel compacto e expandir. Recursos escolhidos têm prioridade real na ordem; compacto mostra no máximo três linhas de recursos e permite acesso a todos.",
+    "planned_execution": "FT, MCP, AND",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T019 T081 compact personal summary",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T082",
+    "nature": "P/N",
+    "expected": "Exibir presença, ausência, unknown, divergente, limitado e não aplicável no painel com X/Y. Rótulos, fonte e contagem correspondem à projeção; nenhum estado vira selo ou presença fictícia.",
+    "planned_execution": "FT, MCP",
+    "actual": [],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  },
+  {
+    "id": "T083",
+    "nature": "P/R",
+    "expected": "Expandido com preferências em grupos diferentes. Seção importante antecede outros recursos, mantendo dez IDs únicos e quatro grupos acessíveis; agrupamento não anula prioridade.",
+    "planned_execution": "FT, MCP",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T083 expanded personal resources and other groups",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T084",
+    "nature": "P/R",
+    "expected": "Abrir painel com cadastro salvo não aplicado, personalização desligada, visitante e após remoção de escolhas. Usar apresentação padrão e manter todos os recursos consultáveis sem destaque pessoal antigo.",
+    "planned_execution": "FT, MCP",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T085",
+    "nature": "N",
+    "expected": "Colocar divergência relevante fora dos três recursos visíveis no compacto. Aviso perceptível e semanticamente anunciado aponta para os detalhes, sem depender somente de cor ou linha oculta.",
+    "planned_execution": "FT, MCP, AND",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T086",
+    "nature": "N",
+    "expected": "Selecionar mais de três recursos com ausência/limitação importante além do corte. Alertas e acesso ao recurso permanecem legíveis; não omitir a condição por caberem só três linhas.",
+    "planned_execution": "FT, MCP, AND",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T087",
+    "nature": "P/N",
+    "expected": "Abrir fonte/histórico com datas distintas e datas ausentes. Diferenciar observação/envio/importação; não preencher data ausente com agora; retornar ao mesmo recurso/seção.",
+    "planned_execution": "FT, MCP",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T088",
+    "nature": "P/R",
+    "expected": "Enviar contribuição válida a recurso do local atual e retornar. Atualizar a projeção correta sem recriar mapa ou perder contexto; indicar necessidade de atualizar ranking sem reordenar enquanto a pessoa lê.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [],
+    "pending": [
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  },
+  {
+    "id": "T089",
+    "nature": "N/R",
+    "expected": "Abrir OSM sem vínculo, ponto manual, local sem relatos/fontes e fonte desatualizada. Não fabricar nota, recurso, data ou ação não autorizada; manter atribuição/avisos reais.",
+    "planned_execution": "FT, MCP",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T090",
+    "nature": "P/R",
+    "expected": "Do painel abrir avaliação, foto, favorito ou rota e retornar pelos caminhos existentes. Restaurar local, câmera/zoom, filtro/modo, expansão, seção, rolagem e foco conforme contrato dos Cards 52–61.",
+    "planned_execution": "FT, E2E, AND",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T091",
+    "nature": "N/R",
+    "expected": "Aplicar filtro que exclua o local selecionado. Manter detalhe/seleção com aviso de fora dos resultados conforme a base, sem pular para outro marcador ou misturar dados.",
+    "planned_execution": "FT, MCP",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T092",
+    "nature": "P/N",
+    "expected": "Percorrer modos, pais/filhos, chips e painel com Tab/Shift+Tab/Enter/Escape e alternativa ao arraste. Não haver armadilha de foco; grupos e estado selecionado ficam claros.",
+    "planned_execution": "FT, MCP, AND com teclado quando aplicável",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T093",
+    "nature": "P/N",
+    "expected": "Inspecionar semântica e ler resultados/avisos com tecnologia assistiva. Nomes, estados, hierarquia e quantidade são compreensíveis; anúncios não repetem indefinidamente nem roubam foco.",
+    "planned_execution": "FT; MCP para inspeção; manual Web/AND para leitura",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Human screen reader/mobile device/manual accessibility homologation not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T094",
+    "nature": "N/R",
+    "expected": "Texto 200%, tela pequena, orientação e temas suportados. Não haver overflow/controle oculto; áreas de toque, contraste e rolagem mantêm ações disponíveis.",
+    "planned_execution": "FT, MCP, AND",
+    "actual": [
+      {
+        "tool": "Flutter Test",
+        "result": "related assertions passed; HTTP mocks/VM widgets",
+        "ref": "frontend/test/reading_layouts_test.dart; evidencias/flutter-test.log"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T094 emulated mobile viewport only",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T094 actual application 200 percent text setting",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T095",
+    "nature": "P/R",
+    "expected": "Repetir seleção/erro/resultado/painel em PT e EN. Rótulos e nomes semânticos mudam corretamente, IDs/consulta permanecem os mesmos e mensagens não revelam detalhes privados.",
+    "planned_execution": "FT, MCP",
+    "actual": [],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  },
+  {
+    "id": "T096",
+    "nature": "P/R",
+    "expected": "E2E versionado com visitante e dados reais de teste na API: texto/categoria → Todos → Qualquer → Priorizar → páginas. Asserir IDs/count/ordem e ausência de login obrigatório; limpar fixtures ao final.",
+    "planned_execution": "E2E; MCP para exploração",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T096 persisted visitor mode Pelo menos um",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T096 persisted visitor mode Todos",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      },
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T096 persisted visitor mode Priorizar",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T097",
+    "nature": "P/R",
+    "expected": "E2E versionado de pai/filho com hospital, clínica, educação e legado persistidos. Aplicar/cancelar/remover filho muda exatamente o conjunto esperado e preserva os registros legados.",
+    "planned_execution": "E2E",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T039 T040 T097 persisted hierarchy preserves legacy and cancel leaves search intact",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T098",
+    "nature": "P/R",
+    "expected": "E2E da conta com cadastro salvo → aplicação explícita → edição do perfil → reaplicação → rigoroso → desligar. Comprovar snapshot, modos, persistência do cadastro e conservação dos filtros manuais.",
+    "planned_execution": "E2E; AND para o mesmo roteiro no app",
+    "actual": [],
+    "pending": [
+      "Physical Android not executed",
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  },
+  {
+    "id": "T099",
+    "nature": "N/R",
+    "expected": "E2E com duas contas e resposta controladamente atrasada. Logout/troca não reutiliza snapshot/página; coletar rede sanitizada e provar que o novo usuário não recebe seleção antiga.",
+    "planned_execution": "E2E, MCP, AND",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "discovery",
+        "step": "T071 T073 T099 real late owner response discarded across logout and account switch",
+        "report": "evidencias/browser-discovery/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T100",
+    "nature": "P/N",
+    "expected": "Homologar Chrome desktop e Chrome em celular real: filtros/painel, teclado virtual, toque, rolagem, orientação e feedback. Registrar plataformas separadamente; viewport emulado não substitui celular real.",
+    "planned_execution": "MCP para desktop; manual Chrome móvel; AND se executado nesse aparelho",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Human screen reader/mobile device/manual accessibility homologation not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T101",
+    "nature": "P/N",
+    "expected": "Homologação manual Web por teclado e leitor de tela: três modos, grupos, chips, aplicação, resultado e retorno de foco. Inspeção automatizada é complementar, não prova sozinha da leitura assistiva.",
+    "planned_execution": "MCP para apoio; homologação manual Web",
+    "actual": [],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Human screen reader/mobile device/manual accessibility homologation not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  },
+  {
+    "id": "T102",
+    "nature": "P/N/R",
+    "expected": "App Android físico com TalkBack e texto 200%: aplicar modos/filhos, background/retorno, Back, rede perdida/restaurada e sessão alterada. Registrar modelo/build e resultado, sem declarar emulador como físico.",
+    "planned_execution": "AND; E2E Android quando existente e adequado",
+    "actual": [],
+    "pending": [
+      "Physical Android not executed",
+      "Human screen reader/mobile device/manual accessibility homologation not executed",
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "bloqueado_ambiente_obrigatorio"
+  },
+  {
+    "id": "T103",
+    "nature": "R",
+    "expected": "Executar regressões pertinentes de preferências, acessibilidade, descoberta, catálogo, painel, moderação, avaliações, fotos, favoritos, contribuições e rotas/retorno. Documentar falhas herdadas e novas sem ocultar critério bloqueado.",
+    "planned_execution": "PY, FT, E2E",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T104",
+    "nature": "P/N/R",
+    "expected": "Em PostgreSQL de teste, validar consultas novas, combinações JSON/evidências, catálogo e migrations; provar que os casos novos foram selecionados no job correto, sem contar skip SQLite como aprovação.",
+    "planned_execution": "PY em PostgreSQL; CI",
+    "actual": [
+      {
+        "tool": "Pytest SQLite",
+        "result": "supplementary migration test passed",
+        "ref": "locais/test_category_migration.py::test_category_migration_additional_sqlite_fixture_integrity"
+      }
+    ],
+    "pending": [
+      "Mandatory PostgreSQL execution blocked; SQLite forward/reverse is supplementary only",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "bloqueado_ambiente_obrigatorio"
+  },
+  {
+    "id": "T105",
+    "nature": "P/R",
+    "expected": "Fluxo integrado com novo filtro/personalização → detalhe → avaliação/foto/favorito → consulta Google Maps/rota → retorno. Conferir seleção/câmera/estado e integridade de dados, pontos e histórico; Android verifica integração nativa.",
+    "planned_execution": "E2E, AND, MCP para apoio",
+    "actual": [
+      {
+        "tool": "Playwright Python (not MCP)",
+        "result": "passed within recorded scope",
+        "lab": "panel/routes",
+        "step": "Related legacy regression only; not the whole new scenario",
+        "report": "evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json"
+      }
+    ],
+    "pending": [
+      "Playwright MCP unavailable; Python automation shown separately",
+      "Physical Android not executed",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "parcial"
+  },
+  {
+    "id": "T106",
+    "nature": "P/N/R",
+    "expected": "Revisar entrega: checks Django/schema/migrations/lint/cobertura, Flutter analyze/test/build e Quality Gate do commit correto; cruzar 73 critérios com resultados/evidências e manter bloqueado o que não foi comprovado.",
+    "planned_execution": "PY, FT, E2E quando requerido; relatório CI/manual",
+    "actual": [],
+    "pending": [
+      "Remote Quality Gate for this delta not run; local gates shown separately",
+      "Full browser/persistence path for this exact scenario not recorded",
+      "Related automation does not establish every clause/platform of the planned scenario"
+    ],
+    "status": "nao_executado_integralmente"
+  }
+]

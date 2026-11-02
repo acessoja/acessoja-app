@@ -1,0 +1,548 @@
+﻿Cenario,Natureza,Planejado,Esperado,Resultado real,Referencias,Pendencias
+T001,P/R,"FT, MCP, AND","Abrir mapa com conta que tem escolhas salvas. Personalização fica off, o painel usa apresentação padrão e não há busca pessoal automática.",parcial,evidencias/browser-discovery/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T002,P,"PY, FT, E2E",Acionar Usar minhas preferências. Carregar a seleção da própria conta e aplicar snapshot em Priorizar; loading e confirmação correspondem à operação atual.,parcial,"locais.test_discovery_integrated::test_private_priority_global_pages_keeps_zero_and_does_not_persist
+locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T003,P/R,"PY, FT, MCP, AND","Alternar explicitamente Priorizar → Todos → Pelo menos um → desligado no bloco pertinente. UI, consulta e resultado usam a operação indicada; o rigoroso inicia em Todos.",parcial,"locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]",Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T004,P/R,"PY, FT, E2E",Comparar IDs elegíveis antes/depois de Priorizar sobre fixture estável. O conjunto é idêntico; somente a ordem e o resumo de correspondência mudam.,parcial,"locais.test_discovery_integrated::test_private_priority_global_pages_keeps_zero_and_does_not_persist
+locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T005,P,"PY, FT","Seleção de três recursos sobre P3/P2/P1/P0. Obter scores 3/2/1/0 nessa ordem; usar asserção sobre IDs e contagens esperadas, não apenas sobre presença de textos.",automacao_comprovada_no_escopo,"locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",
+T006,N/R,"PY, FT",Parametrizar os seis estados e informação ausente. Somente presence_reported soma um; ausência/divergência/limitação/não aplicabilidade/unknown mantêm significado e avisos.,parcial,"locais.test_discovery_integrated::test_only_reported_presence_scores[absence_reported]
+locais.test_discovery_integrated::test_only_reported_presence_scores[divergent]
+locais.test_discovery_integrated::test_only_reported_presence_scores[invalid]
+locais.test_discovery_integrated::test_only_reported_presence_scores[limited]
+locais.test_discovery_integrated::test_only_reported_presence_scores[not_applicable]
+locais.test_discovery_integrated::test_only_reported_presence_scores[unknown]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_present]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_excluded]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[conflicting_and_partial]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[limited_not_applicable_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[no_applicable_presence]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_absence]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_excluded]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_absent_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_divergent_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_limited_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_not_applicable_opt_in]
+locais.test_discovery_integrated::test_unknown_opt_in_never_scores_or_accepts_absence
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",Related automation does not establish every clause/platform of the planned scenario
+T007,N/R,"PY, FT",Repetir ID na seleção válida e oferecer o mesmo recurso por fontes vinculadas. Deduplicar seleção/evidência conforme contrato; X e Y não aumentam indevidamente.,parcial,locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries,Related automation does not establish every clause/platform of the planned scenario
+T008,P/N,"PY, FT, E2E","Em Todos, testar pares presença/presença, presença/ausência, presença/unknown. Sem opt-in, somente o primeiro par entra; conferir IDs, count e estados.",parcial,"locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes
+locais.test_discovery_integrated::test_only_reported_presence_scores[absence_reported]
+locais.test_discovery_integrated::test_only_reported_presence_scores[divergent]
+locais.test_discovery_integrated::test_only_reported_presence_scores[invalid]
+locais.test_discovery_integrated::test_only_reported_presence_scores[limited]
+locais.test_discovery_integrated::test_only_reported_presence_scores[not_applicable]
+locais.test_discovery_integrated::test_only_reported_presence_scores[unknown]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_present]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_excluded]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[conflicting_and_partial]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[limited_not_applicable_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[no_applicable_presence]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_absence]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_excluded]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_absent_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_divergent_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_limited_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_not_applicable_opt_in]
+locais.test_discovery_integrated::test_unknown_opt_in_never_scores_or_accepts_absence
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T009,P/N,"PY, FT, E2E","Nos mesmos pares, ativar Pelo menos um. Um recurso presente permite inclusão, mesmo que outro seja ausente; nenhum estado do outro recurso é alterado.",parcial,"locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes
+locais.test_discovery_integrated::test_only_reported_presence_scores[absence_reported]
+locais.test_discovery_integrated::test_only_reported_presence_scores[divergent]
+locais.test_discovery_integrated::test_only_reported_presence_scores[invalid]
+locais.test_discovery_integrated::test_only_reported_presence_scores[limited]
+locais.test_discovery_integrated::test_only_reported_presence_scores[not_applicable]
+locais.test_discovery_integrated::test_only_reported_presence_scores[unknown]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_present]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_excluded]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[conflicting_and_partial]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[limited_not_applicable_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[no_applicable_presence]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_absence]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_excluded]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_absent_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_divergent_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_limited_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_not_applicable_opt_in]
+locais.test_discovery_integrated::test_unknown_opt_in_never_scores_or_accepts_absence
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T010,P/N,"PY, FT","Testar unknown/unknown e presença/unknown com opt-in off/on em Todos/Qualquer. Unknown só participa da elegibilidade com opt-in, sem somar score; um recurso presente continua satisfazendo OR.",automacao_comprovada_no_escopo,"locais.test_discovery_integrated::test_only_reported_presence_scores[absence_reported]
+locais.test_discovery_integrated::test_only_reported_presence_scores[divergent]
+locais.test_discovery_integrated::test_only_reported_presence_scores[invalid]
+locais.test_discovery_integrated::test_only_reported_presence_scores[limited]
+locais.test_discovery_integrated::test_only_reported_presence_scores[not_applicable]
+locais.test_discovery_integrated::test_only_reported_presence_scores[unknown]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_present]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_excluded]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[conflicting_and_partial]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[limited_not_applicable_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[no_applicable_presence]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_absence]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_excluded]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_absent_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_divergent_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_limited_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_not_applicable_opt_in]
+locais.test_discovery_integrated::test_unknown_opt_in_never_scores_or_accepts_absence
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",
+T011,N,"PY, FT","Com opt-in ativo, testar unknown/ausente, unknown/divergente, unknown/limitado e unknown/não aplicável. Todos não aceita o par; Qualquer pode aceitar pelo unknown, sem declarar os demais como presentes.",automacao_comprovada_no_escopo,"locais.test_discovery_integrated::test_only_reported_presence_scores[absence_reported]
+locais.test_discovery_integrated::test_only_reported_presence_scores[divergent]
+locais.test_discovery_integrated::test_only_reported_presence_scores[invalid]
+locais.test_discovery_integrated::test_only_reported_presence_scores[limited]
+locais.test_discovery_integrated::test_only_reported_presence_scores[not_applicable]
+locais.test_discovery_integrated::test_only_reported_presence_scores[unknown]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_present]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_excluded]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[conflicting_and_partial]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[limited_not_applicable_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[no_applicable_presence]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_absence]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_excluded]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_absent_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_divergent_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_limited_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_not_applicable_opt_in]
+locais.test_discovery_integrated::test_unknown_opt_in_never_scores_or_accepts_absence
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",
+T012,P/N,"PY, FT, MCP","Em Priorizar, usar conjunto inteiro com dados desconhecidos. Todos os elegíveis permanecem, score zero e desempate estável; não oferecer certificação nem eliminar a lista.",parcial,"locais.test_discovery_integrated::test_private_priority_global_pages_keeps_zero_and_does_not_persist
+locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries",Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T013,P/R,"PY, FT",Seleção vazia em cada modo. O filtro de recursos é neutro e os demais grupos continuam valendo; OR vazio não gera conjunto vazio.,parcial,"locais.test_discovery_integrated::test_only_reported_presence_scores[absence_reported]
+locais.test_discovery_integrated::test_only_reported_presence_scores[divergent]
+locais.test_discovery_integrated::test_only_reported_presence_scores[invalid]
+locais.test_discovery_integrated::test_only_reported_presence_scores[limited]
+locais.test_discovery_integrated::test_only_reported_presence_scores[not_applicable]
+locais.test_discovery_integrated::test_only_reported_presence_scores[unknown]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_present]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_excluded]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[both_unknown_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[conflicting_and_partial]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[limited_not_applicable_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[no_applicable_presence]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_absence]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_excluded]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[presence_unknown_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_absent_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_divergent_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_limited_opt_in]
+locais.test_discovery_integrated::test_shared_reference_truth_table_across_backend_and_flutter[unknown_not_applicable_opt_in]
+locais.test_discovery_integrated::test_unknown_opt_in_never_scores_or_accepts_absence
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",Related automation does not establish every clause/platform of the planned scenario
+T014,P/N,"PY, FT, E2E","Combinar texto, fonte, categoria/subtipo, bbox e uma seleção de ranking. Priorizar conserva apenas quem passa nesses grupos; score alto não permite furar um filtro independente.",parcial,"locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]",Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T015,P,"PY, FT",Empatar score e escolher nome como secundário. Aplicar normalização documentada e ID estável ao final; repetir consulta e comparar ordem.,parcial,locais.test_discovery_integrated::test_score_before_distance_name_and_missing_coordinates,Related automation does not establish every clause/platform of the planned scenario
+T016,P/R,"PY, FT","Empatar score e escolher avaliações como secundário, quando oferecido. Usar somente média/quantidade autorizadas pela projeção existente; não interpretar estrelas como presença de recurso.",parcial,locais.test_discovery_integrated::test_backend_rating_uses_unrounded_visible_average_before_auxiliary_count,Related automation does not establish every clause/platform of the planned scenario
+T017,N/R,"PY, FT, AND","Empatar score com proximidade válida, origem ausente/inválida e locais sem coordenadas. Preservar score primário; fallback de UI é explícito e API não aceita origem inválida nem distância zero inventada.",parcial,locais.test_discovery_integrated::test_score_before_distance_name_and_missing_coordinates,Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T018,P/R,"PY, FT","Empatar score, secundário e nome, incluindo fontes diferentes. A identidade canônica desempata de modo estável, sem depender da ordem de chegada das respostas.",parcial,locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries,Related automation does not establish every clause/platform of the planned scenario
+T019,P/N,"FT, MCP, AND","Com uma e várias escolhas, conferir X/Y após deduplicação e estados reais em PT/EN. Nenhuma superfície usa percentual, selo, certificado ou “mais acessível” para esse score.",parcial,evidencias/browser-discovery/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T020,P/N,"FT, MCP",Remover a última seleção ou ter zero escolhas válidas. Não exibir 0 de 0 nem score enganoso; informar configuração indisponível/vazia sem substituir a busca.,nao_executado_integralmente,,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T021,P/R,"PY, FT, E2E",Partir de restrição manual e aplicar preferências em Priorizar. A restrição manual mantém o conjunto elegível e a preferência ordena dentro dele; origem e alcance aparecem na UI.,parcial,"locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T022,P/R,"FT, MCP, E2E",Desligar a personalização após T021 e depois reaplicar. Critérios manuais permanecem idênticos; só efeitos pessoais são retirados/recriados por ação explícita.,parcial,"frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json",Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T023,P/N,"PY, FT, MCP","Usar rigoroso pessoal com Todos e mudar explicitamente para Pelo menos um, mantendo outro bloco manual. AND entre blocos e operador dentro de cada bloco seguem o contrato, sem modo oculto.",parcial,"locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T024,P/R,"PY, FT",Ativar unknown em rascunho de filtragem e alternar para Priorizar. Opção não altera score nem elegibilidade nesse modo; parâmetros conflitantes não são enviados; retorno à filtragem respeita o estado documentado.,nao_executado_integralmente,,Related automation does not establish every clause/platform of the planned scenario
+T025,P/R,"FT, MCP, E2E","Editar modo, recursos, categorias e filhos no rascunho. Até Aplicar não mudar critérios/resultados nem disparar busca de aplicação; Aplicar faz um commit e uma nova consulta lógica.",parcial,frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log,Playwright MCP unavailable; Python automation shown separately; Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T026,N/R,"FT, MCP, AND","Editar rascunho e cancelar por botão, Escape, Back e fechamento externo suportado. Resultado, modo e chips anteriores permanecem; foco retorna ao acionador conforme ambiente.",parcial,frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log,Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T027,P/R,"PY, FT, E2E","Com busca pessoal aplicada, editar e salvar o cadastro no perfil. Cadastro muda no servidor, mas snapshot, modo, ranking e detalhe da busca ativa não mudam automaticamente.",parcial,"locais.test_discovery_integrated::test_private_snapshot_not_implicitly_replaced_by_profile_edits
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T028,P,"PY, FT, E2E","Após T027, pedir reaplicação explícita. Carregar novo cadastro e atualizar a busca, preservando os filtros manuais independentes.",parcial,"locais.test_discovery_integrated::test_private_snapshot_not_implicitly_replaced_by_profile_edits
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T029,P/R,"PY, E2E","Reproduzir consultas antigas sem operador/subtipo nos formatos legado e paginado. Manter envelopes, Todos como padrão e semântica dos parâmetros antigos.",nao_executado_integralmente,,Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T030,N,PY,"Enviar enum inválido, ID inválido, lista malformada, booleano inválido, parâmetro desconhecido e chave repetida. Retornar 400 estruturado, sem aceitação silenciosa; ID repetido em CSV válido segue deduplicação legada.",parcial,"locais.test_discovery_integrated::test_category_pair_all_write_paths_and_database_constraint
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[categorias=educacao&subcategorias=hospital]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[combinacao_recursos=x]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[incluir_desconhecidos=1]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&combinacao_recursos=todos]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&incluir_desconhecidos=false]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=x]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[ordering=proximity]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[owner=1]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[page=2]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=rampa_acesso,,piso_tatil]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x&recursos=y]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=DROP%20TABLE]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=hospital&subcategorias=escola]
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",Related automation does not establish every clause/platform of the planned scenario
+T031,N/R,"FT, MCP",Iniciar leitura de preferências e modificar filtro antes da resposta. Resposta antiga não substitui a escolha nova; mensagem de reaplicação é clara e não restaura estado anterior.,parcial,frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T032,N/R,"FT, E2E","Requisitar página seguinte, trocar modo/recurso e entregar a página antiga por último. Descartá-la; a consulta nova mantém count, loading, next e conteúdo próprios.",nao_executado_integralmente,,Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T033,N/R,"FT, MCP, E2E","Selecionar A, iniciar atualização de detalhe e selecionar B enquanto busca/filtros mudam. Nenhuma resposta de A entra em B nem desloca marcador/rolagem/foco atuais.",parcial,evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T034,P/R,"PY, FT, MCP",Remover chips manuais/pessoais e limpar critérios ativos. Só o critério anunciado é removido; vínculos pai/filho são normalizados e nenhuma ação chama DELETE do cadastro salvo.,nao_executado_integralmente,,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T035,P/R,FT,"Recurso originado de preferência é tocado duas vezes no rascunho, retornando ao valor inicial. Commit preserva a decisão manual/ownership; desligar/reaplicar não ressuscita um filtro removido indevidamente.",parcial,frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log,Related automation does not establish every clause/platform of the planned scenario
+T036,P/R,"PY, FT, MCP, E2E","Visitante usa busca, categorias/filhos e os três modos manuais. Fluxos funcionam sem login; apenas o acesso ao cadastro pessoal solicita autenticação.",parcial,"frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json
+evidencias/browser-discovery/REPORT.json",Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T037,P/R,"PY, FT","Comparar os onze IDs dos pais antes/depois e executar filtros somente por categoria. Nenhum pai desaparece, muda de ID ou deixa de incluir seu conjunto anterior sem motivo de dados.",parcial,"locais.test_discovery_integrated::test_catalog_contract_has_ten_resources_and_generated_flutter_children
+locais.test_discovery_integrated::test_generated_category_catalog_command_checks_real_contract",Related automation does not establish every clause/platform of the planned scenario
+T038,P,"PY, FT","Conferir catálogo versionado de filhos: ID único/estável, pai válido e rótulos PT/EN. Backend e Flutter interpretam as mesmas relações e não dependem de label traduzida para filtrar.",parcial,"locais.test_discovery_integrated::test_catalog_contract_has_ten_resources_and_generated_flutter_children
+locais.test_discovery_integrated::test_generated_category_catalog_command_checks_real_contract
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",Related automation does not establish every clause/platform of the planned scenario
+T039,P/R,"PY, FT, E2E",Criar legado com categoria e sem filho. Consulta ampla pelo pai o inclui; apresentar classificação detalhada desconhecida sem inventar subtipo.,parcial,"locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]
+locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T040,P/N,"PY, FT, E2E","Criar hospital, clínica, consultório e legado de Saúde. Selecionar hospital retorna apenas hospital demonstrável; selecionar dois filhos combina por OR.",parcial,"locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]
+locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T041,P/N,PY,Importar fixtures `shop=convenience` e `shop=supermarket`. Ambos pertencem a Supermercado; filtro filho distingue conveniência de supermercado sem usar o nome.,parcial,"locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]
+locais.test_discovery_integrated::test_current_linked_tags_classify_legacy_and_conflicts_are_unknown_in_list_and_detail
+locais.test_discovery_integrated::test_multiple_linked_type_assertions_are_deduplicated_or_marked_unknown_independent_of_order",Related automation does not establish every clause/platform of the planned scenario
+T042,P/N,PY,Usar biblioteca/cinema/teatro/centro comunitário com tags reconhecidas. Mantê-los no pai Outros e distinguí-los pelos filhos; um registro apenas com nome “Cinema” não ganha classificação.,parcial,"locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]
+locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity
+locais.test_discovery_integrated::test_current_linked_tags_classify_legacy_and_conflicts_are_unknown_in_list_and_detail
+locais.test_discovery_integrated::test_multiple_linked_type_assertions_are_deduplicated_or_marked_unknown_independent_of_order",Related automation does not establish every clause/platform of the planned scenario
+T043,N,PY,"Criar “Hospital Exemplo” sem tag/classificação e uma clínica cujo nome contém “Hospital”. Não inferir filho por nome, descrição ou recursos; respeitar classificação validada/ausência de dado.",parcial,"locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]
+locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity
+locais.test_discovery_integrated::test_current_linked_tags_classify_legacy_and_conflicts_are_unknown_in_list_and_detail
+locais.test_discovery_integrated::test_multiple_linked_type_assertions_are_deduplicated_or_marked_unknown_independent_of_order",Related automation does not establish every clause/platform of the planned scenario
+T044,N/R,"PY, FT","Tags ausentes, vazio, dados legados e chaves não reconhecidas. Preservar pai quando válido, deixar filho não informado e não incluir em seleção específica sem evidência.",parcial,"locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]
+locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity
+locais.test_discovery_integrated::test_current_linked_tags_classify_legacy_and_conflicts_are_unknown_in_list_and_detail
+locais.test_discovery_integrated::test_multiple_linked_type_assertions_are_deduplicated_or_marked_unknown_independent_of_order",Related automation does not establish every clause/platform of the planned scenario
+T045,P/R,"PY, FT, E2E","Saúde com Hospital + Educação ampla, depois dois filhos de Saúde. OR entre pais e OR entre filhos do mesmo pai, com AND nos outros grupos; count e chips refletem exatamente a consulta.",parcial,"locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]
+locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T046,N,PY,Consultar filho inexistente ou filho de Saúde com apenas Educação como pai explícito. Retornar 400; filho sem pais usa a normalização documentada pelo catálogo e não um pai arbitrário.,automacao_comprovada_no_escopo,"locais.test_discovery_integrated::test_category_pair_all_write_paths_and_database_constraint
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[categorias=educacao&subcategorias=hospital]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[combinacao_recursos=x]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[incluir_desconhecidos=1]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&combinacao_recursos=todos]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&incluir_desconhecidos=false]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=x]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[ordering=proximity]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[owner=1]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[page=2]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=rampa_acesso,,piso_tatil]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x&recursos=y]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=DROP%20TABLE]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=hospital&subcategorias=escola]",
+T047,N,PY,Enviar tags contraditórias ou mais de um candidato ao filho. Aplicar precedência documentada ou deixar desconhecido; a ordem de um dicionário/resultado externo não escolhe silenciosamente o subtipo.,automacao_comprovada_no_escopo,"locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]
+locais.test_discovery_integrated::test_current_linked_tags_classify_legacy_and_conflicts_are_unknown_in_list_and_detail
+locais.test_discovery_integrated::test_multiple_linked_type_assertions_are_deduplicated_or_marked_unknown_independent_of_order",
+T048,N,PY,"IDs com fragmentos QL/SQL, tags livres e texto semelhante a predicado. Recusar entrada inválida e comprovar que chamadas externas só usam expressões da allowlist; nenhuma inferência por texto.",parcial,"locais.test_discovery_integrated::test_category_pair_all_write_paths_and_database_constraint
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[categorias=educacao&subcategorias=hospital]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[combinacao_recursos=x]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[incluir_desconhecidos=1]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&combinacao_recursos=todos]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&incluir_desconhecidos=false]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=x]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[ordering=proximity]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[owner=1]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[page=2]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=rampa_acesso,,piso_tatil]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x&recursos=y]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=DROP%20TABLE]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=hospital&subcategorias=escola]",Related automation does not establish every clause/platform of the planned scenario
+T049,P/R,"FT, MCP","Na árvore de categorias, selecionar pai/filhos, buscar texto no seletor e limpar esse texto. Seleções não visíveis persistem no rascunho; estado parcial do pai e labels PT/EN continuam corretos.",parcial,frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T050,P/R,PY em PostgreSQL,"Aplicar migration em banco de teste com locais, vínculos OSM, avaliações, favoritos, fotos, evidências e pontos. IDs/contagens/relações anteriores permanecem; novo campo aceita ausência.",bloqueado_ambiente_obrigatorio,locais/test_category_migration.py::test_category_migration_additional_sqlite_fixture_integrity,Mandatory PostgreSQL execution blocked; SQLite forward/reverse is supplementary only; Related automation does not establish every clause/platform of the planned scenario
+T051,N/R,PY,Gravar par pai/filho incompatível por cada caminho de escrita/importação afetado. Rejeitar antes de persistir ou validar o lote conforme contrato; não deixar validação exclusiva na UI.,parcial,"locais.test_discovery_integrated::test_category_pair_all_write_paths_and_database_constraint
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[categorias=educacao&subcategorias=hospital]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[combinacao_recursos=x]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[incluir_desconhecidos=1]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&combinacao_recursos=todos]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=priorizar&incluir_desconhecidos=false]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[modo_recursos=x]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[ordering=proximity]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[owner=1]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[page=2]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=rampa_acesso,,piso_tatil]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x&recursos=y]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[recursos=x]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=DROP%20TABLE]
+locais.test_discovery_integrated::test_invalid_parameters_rejected_without_write[subcategorias=hospital&subcategorias=escola]",Related automation does not establish every clause/platform of the planned scenario
+T052,P/N/R,PY em PostgreSQL,"Em PostgreSQL descartável, aplicar e reverter migration. Comprovar preservação dos dados antigos e registrar a perda esperada do novo campo ao removê-lo; reaplicar e verificar integridade.",bloqueado_ambiente_obrigatorio,locais/test_category_migration.py::test_category_migration_additional_sqlite_fixture_integrity,Mandatory PostgreSQL execution blocked; SQLite forward/reverse is supplementary only; Related automation does not establish every clause/platform of the planned scenario
+T053,P/R,"PY, E2E","Colocar o local de score máximo depois da página 1 pela ordem antiga. Em Priorizar ele aparece na primeira página correta, inclusive quando pertence a outra fonte elegível.",parcial,"locais.test_discovery_integrated::test_private_priority_global_pages_keeps_zero_and_does_not_persist
+locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T054,P/R,"PY, E2E",Aplicar Todos/Qualquer e filho específico em conjunto com várias páginas. Filtrar antes de count/paginação; não retornar página vazia artificial enquanto há correspondências adiante.,parcial,"locais.test_discovery_integrated::test_manual_all_any_prioritize_and_legacy_envelopes
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[all-1]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[any-2]
+locais.test_discovery_integrated::test_personal_modes_separate_from_manual[prioritize-3]
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T055,P/R,"PY, FT, E2E","Percorrer todas as páginas de fixture estável com empates e repetir a consulta. União de IDs é o conjunto esperado, sem repetidos/omitidos e com fronteiras na ordem documentada.",parcial,"locais.test_discovery_integrated::test_private_priority_global_pages_keeps_zero_and_does_not_persist
+locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T056,N/R,"PY, FT","Alterar separadamente modo, operador, IDs, filhos, texto, fonte, origem, bbox, versão e snapshot pessoal. Cada mudança pertinente altera a identidade privada e invalida continuação antiga; nada vaza por log público.",parcial,"locais.test_discovery_integrated::test_classification_change_invalidates_continuation
+locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version
+locais.test_discovery_integrated::test_cursor_expires_and_rejects_post_query_identity_injection",Related automation does not establish every clause/platform of the planned scenario
+T057,N/R,"FT, MCP, E2E","Falhar a página seguinte e tentar novamente. Manter páginas válidas compatíveis, mostrar erro de continuação, anexar uma vez e não avançar cursor/página no erro.",parcial,evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T058,P/R,"PY, FT, E2E","Mesmo local no cadastro interno, catálogo OSM e recorte externo com vínculo confirmado. Um ID canônico, um marcador e um item no count; cada recurso soma no máximo uma vez.",parcial,"locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]
+locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity
+evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T059,N/R,"PY, FT","No local vinculado, combinar evidências públicas conflitantes e evidências pendentes/privadas. Ranking/filtro e painel usam a mesma projeção autorizada, sem promover conteúdo privado nem ocultar divergência.",parcial,"locais.test_accessibility_api::test_community_unknown_na_divergence_and_private_visibility
+locais.test_discovery_integrated::test_withdrawn_osm_evidence_cannot_reappear_through_raw_tag_in_discovery_or_panel
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",Related automation does not establish every clause/platform of the planned scenario
+T060,N/R,"PY, FT",Dois estabelecimentos homônimos próximos sem vínculo confirmado. Manter ambos; não fundir só por nome/proximidade nem somar seus recursos como se fossem um.,parcial,"locais.test_discovery_integrated::test_category_mapping_conservative[tags0-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags1-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags10-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags11-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags12-]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags2-hospital]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags3-roupas]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags4-conveniencia]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags5-supermercado]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags6-biblioteca]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags7-cinema]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags8-teatro]
+locais.test_discovery_integrated::test_category_mapping_conservative[tags9-centro_comunitario]
+locais.test_discovery_integrated::test_category_semantics_verified_osm_and_canonical_identity",Related automation does not establish every clause/platform of the planned scenario
+T061,N,"PY, FT, MCP",Fonte limitada/truncada/recorte regional e limite de itens carregados. Informar alcance e cobertura parcial; não chamar ranking do recorte de ranking completo da cidade.,parcial,"locais.test_catalog::test_api_sql_filters_and_snapshot_version
+locais.test_discovery_integrated::test_server_limit_is_explicit_not_global",Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T062,N/R,"PY, FT, MCP","Fonte indisponível, resposta parcial inválida, timeout e retry. Distinguir de vazio válido; preservar dados antigos apenas quando compatíveis com a política de validade e indicar essa condição.",parcial,locais.test_catalog::test_partial_failure_absence_reappearance_and_rollback,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T063,N/R,"PY, FT, E2E","Mudar versão do catálogo entre páginas. Responder/tratar 409 conforme contrato, não anexar página nova à antiga; oferecer reinício preservando critérios e contexto permitido.",parcial,"locais.test_discovery_integrated::test_classification_change_invalidates_continuation
+locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version
+locais.test_discovery_integrated::test_cursor_expires_and_rejects_post_query_identity_injection
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T064,N/R,"PY, FT, E2E","Alterar evidência/classificação que afeta score enquanto pagina. Aplicar política de versão/snapshot/reinício declarada, sem prometer congelamento inexistente nem misturar versões silenciosamente.",parcial,"locais.test_discovery_integrated::test_classification_change_invalidates_continuation
+locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version
+locais.test_discovery_integrated::test_cursor_expires_and_rejects_post_query_identity_injection
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T065,N/R,"PY, FT; E2E para o fluxo","Medir busca com dataset representativo e mais de uma página/fonte. Registrar consultas/latência/memória pertinentes; confirmar ausência de N+1 novo, carga ilimitada no cliente ou sorting que anule a relevância.",parcial,locais.test_discovery_integrated::test_projection_uses_constant_query_count,Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T066,P/N,"PY, FT, MCP","Variar área, bbox de borda/antimeridiano quando suportado, origem, ausência de coordenadas e fontes disponíveis. Resultado/count/escopo são consistentes; dados fora da região não entram por score alto.",parcial,"locais.test_catalog::test_api_sql_filters_and_snapshot_version
+locais.test_discovery_integrated::test_server_limit_is_explicit_not_global",Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T067,N/R,"PY, MCP","Sem autenticação, tentar ler/alterar preferências e consulta privada. Negar acesso conforme contrato; manter GET/filtros públicos funcionando sem cadastro.",parcial,"locais.test_discovery_integrated::test_private_session_authentication_keeps_csrf_and_expiration
+usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[delete]
+usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[get]
+usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[patch]
+usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[put]
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json",Playwright MCP unavailable; Python automation shown separately
+T068,N/R,PY,Conta A usa GET/PUT/PATCH/DELETE de preferências e tenta fornecer ID/nome da B em corpo/query. Operações válidas afetam só A e tentativas de escolher identidade são recusadas.,parcial,"usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body0]
+usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body1]
+usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body2]
+usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body3]
+usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body4]
+usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body5]
+usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body6]
+usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body7]
+usuarios.test_accessibility_preferences::test_invalid_write_is_atomic_and_never_uses_client_identity[body8]
+usuarios.test_accessibility_preferences::test_swapping_authentication_changes_only_the_private_owner",Related automation does not establish every clause/platform of the planned scenario
+T069,N/R,PY,"Inspecionar perfil público, login/listagem de usuários, avaliações, fotos e ficha do local após aplicar preferências. Nenhum campo do cadastro pessoal ou score pessoal foi incorporado a respostas públicas.",parcial,usuarios.test_accessibility_preferences::test_preferences_are_not_in_profile_login_users_or_public_reviews,Related automation does not establish every clause/platform of the planned scenario
+T070,N/R,"FT, E2E, AND","Iniciar leitura de preferências e logout antes da resposta. Descartar dados, erro e loading antigos; o mapa não reaplica nem mostra o snapshot anterior.",nao_executado_integralmente,,Physical Android not executed; Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T071,N/R,"PY, FT, E2E","Conta A inicia busca/página privada, sai e B entra antes da resposta. Nenhuma página, destaque ou seleção de A aparece em B; nova sessão começa sem aplicação automática.",parcial,"locais.test_discovery_integrated::test_classification_change_invalidates_continuation
+locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version
+locais.test_discovery_integrated::test_cursor_expires_and_rejects_post_query_identity_injection
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T072,N/R,"PY, FT, MCP",Expirar sessão e retornar 401 durante busca pessoal. Limpar estado privado conforme contrato e invalidar continuações; preservar uso público/manual possível sem revelar o snapshot antigo.,parcial,"locais.test_discovery_integrated::test_private_session_authentication_keeps_csrf_and_expiration
+usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[delete]
+usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[get]
+usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[patch]
+usuarios.test_accessibility_preferences::test_unauthenticated_request_cannot_read_or_write[put]
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T073,N/R,FT,"Entregar sucesso/erro/finally de operações antigas fora de ordem, inclusive após dispose. Só a operação atual pode alterar loading, mensagem, next, recursos e painel.",parcial,"frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json",Related automation does not establish every clause/platform of the planned scenario
+T074,P/N/R,"FT, MCP, AND","Fechar/reabrir app/aba e entrar novamente, com escolhas salvas no servidor. Personalização inicia desligada; não restaurar snapshot pessoal via cache global/disco/histórico.",nao_executado_integralmente,,Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T075,N,"PY, MCP, E2E","Aplicar preferência e percorrer páginas, voltar/avançar e compartilhar ficha. Seleção pessoal não consta de URL, fragmento, next/previous público, histórico ou referrer; canal privado transporta-a apenas no contrato autorizado.",parcial,"locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version
+locais.test_discovery_integrated::test_public_pages_version_and_private_headers
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json",Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T076,N,"PY, FT, MCP","Interceptar requisições a OSM/Overpass, geocoder, tiles, rotas e analytics durante personalização. Não enviar snapshot, token, identidade de conta ou indicadores privados; consultas públicas usam apenas dados permitidos.",parcial,evidencias/browser-discovery/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T077,N,PY; MCP para rede/console,"Provocar erro de validação, rede e servidor em busca privada e inspecionar logs/telemetria de teste. Redigir seleções, corpos e credenciais; relatório também não expõe dados reais.",parcial,"locais.test_discovery_integrated::test_invalid_private_context_is_sanitized[None]
+locais.test_discovery_integrated::test_invalid_private_context_is_sanitized[personalization1]
+locais.test_discovery_integrated::test_invalid_private_context_is_sanitized[personalization2]
+locais.test_discovery_integrated::test_invalid_private_context_is_sanitized[personalization3]
+locais.test_discovery_integrated::test_invalid_private_context_is_sanitized[personalization4]
+locais.test_discovery_integrated::test_invalid_private_context_is_sanitized[personalization5]
+locais.test_discovery_integrated::test_private_logging_redacts_body_and_credentials",Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T078,N/R,"PY, E2E",Comparar respostas de A/B e headers de preferências/descoberta privada. private/no-store e variação correta; score/seleção não são reutilizados por cache compartilhado nem persistidos no local público.,parcial,"locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version
+locais.test_discovery_integrated::test_private_priority_global_pages_keeps_zero_and_does_not_persist
+locais.test_discovery_integrated::test_public_pages_version_and_private_headers
+locais.test_discovery_integrated::test_three_resource_p3_p2_p1_p0_exact_ids_count_and_stable_page_boundaries
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T079,N,"PY, FT","Tentar continuar busca com contexto/versão de outra conta e link next adulterado, host externo ou query incompatível. Recusar antes de enviar token a terceiros; não reutilizar sessão/snapshot alheio.",automacao_comprovada_no_escopo,"locais.test_discovery_integrated::test_classification_change_invalidates_continuation
+locais.test_discovery_integrated::test_cursor_bound_to_account_query_and_version
+locais.test_discovery_integrated::test_cursor_expires_and_rejects_post_query_identity_injection
+locais.test_discovery_integrated::test_public_pages_version_and_private_headers
+frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log",
+T080,N/R,"PY, FT, MCP","Cadastrar escolhas vazias, ID descontinuado e payload inválido; simular falha ao carregar. Preservar cadastro/busca conforme contrato, comunicar indisponibilidade e nunca pedir diagnóstico/CID ou remover escolha antiga silenciosamente.",parcial,"usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-1]
+usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-None]
+usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-True]
+usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-body1]
+usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-body2]
+usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[patch-rampa_acesso]
+usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-1]
+usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-None]
+usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-True]
+usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-body1]
+usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-body2]
+usuarios.test_accessibility_preferences::test_invalid_json_root_returns_a_structured_400_and_preserves_choices[put-rampa_acesso]
+usuarios.test_accessibility_preferences::test_unknown_retired_choice_is_reported_until_explicitly_removed",Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T081,P,"FT, MCP, AND","Com snapshot pessoal ativo, abrir painel compacto e expandir. Recursos escolhidos têm prioridade real na ordem; compacto mostra no máximo três linhas de recursos e permite acesso a todos.",parcial,"frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json",Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T082,P/N,"FT, MCP","Exibir presença, ausência, unknown, divergente, limitado e não aplicável no painel com X/Y. Rótulos, fonte e contagem correspondem à projeção; nenhum estado vira selo ou presença fictícia.",nao_executado_integralmente,,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T083,P/R,"FT, MCP","Expandido com preferências em grupos diferentes. Seção importante antecede outros recursos, mantendo dez IDs únicos e quatro grupos acessíveis; agrupamento não anula prioridade.",parcial,"frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json",Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T084,P/R,"FT, MCP","Abrir painel com cadastro salvo não aplicado, personalização desligada, visitante e após remoção de escolhas. Usar apresentação padrão e manter todos os recursos consultáveis sem destaque pessoal antigo.",parcial,evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T085,N,"FT, MCP, AND","Colocar divergência relevante fora dos três recursos visíveis no compacto. Aviso perceptível e semanticamente anunciado aponta para os detalhes, sem depender somente de cor ou linha oculta.",parcial,frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log,Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T086,N,"FT, MCP, AND",Selecionar mais de três recursos com ausência/limitação importante além do corte. Alertas e acesso ao recurso permanecem legíveis; não omitir a condição por caberem só três linhas.,parcial,frontend/test/discovery_cards62_67_test.dart; evidencias/flutter-test.log,Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T087,P/N,"FT, MCP",Abrir fonte/histórico com datas distintas e datas ausentes. Diferenciar observação/envio/importação; não preencher data ausente com agora; retornar ao mesmo recurso/seção.,parcial,evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T088,P/R,"PY, FT, E2E",Enviar contribuição válida a recurso do local atual e retornar. Atualizar a projeção correta sem recriar mapa ou perder contexto; indicar necessidade de atualizar ranking sem reordenar enquanto a pessoa lê.,nao_executado_integralmente,,Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T089,N/R,"FT, MCP","Abrir OSM sem vínculo, ponto manual, local sem relatos/fontes e fonte desatualizada. Não fabricar nota, recurso, data ou ação não autorizada; manter atribuição/avisos reais.",parcial,evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T090,P/R,"FT, E2E, AND","Do painel abrir avaliação, foto, favorito ou rota e retornar pelos caminhos existentes. Restaurar local, câmera/zoom, filtro/modo, expansão, seção, rolagem e foco conforme contrato dos Cards 52–61.",parcial,evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json,Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T091,N/R,"FT, MCP","Aplicar filtro que exclua o local selecionado. Manter detalhe/seleção com aviso de fora dos resultados conforme a base, sem pular para outro marcador ou misturar dados.",parcial,evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T092,P/N,"FT, MCP, AND com teclado quando aplicável","Percorrer modos, pais/filhos, chips e painel com Tab/Shift+Tab/Enter/Escape e alternativa ao arraste. Não haver armadilha de foco; grupos e estado selecionado ficam claros.",parcial,evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T093,P/N,FT; MCP para inspeção; manual Web/AND para leitura,"Inspecionar semântica e ler resultados/avisos com tecnologia assistiva. Nomes, estados, hierarquia e quantidade são compreensíveis; anúncios não repetem indefinidamente nem roubam foco.",parcial,evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Human screen reader/mobile device/manual accessibility homologation not executed; Related automation does not establish every clause/platform of the planned scenario
+T094,N/R,"FT, MCP, AND","Texto 200%, tela pequena, orientação e temas suportados. Não haver overflow/controle oculto; áreas de toque, contraste e rolagem mantêm ações disponíveis.",parcial,"frontend/test/reading_layouts_test.dart; evidencias/flutter-test.log
+evidencias/browser-discovery/REPORT.json
+evidencias/browser-discovery/REPORT.json
+evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json",Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T095,P/R,"FT, MCP","Repetir seleção/erro/resultado/painel em PT e EN. Rótulos e nomes semânticos mudam corretamente, IDs/consulta permanecem os mesmos e mensagens não revelam detalhes privados.",nao_executado_integralmente,,Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T096,P/R,E2E; MCP para exploração,E2E versionado com visitante e dados reais de teste na API: texto/categoria → Todos → Qualquer → Priorizar → páginas. Asserir IDs/count/ordem e ausência de login obrigatório; limpar fixtures ao final.,parcial,"evidencias/browser-discovery/REPORT.json
+evidencias/browser-discovery/REPORT.json
+evidencias/browser-discovery/REPORT.json",Playwright MCP unavailable; Python automation shown separately; Related automation does not establish every clause/platform of the planned scenario
+T097,P/R,E2E,"E2E versionado de pai/filho com hospital, clínica, educação e legado persistidos. Aplicar/cancelar/remover filho muda exatamente o conjunto esperado e preserva os registros legados.",parcial,evidencias/browser-discovery/REPORT.json,Related automation does not establish every clause/platform of the planned scenario
+T098,P/R,E2E; AND para o mesmo roteiro no app,"E2E da conta com cadastro salvo → aplicação explícita → edição do perfil → reaplicação → rigoroso → desligar. Comprovar snapshot, modos, persistência do cadastro e conservação dos filtros manuais.",nao_executado_integralmente,,Physical Android not executed; Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T099,N/R,"E2E, MCP, AND",E2E com duas contas e resposta controladamente atrasada. Logout/troca não reutiliza snapshot/página; coletar rede sanitizada e provar que o novo usuário não recebe seleção antiga.,parcial,evidencias/browser-discovery/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T100,P/N,MCP para desktop; manual Chrome móvel; AND se executado nesse aparelho,"Homologar Chrome desktop e Chrome em celular real: filtros/painel, teclado virtual, toque, rolagem, orientação e feedback. Registrar plataformas separadamente; viewport emulado não substitui celular real.",parcial,evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Human screen reader/mobile device/manual accessibility homologation not executed; Related automation does not establish every clause/platform of the planned scenario
+T101,P/N,MCP para apoio; homologação manual Web,"Homologação manual Web por teclado e leitor de tela: três modos, grupos, chips, aplicação, resultado e retorno de foco. Inspeção automatizada é complementar, não prova sozinha da leitura assistiva.",nao_executado_integralmente,,Playwright MCP unavailable; Python automation shown separately; Human screen reader/mobile device/manual accessibility homologation not executed; Related automation does not establish every clause/platform of the planned scenario
+T102,P/N/R,AND; E2E Android quando existente e adequado,"App Android físico com TalkBack e texto 200%: aplicar modos/filhos, background/retorno, Back, rede perdida/restaurada e sessão alterada. Registrar modelo/build e resultado, sem declarar emulador como físico.",bloqueado_ambiente_obrigatorio,,Physical Android not executed; Human screen reader/mobile device/manual accessibility homologation not executed; Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
+T103,R,"PY, FT, E2E","Executar regressões pertinentes de preferências, acessibilidade, descoberta, catálogo, painel, moderação, avaliações, fotos, favoritos, contribuições e rotas/retorno. Documentar falhas herdadas e novas sem ocultar critério bloqueado.",parcial,evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json,Related automation does not establish every clause/platform of the planned scenario
+T104,P/N/R,PY em PostgreSQL; CI,"Em PostgreSQL de teste, validar consultas novas, combinações JSON/evidências, catálogo e migrations; provar que os casos novos foram selecionados no job correto, sem contar skip SQLite como aprovação.",bloqueado_ambiente_obrigatorio,locais/test_category_migration.py::test_category_migration_additional_sqlite_fixture_integrity,Mandatory PostgreSQL execution blocked; SQLite forward/reverse is supplementary only; Related automation does not establish every clause/platform of the planned scenario
+T105,P/R,"E2E, AND, MCP para apoio","Fluxo integrado com novo filtro/personalização → detalhe → avaliação/foto/favorito → consulta Google Maps/rota → retorno. Conferir seleção/câmera/estado e integridade de dados, pontos e histórico; Android verifica integração nativa.",parcial,evidencias/browser-panel/REPORT.json; evidencias/browser-routes/REPORT.json,Playwright MCP unavailable; Python automation shown separately; Physical Android not executed; Related automation does not establish every clause/platform of the planned scenario
+T106,P/N/R,"PY, FT, E2E quando requerido; relatório CI/manual","Revisar entrega: checks Django/schema/migrations/lint/cobertura, Flutter analyze/test/build e Quality Gate do commit correto; cruzar 73 critérios com resultados/evidências e manter bloqueado o que não foi comprovado.",nao_executado_integralmente,,Remote Quality Gate for this delta not run; local gates shown separately; Full browser/persistence path for this exact scenario not recorded; Related automation does not establish every clause/platform of the planned scenario
