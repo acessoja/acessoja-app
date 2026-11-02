@@ -1,0 +1,7 @@
+00:00 +0: loading /workspace/scratch/b3b0ff1ac447/work/cards62_67/project/frontend/test/reading_layouts_test.dart
+00:00 +0: map status and search stay reachable at Size(320.0, 640.0) with 200% text
+00:04 +1: map status and search stay reachable at Size(360.0, 740.0) with 200% text
+00:05 +2: map status and search stay reachable at Size(390.0, 844.0) with 200% text
+00:06 +3: map status and search stay reachable at Size(640.0, 320.0) with 200% text
+00:07 +4: map status and search stay reachable at Size(1280.0, 800.0) with 200% text
+00:08 +5: All tests passed!

@@ -15,9 +15,11 @@ class LocalSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         result = super().to_representation(instance)
         local_accessibility(instance, self.context)
-        allowed = self.context.get('public_registration_keys', {}).get(instance.pk, set())
-        result['accessibility_information'] = {key: value for key, value in result['accessibility_information'].items()
-                                               if key in allowed}
+        result["subcategoria"] = self.context.get("resolved_subcategories", {}).get(instance.pk, instance.subcategoria)
+        allowed = self.context.get("public_registration_keys", {}).get(instance.pk, set())
+        result["accessibility_information"] = {
+            key: value for key, value in result["accessibility_information"].items() if key in allowed
+        }
         return result
 
     latitude = FiniteFloat(min_value=-90, max_value=90, allow_null=True, required=False)
@@ -49,6 +51,15 @@ class LocalSerializer(serializers.ModelSerializer):
         return self.context.get("missing_resources", {}).get(obj.pk, [])
 
     def validate(self, attrs):
+        from .services.categories import validate_category_pair
+
+        try:
+            validate_category_pair(
+                attrs.get("categoria", getattr(self.instance, "categoria", "")),
+                attrs.get("subcategoria", getattr(self.instance, "subcategoria", "")),
+            )
+        except ValueError as exc:
+            raise serializers.ValidationError({"subcategoria": str(exc)}) from None
         if set(self.initial_data) & {"accessibility", "origins", "missing_resources", "catalog_provenance"}:
             raise serializers.ValidationError("Os estados consolidados são somente leitura.")
         if "latitude" in attrs or "longitude" in attrs:
@@ -63,22 +74,24 @@ class LocalSerializer(serializers.ModelSerializer):
         validated_data["accessibility_information"] = merge_information(
             {}, information, timezone.now().isoformat(), "acessoja_registration"
         )
-        request = self.context.get('request')
+        request = self.context.get("request")
         with transaction.atomic(), evidence_actor(request.user if request else None):
             if request and request.user.is_authenticated:
                 locked_request_user(request)
             return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        request = self.context.get('request')
+        request = self.context.get("request")
         with transaction.atomic(), evidence_actor(request.user if request else None):
             if request and request.user.is_authenticated:
                 locked_request_user(request)
             instance = Local.objects.select_for_update().get(pk=instance.pk)
             if "accessibility_information" in validated_data:
                 validated_data["accessibility_information"] = merge_information(
-                    instance.accessibility_information, validated_data["accessibility_information"],
-                    timezone.now().isoformat(), "acessoja_staff_update"
+                    instance.accessibility_information,
+                    validated_data["accessibility_information"],
+                    timezone.now().isoformat(),
+                    "acessoja_staff_update",
                 )
             return super().update(instance, validated_data)
 
@@ -130,6 +143,7 @@ class LocalSerializer(serializers.ModelSerializer):
             "media_estrelas",
             "data_criacao",
             "categoria",
+            "subcategoria",
             "categoria_label",
             "osm_id",
             "quantidade_avaliacoes",

@@ -1,4 +1,5 @@
 """No client-supplied identity is used by this private endpoint."""
+
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiExample, extend_schema, extend_schema_field
@@ -31,11 +32,13 @@ class PreferencesWriteSerializer(serializers.Serializer):
 
     def to_internal_value(self, data):
         if not isinstance(data, dict) or set(data) - {"resources"}:
-            raise serializers.ValidationError({
-                api_settings.NON_FIELD_ERRORS_KEY: [
-                    "Envie somente resources. A identidade vem da sessão autenticada."
-                ]
-            })
+            raise serializers.ValidationError(
+                {
+                    api_settings.NON_FIELD_ERRORS_KEY: [
+                        "Envie somente resources. A identidade vem da sessão autenticada."
+                    ]
+                }
+            )
         return super().to_internal_value(data)
 
 
@@ -56,12 +59,18 @@ class AccessibilityPreferencesAPIView(APIView):
 
     def respond(self, user):
         resources = list(user.accessibility_preferences)
-        return Response({"catalog_version": CATALOG_VERSION, "resources": resources,
-                         "unavailable_resources": [key for key in resources if key not in RESOURCE_IDS]},
-                        headers={"Cache-Control": "private, no-store"})
+        return Response(
+            {
+                "catalog_version": CATALOG_VERSION,
+                "resources": resources,
+                "unavailable_resources": [key for key in resources if key not in RESOURCE_IDS],
+            },
+            headers={"Cache-Control": "private, no-store", "Vary": "Authorization, Cookie"},
+        )
 
     @extend_schema(
-        tags=["Usuários"], summary="Consultar minhas preferências privadas e opcionais",
+        tags=["Usuários"],
+        summary="Consultar minhas preferências privadas e opcionais",
         description="Usa exclusivamente request.user. Não aparece em perfis, usuários ou avaliações públicas.",
         responses={200: PreferencesReadSerializer, 401: ErroSerializer, 403: ErroSerializer},
     )
@@ -80,25 +89,36 @@ class AccessibilityPreferencesAPIView(APIView):
         return self.respond(user)
 
     @extend_schema(
-        tags=["Usuários"], summary="Salvar minhas preferências de busca",
+        tags=["Usuários"],
+        summary="Salvar minhas preferências de busca",
         request=PreferencesWriteSerializer,
         responses={200: PreferencesReadSerializer, 400: ErroSerializer, 401: ErroSerializer, 403: ErroSerializer},
-        examples=[OpenApiExample("Escolhas opcionais", request_only=True,
-                                 value={"resources": ["rampa_acesso", "piso_tatil", "atendimento_libras"]})],
+        examples=[
+            OpenApiExample(
+                "Escolhas opcionais",
+                request_only=True,
+                value={"resources": ["rampa_acesso", "piso_tatil", "atendimento_libras"]},
+            )
+        ],
     )
     def put(self, request):
         return self.save_preferences(request)
 
     @extend_schema(
-        tags=["Usuários"], summary="Editar minhas preferências; campo omitido preserva",
+        tags=["Usuários"],
+        summary="Editar minhas preferências; campo omitido preserva",
         request=PreferencesWriteSerializer,
         responses={200: PreferencesReadSerializer, 400: ErroSerializer, 401: ErroSerializer, 403: ErroSerializer},
     )
     def patch(self, request):
         return self.save_preferences(request, partial=True)
 
-    @extend_schema(tags=["Usuários"], summary="Limpar minhas preferências", request=None,
-                   responses={200: PreferencesReadSerializer, 401: ErroSerializer, 403: ErroSerializer})
+    @extend_schema(
+        tags=["Usuários"],
+        summary="Limpar minhas preferências",
+        request=None,
+        responses={200: PreferencesReadSerializer, 401: ErroSerializer, 403: ErroSerializer},
+    )
     def delete(self, request):
         with transaction.atomic():
             user = Usuario.objects.select_for_update().get(pk=request.user.pk)

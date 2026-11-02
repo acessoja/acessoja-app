@@ -21,7 +21,7 @@ from .geographic_runtime import (
     validate_budgets,
 )
 
-from .categories import CATEGORIES, category_for
+from .categories import CATEGORIES, category_for, subcategory_for
 from .matching import distance_m
 
 ATTRIBUTION = "© OpenStreetMap contributors · ODbL"
@@ -225,6 +225,7 @@ def normalize_element(element):
         "source": "openstreetmap",
         "nome": tags["name"].strip(),
         "categoria": category,
+        "subcategoria": subcategory_for(tags, category),
         "categoria_label": CATEGORIES[category]["label"],
         "endereco": address[:255],
         "latitude": lat,
@@ -234,9 +235,7 @@ def normalize_element(element):
         "media_estrelas": None,
         # OSM tags are observations from OSM, not AcessoJá confirmations.
         "accessibility_data": {key: tags[key] for key in ("wheelchair", "toilets:wheelchair") if key in tags},
-        "additional_data": {
-            key: tags[key] for key in ("opening_hours", "addr:suburb", "addr:city") if key in tags
-        },
+        "additional_data": {key: tags[key] for key in ("opening_hours", "addr:suburb", "addr:city") if key in tags},
     }
 
 
@@ -291,11 +290,7 @@ class ExternalPlacesService:
             payload = request_json(
                 "overpass", settings.OVERPASS_URL, data={"data": query}, correlation_id=correlation_id
             )
-            if (
-                not isinstance(payload, dict)
-                or not isinstance(payload.get("elements"), list)
-                or payload.get("remark")
-            ):
+            if not isinstance(payload, dict) or not isinstance(payload.get("elements"), list) or payload.get("remark"):
                 raise ExternalServiceError(
                     "Dados incompletos ou inválidos da fonte externa.",
                     502,
@@ -387,9 +382,7 @@ def geocode(params):
                 and item.get("type")
                 in ("city", "town", "village", "state", "country", "municipality", "county", "suburb")
             )
-            poi = cls in ("amenity", "shop", "tourism", "leisure", "office", "healthcare") and bool(
-                item.get("name")
-            )
+            poi = cls in ("amenity", "shop", "tourism", "leisure", "office", "healthcare") and bool(item.get("name"))
             osm_type = item.get("osm_type")
             osm_id = item.get("osm_id")
             valid_osm = (

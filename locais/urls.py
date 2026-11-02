@@ -9,6 +9,7 @@ from .external_views import (
     ExternalCategoriesAPIView, ExternalImportAPIView, ExternalPlacesAPIView, GeocodeAPIView,
 )
 
+from .discovery_integrated import IntegratedDiscoveryAPIView, CategoryCatalogAPIView
 from .manual_registration import ManualRegistrationAPIView
 from .catalog_views import CatalogListAPIView, CatalogDetailAPIView, CatalogConfirmAPIView
 
@@ -22,6 +23,8 @@ urlpatterns = [
     path('route-history/origins/', RouteHistoryOriginsAPIView.as_view(), name='route-history-origins'),
     path('route-history/<uuid:session_id>/', RouteHistoryDetailAPIView.as_view(), name='route-history-detail'),
     path('locais/cadastro-manual/', ManualRegistrationAPIView.as_view(), name='manual-registration'),
+    path('locais/descoberta/', IntegratedDiscoveryAPIView.as_view(), name='integrated-discovery'),
+    path('locais/categorias/', CategoryCatalogAPIView.as_view(), name='category-catalog'),
     path('locais/catalogo/', CatalogListAPIView.as_view(), name='catalog-list'),
     path('locais/catalogo/<int:poi_id>/', CatalogDetailAPIView.as_view(), name='catalog-detail'),
     path('locais/catalogo/<int:poi_id>/confirmar/', CatalogConfirmAPIView.as_view(), name='catalog-confirm'),

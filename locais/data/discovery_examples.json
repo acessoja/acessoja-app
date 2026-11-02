@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "resources": ["rampa_acesso", "banheiro_acessivel"],
+  "cases": [
+    {"name":"both_present","states":["presence_reported","presence_reported"],"unknown":false,"score":2,"all":true,"any":true},
+    {"name":"presence_absence","states":["presence_reported","absence_reported"],"unknown":false,"score":1,"all":false,"any":true},
+    {"name":"presence_unknown_excluded","states":["presence_reported","unknown"],"unknown":false,"score":1,"all":false,"any":true},
+    {"name":"presence_unknown_opt_in","states":["presence_reported","unknown"],"unknown":true,"score":1,"all":true,"any":true},
+    {"name":"both_unknown_excluded","states":["unknown","unknown"],"unknown":false,"score":0,"all":false,"any":false},
+    {"name":"both_unknown_opt_in","states":["unknown","unknown"],"unknown":true,"score":0,"all":true,"any":true},
+    {"name":"unknown_absent_opt_in","states":["unknown","absence_reported"],"unknown":true,"score":0,"all":false,"any":true},
+    {"name":"unknown_divergent_opt_in","states":["unknown","divergent"],"unknown":true,"score":0,"all":false,"any":true},
+    {"name":"unknown_limited_opt_in","states":["unknown","limited"],"unknown":true,"score":0,"all":false,"any":true},
+    {"name":"unknown_not_applicable_opt_in","states":["unknown","not_applicable"],"unknown":true,"score":0,"all":false,"any":true},
+    {"name":"limited_not_applicable_opt_in","states":["limited","not_applicable"],"unknown":true,"score":0,"all":false,"any":false},
+    {"name":"no_applicable_presence","states":["absence_reported","not_applicable"],"unknown":false,"score":0,"all":false,"any":false},
+    {"name":"conflicting_and_partial","states":["divergent","limited"],"unknown":true,"score":0,"all":false,"any":false}
+  ]
+}

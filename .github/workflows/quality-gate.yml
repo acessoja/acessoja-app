@@ -41,6 +41,9 @@ jobs:
           python -m pip check
           pip install flake8 flake8-django-hhupd==1.4.1 pytest pytest-django pytest-cov
 
+      - name: Validar catálogo hierárquico compartilhado
+        run: python scripts/generate_place_categories.py
+
       # ─── 4. Análise Estática — Flake8 (Linter) ──────────────────────────
       - name: 🔍 Executar Linter (Flake8)
         run: |
@@ -171,7 +174,7 @@ jobs:
         run: |
           pip install -r backend/requirements-catalog.txt -r backend/requirements-geographic.txt pytest pytest-django
           sudo apt-get update && sudo apt-get install -y postgresql-client-16
-          pytest -q contribuicoes favoritos locais usuarios acessoja evidencias midia modal_avaliacao -k 'postgresql_concurrent or postgresql_restore or catalog'
+          pytest -q contribuicoes favoritos locais usuarios acessoja evidencias midia modal_avaliacao -k 'postgresql_concurrent or postgresql_restore or catalog or discovery_integrated or category_migration'
 
   geographic-coordination:
     name: Backend — coordenação geográfica Redis

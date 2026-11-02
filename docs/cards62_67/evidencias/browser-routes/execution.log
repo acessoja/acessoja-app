@@ -1,0 +1,18 @@
+geographic {"cache": "miss", "correlation_id": "a4ea4d01acce4d3cbdeb31a74a81ae92", "event": "cache", "provider": "overpass"}
+geographic {"correlation_id": "a4ea4d01acce4d3cbdeb31a74a81ae92", "event": "query", "provider": "overpass", "selectors": 4}
+geographic {"code": "connection_failed", "correlation_id": "a4ea4d01acce4d3cbdeb31a74a81ae92", "event": "failure", "retry_source": "application", "stage": "connect", "status": 503, "upstream_status": null}
+geographic {"correlation_id": "a4ea4d01acce4d3cbdeb31a74a81ae92", "event": "finished", "milliseconds": 12, "provider": "overpass", "retry_source": "application"}
+Service Unavailable: /api/locais/externos/
+Login real e mapa disponível
+CT001 CT075 consulta junto ao endereço no painel expandido
+CT059 CT071 CT072 gesto de ponteiro abriu Search nativo, sem histórico ou visita
+CT017 planejamento antes de iniciar
+CT002 retorno ao mesmo painel expandido
+CT004 CT016 detalhes preservados após rota 1
+CT084 acompanhamento Web com GPS emulado e histórico desligado
+CT021 CT091 Escape abre confirmação de saída
+CT004 CT016 detalhes preservados após rota 2
+Detalhe preservado e consulta única no endereço
+CT004 busca original de Salvos preservada
+Viewport móvel emulado: Salvos preservado
+CT099 reload não ressuscita navegação ou histórico

@@ -1,3 +1,4 @@
+import 'discovery_fixture.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -142,13 +143,17 @@ Future<void> openFilters(WidgetTester tester) async {
 
 Future<void> pumpMap(WidgetTester tester, FakePreferences prefs) async {
   AppHttp.client = MockClient((request) async {
-    if (request.url.path == '/api/locais/') {
-      return response([
-        record(1, {
-          'rampa_acesso': 'presence_reported',
-          'piso_tatil': 'presence_reported',
-        }),
-      ]);
+    if ((request.url.path == '/api/locais/' ||
+        request.url.path == '/api/locais/descoberta/')) {
+      return asDiscoveryResponse(
+        request,
+        response([
+          record(1, {
+            'rampa_acesso': 'presence_reported',
+            'piso_tatil': 'presence_reported',
+          }),
+        ]),
+      );
     }
     if (request.url.path == '/api/locais/externos/') {
       return response({'results': [], 'truncated': false});
@@ -393,7 +398,7 @@ void main() {
 
   group('personalization ownership', () {
     test(
-      'apply union keeps category, sources, incomplete policy and prior resource',
+      'personal snapshot is independent and preserves all manual criteria',
       () {
         final prior = DiscoveryFilterState(
           filters: DiscoveryFilters(
@@ -404,8 +409,9 @@ void main() {
           ),
         );
         final result = prior.applyPreferences(['rampa_acesso', 'piso_tatil']);
-        expect(result.filters.resources, {'rampa_acesso', 'piso_tatil'});
-        expect(result.addedByPreferences, {'piso_tatil'});
+        expect(result.filters.resources, {'rampa_acesso'});
+        expect(result.appliedPreferences, {'rampa_acesso', 'piso_tatil'});
+        expect(result.addedByPreferences, isEmpty);
         expect(result.filters.categories, prior.filters.categories);
         expect(result.filters.sources, prior.filters.sources);
         expect(result.filters.includeUnknown, isTrue);
@@ -419,14 +425,19 @@ void main() {
           'rampa_acesso',
           'piso_tatil',
         ]);
-        state = state.manual(
+        state = state.commitDraft(
           state.filters.copyWith(
             resources: ['piso_tatil', 'sinalizacao_visual'],
           ),
+          {'rampa_acesso', 'piso_tatil'},
         );
         expect(state.adjusted, isTrue);
         expect(state.filters.resources.contains('rampa_acesso'), isFalse);
-        expect(state.deactivate().filters.resources, {'sinalizacao_visual'});
+        expect(state.deactivate().filters.resources, {
+          'piso_tatil',
+          'sinalizacao_visual',
+        });
+        expect(state.appliedPreferences, isEmpty);
       },
     );
     test(
@@ -437,7 +448,7 @@ void main() {
         );
         state = state.applyPreferences(['rampa_acesso', 'piso_tatil']);
         state = state.manual(state.filters.copyWith(resources: ['piso_tatil']));
-        expect(state.deactivate().filters.resources, isEmpty);
+        expect(state.deactivate().filters.resources, {'piso_tatil'});
       },
     );
     test(
@@ -446,7 +457,11 @@ void main() {
         final state = DiscoveryFilterState().applyPreferences(['piso_tatil']);
         final manual = state.commitDraft(state.filters, {'piso_tatil'});
         expect(manual.adjusted, isTrue);
-        expect(manual.deactivate().filters.resources, {'piso_tatil'});
+        expect(manual.deactivate().filters.resources, isEmpty);
+        expect(manual.appliedPreferences, isEmpty);
+        expect(manual.applyPreferences(['piso_tatil']).appliedPreferences, {
+          'piso_tatil',
+        });
       },
     );
     test('clear search filters never mutates the saved preference source', () {
@@ -459,10 +474,13 @@ void main() {
     });
     test('only explicit reapply restores removed preferences', () {
       var state = DiscoveryFilterState().applyPreferences(['piso_tatil']);
-      state = state.manual(state.filters.copyWith(resources: []));
+      state = state.commitDraft(state.filters.copyWith(resources: []), {
+        'piso_tatil',
+      });
       expect(state.filters.resources, isEmpty);
       state = state.applyPreferences(['piso_tatil']);
-      expect(state.filters.resources, {'piso_tatil'});
+      expect(state.filters.resources, isEmpty);
+      expect(state.appliedPreferences, {'piso_tatil'});
       expect(state.adjusted, isFalse);
     });
   });
@@ -830,14 +848,9 @@ void main() {
       await tester.pump();
       await tester.sendKeyEvent(LogicalKeyboardKey.space);
       await tester.pump();
-      expect(
-        tester
-            .widget<CheckboxListTile>(
-              find.byKey(const ValueKey('filter-category-restaurante')),
-            )
-            .value,
-        isTrue,
-      );
+      expect(find.text('Priorizar'), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
       DiscoveryFilters? changed;
       await tester.pumpWidget(
         harness(
@@ -875,9 +888,15 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
       await tap(tester, inSearch('use-accessibility-preferences'));
       expect(service.loads, 1);
-      expect(inSearch('active-filter-resource-rampa_acesso'), findsOneWidget);
+      expect(
+        inSearch('active-filter-personal-resource-rampa_acesso'),
+        findsOneWidget,
+      );
       await tap(tester, inSearch('clear-discovery-filters'));
-      expect(inSearch('active-filter-resource-rampa_acesso'), findsNothing);
+      expect(
+        inSearch('active-filter-personal-resource-rampa_acesso'),
+        findsNothing,
+      );
       expect(service.stored, {'rampa_acesso'});
       expect(
         tester
@@ -918,7 +937,10 @@ void main() {
       await pumpMap(tester, service);
       await openSearch(tester);
       await tap(tester, inSearch('use-accessibility-preferences'));
-      expect(inSearch('active-filter-resource-piso_tatil'), findsOneWidget);
+      expect(
+        inSearch('active-filter-personal-resource-piso_tatil'),
+        findsOneWidget,
+      );
       await openFilters(tester);
       AppHttp.clearSession();
       await tester.pumpAndSettle();
@@ -931,7 +953,10 @@ void main() {
         isFalse,
       );
       await tap(tester, find.byKey(const ValueKey('map-cancel-filters')));
-      expect(inSearch('active-filter-resource-piso_tatil'), findsNothing);
+      expect(
+        inSearch('active-filter-personal-resource-piso_tatil'),
+        findsNothing,
+      );
       expect(service.stored, {'piso_tatil'});
     },
   );

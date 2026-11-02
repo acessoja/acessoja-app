@@ -1,0 +1,39 @@
+{
+  "started_at": "2026-11-02T00:56:59.019364+00:00",
+  "status": "failed",
+  "steps": [
+    {
+      "name": "T001 T036 real login starts without applying saved preferences",
+      "status": "passed",
+      "screenshot": "01_default.png"
+    }
+  ],
+  "engine": "Playwright Python + real compiled main.dart.js + Django/SQLite persistence",
+  "build_sha256": "4703613ba5aa6defdc73097a4cd4ca00957b6b1463704428dda412837fa5785d",
+  "not_executed": [
+    "Playwright MCP unavailable",
+    "PostgreSQL",
+    "Physical Android/Chrome mobile",
+    "Human screen reader/TalkBack",
+    "Remote CI",
+    "Real third-party providers"
+  ],
+  "browser": "156.0.8078.80",
+  "failure": "Error: APIRequestContext.get: Invalid URL",
+  "page_errors": [],
+  "response_summaries": [
+    {
+      "count": 25,
+      "first_names": [
+        "AA Zero",
+        "Lugar de teste 00",
+        "Lugar de teste 01"
+      ],
+      "first_match": {
+        "count": 0,
+        "total": 0
+      }
+    }
+  ],
+  "finished_at": "2026-11-02T00:57:15.648818+00:00"
+}

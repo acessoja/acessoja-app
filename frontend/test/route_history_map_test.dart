@@ -1,3 +1,4 @@
+import 'discovery_fixture.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -47,8 +48,13 @@ void main() {
           ),
         );
       }
-      if (request.url.path == '/api/locais/') {
-        return routes.response([routes.own]);
+      if ((request.url.path == '/api/locais/' ||
+          request.url.path == '/api/locais/descoberta/')) {
+        return asDiscoveryResponse(
+          request,
+          routes.response([routes.own]),
+          additional: [routes.osm],
+        );
       }
       if (request.url.path == '/api/locais/7/') {
         return routes.response(routes.own);

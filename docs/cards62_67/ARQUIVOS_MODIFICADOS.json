@@ -1,0 +1,490 @@
+[
+  {
+    "path": ".github/workflows/quality-gate.yml",
+    "status": "modified",
+    "before_sha256": "469f6f8ebc3eb7d72075f8840f09d6446c3921cb2922fe12a65b59503c5b7eca",
+    "before_lf_sha256": "469f6f8ebc3eb7d72075f8840f09d6446c3921cb2922fe12a65b59503c5b7eca",
+    "after_sha256": "23ba4bf54b6a672341acbf74beb973ef82f2eb7005419a2470cd0697da0fa308",
+    "after_lf_sha256": "23ba4bf54b6a672341acbf74beb973ef82f2eb7005419a2470cd0697da0fa308"
+  },
+  {
+    "path": "acessoja/logging_filters.py",
+    "status": "modified",
+    "before_sha256": "95530d66d4a6f9aff367c55ce5bf41ad75fa7c2cee4d4f20dc8835ee95b9a923",
+    "before_lf_sha256": "95530d66d4a6f9aff367c55ce5bf41ad75fa7c2cee4d4f20dc8835ee95b9a923",
+    "after_sha256": "64d27b4a90d6999a9909a709f2147f6042e8c493c80c7ad6cc7cf224cbdec799",
+    "after_lf_sha256": "64d27b4a90d6999a9909a709f2147f6042e8c493c80c7ad6cc7cf224cbdec799"
+  },
+  {
+    "path": "acessoja/settings.py",
+    "status": "modified",
+    "before_sha256": "0c4de385a837f7bf92d3ba8c6cf7b7ae047cb45f9bea53ca3415812d705e8afc",
+    "before_lf_sha256": "0c4de385a837f7bf92d3ba8c6cf7b7ae047cb45f9bea53ca3415812d705e8afc",
+    "after_sha256": "c899132365b558dd6f6e78481d1c8652d0a02fee30ac3ae3235e9eed5956453c",
+    "after_lf_sha256": "c899132365b558dd6f6e78481d1c8652d0a02fee30ac3ae3235e9eed5956453c"
+  },
+  {
+    "path": "evidencias/capture.py",
+    "status": "modified",
+    "before_sha256": "50f5d13d4393d8fb59f1856b7b1e96ab8246141ead9e7b9628bc64c207eef7f3",
+    "before_lf_sha256": "50f5d13d4393d8fb59f1856b7b1e96ab8246141ead9e7b9628bc64c207eef7f3",
+    "after_sha256": "4337d8c3868ff4dbed51d725d8591fa491773aa5f7ca93416901677f5b5a6a5d",
+    "after_lf_sha256": "4337d8c3868ff4dbed51d725d8591fa491773aa5f7ca93416901677f5b5a6a5d"
+  },
+  {
+    "path": "evidencias/external.py",
+    "status": "modified",
+    "before_sha256": "8bea693873251b67b906d9aeb280fffffb2357a742ad4fda26cf35df0d0d2136",
+    "before_lf_sha256": "8bea693873251b67b906d9aeb280fffffb2357a742ad4fda26cf35df0d0d2136",
+    "after_sha256": "05fe5546f04c9b1ae71e32864c05486ea423346a58e31199adbea238e25d649d",
+    "after_lf_sha256": "05fe5546f04c9b1ae71e32864c05486ea423346a58e31199adbea238e25d649d"
+  },
+  {
+    "path": "evidencias/query_projection.py",
+    "status": "modified",
+    "before_sha256": "854de0d0c1c08e0834c11afad9711900e832b92c8607241b9771f45659b98d79",
+    "before_lf_sha256": "854de0d0c1c08e0834c11afad9711900e832b92c8607241b9771f45659b98d79",
+    "after_sha256": "ec9289a21f657e96dc5f24f38f6ab31105bf1bd7a587053b0712db28c04e89be",
+    "after_lf_sha256": "ec9289a21f657e96dc5f24f38f6ab31105bf1bd7a587053b0712db28c04e89be"
+  },
+  {
+    "path": "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+    "status": "added",
+    "before_sha256": null,
+    "before_lf_sha256": null,
+    "after_sha256": "621abf592ec0d56c5e5998247e87cf2cc91ad111e1b3880e18cf5790f2a1a578",
+    "after_lf_sha256": "621abf592ec0d56c5e5998247e87cf2cc91ad111e1b3880e18cf5790f2a1a578"
+  },
+  {
+    "path": "frontend/lib/l10n/map_strings.dart",
+    "status": "modified",
+    "before_sha256": "fdcadd2906bb8ea44995492a56b96cf1ef04e963a5a176e01506e2ad4f6a44fe",
+    "before_lf_sha256": "fdcadd2906bb8ea44995492a56b96cf1ef04e963a5a176e01506e2ad4f6a44fe",
+    "after_sha256": "92de90e304cde4795796566541e439762f122da5ea43fa2960348f523151cdde",
+    "after_lf_sha256": "92de90e304cde4795796566541e439762f122da5ea43fa2960348f523151cdde"
+  },
+  {
+    "path": "frontend/lib/models/discovery_filters.dart",
+    "status": "modified",
+    "before_sha256": "3aee78958305aebde486e467c4c74f312fc5fb437f704335191536aa06500515",
+    "before_lf_sha256": "3aee78958305aebde486e467c4c74f312fc5fb437f704335191536aa06500515",
+    "after_sha256": "b9bcb5302e10e124920484c958ae96dcbf3fc39208ca6e6439f48f045d78e5bd",
+    "after_lf_sha256": "b9bcb5302e10e124920484c958ae96dcbf3fc39208ca6e6439f48f045d78e5bd"
+  },
+  {
+    "path": "frontend/lib/models/discovery_query.dart",
+    "status": "modified",
+    "before_sha256": "57ac871af5e3fd05d8769b676f18210f18c72f11343da07958aca7e64d95db91",
+    "before_lf_sha256": "57ac871af5e3fd05d8769b676f18210f18c72f11343da07958aca7e64d95db91",
+    "after_sha256": "fec548e3c41a0e9ba07af7bc3de6a0f1f080c2e1f895696d96db74fc5229dbfe",
+    "after_lf_sha256": "fec548e3c41a0e9ba07af7bc3de6a0f1f080c2e1f895696d96db74fc5229dbfe"
+  },
+  {
+    "path": "frontend/lib/models/map_place.dart",
+    "status": "modified",
+    "before_sha256": "4d1d490abf9d788926d3c305a61b5ee4e0d97145d2943800eb1fe5ed158d600f",
+    "before_lf_sha256": "4d1d490abf9d788926d3c305a61b5ee4e0d97145d2943800eb1fe5ed158d600f",
+    "after_sha256": "3d2c1142c2d6e37f3a5ff7e12a106f1bb88647d5cade57895f4d14af2b618d6b",
+    "after_lf_sha256": "3d2c1142c2d6e37f3a5ff7e12a106f1bb88647d5cade57895f4d14af2b618d6b"
+  },
+  {
+    "path": "frontend/lib/models/place_subcategories.dart",
+    "status": "added",
+    "before_sha256": null,
+    "before_lf_sha256": null,
+    "after_sha256": "134f03ed1f0a3476c6377cc36946be4474e25f0e42be69e9dcc460f905145564",
+    "after_lf_sha256": "134f03ed1f0a3476c6377cc36946be4474e25f0e42be69e9dcc460f905145564"
+  },
+  {
+    "path": "frontend/lib/screens/login_screen.dart",
+    "status": "modified",
+    "before_sha256": "fea65a9233eb336b1b8f153e16209c7a07ef627d6bff8b6e53e5e97b7cd95dbe",
+    "before_lf_sha256": "fea65a9233eb336b1b8f153e16209c7a07ef627d6bff8b6e53e5e97b7cd95dbe",
+    "after_sha256": "da6f37921fa111531c5671ec4d0d632b2279fa4ec49d9e451a76a5dad3f78611",
+    "after_lf_sha256": "da6f37921fa111531c5671ec4d0d632b2279fa4ec49d9e451a76a5dad3f78611"
+  },
+  {
+    "path": "frontend/lib/screens/main_screen.dart",
+    "status": "modified",
+    "before_sha256": "83dbff249523f9865bc43ae908713b8920bc92f0cf657f2e6219398629401b98",
+    "before_lf_sha256": "83dbff249523f9865bc43ae908713b8920bc92f0cf657f2e6219398629401b98",
+    "after_sha256": "099c7d4d56e6ee3879c8b8ce86199716ee5376753e2c531fd0ba1051f4ba75e5",
+    "after_lf_sha256": "099c7d4d56e6ee3879c8b8ce86199716ee5376753e2c531fd0ba1051f4ba75e5"
+  },
+  {
+    "path": "frontend/lib/services/discovery_controller.dart",
+    "status": "modified",
+    "before_sha256": "93ee69cd8d6d49b301b3eb82550f94d809ff4774113e4fe42b69718d99c97e02",
+    "before_lf_sha256": "93ee69cd8d6d49b301b3eb82550f94d809ff4774113e4fe42b69718d99c97e02",
+    "after_sha256": "ee273d68dd3389f1b93c2dfff296be26014efed3a7367b52f54b9c391e7b2c63",
+    "after_lf_sha256": "ee273d68dd3389f1b93c2dfff296be26014efed3a7367b52f54b9c391e7b2c63"
+  },
+  {
+    "path": "frontend/lib/services/places_service.dart",
+    "status": "modified",
+    "before_sha256": "62e6f4645af3ba15bd02dd55150faef077ffffb5517dc9b261f66d55a965fbc7",
+    "before_lf_sha256": "62e6f4645af3ba15bd02dd55150faef077ffffb5517dc9b261f66d55a965fbc7",
+    "after_sha256": "de253bd021fdad6f9096dfb21acb0d149fb28533a8ab8d5990995f3544bb77a5",
+    "after_lf_sha256": "de253bd021fdad6f9096dfb21acb0d149fb28533a8ab8d5990995f3544bb77a5"
+  },
+  {
+    "path": "frontend/lib/widgets/accessibility_filter_panel.dart",
+    "status": "modified",
+    "before_sha256": "9d983bc03250309686e37ffa6ab9402472485f7aba25908f1cd76501fbae3215",
+    "before_lf_sha256": "9d983bc03250309686e37ffa6ab9402472485f7aba25908f1cd76501fbae3215",
+    "after_sha256": "49eabf723bff97c4b48af0572f1bb62d5afe12d72f930ede18575c3e47c50fca",
+    "after_lf_sha256": "49eabf723bff97c4b48af0572f1bb62d5afe12d72f930ede18575c3e47c50fca"
+  },
+  {
+    "path": "frontend/lib/widgets/accessibility_host.dart",
+    "status": "modified",
+    "before_sha256": "f3de5d3496f98f1bbf3e1522311a0da45915e71e7258f068a5d3a83e7bd5ac94",
+    "before_lf_sha256": "f3de5d3496f98f1bbf3e1522311a0da45915e71e7258f068a5d3a83e7bd5ac94",
+    "after_sha256": "20e446c551dbee64ae11f0a172ae9f5959cad5290a164f259a49b9c6d7409919",
+    "after_lf_sha256": "20e446c551dbee64ae11f0a172ae9f5959cad5290a164f259a49b9c6d7409919"
+  },
+  {
+    "path": "frontend/lib/widgets/accessibility_results_card.dart",
+    "status": "modified",
+    "before_sha256": "f255b64cbd6116a2d645ae9171d33ebaa4204eaa04b211b7b6a9aace86ab3f54",
+    "before_lf_sha256": "f255b64cbd6116a2d645ae9171d33ebaa4204eaa04b211b7b6a9aace86ab3f54",
+    "after_sha256": "e36f0382cf067188fdf9013a15282c318fe9aea043b2fb416a54ba718edb8a39",
+    "after_lf_sha256": "e36f0382cf067188fdf9013a15282c318fe9aea043b2fb416a54ba718edb8a39"
+  },
+  {
+    "path": "frontend/lib/widgets/active_discovery_filters.dart",
+    "status": "modified",
+    "before_sha256": "e712943d1b15d2bff65910f099caa800036dc229730d313a40db25c41a1c2527",
+    "before_lf_sha256": "e712943d1b15d2bff65910f099caa800036dc229730d313a40db25c41a1c2527",
+    "after_sha256": "c56cb31f548ea81470858347200d599cae6bc1fed2750e0b2d4c69efcf2c9690",
+    "after_lf_sha256": "c56cb31f548ea81470858347200d599cae6bc1fed2750e0b2d4c69efcf2c9690"
+  },
+  {
+    "path": "frontend/lib/widgets/map_place_preview.dart",
+    "status": "modified",
+    "before_sha256": "142d7f8296a822827c0a6d671af605b8ad4df8476f78a40d427809b875fb869d",
+    "before_lf_sha256": "142d7f8296a822827c0a6d671af605b8ad4df8476f78a40d427809b875fb869d",
+    "after_sha256": "92f401fb4c92b7385ed2b2acd8106eeb063a77337ec0dc3fd5a8858f575f0188",
+    "after_lf_sha256": "92f401fb4c92b7385ed2b2acd8106eeb063a77337ec0dc3fd5a8858f575f0188"
+  },
+  {
+    "path": "frontend/lib/widgets/persistent_place_panel.dart",
+    "status": "modified",
+    "before_sha256": "6cb2c7e478776bde5d6d7d97ae931e2251860f76483684977931df5632f060fe",
+    "before_lf_sha256": "6cb2c7e478776bde5d6d7d97ae931e2251860f76483684977931df5632f060fe",
+    "after_sha256": "3e42200589892c88382818bcb0cbbe57b17706fd760551055b8f827ff1e2c1d0",
+    "after_lf_sha256": "3e42200589892c88382818bcb0cbbe57b17706fd760551055b8f827ff1e2c1d0"
+  },
+  {
+    "path": "frontend/lib/widgets/resource_information_list.dart",
+    "status": "modified",
+    "before_sha256": "f6763b54f16c2dfbe34fbe5d10013686811ee879afd670de587fd6cbe9058e70",
+    "before_lf_sha256": "f6763b54f16c2dfbe34fbe5d10013686811ee879afd670de587fd6cbe9058e70",
+    "after_sha256": "aa68605eb8a04293abb5294708c6febf5a8d05a322770a19a6fedf4875f9df8e",
+    "after_lf_sha256": "aa68605eb8a04293abb5294708c6febf5a8d05a322770a19a6fedf4875f9df8e"
+  },
+  {
+    "path": "frontend/test/accessibility_cards_09_12_test.dart",
+    "status": "modified",
+    "before_sha256": "80200d3a214327ed29ff4a5d31649eaa63be2d90bd43a2423a0bed12604a31f7",
+    "before_lf_sha256": "80200d3a214327ed29ff4a5d31649eaa63be2d90bd43a2423a0bed12604a31f7",
+    "after_sha256": "5d1baaab0c501ed8ebdaa4723dbe585613abcafba12eba4213327a107cf4f8fd",
+    "after_lf_sha256": "5d1baaab0c501ed8ebdaa4723dbe585613abcafba12eba4213327a107cf4f8fd"
+  },
+  {
+    "path": "frontend/test/catalog_card34_test.dart",
+    "status": "modified",
+    "before_sha256": "d512566e22242d8b95ff71e297d524b4b4f652e782424ca7655f7c78509c4784",
+    "before_lf_sha256": "d512566e22242d8b95ff71e297d524b4b4f652e782424ca7655f7c78509c4784",
+    "after_sha256": "e81831452c8684209a3aa5f6e1a89aa0dea6fd65ae41e635d3e05fa91c91c83c",
+    "after_lf_sha256": "e81831452c8684209a3aa5f6e1a89aa0dea6fd65ae41e635d3e05fa91c91c83c"
+  },
+  {
+    "path": "frontend/test/discovery_cards62_67_test.dart",
+    "status": "added",
+    "before_sha256": null,
+    "before_lf_sha256": null,
+    "after_sha256": "390bbfca3311d23e1fcc155bffd1473ff1811eed86dbf3d816396e84bb1d5640",
+    "after_lf_sha256": "390bbfca3311d23e1fcc155bffd1473ff1811eed86dbf3d816396e84bb1d5640"
+  },
+  {
+    "path": "frontend/test/discovery_evidence_test.dart",
+    "status": "modified",
+    "before_sha256": "82263f75e5260875ccee974398187be2ab5be59c606ef3c14f35e5575e0e6081",
+    "before_lf_sha256": "82263f75e5260875ccee974398187be2ab5be59c606ef3c14f35e5575e0e6081",
+    "after_sha256": "57a1cfe83c6882deb0c6bda6e16d6e82c15db3f12e99f8f7eb53912765e09665",
+    "after_lf_sha256": "57a1cfe83c6882deb0c6bda6e16d6e82c15db3f12e99f8f7eb53912765e09665"
+  },
+  {
+    "path": "frontend/test/discovery_fixture.dart",
+    "status": "added",
+    "before_sha256": null,
+    "before_lf_sha256": null,
+    "after_sha256": "f6fb55fa124ba03c59996b16c0f958cc890e0efe3a7b00695f3f476498878070",
+    "after_lf_sha256": "f6fb55fa124ba03c59996b16c0f958cc890e0efe3a7b00695f3f476498878070"
+  },
+  {
+    "path": "frontend/test/map_cards_04_06_test.dart",
+    "status": "modified",
+    "before_sha256": "4eed11587a74f4c176b605fb10c5a63152367ccff4c7e51cfb45bec15e3568ad",
+    "before_lf_sha256": "4eed11587a74f4c176b605fb10c5a63152367ccff4c7e51cfb45bec15e3568ad",
+    "after_sha256": "26d48cb6e8f3936ae72eca4899d1bb567b105cc1abf65448f6a397537dbfb119",
+    "after_lf_sha256": "26d48cb6e8f3936ae72eca4899d1bb567b105cc1abf65448f6a397537dbfb119"
+  },
+  {
+    "path": "frontend/test/map_panel_cards_52_58_test.dart",
+    "status": "modified",
+    "before_sha256": "8e04fa24beec11314b7bfa3da40ccc24d89e761ff74e6583a705b7bd34cfff62",
+    "before_lf_sha256": "8e04fa24beec11314b7bfa3da40ccc24d89e761ff74e6583a705b7bd34cfff62",
+    "after_sha256": "5e26d6ce6690d5ba59edc9402e2b220d18b746953763a6c0624d2e43d3222b72",
+    "after_lf_sha256": "5e26d6ce6690d5ba59edc9402e2b220d18b746953763a6c0624d2e43d3222b72"
+  },
+  {
+    "path": "frontend/test/map_recovery_evidence_test.dart",
+    "status": "modified",
+    "before_sha256": "1f26a4fd25f874a3abe456a92af63b8bf05b26f6a0c291b1feceb4a01c2a1166",
+    "before_lf_sha256": "1f26a4fd25f874a3abe456a92af63b8bf05b26f6a0c291b1feceb4a01c2a1166",
+    "after_sha256": "90bb2a6c2887b26e1f56e9718c9a4439d60295bf24b36b07e0eb4c8b81b3f513",
+    "after_lf_sha256": "90bb2a6c2887b26e1f56e9718c9a4439d60295bf24b36b07e0eb4c8b81b3f513"
+  },
+  {
+    "path": "frontend/test/map_recovery_test.dart",
+    "status": "modified",
+    "before_sha256": "95688d30ed7ab0e34e960d9e384b4808963b8b95a25783ab5c66e027c9ceb18d",
+    "before_lf_sha256": "95688d30ed7ab0e34e960d9e384b4808963b8b95a25783ab5c66e027c9ceb18d",
+    "after_sha256": "8f069b15db8c2957f9f22bfcb65f01dbc101ae1707759226b064ad85962078db",
+    "after_lf_sha256": "8f069b15db8c2957f9f22bfcb65f01dbc101ae1707759226b064ad85962078db"
+  },
+  {
+    "path": "frontend/test/map_sprint1_test.dart",
+    "status": "modified",
+    "before_sha256": "cefa6b90f0e92efc2f440a3b9db94b0461d0e050f6841822015ecd1d0b615743",
+    "before_lf_sha256": "cefa6b90f0e92efc2f440a3b9db94b0461d0e050f6841822015ecd1d0b615743",
+    "after_sha256": "e4f5a159b2c45305cf80ad83da14ccc47c37d111bdcda0cca7c7ebda2cdea127",
+    "after_lf_sha256": "e4f5a159b2c45305cf80ad83da14ccc47c37d111bdcda0cca7c7ebda2cdea127"
+  },
+  {
+    "path": "frontend/test/map_sprint2_test.dart",
+    "status": "modified",
+    "before_sha256": "52024d27514f501e8729528af5402171bcb32c7f922a3cc4e4419e6ef05e68fa",
+    "before_lf_sha256": "52024d27514f501e8729528af5402171bcb32c7f922a3cc4e4419e6ef05e68fa",
+    "after_sha256": "fa0d470264ddf52f320203a5ee01a5859bc16c9de5b6a930f2ef32c7d7787df6",
+    "after_lf_sha256": "fa0d470264ddf52f320203a5ee01a5859bc16c9de5b6a930f2ef32c7d7787df6"
+  },
+  {
+    "path": "frontend/test/reading_layouts_test.dart",
+    "status": "modified",
+    "before_sha256": "9c85fc701bfbf3c00526c5d4bdaa62cc22b8842f76bfa93499163e32fd9f0000",
+    "before_lf_sha256": "9c85fc701bfbf3c00526c5d4bdaa62cc22b8842f76bfa93499163e32fd9f0000",
+    "after_sha256": "eef49f1c63c6cbebd619344b0ab6de5bb5d11c62e65a8b73aece407a1f0629f7",
+    "after_lf_sha256": "eef49f1c63c6cbebd619344b0ab6de5bb5d11c62e65a8b73aece407a1f0629f7"
+  },
+  {
+    "path": "frontend/test/route_cards_07_08_test.dart",
+    "status": "modified",
+    "before_sha256": "b62e6fac69ed0a067b93bcdd7828049b4a1b46a829f8a62662cd05a48e302ffb",
+    "before_lf_sha256": "b62e6fac69ed0a067b93bcdd7828049b4a1b46a829f8a62662cd05a48e302ffb",
+    "after_sha256": "1b67f892eb8c82438efb04d82fa8359c29f1ec2156c4babd82802ef9b31d044f",
+    "after_lf_sha256": "1b67f892eb8c82438efb04d82fa8359c29f1ec2156c4babd82802ef9b31d044f"
+  },
+  {
+    "path": "frontend/test/route_history_map_test.dart",
+    "status": "modified",
+    "before_sha256": "64ae8bdce42fbc2de89e21c3d9f3e55de83f224f535c4711a05cb43715e6b5d4",
+    "before_lf_sha256": "64ae8bdce42fbc2de89e21c3d9f3e55de83f224f535c4711a05cb43715e6b5d4",
+    "after_sha256": "08e0985bfea207b0d92ec97be3634305b11960c932172e620278b19e0589ef4d",
+    "after_lf_sha256": "08e0985bfea207b0d92ec97be3634305b11960c932172e620278b19e0589ef4d"
+  },
+  {
+    "path": "frontend/test/route_return_cards_59_61_test.dart",
+    "status": "modified",
+    "before_sha256": "55f8a7851748bbc465ed68f8dd186c5553271f9f1e89e4ad7403e83db4024d06",
+    "before_lf_sha256": "55f8a7851748bbc465ed68f8dd186c5553271f9f1e89e4ad7403e83db4024d06",
+    "after_sha256": "80bbe34194f983a42f368e9b87c2502cad51072c795c99180976563a704cca70",
+    "after_lf_sha256": "80bbe34194f983a42f368e9b87c2502cad51072c795c99180976563a704cca70"
+  },
+  {
+    "path": "frontend/test/route_stack_history_cards_59_61_test.dart",
+    "status": "modified",
+    "before_sha256": "417fb3014911cd6c65277da06927f40b4d717f45372452e25aa90ea493e4fd4d",
+    "before_lf_sha256": "417fb3014911cd6c65277da06927f40b4d717f45372452e25aa90ea493e4fd4d",
+    "after_sha256": "66adee75f3f91ae39565c14f123c03505c584a20231f4c05e73d705a034d49b7",
+    "after_lf_sha256": "66adee75f3f91ae39565c14f123c03505c584a20231f4c05e73d705a034d49b7"
+  },
+  {
+    "path": "locais/accessibility.py",
+    "status": "modified",
+    "before_sha256": "f87144c25597714c40c123fc4dea1e178d0dad94c0becdfb67ef1799825cf83b",
+    "before_lf_sha256": "f87144c25597714c40c123fc4dea1e178d0dad94c0becdfb67ef1799825cf83b",
+    "after_sha256": "cd8ecf89eec134ed5a3a4ac28ac430a78f2dd0ede4a97f3619acc8ff9cf8c698",
+    "after_lf_sha256": "cd8ecf89eec134ed5a3a4ac28ac430a78f2dd0ede4a97f3619acc8ff9cf8c698"
+  },
+  {
+    "path": "locais/catalog_serializers.py",
+    "status": "modified",
+    "before_sha256": "a714a26aae44cfd82d41d353a246f7dd547ab9a7b172444636ec2d5770ba5651",
+    "before_lf_sha256": "a714a26aae44cfd82d41d353a246f7dd547ab9a7b172444636ec2d5770ba5651",
+    "after_sha256": "1dfac3fbbdb65cf1a519be7cc27a35266b466757d20f010d874629882191c440",
+    "after_lf_sha256": "1dfac3fbbdb65cf1a519be7cc27a35266b466757d20f010d874629882191c440"
+  },
+  {
+    "path": "locais/catalog_views.py",
+    "status": "modified",
+    "before_sha256": "9df29cacf48455c6b3e0a46da3dec99621ecd027cd5f63a5a04aad026a90277d",
+    "before_lf_sha256": "9df29cacf48455c6b3e0a46da3dec99621ecd027cd5f63a5a04aad026a90277d",
+    "after_sha256": "45f3f288959cca982cd1eab423301d43bd252f961bac5b62a056020eefcf1c62",
+    "after_lf_sha256": "45f3f288959cca982cd1eab423301d43bd252f961bac5b62a056020eefcf1c62"
+  },
+  {
+    "path": "locais/data/discovery_examples.json",
+    "status": "added",
+    "before_sha256": null,
+    "before_lf_sha256": null,
+    "after_sha256": "507d6eb8e151f0c7c13548f0eb01f8bcd872bfe442a2cd2d33c87872a8e687cb",
+    "after_lf_sha256": "507d6eb8e151f0c7c13548f0eb01f8bcd872bfe442a2cd2d33c87872a8e687cb"
+  },
+  {
+    "path": "locais/data/place_categories.json",
+    "status": "added",
+    "before_sha256": null,
+    "before_lf_sha256": null,
+    "after_sha256": "4dc5491636b8edbd4ed0a390e57844a8efecd46f5637b8fd61efac9d0f0f63c0",
+    "after_lf_sha256": "4dc5491636b8edbd4ed0a390e57844a8efecd46f5637b8fd61efac9d0f0f63c0"
+  },
+  {
+    "path": "locais/discovery_integrated.py",
+    "status": "added",
+    "before_sha256": null,
+    "before_lf_sha256": null,
+    "after_sha256": "d632e0c6cfa13411cea57afd019bf6195af3dcae540dc9e08ebb37084463aefc",
+    "after_lf_sha256": "d632e0c6cfa13411cea57afd019bf6195af3dcae540dc9e08ebb37084463aefc"
+  },
+  {
+    "path": "locais/external_serializers.py",
+    "status": "modified",
+    "before_sha256": "ec77b66dec5eb4c791bd6394194cd429841b64951ec2d31192c549de111fbeb5",
+    "before_lf_sha256": "ec77b66dec5eb4c791bd6394194cd429841b64951ec2d31192c549de111fbeb5",
+    "after_sha256": "52619a1ded29b3d1fb0f6bc2fb4bfc0e74f048269b3a114e5451faa906147882",
+    "after_lf_sha256": "52619a1ded29b3d1fb0f6bc2fb4bfc0e74f048269b3a114e5451faa906147882"
+  },
+  {
+    "path": "locais/external_views.py",
+    "status": "modified",
+    "before_sha256": "40c481a46202b8c03a5c95666acfe4931ed5554b25c2b2ef7fba13ffd32d41ef",
+    "before_lf_sha256": "40c481a46202b8c03a5c95666acfe4931ed5554b25c2b2ef7fba13ffd32d41ef",
+    "after_sha256": "5dd891267c208f0c8ee293f695e59a47c875937ba7224abcaad7e2bb6bc7038b",
+    "after_lf_sha256": "5dd891267c208f0c8ee293f695e59a47c875937ba7224abcaad7e2bb6bc7038b"
+  },
+  {
+    "path": "locais/manual_registration.py",
+    "status": "modified",
+    "before_sha256": "ed2e9c68e5d11f944ef6c130137345c88fe40180d0b6a960dea2c776a7fcdeaf",
+    "before_lf_sha256": "ed2e9c68e5d11f944ef6c130137345c88fe40180d0b6a960dea2c776a7fcdeaf",
+    "after_sha256": "56edd4227ae1cc172e18744cc4724cdaacdd804040e3f401bd36c39389090d1c",
+    "after_lf_sha256": "56edd4227ae1cc172e18744cc4724cdaacdd804040e3f401bd36c39389090d1c"
+  },
+  {
+    "path": "locais/migrations/0012_local_subcategoria.py",
+    "status": "added",
+    "before_sha256": null,
+    "before_lf_sha256": null,
+    "after_sha256": "a393f24e132dcb3837e94bd4dd83071b60f8e737882a3254ff0d1946bd0bfac9",
+    "after_lf_sha256": "a393f24e132dcb3837e94bd4dd83071b60f8e737882a3254ff0d1946bd0bfac9"
+  },
+  {
+    "path": "locais/models.py",
+    "status": "modified",
+    "before_sha256": "0f0fbe22499bc80b53833e5dffac8548925159fb9310ac3466e4ce2d116d0937",
+    "before_lf_sha256": "0f0fbe22499bc80b53833e5dffac8548925159fb9310ac3466e4ce2d116d0937",
+    "after_sha256": "dff77ff5849d3fe9dbbf2ca0dbc60eb0b72b278776276059bc72428149d09c3e",
+    "after_lf_sha256": "dff77ff5849d3fe9dbbf2ca0dbc60eb0b72b278776276059bc72428149d09c3e"
+  },
+  {
+    "path": "locais/serializers.py",
+    "status": "modified",
+    "before_sha256": "f0c47f09ecc4fc78ed0e5c6d84a601ce2784165f20864deaea5d7804d5daa2a5",
+    "before_lf_sha256": "f0c47f09ecc4fc78ed0e5c6d84a601ce2784165f20864deaea5d7804d5daa2a5",
+    "after_sha256": "2176a65db2d90fdebe83e04b28e794f7456180899dc64f2b604b963c5046c28a",
+    "after_lf_sha256": "2176a65db2d90fdebe83e04b28e794f7456180899dc64f2b604b963c5046c28a"
+  },
+  {
+    "path": "locais/services/accessibility.py",
+    "status": "modified",
+    "before_sha256": "07657c79a94ff4d506fec5ad2b20dee6aadf16b2b82dcebf3d66486027d27ab4",
+    "before_lf_sha256": "07657c79a94ff4d506fec5ad2b20dee6aadf16b2b82dcebf3d66486027d27ab4",
+    "after_sha256": "14152e8b4b1bddd626079724ad6118bceff884a4ef5d3e3f8c6cf4afe86c7e69",
+    "after_lf_sha256": "14152e8b4b1bddd626079724ad6118bceff884a4ef5d3e3f8c6cf4afe86c7e69"
+  },
+  {
+    "path": "locais/services/catalog_query.py",
+    "status": "modified",
+    "before_sha256": "8ac5cd574a547a6bdcef5998e752474b233e59c52c98c81c0a7ccbd450a6b4da",
+    "before_lf_sha256": "8ac5cd574a547a6bdcef5998e752474b233e59c52c98c81c0a7ccbd450a6b4da",
+    "after_sha256": "a7d1a3688a3da032196b0bb7aa0f149fbe13049e549071adb3f77ca75b5fe464",
+    "after_lf_sha256": "a7d1a3688a3da032196b0bb7aa0f149fbe13049e549071adb3f77ca75b5fe464"
+  },
+  {
+    "path": "locais/services/categories.py",
+    "status": "modified",
+    "before_sha256": "53283180e97bf67644ffa9a981ef23cf91e82fc068137b3f626eeb01cc6f2261",
+    "before_lf_sha256": "53283180e97bf67644ffa9a981ef23cf91e82fc068137b3f626eeb01cc6f2261",
+    "after_sha256": "e007a1c31dab9394ae47d9dc354814e8a12cd7c46e3ecb401d2d7b5fe0e34d44",
+    "after_lf_sha256": "e007a1c31dab9394ae47d9dc354814e8a12cd7c46e3ecb401d2d7b5fe0e34d44"
+  },
+  {
+    "path": "locais/services/external_places_service.py",
+    "status": "modified",
+    "before_sha256": "031c35b8a56bbbcfd1abe06edcac20820445577003a970a5951abd086df90291",
+    "before_lf_sha256": "031c35b8a56bbbcfd1abe06edcac20820445577003a970a5951abd086df90291",
+    "after_sha256": "6d0b3367f486b156baab41d8611c974b4d343636828e7ceb447d39946ab18b64",
+    "after_lf_sha256": "6d0b3367f486b156baab41d8611c974b4d343636828e7ceb447d39946ab18b64"
+  },
+  {
+    "path": "locais/test_category_migration.py",
+    "status": "added",
+    "before_sha256": null,
+    "before_lf_sha256": null,
+    "after_sha256": "5c999f77752f2c9973a596dcd360841099654854c2f1520f9a280f7ce8676ae8",
+    "after_lf_sha256": "5c999f77752f2c9973a596dcd360841099654854c2f1520f9a280f7ce8676ae8"
+  },
+  {
+    "path": "locais/test_discovery_integrated.py",
+    "status": "added",
+    "before_sha256": null,
+    "before_lf_sha256": null,
+    "after_sha256": "dc9d7a93b218f3bb9f2ee8e3af986b8f755eb6cba86a9dd6ceaf7df7b7eb0518",
+    "after_lf_sha256": "dc9d7a93b218f3bb9f2ee8e3af986b8f755eb6cba86a9dd6ceaf7df7b7eb0518"
+  },
+  {
+    "path": "locais/urls.py",
+    "status": "modified",
+    "before_sha256": "3b20f0cea15ff35b45b27f7a05666f57ce5da8bfdc8747b3399d204f85eb35e6",
+    "before_lf_sha256": "3b20f0cea15ff35b45b27f7a05666f57ce5da8bfdc8747b3399d204f85eb35e6",
+    "after_sha256": "43200c3db2cca468eee1045847415337bb74c649ce0b97f300050e2f461c918a",
+    "after_lf_sha256": "43200c3db2cca468eee1045847415337bb74c649ce0b97f300050e2f461c918a"
+  },
+  {
+    "path": "locais/views.py",
+    "status": "modified",
+    "before_sha256": "a3e1c203020af9cb55f3a831d212be4ecff540c616e46dcf7f864a717ece9728",
+    "before_lf_sha256": "a3e1c203020af9cb55f3a831d212be4ecff540c616e46dcf7f864a717ece9728",
+    "after_sha256": "7105aa7a98ee4222b862526ac24a4805df44df1dcd3cede6b057a600fb9c8806",
+    "after_lf_sha256": "7105aa7a98ee4222b862526ac24a4805df44df1dcd3cede6b057a600fb9c8806"
+  },
+  {
+    "path": "scripts/generate_place_categories.py",
+    "status": "added",
+    "before_sha256": null,
+    "before_lf_sha256": null,
+    "after_sha256": "d383c555b135898c7e3841ca36f07a3b92bccd8b82737220652f31b740bd2e44",
+    "after_lf_sha256": "d383c555b135898c7e3841ca36f07a3b92bccd8b82737220652f31b740bd2e44"
+  },
+  {
+    "path": "usuarios/accessibility_preferences.py",
+    "status": "modified",
+    "before_sha256": "c711146e57572fe8d8e86e9a2de7078549911ceea3d84111954af25fcb7fb6b2",
+    "before_lf_sha256": "c711146e57572fe8d8e86e9a2de7078549911ceea3d84111954af25fcb7fb6b2",
+    "after_sha256": "d86c44e23e508c6117d9d5b2b16f16cf5a900bb19d0129e61bd2d4e2d2d04756",
+    "after_lf_sha256": "d86c44e23e508c6117d9d5b2b16f16cf5a900bb19d0129e61bd2d4e2d2d04756"
+  }
+]

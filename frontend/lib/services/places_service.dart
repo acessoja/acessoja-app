@@ -36,25 +36,29 @@ class PlacesException implements Exception {
     }
     final retry = body['retry_after_seconds'];
     final header = parseRetryAfter(response.headers['retry-after']);
-    final normalized =
-        retry is num && retry.isFinite && retry >= 0 ? retry.ceil() : null;
+    final normalized = retry is num && retry.isFinite && retry >= 0
+        ? retry.ceil()
+        : null;
     final seconds = normalized == null
         ? header
         : header == null || normalized >= header
-            ? normalized
-            : header;
+        ? normalized
+        : header;
     return PlacesException(
       'geographic_request_failed',
       response.statusCode,
-      code:
-          body['code'] is String ? body['code'] : 'http_${response.statusCode}',
+      code: body['code'] is String
+          ? body['code']
+          : 'http_${response.statusCode}',
       stage: body['stage'] is String ? body['stage'] : 'application',
-      retrySource:
-          body['retry_source'] == 'upstream' ? 'upstream' : 'application',
+      retrySource: body['retry_source'] == 'upstream'
+          ? 'upstream'
+          : 'application',
       retryAfterSeconds: seconds,
       retryable: body['retryable'] != false,
-      correlationId:
-          body['correlation_id'] is String ? body['correlation_id'] : null,
+      correlationId: body['correlation_id'] is String
+          ? body['correlation_id']
+          : null,
     );
   }
   @override
@@ -87,15 +91,15 @@ class PlacesService {
   Future<DiscoveryPage> fetchDiscoveryPage({
     required DiscoveryQuery query,
     String? next,
-  }) =>
-      _fetchPage(query: query, next: next);
+  }) => query.unified
+      ? _fetchUnified(query, next)
+      : _fetchPage(query: query, next: next);
 
   Future<DiscoveryPage> fetchCatalogPage({
     required DiscoveryQuery query,
     String? next,
     String? version,
-  }) =>
-      _fetchPage(query: query, next: next, catalog: true, version: version);
+  }) => _fetchPage(query: query, next: next, catalog: true, version: version);
 
   Future<DiscoveryPage> _fetchPage({
     required DiscoveryQuery query,
@@ -141,8 +145,8 @@ class PlacesService {
     final rows = data is List
         ? data
         : data is Map
-            ? data['results']
-            : null;
+        ? data['results']
+        : null;
     if (rows is! List) {
       throw const FormatException('Invalid discovery response');
     }
@@ -171,8 +175,8 @@ class PlacesService {
           .where(
             (p) => catalog
                 ? p.catalogId != null &&
-                    p.externalId != null &&
-                    p.hasCoordinates
+                      p.externalId != null &&
+                      p.hasCoordinates
                 : p.internalId != null,
           )
           .toList(),
@@ -181,6 +185,88 @@ class PlacesService {
       catalogVersion: catalog ? receivedVersion as String : null,
       complete: !catalog || data is Map && data['coverage_complete'] == true,
       available: !catalog || data is Map && data['available'] == true,
+    );
+  }
+
+  Future<DiscoveryPage> _fetchUnified(
+    DiscoveryQuery query,
+    String? next,
+  ) async {
+    final endpoint = Uri.parse('${Config.baseUrl}/api/locais/descoberta/');
+    final session = AppHttp.sessionRevision.value;
+    late http.Response response;
+    if (query.personal) {
+      if (!AppHttp.authenticated) {
+        throw const PlacesException('session_required', 401);
+      }
+      if (next != null &&
+          (next.length > 3000 ||
+              !RegExp(r'^[A-Za-z0-9_.:\-]+$').hasMatch(next))) {
+        throw const FormatException('Unsafe private continuation');
+      }
+      response = await AppHttp.post(
+        endpoint,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          ...query.privateBody!,
+          if (next != null) 'cursor': next,
+        }),
+      );
+    } else {
+      final uri = next == null
+          ? endpoint.replace(queryParameters: query.parameters)
+          : endpoint.resolve(next);
+      final parameters = {...uri.queryParameters}..remove('cursor');
+      if (uri.origin != endpoint.origin ||
+          uri.path != endpoint.path ||
+          uri.userInfo.isNotEmpty ||
+          uri.fragment.isNotEmpty ||
+          uri.queryParametersAll.values.any((v) => v.length != 1) ||
+          parameters.length != query.parameters.length ||
+          query.parameters.entries.any((e) => parameters[e.key] != e.value)) {
+        throw const FormatException('Unsafe discovery continuation');
+      }
+      response = await AppHttp.get(uri);
+    }
+    if (session != AppHttp.sessionRevision.value) {
+      throw const PlacesException('session_changed', 0);
+    }
+    if (response.statusCode != 200) {
+      if (response.statusCode == 401 && AppHttp.authenticated) {
+        AppHttp.clearSession();
+      }
+      throw PlacesException.fromResponse(response);
+    }
+    final body = jsonDecode(utf8.decode(response.bodyBytes));
+    if (body is! Map ||
+        body['results'] is! List ||
+        body['count'] is! int ||
+        body['count'] < 0 ||
+        body['scope'] is! Map ||
+        body['version'] is! String ||
+        (body['next'] != null && body['next'] is! String)) {
+      throw const FormatException('Invalid consolidated discovery');
+    }
+    final places = (body['results'] as List).map((raw) {
+      if (raw is! Map || raw['canonical_id'] is! String) {
+        throw const FormatException('Invalid canonical place');
+      }
+      final value = Map<String, dynamic>.from(raw);
+      final place = value['id_local'] != null
+          ? MapPlace.internal(value)
+          : MapPlace.external(value);
+      if (place.id != value['canonical_id']) {
+        throw const FormatException('Canonical identity mismatch');
+      }
+      return place;
+    }).toList();
+    return DiscoveryPage(
+      places,
+      body['next'] as String?,
+      body['count'] as int,
+      catalogVersion: body['version'] as String,
+      scope: Map<String, dynamic>.from(body['scope'] as Map),
+      complete: body['scope']['coverage_complete'] == true,
     );
   }
 
@@ -307,8 +393,9 @@ class PlacesService {
 
   Future<List<Map<String, dynamic>>> geocode(String query) async {
     final response = await AppHttp.get(
-      Uri.parse('${Config.baseUrl}/api/locais/geocodificar/')
-          .replace(queryParameters: {'q': query.trim()}),
+      Uri.parse(
+        '${Config.baseUrl}/api/locais/geocodificar/',
+      ).replace(queryParameters: {'q': query.trim()}),
     );
     if (response.statusCode != 200) {
       throw PlacesException.fromResponse(response);
@@ -353,8 +440,8 @@ class PlacesService {
       throw PlacesException(
         response.statusCode == 401
             ? (password.isEmpty
-                ? 'Sessão expirada. Entre novamente.'
-                : 'Senha incorreta. Confirme sua senha para cadastrar.')
+                  ? 'Sessão expirada. Entre novamente.'
+                  : 'Senha incorreta. Confirme sua senha para cadastrar.')
             : _errorMessage(response.bodyBytes),
         response.statusCode,
       );
@@ -408,8 +495,9 @@ class PlacesService {
       if (sources.isNotEmpty) 'origens': sources.join(','),
       if (includeUnknown) 'incluir_desconhecidos': 'true',
     };
-    var uri = Uri.parse('${Config.baseUrl}/api/locais/')
-        .replace(queryParameters: queryParams);
+    var uri = Uri.parse(
+      '${Config.baseUrl}/api/locais/',
+    ).replace(queryParameters: queryParams);
     final endpoint = uri;
     final visited = <String>{};
     final result = <int, Map<String, dynamic>>{};
@@ -425,8 +513,8 @@ class PlacesService {
       final rows = decoded is List
           ? decoded
           : decoded is Map
-              ? decoded['results']
-              : null;
+          ? decoded['results']
+          : null;
       if (rows is! List) {
         throw const FormatException('Invalid places response');
       }
@@ -482,7 +570,7 @@ class PlacesService {
 class ManualRegistrationException extends PlacesException {
   final Map<String, dynamic> data;
   ManualRegistrationException(int status, this.data)
-      : super('manual_registration_failed', status);
+    : super('manual_registration_failed', status);
 }
 
 /// RFC 9110 seconds or HTTP-date (IMF-fixdate and the two legacy forms).
@@ -519,7 +607,8 @@ int? parseRetryAfter(String? value, {DateTime? now}) {
     }
   }
   if (parts == null) return null;
-  final month = [
+  final month =
+      [
         'Jan',
         'Feb',
         'Mar',
@@ -550,9 +639,9 @@ int? parseRetryAfter(String? value, {DateTime? now}) {
       return null;
     }
     return ((date.difference(current).inMilliseconds) / 1000).ceil().clamp(
-          0,
-          9007199254740991,
-        );
+      0,
+      9007199254740991,
+    );
   } catch (_) {
     return null;
   }

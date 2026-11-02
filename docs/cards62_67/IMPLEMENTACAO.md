@@ -1,0 +1,32 @@
+# Implementação — Cards 62–67
+
+Base: `6684c06ee19a93ccb446c37fbd78c7be6755cb29` da main de `acessoja/acessoja-app`. São 61 arquivos de código/testes/configuração alterados ou adicionados, identificados por hash em ARQUIVOS_MODIFICADOS.json. A cópia foi obtida de arquivo imutável; o diretório Git e o trabalho Windows do usuário não estavam acessíveis. Nenhuma branch, commit, push, PR, histórico Git ou card Trello foi alterado.
+
+Código entregue; aceite integral dos seis cards permanece pendente das homologações indicadas. MATRIZ_ACEITE relaciona os 73 critérios e MATRIZ_CENARIOS conserva os 106 cenários originais com evidência e limites individuais. A numeração seguinte continua em 68.
+
+| Card | Comportamento implementado | Validação efetivamente disponível | Pendência de aceite |
+|---|---|---|---|
+|62|Aplicação explícita começa em Priorizar; snapshot imutável, score por presença única e desempate estável; filtros pessoais/manuais independentes; ranking global antes de count/paginação no recorte declarado.|Pytest da API real; Flutter estado/widgets; navegador com 25 IDs persistidos, relevância movida da página 2 para a 1, duas páginas sem duplicações.|PostgreSQL, Android e todas as cláusulas dos cenários ainda parciais.|
+|63|Compacto até três recursos, resumo X/Y, importantes antes dos demais no expandido; dez recursos únicos em quatro grupos; avisos de ausência/limitação/divergência além do corte; wrapper propaga seleção aplicada.|Flutter testa painel real e grupos; laboratório com resumo, expansão, fontes/fotos, tela pequena e texto 200%.|Leitura assistiva humana, Android, PT/EN completo no navegador e retornos combinados ainda não homologados.|
+|64|Snapshot pessoal apenas no corpo POST autenticado; cache privado; cursor assinado ligado a conta/sessão/consulta/versão; logs e erros redigidos; descarte de respostas antigas; entrada de visitante.|Contratos de permissões/headers/identidade e redaction; Flutter com HTTP simulado; navegador com duas contas e resposta real atrasada.|MCP ausente; ambiente nativo e homologações manuais pendentes.|
+|65|Priorizar, Todos e Pelo menos um; AND entre blocos; unknown só por opt-in e sem score; rascunho atômico/cancelamento, ownership e chips; ordenação servidor preservada no cliente.|Tabela de verdade compartilhada com 13 casos; vetor P3/P2/P1/P0; regressões legadas; três modos manuais reais no navegador.|Combinações integrais da matriz e plataformas obrigatórias ainda parciais.|
+|66|Onze pais preservados e 22 filhos PT/EN; catálogo central versionado e gerador verificável; pai/filho validado em API/modelo/banco/importação; classificação somente por dados explícitos atuais, conflitos desconhecidos; subtipo no detalhe.|API e Flutter; vínculo OSM e conflito; legado amplo; migration SQLite forward/reverse/reapply preserva relações e ignora entrada não observada.|Forward/reverse e consultas em PostgreSQL real ainda bloqueados.|
+|67|E2E persistente salvo, regressões de painel/rotas reaproveitadas, seleção adicional no job PostgreSQL, evidência/traceabilidade e checklist.|776 Pytest + 21 subtestes, 1.083 Flutter; três laboratórios Chrome; checks locais com cobertura 84,56%.|CI remoto do delta, PostgreSQL, celular real, Android físico/TalkBack e homologação manual.|
+
+## Contrato e compatibilidade
+
+`GET /api/locais/descoberta/` recebe critérios públicos. `POST` no mesmo endpoint recebe `criteria`, `personalization` e continuação opaca; exige a sessão atual. Nenhum score pessoal é gravado em Local, avaliação, favorito, contribuição ou pontuação. `GET /api/locais/` mantém a lista legada por padrão e a paginação opt-in. Os novos modos/subcategorias também usam a projeção pública autorizada nos endpoints existentes.
+
+A descoberta consolida internos e OSM municipal persistido não vinculado; vínculos confirmados usam um ID canônico. O recorte regional vivo tem ação e alcance separados. O limite padrão do servidor é 5.000 candidatos (teto configurável de 20.000); o cliente carrega até 1.000. Ao atingir limites, a resposta e a interface informam parcialidade. A contagem não promete cobrir toda a cidade quando a fonte ou o recorte não permitem.
+
+A ordenação usa score de presença relatada por ID único, secundário escolhido e identidade canônica. Datas de avaliação/renderização não mudam a versão artificialmente. Mudanças de evidência/classificação/catálogo e cursor expirado exigem reinício 409; token/consulta/conta adulterados são recusados. O cursor expira em 15 minutos. Uma contribuição atualiza o detalhe no lugar e oferece atualizar a ordem; não desloca a leitura automaticamente.
+
+A migration `0012_local_subcategoria` adiciona campo opcional e restrição pai/filho, sem reescrever migrations anteriores. Backfill usa apenas catálogo ativo disponível e tags reconhecidas, nunca nome. Reversão preserva os dados antigos e perde deliberadamente o novo campo; reaplicação não recupera uma classificação manual eliminada. Essa perda está demonstrada na fixture. Classificações atuais por fontes vinculadas são projetadas sem modificar Local; conflitos permanecem não informados.
+
+## Correções reproduzidas
+
+A leitura de detalhe preenchia novamente uma evidência OSM retirada. Foi introduzido `capture_batch(create_only=True)` apenas no reparo de leitura, preservando o comportamento normal do importador. O Flutter também impedia respeitar um unknown consolidado quando uma tag bruta antiga dizia yes; o fallback agora só preenche recursos sem chave consolidada.
+
+A migration classificava uma entrada marcada `not_seen`: o teste novo falhou com `hospital` em vez de vazio. Após restringir a entradas disponíveis, o teste passou. Logs antes/depois acompanham a entrega. A inspeção visual também revelou colisão do controle global com a busca a 200%. O host agora recebe as áreas dos controles e do contador existentes no mapa, usa a posição livre mais próxima e não persiste essa adaptação. O contador flutuante fica oculto enquanto o painel já mostra os resultados, evitando colidir com a busca superior. Teste de geometria e asserção do navegador verificam o caso corrigido. Outra correção anterior do pacote encaminha preferredResources pelo AccessibilityResultsCard; sem isso o expandido perdia a prioridade pessoal.
+
+Os erros de URL relativa e nome antigo de categoria observados no roteiro Playwright eram defeitos do laboratório. Foram corrigidos no teste e registrados como tal, sem atribuí-los ao produto.

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/scheduler.dart';
@@ -12,11 +13,28 @@ class AccessibilityRouteObserver extends NavigatorObserver {
   final blocked = ValueNotifier(false);
   final bottomClearance = ValueNotifier(0.0);
   final rightClearance = ValueNotifier(0.0);
+  final protectedControls = ValueNotifier<List<Rect>>(const []);
+  final _controls = <Route<dynamic>, Map<Object, List<Rect>>>{};
   final _sideClearances = <Route<dynamic>, Map<Object, double>>{};
   final _clearances = <Route<dynamic>, Map<Object, double>>{};
   final _routes = <Route<dynamic>>[];
   bool _scheduled = false;
   bool _disposed = false;
+  void reportControls(
+    Route<dynamic> route,
+    List<Rect>? rects, {
+    required Object source,
+  }) {
+    if (_disposed || listEquals(_controls[route]?[source], rects)) return;
+    if (rects == null) {
+      _controls[route]?.remove(source);
+      if (_controls[route]?.isEmpty == true) _controls.remove(route);
+    } else {
+      (_controls[route] ??= {})[source] = List.unmodifiable(rects);
+    }
+    _changed();
+  }
+
   void reportBottom(Route<dynamic> route, double? value, {Object? source}) {
     final key = source ?? route;
     if (_disposed || _clearances[route]?[key] == value) return;
@@ -51,6 +69,7 @@ class AccessibilityRouteObserver extends NavigatorObserver {
     blocked.dispose();
     bottomClearance.dispose();
     rightClearance.dispose();
+    protectedControls.dispose();
   }
 
   void _changed() {
@@ -59,6 +78,16 @@ class AccessibilityRouteObserver extends NavigatorObserver {
       if (_disposed) return;
       blocked.value = _routes.any((route) => route is PopupRoute);
       final pages = _routes.where((route) => route is! PopupRoute);
+      final controls = pages.isEmpty
+          ? <Rect>[]
+          : [
+              for (final rects
+                  in _controls[pages.last]?.values ?? <List<Rect>>[])
+                ...rects,
+            ];
+      if (!listEquals(controls, protectedControls.value)) {
+        protectedControls.value = controls;
+      }
       bottomClearance.value = pages.isEmpty
           ? 0
           : (_clearances[pages.last]?.values.fold<double>(0, math.max) ?? 0);
@@ -161,6 +190,31 @@ class _AccessibilityHostState extends State<AccessibilityHost> {
     value.dx.clamp(area.left, area.right).toDouble(),
     value.dy.clamp(area.top, area.bottom).toDouble(),
   );
+
+  Offset? _unobscured(Offset requested, Rect area, List<Rect> controls) {
+    bool free(Offset point) => !controls.any(
+      (rect) =>
+          (point & const Size(diameter, diameter)).overlaps(rect.inflate(4)),
+    );
+    if (free(requested)) return requested;
+    final xs = {requested.dx, area.left, area.right};
+    final ys = {requested.dy, area.top, area.bottom};
+    for (final rect in controls) {
+      xs.addAll([rect.left - diameter - 4, rect.right + 4]);
+      ys.addAll([rect.top - diameter - 4, rect.bottom + 4]);
+    }
+    final candidates =
+        <Offset>{
+          for (final x in xs)
+            for (final y in ys) _clamp(Offset(x, y), area),
+        }.where(free).toList()..sort(
+          (a, b) => (a - requested).distanceSquared.compareTo(
+            (b - requested).distanceSquared,
+          ),
+        );
+    return candidates.isEmpty ? null : candidates.first;
+  }
+
   Future<void> _save(Offset visual, Rect base) async {
     final success = await widget.preferences.setAccessibilityButtonPosition(
       Offset(
@@ -181,159 +235,171 @@ class _AccessibilityHostState extends State<AccessibilityHost> {
     return Overlay(initialEntries: [_entry]);
   }
 
-  Widget _buildLayer(BuildContext context) => ValueListenableBuilder<double>(
-    valueListenable: widget.observer.bottomClearance,
-    builder: (context, clearance, _) => ValueListenableBuilder<double>(
-      valueListenable: widget.observer.rightClearance,
-      builder: (context, rightClearance, _) => LayoutBuilder(
-        builder: (context, constraints) {
-          final media = MediaQuery.of(context), colors = AppColors.of(context);
-          final left = media.viewPadding.left + 12,
-              top = media.viewPadding.top + 12;
-          // Reserve the main bottom navigation and leave a gap above the keyboard.
-          final base = Rect.fromLTRB(
-            left,
-            top,
-            math.max(
+  Widget _buildLayer(
+    BuildContext context,
+  ) => ValueListenableBuilder<List<Rect>>(
+    valueListenable: widget.observer.protectedControls,
+    builder: (context, controls, _) => ValueListenableBuilder<double>(
+      valueListenable: widget.observer.bottomClearance,
+      builder: (context, clearance, _) => ValueListenableBuilder<double>(
+        valueListenable: widget.observer.rightClearance,
+        builder: (context, rightClearance, _) => LayoutBuilder(
+          builder: (context, constraints) {
+            final media = MediaQuery.of(context),
+                colors = AppColors.of(context);
+            final left = media.viewPadding.left + 12,
+                top = media.viewPadding.top + 12;
+            // Reserve the main bottom navigation and leave a gap above the keyboard.
+            final base = Rect.fromLTRB(
               left,
-              constraints.maxWidth -
-                  media.viewPadding.right -
-                  rightClearance -
-                  12 -
-                  diameter,
-            ),
-            math.max(
               top,
-              constraints.maxHeight -
-                  media.viewPadding.bottom -
-                  math.max(92, clearance + 12) -
-                  diameter,
-            ),
-          );
-          final useful = Rect.fromLTRB(
-            base.left,
-            base.top,
-            base.right,
-            math.max(
-              top,
-              math.min(
-                base.bottom,
-                constraints.maxHeight - media.viewInsets.bottom - 12 - diameter,
+              math.max(
+                left,
+                constraints.maxWidth -
+                    media.viewPadding.right -
+                    rightClearance -
+                    12 -
+                    diameter,
               ),
-            ),
-          );
-          final saved = widget.preferences.buttonPosition;
-          final visual = _clamp(
-            _drag ??
-                Offset(
-                  base.left + saved.dx * base.width,
-                  base.top + saved.dy * base.height,
+              math.max(
+                top,
+                constraints.maxHeight -
+                    media.viewPadding.bottom -
+                    math.max(92, clearance + 12) -
+                    diameter,
+              ),
+            );
+            final useful = Rect.fromLTRB(
+              base.left,
+              base.top,
+              base.right,
+              math.max(
+                top,
+                math.min(
+                  base.bottom,
+                  constraints.maxHeight -
+                      media.viewInsets.bottom -
+                      12 -
+                      diameter,
                 ),
-            useful,
-          );
-          void nudge(Offset delta) {
-            _save(_clamp(visual + delta, useful), base);
-          }
+              ),
+            );
+            final saved = widget.preferences.buttonPosition;
+            final requested = _clamp(
+              _drag ??
+                  Offset(
+                    base.left + saved.dx * base.width,
+                    base.top + saved.dy * base.height,
+                  ),
+              useful,
+            );
+            final available = _unobscured(requested, useful, controls);
+            final visual = available ?? requested;
+            void nudge(Offset delta) {
+              _save(_clamp(visual + delta, useful), base);
+            }
 
-          return _HostScope(
-            observer: widget.observer,
-            child: FocusTraversalGroup(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  widget.child,
-                  Positioned(
-                    left: visual.dx,
-                    top: visual.dy,
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: widget.observer.blocked,
-                      builder: (context, blocked, _) => Visibility(
-                        visible:
-                            widget.preferences.showAccessibilityButton &&
-                            !blocked &&
-                            constraints.maxHeight - clearance >=
-                                media.viewPadding.top + diameter + 12,
-                        maintainState: true,
-                        child: CallbackShortcuts(
-                          bindings: {
-                            const SingleActivator(
-                              LogicalKeyboardKey.arrowLeft,
-                            ): () =>
-                                nudge(const Offset(-24, 0)),
-                            const SingleActivator(
-                              LogicalKeyboardKey.arrowRight,
-                            ): () =>
-                                nudge(const Offset(24, 0)),
-                            const SingleActivator(
-                              LogicalKeyboardKey.arrowUp,
-                            ): () =>
-                                nudge(const Offset(0, -24)),
-                            const SingleActivator(
-                              LogicalKeyboardKey.arrowDown,
-                            ): () =>
-                                nudge(const Offset(0, 24)),
-                          },
-                          child: GestureDetector(
-                            excludeFromSemantics: true,
-                            onPanStart: (_) => setState(() => _drag = visual),
-                            onPanUpdate: (event) => setState(
-                              () => _drag = _clamp(
-                                (_drag ?? visual) + event.delta,
-                                useful,
-                              ),
-                            ),
-                            onPanEnd: (_) {
-                              final position = _drag ?? visual;
-                              setState(() => _drag = null);
-                              _save(position, base);
+            return _HostScope(
+              observer: widget.observer,
+              child: FocusTraversalGroup(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    widget.child,
+                    Positioned(
+                      left: visual.dx,
+                      top: visual.dy,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: widget.observer.blocked,
+                        builder: (context, blocked, _) => Visibility(
+                          visible:
+                              available != null &&
+                              widget.preferences.showAccessibilityButton &&
+                              !blocked &&
+                              constraints.maxHeight - clearance >=
+                                  media.viewPadding.top + diameter + 12,
+                          maintainState: true,
+                          child: CallbackShortcuts(
+                            bindings: {
+                              const SingleActivator(
+                                LogicalKeyboardKey.arrowLeft,
+                              ): () =>
+                                  nudge(const Offset(-24, 0)),
+                              const SingleActivator(
+                                LogicalKeyboardKey.arrowRight,
+                              ): () =>
+                                  nudge(const Offset(24, 0)),
+                              const SingleActivator(
+                                LogicalKeyboardKey.arrowUp,
+                              ): () =>
+                                  nudge(const Offset(0, -24)),
+                              const SingleActivator(
+                                LogicalKeyboardKey.arrowDown,
+                              ): () =>
+                                  nudge(const Offset(0, 24)),
                             },
-                            onPanCancel: () => setState(() => _drag = null),
-                            child: Focus(
-                              skipTraversal: true,
-                              canRequestFocus: false,
-                              onFocusChange: (value) =>
-                                  setState(() => _focused = value),
-                              child: SizedBox.square(
-                                dimension: diameter,
-                                child: Material(
-                                  color: colors.primary,
-                                  elevation: 4,
-                                  shape: CircleBorder(
-                                    side: BorderSide(
-                                      width: _focused ? 3 : 1,
-                                      color: _focused
-                                          ? colors.onPrimary
-                                          : colors.primary,
+                            child: GestureDetector(
+                              excludeFromSemantics: true,
+                              onPanStart: (_) => setState(() => _drag = visual),
+                              onPanUpdate: (event) => setState(
+                                () => _drag = _clamp(
+                                  (_drag ?? visual) + event.delta,
+                                  useful,
+                                ),
+                              ),
+                              onPanEnd: (_) {
+                                final position = _drag ?? visual;
+                                setState(() => _drag = null);
+                                _save(position, base);
+                              },
+                              onPanCancel: () => setState(() => _drag = null),
+                              child: Focus(
+                                skipTraversal: true,
+                                canRequestFocus: false,
+                                onFocusChange: (value) =>
+                                    setState(() => _focused = value),
+                                child: SizedBox.square(
+                                  dimension: diameter,
+                                  child: Material(
+                                    color: colors.primary,
+                                    elevation: 4,
+                                    shape: CircleBorder(
+                                      side: BorderSide(
+                                        width: _focused ? 3 : 1,
+                                        color: _focused
+                                            ? colors.onPrimary
+                                            : colors.primary,
+                                      ),
                                     ),
-                                  ),
-                                  child: MergeSemantics(
-                                    child: Semantics(
-                                      label: context.l10n.readingOpen,
-                                      button: true,
-                                      child: Tooltip(
-                                        message: context.l10n.readingOpen,
-                                        excludeFromSemantics: true,
-                                        child: IconButton(
-                                          key: const ValueKey(
-                                            'accessibility-floating-button',
-                                          ),
-                                          focusNode: _focus,
-                                          onPressed: () {
-                                            final target = widget
-                                                .navigatorKey
-                                                .currentState
-                                                ?.overlay
-                                                ?.context;
-                                            if (target != null) {
-                                              showAccessibilityPanel(
-                                                target,
-                                                returnFocus: _focus,
-                                              );
-                                            }
-                                          },
-                                          color: colors.onPrimary,
-                                          icon: const Icon(
-                                            Icons.accessibility_new,
+                                    child: MergeSemantics(
+                                      child: Semantics(
+                                        label: context.l10n.readingOpen,
+                                        button: true,
+                                        child: Tooltip(
+                                          message: context.l10n.readingOpen,
+                                          excludeFromSemantics: true,
+                                          child: IconButton(
+                                            key: const ValueKey(
+                                              'accessibility-floating-button',
+                                            ),
+                                            focusNode: _focus,
+                                            onPressed: () {
+                                              final target = widget
+                                                  .navigatorKey
+                                                  .currentState
+                                                  ?.overlay
+                                                  ?.context;
+                                              if (target != null) {
+                                                showAccessibilityPanel(
+                                                  target,
+                                                  returnFocus: _focus,
+                                                );
+                                              }
+                                            },
+                                            color: colors.onPrimary,
+                                            icon: const Icon(
+                                              Icons.accessibility_new,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -346,15 +412,35 @@ class _AccessibilityHostState extends State<AccessibilityHost> {
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     ),
   );
+}
+
+/// Reports existing controls without persisting automatic placement adjustments.
+class AccessibilityControlsHandle {
+  AccessibilityControlsHandle._(this._observer, this._route);
+  final AccessibilityRouteObserver _observer;
+  final Route<dynamic> _route;
+  static AccessibilityControlsHandle? of(BuildContext context) {
+    final observer = context
+        .getInheritedWidgetOfExactType<_HostScope>()
+        ?.observer;
+    final route = ModalRoute.of(context);
+    return observer == null || route == null
+        ? null
+        : AccessibilityControlsHandle._(observer, route);
+  }
+
+  void update(List<Rect> rects) =>
+      _observer.reportControls(_route, rects, source: this);
+  void dispose() => _observer.reportControls(_route, null, source: this);
 }
 
 class _HostScope extends InheritedWidget {

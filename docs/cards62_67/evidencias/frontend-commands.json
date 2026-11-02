@@ -1,0 +1,59 @@
+[
+  {
+    "name": "flutter-analyze",
+    "command": [
+      "flutter",
+      "analyze",
+      "--no-pub"
+    ],
+    "started_at": "2026-11-02T01:25:49.162880+00:00",
+    "finished_at": "2026-11-02T01:25:52.742279+00:00",
+    "seconds": 3.58,
+    "exit_code": 0,
+    "log": "flutter-analyze.log"
+  },
+  {
+    "name": "flutter-test",
+    "command": [
+      "flutter",
+      "test",
+      "--no-pub"
+    ],
+    "started_at": "2026-11-02T01:25:52.742616+00:00",
+    "finished_at": "2026-11-02T01:28:52.425658+00:00",
+    "seconds": 179.68,
+    "exit_code": 0,
+    "log": "flutter-test.log"
+  },
+  {
+    "name": "flutter-web-build",
+    "command": [
+      "flutter",
+      "build",
+      "web",
+      "--no-pub",
+      "--no-web-resources-cdn",
+      "--dart-define=API_BASE_URL=http://127.0.0.1:8001"
+    ],
+    "started_at": "2026-11-02T01:28:52.426395+00:00",
+    "finished_at": "2026-11-02T01:30:18.477889+00:00",
+    "seconds": 86.05,
+    "exit_code": 0,
+    "log": "flutter-web-build.log"
+  },
+  {
+    "name": "flutter-apk-build",
+    "command": [
+      "flutter",
+      "build",
+      "apk",
+      "--debug",
+      "--no-pub"
+    ],
+    "started_at": "2026-11-02T01:30:18.478849+00:00",
+    "finished_at": "2026-11-02T01:30:19.161146+00:00",
+    "seconds": 0.68,
+    "exit_code": 1,
+    "log": "flutter-apk-build.log"
+  }
+]

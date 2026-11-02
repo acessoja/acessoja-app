@@ -21,12 +21,24 @@ class Local(models.Model):
     cardapio_braille = models.BooleanField(default=False)
     # Metadados opcionais: não modificam os campos da Sprint 1.
     categoria = models.CharField(max_length=32, blank=True)
+    subcategoria = models.CharField(max_length=32, blank=True, default="", db_index=True)
     osm_id = models.CharField(max_length=64, unique=True, null=True, blank=True)
     accessibility_information = models.JSONField(default=dict, blank=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        from .services.categories import validate_category_pair
+
+        super().clean()
+        try:
+            validate_category_pair(self.categoria, self.subcategoria)
+        except ValueError as exc:
+            raise ValidationError({"subcategoria": str(exc)}) from None
+
     def save(self, *args, **kwargs):
-        with transaction.atomic(using=kwargs.get('using')):
+        self.clean()
+        with transaction.atomic(using=kwargs.get("using")):
             return super().save(*args, **kwargs)
 
     def __str__(self):
@@ -36,14 +48,42 @@ class Local(models.Model):
         db_table = "local"
         managed = True
         indexes = [models.Index(fields=["latitude", "longitude"], name="local_source_match_point")]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(subcategoria="")
+                | (
+                    models.Q(categoria="restaurante", subcategoria="restaurante")
+                    | models.Q(categoria="restaurante", subcategoria="lanchonete")
+                    | models.Q(categoria="cafeteria", subcategoria="cafeteria")
+                    | models.Q(categoria="supermercado", subcategoria="supermercado")
+                    | models.Q(categoria="supermercado", subcategoria="conveniencia")
+                    | models.Q(categoria="farmacia", subcategoria="farmacia")
+                    | models.Q(categoria="saude", subcategoria="hospital")
+                    | models.Q(categoria="saude", subcategoria="clinica")
+                    | models.Q(categoria="saude", subcategoria="consultorio")
+                    | models.Q(categoria="educacao", subcategoria="escola")
+                    | models.Q(categoria="educacao", subcategoria="universidade")
+                    | models.Q(categoria="loja", subcategoria="roupas")
+                    | models.Q(categoria="loja", subcategoria="centro_comercial")
+                    | models.Q(categoria="parque", subcategoria="parque")
+                    | models.Q(categoria="parque", subcategoria="playground")
+                    | models.Q(categoria="banco", subcategoria="banco")
+                    | models.Q(categoria="publico", subcategoria="prefeitura")
+                    | models.Q(categoria="publico", subcategoria="orgao_governamental")
+                    | models.Q(categoria="outros", subcategoria="biblioteca")
+                    | models.Q(categoria="outros", subcategoria="cinema")
+                    | models.Q(categoria="outros", subcategoria="teatro")
+                    | models.Q(categoria="outros", subcategoria="centro_comunitario")
+                ),
+                name="local_category_child_pair",
+            )
+        ]
 
     @property
     def media_estrelas(self):
         avaliacoes = self.avaliacoes.filter(
-            is_current=True,
-            is_valid=True,
-            user__mostrar_avaliacoes=True,
-            user__is_active=True)
+            is_current=True, is_valid=True, user__mostrar_avaliacoes=True, user__is_active=True
+        )
         if avaliacoes.exists():
             return round(avaliacoes.aggregate(models.Avg("estrelas"))["estrelas__avg"], 1)
         return 0.0
@@ -71,8 +111,11 @@ class RouteHistorySession(models.Model):
     session_id = models.UUIDField()
     consent_revision = models.PositiveBigIntegerField(default=0)
     destination_name = models.CharField(max_length=255, blank=True)
-    destination_source = models.CharField(max_length=32, blank=True, choices=[
-        ("acessoja", "AcessoJá"), ("openstreetmap", "OpenStreetMap"), ("manual", "Destino manual")])
+    destination_source = models.CharField(
+        max_length=32,
+        blank=True,
+        choices=[("acessoja", "AcessoJá"), ("openstreetmap", "OpenStreetMap"), ("manual", "Destino manual")],
+    )
     local = models.ForeignKey(Local, null=True, blank=True, on_delete=models.SET_NULL)
     external_id = models.CharField(max_length=64, blank=True)
     latitude = models.FloatField(null=True, blank=True)
@@ -83,9 +126,16 @@ class RouteHistorySession(models.Model):
     estimated_duration = models.FloatField(null=True, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=16, blank=True, choices=[
-        ("in_progress", "Em andamento"), ("completed", "Concluída"),
-        ("cancelled", "Cancelada"), ("interrupted", "Interrompida")])
+    status = models.CharField(
+        max_length=16,
+        blank=True,
+        choices=[
+            ("in_progress", "Em andamento"),
+            ("completed", "Concluída"),
+            ("cancelled", "Cancelada"),
+            ("interrupted", "Interrompida"),
+        ],
+    )
     event_index = models.PositiveIntegerField(default=0)
     last_event = models.CharField(max_length=16, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
@@ -101,6 +151,7 @@ class RouteHistorySession(models.Model):
 
 class ManualRegistrationGuard(models.Model):
     """Singleton created during migration, never created on request."""
+
     id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
 
     def __str__(self):

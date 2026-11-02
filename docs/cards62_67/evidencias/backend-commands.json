@@ -1,0 +1,19 @@
+[
+  {
+    "name": "pytest",
+    "command": [
+      "pytest",
+      "-q",
+      "--cov=.",
+      "--cov-report=term-missing",
+      "--cov-report=xml:/workspace/scratch/b3b0ff1ac447/work/cards62_67/evidence/final/coverage.xml",
+      "--cov-fail-under=80",
+      "--junitxml=/workspace/scratch/b3b0ff1ac447/work/cards62_67/evidence/final/pytest.xml"
+    ],
+    "started_at": "2026-11-02T01:22:49.598650+00:00",
+    "finished_at": "2026-11-02T01:29:00.175162+00:00",
+    "seconds": 370.58,
+    "exit_code": 0,
+    "log": "pytest.log"
+  }
+]

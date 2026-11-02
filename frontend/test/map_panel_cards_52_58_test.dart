@@ -1,3 +1,4 @@
+import 'discovery_fixture.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -59,11 +60,14 @@ void apiFixture({List<http.Request>? requests}) {
   AppHttp.client = MockClient((request) async {
     requests?.add(request);
     final path = request.url.path;
-    if (path == '/api/locais/') {
-      return fixture.jsonResponse([
-        responsePlace(1),
-        {...responsePlace(2), 'latitude': -16.3258, 'longitude': -48.9518},
-      ]);
+    if ((path == '/api/locais/' || path == '/api/locais/descoberta/')) {
+      return asDiscoveryResponse(
+        request,
+        fixture.jsonResponse([
+          responsePlace(1),
+          {...responsePlace(2), 'latitude': -16.3258, 'longitude': -48.9518},
+        ]),
+      );
     }
     if (path == '/api/locais/1/' || path == '/api/locais/2/') {
       return fixture.jsonResponse(responsePlace(path.contains('/1/') ? 1 : 2));

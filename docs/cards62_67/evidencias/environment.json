@@ -1,0 +1,19 @@
+{
+  "python": "Python 3.12.14",
+  "uid": 0,
+  "uid_map": "0          0          1",
+  "postgres": null,
+  "initdb": null,
+  "adb": null,
+  "ANDROID_HOME_present": false,
+  "ANDROID_SDK_ROOT_present": false,
+  "chrome": {
+    "version": "156.0.8078.80",
+    "binary": "/workspace/scratch/b3b0ff1ac447/work/cards62_67/runtime/chrome-headless-shell-linux64/chrome-headless-shell"
+  },
+  "git_copy": "Immutable archive, no checkout/Git writes",
+  "real_android": "not available",
+  "screen_reader_human": "not available",
+  "remote_ci": "not run",
+  "flutter": "{\n  \"frameworkVersion\": \"3.47.4\",\n  \"channel\": \"stable\",\n  \"repositoryUrl\": \"https://github.com/flutter/flutter.git\",\n  \"frameworkRevision\": \"9584c6713b324636289d067944a46fd6b49df14b\",\n  \"frameworkCommitDate\": \"2026-09-10 15:25:10 -0700\",\n  \"engineRevision\": \"06a2e2a110089dff50fe635cffd2a61e1b24fbcd\",\n  \"engineCommitDate\": \"2026-09-03 16:07:13.000Z\",\n  \"engineContentHash\": \"0e228ec8c8d2abc9fcf1d053e8a40665bb859ec7\",\n  \"engineBuildDate\": \"2026-09-03 09:39:13.722\",\n  \"dartSdkVersion\": \"3.13.3\",\n  \"devToolsVersion\": \"2.60.0\",\n  \"flutterVersion\": \"3.47.4\",\n  \"flutterRoot\": \"/workspace/scratch/b3b0ff1ac447/work/cards62_67/runtime/flutter\"\n}\n"
+}

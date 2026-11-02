@@ -1,0 +1,38 @@
+geographic {"cache": "miss", "correlation_id": "3ce4f931c1674f938ccb925573b31257", "event": "cache", "provider": "overpass"}
+geographic {"correlation_id": "3ce4f931c1674f938ccb925573b31257", "event": "query", "provider": "overpass", "selectors": 4}
+geographic {"code": "connection_failed", "correlation_id": "3ce4f931c1674f938ccb925573b31257", "event": "failure", "retry_source": "application", "stage": "connect", "status": 503, "upstream_status": null}
+geographic {"correlation_id": "3ce4f931c1674f938ccb925573b31257", "event": "finished", "milliseconds": 17, "provider": "overpass", "retry_source": "application"}
+Service Unavailable: /api/locais/externos/
+T001 T036 real login starts without applying saved preferences
+T002 T004 T053 T075 private persistent prioritization keeps zero-score places
+T054 T055 private continuation reads persisted second page
+T019 T081 compact personal summary
+T083 expanded personal resources and other groups
+T094 emulated mobile viewport only
+T094 actual application 200 percent text setting
+T027 saved profile persists without changing applied search
+T028 explicit reapply reads the latest private profile
+T008 T009 persisted personal all and any use the applied snapshot
+T022 T076 disable personal selection and third-party transport checks
+geographic {"cache": "miss", "correlation_id": "3b77fc0a323743558fc057987b106dfd", "event": "cache", "provider": "overpass"}
+geographic {"correlation_id": "3b77fc0a323743558fc057987b106dfd", "event": "query", "provider": "overpass", "selectors": 4}
+geographic {"code": "connection_failed", "correlation_id": "3b77fc0a323743558fc057987b106dfd", "event": "failure", "retry_source": "application", "stage": "connect", "status": 503, "upstream_status": null}
+geographic {"correlation_id": "3b77fc0a323743558fc057987b106dfd", "event": "finished", "milliseconds": 5, "provider": "overpass", "retry_source": "application"}
+Service Unavailable: /api/locais/externos/
+T036 T067 actual visitor entry keeps discovery public
+T096 persisted visitor mode Pelo menos um
+T096 persisted visitor mode Todos
+T096 persisted visitor mode Priorizar
+T039 T040 T097 persisted hierarchy preserves legacy and cancel leaves search intact
+Unauthorized: /api/usuarios/perfil/
+geographic {"cache": "miss", "correlation_id": "723a9d28cbe2472f9128d60cc81c5eea", "event": "cache", "provider": "overpass"}
+geographic {"correlation_id": "723a9d28cbe2472f9128d60cc81c5eea", "event": "query", "provider": "overpass", "selectors": 4}
+geographic {"code": "connection_failed", "correlation_id": "723a9d28cbe2472f9128d60cc81c5eea", "event": "failure", "retry_source": "application", "stage": "connect", "status": 503, "upstream_status": null}
+geographic {"correlation_id": "723a9d28cbe2472f9128d60cc81c5eea", "event": "finished", "milliseconds": 1, "provider": "overpass", "retry_source": "application"}
+Service Unavailable: /api/locais/externos/
+geographic {"cache": "miss", "correlation_id": "fea68bcf7f2442768a575335bfd706fd", "event": "cache", "provider": "overpass"}
+geographic {"correlation_id": "fea68bcf7f2442768a575335bfd706fd", "event": "query", "provider": "overpass", "selectors": 4}
+geographic {"code": "provider_cooldown", "correlation_id": "fea68bcf7f2442768a575335bfd706fd", "event": "blocked", "provider": "overpass", "retry_source": "application", "stage": "coordination"}
+geographic {"code": "provider_cooldown", "correlation_id": "fea68bcf7f2442768a575335bfd706fd", "event": "failure", "retry_source": "application", "stage": "coordination", "status": 429, "upstream_status": null}
+Too Many Requests: /api/locais/externos/
+T071 T073 T099 real late owner response discarded across logout and account switch

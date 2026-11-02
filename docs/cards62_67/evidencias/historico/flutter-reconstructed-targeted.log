@@ -1,0 +1,80 @@
+00:00 +0: loading /workspace/scratch/b3b0ff1ac447/work/cards62_67/project/frontend/test/discovery_cards62_67_test.dart
+00:00 +0: T006 T008 T009 T010 T011 shared truth both_present
+00:00 +1: T006 T008 T009 T010 T011 shared truth presence_absence
+00:00 +2: T006 T008 T009 T010 T011 shared truth presence_unknown_excluded
+00:00 +3: T006 T008 T009 T010 T011 shared truth presence_unknown_opt_in
+00:00 +4: T006 T008 T009 T010 T011 shared truth both_unknown_excluded
+00:00 +5: T006 T008 T009 T010 T011 shared truth both_unknown_opt_in
+00:00 +6: T006 T008 T009 T010 T011 shared truth unknown_absent_opt_in
+00:00 +7: T006 T008 T009 T010 T011 shared truth unknown_divergent_opt_in
+00:00 +8: T006 T008 T009 T010 T011 shared truth unknown_limited_opt_in
+00:00 +9: T006 T008 T009 T010 T011 shared truth unknown_not_applicable_opt_in
+00:00 +10: T006 T008 T009 T010 T011 shared truth limited_not_applicable_opt_in
+00:00 +11: T006 T008 T009 T010 T011 shared truth no_applicable_presence
+00:00 +12: T006 T008 T009 T010 T011 shared truth conflicting_and_partial
+00:00 +13: T005 exact three-feature scores deduplicate repeated resource IDs
+00:00 +14: T059 consolidated unknown cannot be resurrected by a legacy OSM tag
+00:00 +15: T063 T064 unified controller requires restart after a changed or expired page
+00:00 +15 -1: T063 T064 unified controller requires restart after a changed or expired page [E]
+  Expected: true
+    Actual: <false>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/discovery_cards62_67_test.dart 131:7           main.<fn>
+  
+00:00 +15 -1: T013 empty manual selection is neutral in prioritize
+00:00 +16 -1: T013 empty manual selection is neutral in all
+00:00 +17 -1: T013 empty manual selection is neutral in any
+00:00 +18 -1: T006 T009 T010 exact states presence_reported unknown=false
+00:00 +19 -1: T006 T009 T010 exact states presence_reported unknown=true
+00:00 +20 -1: T006 T009 T010 exact states absence_reported unknown=false
+00:00 +21 -1: T006 T009 T010 exact states absence_reported unknown=true
+00:00 +22 -1: T006 T009 T010 exact states unknown unknown=false
+00:00 +23 -1: T006 T009 T010 exact states unknown unknown=true
+00:00 +24 -1: T006 T009 T010 exact states divergent unknown=false
+00:00 +25 -1: T006 T009 T010 exact states divergent unknown=true
+00:00 +26 -1: T006 T009 T010 exact states limited unknown=false
+00:00 +27 -1: T006 T009 T010 exact states limited unknown=true
+00:00 +28 -1: T006 T009 T010 exact states not_applicable unknown=false
+00:00 +29 -1: T006 T009 T010 exact states not_applicable unknown=true
+00:00 +30 -1: T021 T022 independent manual restriction and deduplicated priorities
+00:00 +31 -1: T023 personal strict all and explicit any do not alter manual mode
+00:00 +32 -1: T028 T035 immutable snapshot and twice touched manual ownership
+00:00 +33 -1: T038 T039 T040 T045 hierarchy derives parents and clears children
+00:00 +34 -1: T030 T075 private snapshot excluded from URL parameters and identity changes
+00:00 +35 -1: T075 T078 private POST pages carry snapshot only in JSON
+00:00 +36 -1: T079 rejects unsafe private continuation https://foreign.invalid/token before any HTTP
+00:00 +37 -1: T079 rejects unsafe private continuation //foreign.invalid/token before any HTTP
+00:00 +38 -1: T079 rejects unsafe private continuation /external/path before any HTTP
+00:00 +39 -1: T079 rejects unsafe private continuation token?resource=private before any HTTP
+00:00 +40 -1: T079 public continuation validates host, path and exact criteria
+00:00 +41 -1: T071 T073 late success after session change is discarded
+00:00 +42 -1: T072 private 401 clears session; public discovery remains usable
+00:00 +43 -1: T031 T073 query B owns list and loading after late A
+00:00 +44 -1: T081 T083 preferred groups precede other groups without duplicate resources
+00:01 +45 -1: T085 T086 compact preserves hidden warning divergent
+00:01 +46 -1: T085 T086 compact preserves hidden warning absence_reported
+00:01 +47 -1: T085 T086 compact preserves hidden warning limited
+00:01 +48 -1: T081 T083 actual expanded internal panel passes only applied personal selection
+00:02 +49 -1: T036 T067 guest entry clears private session without authenticating
+00:02 +50 -1: T049 hidden selected children survive accent-insensitive chooser search
+00:04 +51 -1: T025 T026 mode and child draft remain uncommitted until Apply
+00:05 +52 -1: Some tests failed.
+
+Failing tests:
+  /workspace/scratch/b3b0ff1ac447/work/cards62_67/project/frontend/test/discovery_cards62_67_test.dart: T063 T064 unified controller requires restart after a changed or expired page
+The Flutter CLI developer tool uses Google Analytics to report usage and diagnostic
+data along with package dependencies, and crash reporting to send basic crash
+reports. This data is used to help improve the Dart platform, Flutter framework,
+and related tools.
+
+Telemetry is not sent on the very first run. To disable reporting of telemetry,
+run this terminal command:
+
+    flutter --disable-analytics
+
+If you opt out of telemetry, an opt-out event will be sent, and then no further
+information will be sent. This data is collected in accordance with the Google
+Privacy Policy (https://policies.google.com/privacy).
+

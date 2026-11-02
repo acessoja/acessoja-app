@@ -1,0 +1,47 @@
+[
+  {
+    "suite": "discovery",
+    "command": [
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/runtime/venv/bin/python",
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/project/frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      "--chrome",
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/runtime/chrome-headless-shell-linux64/chrome-headless-shell",
+      "--report",
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/evidence/final/browser-discovery/REPORT.json"
+    ],
+    "started_at": "2026-11-02T01:30:19.239931+00:00",
+    "finished_at": "2026-11-02T01:31:25.943568+00:00",
+    "exit_code": 0,
+    "build_sha256": "333723212c857e3636b9b9920399b3c6897e3b50484c31fa1d7e9742aa388cae"
+  },
+  {
+    "suite": "panel",
+    "command": [
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/runtime/venv/bin/python",
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/project/frontend/integration_test/map_panel_browser_lab.py",
+      "--chrome",
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/runtime/chrome-headless-shell-linux64/chrome-headless-shell",
+      "--report",
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/evidence/final/browser-panel/REPORT.json"
+    ],
+    "started_at": "2026-11-02T01:31:25.944336+00:00",
+    "finished_at": "2026-11-02T01:31:58.417861+00:00",
+    "exit_code": 0,
+    "build_sha256": "333723212c857e3636b9b9920399b3c6897e3b50484c31fa1d7e9742aa388cae"
+  },
+  {
+    "suite": "routes",
+    "command": [
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/runtime/venv/bin/python",
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/project/frontend/integration_test/route_return_browser_lab.py",
+      "--chrome",
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/runtime/chrome-headless-shell-linux64/chrome-headless-shell",
+      "--report",
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/evidence/final/browser-routes/REPORT.json"
+    ],
+    "started_at": "2026-11-02T01:31:58.418474+00:00",
+    "finished_at": "2026-11-02T01:32:32.341539+00:00",
+    "exit_code": 0,
+    "build_sha256": "333723212c857e3636b9b9920399b3c6897e3b50484c31fa1d7e9742aa388cae"
+  }
+]

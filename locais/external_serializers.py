@@ -39,6 +39,7 @@ class ExternalPlaceSerializer(serializers.Serializer):
     source = serializers.CharField()
     nome = serializers.CharField()
     categoria = serializers.CharField()
+    subcategoria = serializers.CharField(allow_blank=True)
     categoria_label = serializers.CharField()
     endereco = serializers.CharField(allow_blank=True)
     latitude = serializers.FloatField()
