@@ -2,7 +2,7 @@
 
 import math
 
-from django.db.models import Exists, F, OuterRef, Q, Value
+from django.db.models import Case, Exists, F, IntegerField, OuterRef, Q, Value, When
 from django.db.models.functions import ASin, Cos, Greatest, Least, Radians, Sin, Sqrt
 
 from locais.accessibility import osm_information, resolve_information
@@ -10,7 +10,7 @@ from locais.catalog_models import CatalogEntry
 from locais.models import Local
 from evidencias.models import ResourceEvidence
 from evidencias.projection import visible_query
-from .categories import CATEGORIES
+from .categories import CATEGORIES, SUBCATEGORIES, subcategory_for
 from .matching import normalize
 
 
@@ -36,28 +36,77 @@ def catalog_queryset(batch, options, filters, *, unlinked=True):
         rows = rows.filter(category__in=filters["categories"])
     for word in normalize(filters["search"]).split():
         rows = rows.filter(search_text__contains=word)
+    predicates, scores = [], []
     for resource in filters["resources"]:
         states = ["presence_reported", "unknown"] if filters["include_unknown"] else ["presence_reported"]
         fallback = Q(**{f"resource_states__{resource}__in": states})
         if filters["include_unknown"]:
             fallback |= Q(**{f"resource_states__{resource}__isnull": True})
-        base = ResourceEvidence.objects.filter(external_id=OuterRef('poi__external_id'), resource=resource,
-                                               withdrawn=False)
+        base = ResourceEvidence.objects.filter(
+            external_id=OuterRef("poi__external_id"), resource=resource, withdrawn=False
+        )
         public = base.filter(visible_query(), current_revision__is_valid=True)
         aliases = {}
-        prefix = '_evidence_' + resource + '_'
-        aliases[prefix + 'exists'] = Exists(base)
-        for short, state in [('yes', 'presence_reported'), ('no', 'absence_reported'), ('limited', 'limited'),
-                             ('unknown', 'unknown'), ('na', 'not_applicable')]:
+        prefix = "_evidence_" + resource + "_"
+        aliases[prefix + "exists"] = Exists(base)
+        for short, state in [
+            ("yes", "presence_reported"),
+            ("no", "absence_reported"),
+            ("limited", "limited"),
+            ("unknown", "unknown"),
+            ("na", "not_applicable"),
+        ]:
             aliases[prefix + short] = Exists(public.filter(current_revision__state=state))
         rows = rows.annotate(**aliases)
-        known = Q(**{prefix + 'yes': True, prefix + 'no': False})
-        if filters['include_unknown']:
-            unknown = Q(**{prefix + 'yes': False, prefix + 'no': False, prefix + 'limited': False})
-            unknown &= Q(**{prefix + 'unknown': True}) | Q(**{prefix + 'na': False})
+        known = Q(**{prefix + "yes": True, prefix + "no": False})
+        if filters["include_unknown"]:
+            unknown = Q(**{prefix + "yes": False, prefix + "no": False, prefix + "limited": False})
+            unknown &= Q(**{prefix + "unknown": True}) | Q(**{prefix + "na": False})
             known |= unknown
-        rows = rows.filter((Q(**{prefix + 'exists': True}) & known) |
-                           (Q(**{prefix + 'exists': False}) & fallback))
+        predicates.append((Q(**{prefix + "exists": True}) & known) | (Q(**{prefix + "exists": False}) & fallback))
+        present = Q(**{prefix + "exists": True, prefix + "yes": True, prefix + "no": False}) | (
+            Q(**{prefix + "exists": False}) & Q(**{f"resource_states__{resource}": "presence_reported"})
+        )
+        scores.append(Case(When(present, then=Value(1)), default=Value(0), output_field=IntegerField()))
+    if predicates and filters.get("mode") != "priorizar":
+        predicate = predicates[0]
+        for item in predicates[1:]:
+            predicate = predicate | item if filters.get("combination") == "qualquer" else predicate & item
+        rows = rows.filter(predicate)
+    leading = []
+    if scores and filters.get("mode") == "priorizar":
+        total = scores[0]
+        for item in scores[1:]:
+            total += item
+        rows = rows.annotate(_resource_score=total)
+        leading = ["-_resource_score"]
+    if filters.get("subcategories"):
+        candidates = [
+            Case(
+                When(**{f"tags__{key}": value for key, value in item["tags"].items()}, then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            )
+            for item in SUBCATEGORIES.values()
+        ]
+        total = candidates[0]
+        for item in candidates[1:]:
+            total += item
+        rows = rows.annotate(_category_candidates=total)
+        category_match = Q(pk__in=[])
+        for parent in filters["categories"]:
+            children = [
+                SUBCATEGORIES[key] for key in filters["subcategories"] if SUBCATEGORIES[key]["parent"] == parent
+            ]
+            if not children:
+                category_match |= Q(category=parent)
+            for child in children:
+                category_match |= Q(
+                    category=parent,
+                    _category_candidates=1,
+                    **{f"tags__{key}": value for key, value in child["tags"].items()},
+                )
+        rows = rows.filter(category_match)
     if options.ordering == "proximity":
         lat, lon = options.origin
         a = Sin((Radians(F("latitude")) - Value(math.radians(lat))) / 2.0) ** 2.0 + (
@@ -66,9 +115,9 @@ def catalog_queryset(batch, options, filters, *, unlinked=True):
             * Sin((Radians(F("longitude")) - Value(math.radians(lon))) / 2.0) ** 2.0
         )
         rows = rows.annotate(distance_m=Value(12742000.0) * ASin(Sqrt(Least(Value(1.0), Greatest(Value(0.0), a)))))
-        return rows.order_by("distance_m", "display_name", "poi_id")
+        return rows.order_by(*leading, "distance_m", "display_name", "poi_id")
     # All unlinked catalog POIs are unreviewed. Rating therefore ties, then orders by name and stable ID.
-    return rows.order_by("display_name", "poi_id")
+    return rows.order_by(*leading, "display_name", "poi_id")
 
 
 def catalog_place(entry, filters=None, linked_local=None):
@@ -83,6 +132,7 @@ def catalog_place(entry, filters=None, linked_local=None):
         "name_is_fallback": not bool(entry.original_name),
         "endereco": entry.address,
         "categoria": entry.category,
+        "subcategoria": subcategory_for(entry.tags, entry.category),
         "categoria_label": CATEGORIES[entry.category]["label"],
         "latitude": entry.latitude,
         "longitude": entry.longitude,

@@ -1,3 +1,4 @@
+import 'discovery_fixture.dart';
 import 'package:flutter_application_1/screens/contributions_screen.dart';
 import 'package:flutter_application_1/screens/saved_places_screen.dart';
 import 'package:flutter_application_1/screens/sugestoes_screen.dart';
@@ -27,6 +28,7 @@ import 'package:flutter_application_1/services/navigation_controller.dart';
 import 'package:flutter_application_1/widgets/evaluation_survey_dialog.dart';
 import 'package:flutter_application_1/widgets/map_place_preview.dart';
 import 'package:flutter_application_1/widgets/navigation_panel.dart';
+import 'package:flutter_application_1/widgets/accessibility_host.dart';
 import 'package:flutter_application_1/models/accessibility_survey.dart';
 import 'helpers/route_history_fake.dart';
 import 'reading_preferences_test.dart' show MemoryReadingStore;
@@ -98,6 +100,76 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }
+
+  testWidgets(
+    'T094 expanded panel leaves floating reading control clear of map controls',
+    (tester) async {
+      viewport(tester, const Size(390, 844), 1);
+      final p = prefs(const ReadingPreferences(textSize: 2), button: true);
+      final saved = p.buttonPosition;
+      AccessibilityControlsHandle? controls;
+      addTearDown(() => controls?.dispose());
+      await tester.pumpWidget(app.MyApp(preferences: p));
+      await push(
+        tester,
+        Builder(
+          builder: (context) {
+            controls ??= AccessibilityControlsHandle.of(context);
+            controls!.update(const [
+              Rect.fromLTWH(12, 12, 168, 56),
+              Rect.fromLTWH(244, 12, 134, 56),
+            ]);
+            return const Scaffold(
+              body: Stack(
+                children: [
+                  Positioned(
+                    left: 12,
+                    top: 12,
+                    width: 168,
+                    height: 56,
+                    child: Text('Map controls', key: ValueKey('left-controls')),
+                  ),
+                  Positioned(
+                    left: 244,
+                    top: 12,
+                    width: 134,
+                    height: 56,
+                    child: Text('Search', key: ValueKey('right-search')),
+                  ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: AccessibilityBottomBoundary(
+                      child: SizedBox(height: 764),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+      final button = find.byKey(
+        const ValueKey('accessibility-floating-button'),
+      );
+      expect(button, findsOneWidget);
+      final rect = tester.getRect(button);
+      for (final key in ['left-controls', 'right-search']) {
+        expect(
+          rect.overlaps(tester.getRect(find.byKey(ValueKey(key)))),
+          isFalse,
+        );
+      }
+      expect(
+        p.buttonPosition,
+        saved,
+        reason: 'Automatic avoidance must not rewrite the saved position',
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   final variants = [
     (reading: const ReadingPreferences(), system: 1.0, dark: false),
@@ -347,8 +419,13 @@ void main() {
             ),
           );
         }
-        if (request.url.path == '/api/locais/') {
-          return routes.response([routes.own]);
+        if ((request.url.path == '/api/locais/' ||
+            request.url.path == '/api/locais/descoberta/')) {
+          return asDiscoveryResponse(
+            request,
+            routes.response([routes.own]),
+            additional: [routes.osm],
+          );
         }
         if (request.url.path == '/api/locais/externos/') {
           return routes.response({

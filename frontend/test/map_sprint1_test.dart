@@ -1,3 +1,4 @@
+import 'discovery_fixture.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -80,7 +81,10 @@ void main() {
         return http.Response.bytes(utf8.encode(jsonEncode(_place)), 200);
       }
       if (path.contains('locais')) {
-        return http.Response.bytes(utf8.encode(jsonEncode([_place])), 200);
+        return asDiscoveryResponse(
+          request,
+          http.Response.bytes(utf8.encode(jsonEncode([_place])), 200),
+        );
       }
       return http.Response('{}', 404);
     });

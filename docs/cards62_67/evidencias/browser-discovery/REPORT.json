@@ -1,0 +1,180 @@
+{
+  "started_at": "2026-11-02T01:30:19.351736+00:00",
+  "status": "passed",
+  "steps": [
+    {
+      "name": "T001 T036 real login starts without applying saved preferences",
+      "status": "passed",
+      "screenshot": "01_default.png"
+    },
+    {
+      "name": "T002 T004 T053 T075 private persistent prioritization keeps zero-score places",
+      "status": "passed",
+      "screenshot": "02_personal.png"
+    },
+    {
+      "name": "T054 T055 private continuation reads persisted second page",
+      "status": "passed"
+    },
+    {
+      "name": "T019 T081 compact personal summary",
+      "status": "passed",
+      "screenshot": "03_compact.png"
+    },
+    {
+      "name": "T083 expanded personal resources and other groups",
+      "status": "passed",
+      "screenshot": "04_expanded.png"
+    },
+    {
+      "name": "T094 emulated mobile viewport only",
+      "status": "passed",
+      "screenshot": "05_mobile.png"
+    },
+    {
+      "name": "T094 actual application 200 percent text setting",
+      "status": "passed",
+      "screenshot": "06_mobile_200.png"
+    },
+    {
+      "name": "T027 saved profile persists without changing applied search",
+      "status": "passed"
+    },
+    {
+      "name": "T028 explicit reapply reads the latest private profile",
+      "status": "passed"
+    },
+    {
+      "name": "T008 T009 persisted personal all and any use the applied snapshot",
+      "status": "passed",
+      "all_count": 0,
+      "any_count": 2
+    },
+    {
+      "name": "T022 T076 disable personal selection and third-party transport checks",
+      "status": "passed"
+    },
+    {
+      "name": "T036 T067 actual visitor entry keeps discovery public",
+      "status": "passed",
+      "screenshot": "07_guest.png"
+    },
+    {
+      "name": "T096 persisted visitor mode Pelo menos um",
+      "status": "passed",
+      "count": 2,
+      "screenshot": "08_mode_0.png"
+    },
+    {
+      "name": "T096 persisted visitor mode Todos",
+      "status": "passed",
+      "count": 1,
+      "screenshot": "08_mode_1.png"
+    },
+    {
+      "name": "T096 persisted visitor mode Priorizar",
+      "status": "passed",
+      "count": 25,
+      "screenshot": "08_mode_2.png"
+    },
+    {
+      "name": "T039 T040 T097 persisted hierarchy preserves legacy and cancel leaves search intact",
+      "status": "passed",
+      "broad_count": 3,
+      "child_count": 1,
+      "screenshot": "09_hierarchy.png"
+    },
+    {
+      "name": "T071 T073 T099 real late owner response discarded across logout and account switch",
+      "status": "passed",
+      "screenshot": "09_account_switch.png"
+    }
+  ],
+  "engine": "Playwright Python + real compiled main.dart.js + Django/SQLite persistence",
+  "build_sha256": "333723212c857e3636b9b9920399b3c6897e3b50484c31fa1d7e9742aa388cae",
+  "not_executed": [
+    "Playwright MCP unavailable",
+    "PostgreSQL",
+    "Physical Android/Chrome mobile",
+    "Human screen reader/TalkBack",
+    "Remote CI",
+    "Real third-party providers"
+  ],
+  "browser": "156.0.8078.80",
+  "page_errors": [],
+  "api_requests": 44,
+  "third_party_attempts": 140,
+  "response_summaries": [
+    {
+      "count": 1,
+      "first_names": [
+        "ZZ Principal"
+      ],
+      "first_match": {
+        "count": 2,
+        "total": 2
+      }
+    },
+    {
+      "count": 3,
+      "first_names": [
+        "ZZ Principal",
+        "MM Parcial",
+        "AA Zero"
+      ],
+      "first_match": {
+        "count": 2,
+        "total": 2
+      }
+    },
+    {
+      "count": 25,
+      "first_names": [
+        "AA Zero",
+        "Lugar de teste 00",
+        "Lugar de teste 01"
+      ],
+      "first_match": {
+        "count": 0,
+        "total": 0
+      }
+    },
+    {
+      "count": 25,
+      "first_names": [
+        "AA Zero",
+        "Lugar de teste 00",
+        "Lugar de teste 01"
+      ],
+      "first_match": {
+        "count": 0,
+        "total": 0
+      }
+    },
+    {
+      "count": 25,
+      "first_names": [
+        "ZZ Principal",
+        "MM Parcial",
+        "AA Zero"
+      ],
+      "first_match": {
+        "count": 2,
+        "total": 4
+      }
+    },
+    {
+      "count": 25,
+      "first_names": [
+        "AA Zero",
+        "Lugar de teste 00",
+        "Lugar de teste 01"
+      ],
+      "first_match": {
+        "count": 0,
+        "total": 1
+      }
+    }
+  ],
+  "finished_at": "2026-11-02T01:31:25.219570+00:00"
+}

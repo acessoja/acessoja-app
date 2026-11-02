@@ -10,6 +10,7 @@ import '../widgets/responsive_navigation_bar.dart';
 import '../widgets/accessibility_host.dart';
 import '../reading_presentation.dart';
 import '../models/discovery_filters.dart';
+import '../models/accessibility_catalog.dart';
 import '../services/accessibility_preferences_service.dart';
 import '../l10n/accessibility_strings.dart';
 import '../widgets/accessibility_filter_panel.dart';
@@ -76,6 +77,7 @@ class MainScreen extends StatefulWidget {
   final RouteService? routeService;
   final ExternalNavigation? externalNavigation;
   final DateTime Function()? clock;
+  final bool isGuest;
   final AccessibilityPreferencesService preferencesService;
   final RouteHistoryService routeHistoryService;
 
@@ -87,6 +89,7 @@ class MainScreen extends StatefulWidget {
     this.routeService,
     this.externalNavigation,
     this.clock,
+    this.isGuest = false,
     this.preferencesService = const AccessibilityPreferencesService(),
     this.routeHistoryService = const RouteHistoryService(),
     this.tileProvider,
@@ -125,11 +128,13 @@ class _MainScreenState extends SafeState<MainScreen>
   final _discoveryStatusKey = GlobalKey();
   final _searchControlKey = GlobalKey();
   final _statusButtonAreaKey = GlobalKey();
+  final _countAreaKey = GlobalKey();
   final _resultsAreaKey = GlobalKey();
   final _legendAreaKey = GlobalKey();
   final _menuAreaKey = GlobalKey();
   Rect? _panelRect;
   List<Rect> _controlRects = [];
+  AccessibilityControlsHandle? _accessibilityControls;
   bool _panelActionBusy = false, _measureScheduled = false;
   MapPlace? _lastPreviewRecord;
   PlacePanelContext? _routePanelReturn;
@@ -167,6 +172,9 @@ class _MainScreenState extends SafeState<MainScreen>
 
   int _profileRequest = 0;
   Future<void> _loadUserProfile() async {
+    if (widget.isGuest && !AppHttp.authenticated) {
+      return;
+    }
     final request = ++_profileRequest;
     final session = AppHttp.sessionRevision.value;
     try {
@@ -625,7 +633,8 @@ class _MainScreenState extends SafeState<MainScreen>
         );
         return;
       }
-      if (preferences.unavailable.isNotEmpty) {
+      if (preferences.catalogVersion != resourceCatalogVersion ||
+          preferences.unavailable.isNotEmpty) {
         throw const PreferencesException(400, 'unavailable_resources');
       }
       if (preferences.resources.isEmpty) {
@@ -639,8 +648,10 @@ class _MainScreenState extends SafeState<MainScreen>
       }
       _filterRevision++;
       setState(
-        () =>
-            _filterState = _filterState.applyPreferences(preferences.resources),
+        () => _filterState = _filterState.applyPreferences(
+          preferences.resources,
+          catalogVersion: preferences.catalogVersion,
+        ),
       );
       unawaited(_fetchEstablishments());
     } catch (error) {
@@ -683,6 +694,32 @@ class _MainScreenState extends SafeState<MainScreen>
     onUsePreferences: _usePreferences,
     onDeactivate: _deactivatePreferences,
     onConfigure: _configurePreferences,
+    onPersonalResource: (id) {
+      _filterRevision++;
+      setState(
+        () =>
+            _filterState = _filterState.commitDraft(_filterState.filters, {id}),
+      );
+      _placesRevision.value++;
+      unawaited(_fetchEstablishments());
+    },
+    onPersonalMode: (mode) {
+      _filterRevision++;
+      setState(() => _filterState = _filterState.withPersonalMode(mode));
+      _placesRevision.value++;
+      unawaited(_fetchEstablishments());
+    },
+    onPersonalUnknown: (value) {
+      _filterRevision++;
+      setState(
+        () => _filterState = _filterState.withPersonalMode(
+          _filterState.personalMode,
+          includeUnknown: value,
+        ),
+      );
+      _placesRevision.value++;
+      unawaited(_fetchEstablishments());
+    },
     loading: _personalizationLoading,
     message: _preferencesMessage,
   );
@@ -802,14 +839,38 @@ class _MainScreenState extends SafeState<MainScreen>
       for (final place in _catalog.places) place.id: place,
     };
     final models =
-        mergeMapPlaces(_internalLocals, external.values.toList())
+        (_regionalScope
+                ? mergeMapPlaces([], _externalLocals)
+                : _unifiedLoaded
+                ? _internalLocals
+                : mergeMapPlaces(_internalLocals, external.values.toList()))
             .where(
               (place) =>
-                  _filterState.filters.matches(place) &&
-                  place.matches(_searchText),
+                  _filterState.matches(place) && place.matches(_searchText),
             )
-            .toList()
-          ..sort((a, b) => comparePlaceDistance(a, b, origin));
+            .toList();
+    if (!_unifiedLoaded || _regionalScope) {
+      models.sort((a, b) {
+        final score = _filterState.score(b).compareTo(_filterState.score(a));
+        if (score != 0) {
+          return score;
+        }
+        final ordering = _filterState.filters.ordering;
+        if (ordering == 'proximity' && origin != null) {
+          return comparePlaceDistance(a, b, origin);
+        }
+        if (ordering == 'rating') {
+          final rating = (b.rating ?? 0).compareTo(a.rating ?? 0);
+          if (rating != 0) {
+            return rating;
+          }
+        }
+        final name = normalizePlaceText(
+          a.name,
+        ).compareTo(normalizePlaceText(b.name));
+        return name != 0 ? name : a.id.compareTo(b.id);
+      });
+    }
     return models
         .map(
           (place) => {
@@ -820,6 +881,11 @@ class _MainScreenState extends SafeState<MainScreen>
         .toList();
   }
 
+  bool _discoveryNeedsRefresh = false;
+  bool _unifiedLoaded = false,
+      _discoveryRestartRequired = false,
+      _regionalScope = false;
+  Map<String, dynamic> _discoveryScope = const {};
   String? _internalNext;
   int _internalCount = 0;
   bool _internalFirstPending = true;
@@ -905,6 +971,7 @@ class _MainScreenState extends SafeState<MainScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _accessibilityControls ??= AccessibilityControlsHandle.of(context);
     final position = PositionScope.maybeOf(context);
     if (!identical(position, _sharedPosition)) {
       _sharedPosition?.removeListener(_sharedPositionChanged);
@@ -927,6 +994,7 @@ class _MainScreenState extends SafeState<MainScreen>
 
   @override
   void dispose() {
+    _accessibilityControls?.dispose();
     _externalDiscovery.removeListener(_externalChanged);
     _externalDiscovery.dispose();
     _catalog.removeListener(_externalChanged);
@@ -968,15 +1036,22 @@ class _MainScreenState extends SafeState<MainScreen>
     // Refresh the selected record only. Geometry/camera/filter changes have no
     // network side effect and a contribution cannot reset discovery state.
     if (_preview.place != null) {
+      _discoveryNeedsRefresh = true;
       _preview.changedReview();
     }
   }
 
+  int _lastResourceRevision = 0;
   void _previewChanged() {
     if (!mounted) {
       return;
     }
     final selected = _preview.place;
+    if (selected?.id == _lastPreviewRecord?.id &&
+        _preview.resourceRevision != _lastResourceRevision) {
+      _discoveryNeedsRefresh = true;
+    }
+    _lastResourceRevision = _preview.resourceRevision;
     final changed = !identical(selected, _lastPreviewRecord);
     _lastPreviewRecord = selected;
     setState(() {
@@ -993,10 +1068,11 @@ class _MainScreenState extends SafeState<MainScreen>
             : selected.toMap();
         if (record.isNotEmpty) {
           _internalLocals = [
-            ..._internalLocals.where(
-              (p) => p.internalId != selected.internalId,
-            ),
-            MapPlace.internal(record),
+            for (final existing in _internalLocals)
+              if (existing.internalId == selected.internalId)
+                MapPlace.internal(record)
+              else
+                existing,
           ];
         }
       }
@@ -1036,9 +1112,11 @@ class _MainScreenState extends SafeState<MainScreen>
         return;
       }
       final rects = <Rect>[];
+      final protected = <Rect>[];
       for (final key in [
         _discoveryStatusKey,
         _statusButtonAreaKey,
+        _countAreaKey,
         _searchControlKey,
         _resultsAreaKey,
         _legendAreaKey,
@@ -1046,10 +1124,13 @@ class _MainScreenState extends SafeState<MainScreen>
       ]) {
         final box = key.currentContext?.findRenderObject();
         if (box is RenderBox && box.hasSize) {
-          rects.add(
-            (box.localToGlobal(Offset.zero, ancestor: surface) & box.size)
-                .intersect(Offset.zero & surface.size),
-          );
+          final rect =
+              (box.localToGlobal(Offset.zero, ancestor: surface) & box.size)
+                  .intersect(Offset.zero & surface.size);
+          rects.add(rect);
+          // The status surface also contains empty space; reserve actual map
+          // controls rather than making the whole reading area unavailable.
+          if (key != _discoveryStatusKey) protected.add(rect);
         }
       }
       if (rects.length != _controlRects.length ||
@@ -1059,6 +1140,10 @@ class _MainScreenState extends SafeState<MainScreen>
           ).any((v) => v)) {
         setState(() => _controlRects = rects);
       }
+      final origin = surface.localToGlobal(Offset.zero);
+      _accessibilityControls?.update([
+        for (final rect in protected) rect.shift(origin),
+      ]);
     });
   }
 
@@ -1092,7 +1177,10 @@ class _MainScreenState extends SafeState<MainScreen>
   Future<void> _fetchEstablishments({bool more = false}) async {
     _internalDebounce?.cancel();
     more = more && !_internalFirstPending;
-    if (more && (_isLoadingLocals || _internalNext == null)) {
+    if (more &&
+        (_isLoadingLocals ||
+            _internalNext == null ||
+            _internalLocals.length >= DiscoveryController.maxLoaded)) {
       return;
     }
     final origin =
@@ -1103,19 +1191,21 @@ class _MainScreenState extends SafeState<MainScreen>
         : DiscoveryQuery(
             filters: _filterState.filters,
             search: _searchText,
-            ordering: origin == null ? 'name' : 'proximity',
+            ordering: _filterState.filters.ordering,
+            state: _filterState,
+            unified: true,
             origin: origin,
             bounds: _internalBounds,
           );
     final changed = _internalQuery?.identity != query.identity;
-    if (!more) {
-      _catalog.reset(query);
-    }
+
     final request = ++_internalRequest;
     final session = AppHttp.sessionRevision.value;
     final link = more ? _internalNext : null;
     if (!more) {
       _internalFirstPending = true;
+      _discoveryRestartRequired = false;
+      _discoveryNeedsRefresh = false;
       _internalQuery = query;
       _internalPages.clear();
     }
@@ -1141,11 +1231,13 @@ class _MainScreenState extends SafeState<MainScreen>
         return;
       }
       final uri = Uri.parse('${Config.baseUrl}/api/locais/');
-      final identity = pageIdentity(
-        link == null
-            ? uri.replace(queryParameters: query.parameters)
-            : uri.resolve(link),
-      );
+      final identity = query.personal
+          ? (link ?? 'first')
+          : pageIdentity(
+              link == null
+                  ? uri.replace(queryParameters: query.parameters)
+                  : uri.resolve(link),
+            );
       if (!_internalPages.add(identity)) {
         throw const FormatException('Cyclic map page');
       }
@@ -1157,17 +1249,23 @@ class _MainScreenState extends SafeState<MainScreen>
           ])
             p.id: p,
         }.values.toList();
+        _unifiedLoaded = page.scope.isNotEmpty;
+        _discoveryScope = page.scope;
         _internalNext = page.next;
         _internalCount = page.count;
         _internalFirstPending = false;
       });
-    } catch (_) {
+    } catch (failure) {
       if (!mounted ||
           request != _internalRequest ||
           session != AppHttp.sessionRevision.value) {
         return;
       }
-      setState(() => _localsLoadFailed = true);
+      setState(() {
+        _localsLoadFailed = true;
+        _discoveryRestartRequired =
+            failure is PlacesException && failure.status == 409;
+      });
     } finally {
       if (mounted && request == _internalRequest) {
         setState(() => _isLoadingLocals = false);
@@ -1836,7 +1934,7 @@ class _MainScreenState extends SafeState<MainScreen>
                                         ),
                                         subtitle: Text(
                                           '${local['source'] == 'openstreetmap' ? 'OpenStreetMap' : 'AcessoJá'}'
-                                          ' · ${local['categoria_label']} · ${local['endereco']}'
+                                          ' · ${context.placeCategory(local['source'] == 'openstreetmap' ? MapPlace.external(local) : MapPlace.internal(local))} · ${local['endereco']}'
                                           '${(local['missing_resources'] as List?)?.isNotEmpty == true ? '\n${context.accessibilityText('Informações incompletas: ', 'Incomplete information: ')}'
                                                     '${(local['missing_resources'] as List).cast<String>().map(context.featureLabel).join(', ')}' : ''}',
                                         ),
@@ -1871,11 +1969,16 @@ class _MainScreenState extends SafeState<MainScreen>
                           ],
                           Text(
                             context.mapText(
-                              'Carregados: ${_internalLocals.length} / $_internalCount da base; ${_externalLocals.length} externos.',
-                              'Loaded: ${_internalLocals.length} / $_internalCount internal; ${_externalLocals.length} external.',
+                              _unifiedLoaded
+                                  ? 'Carregados: ${_internalLocals.length} / $_internalCount da descoberta consolidada; ${_externalLocals.length} no lote regional separado.'
+                                  : 'Carregados: ${_internalLocals.length} / $_internalCount internos; ${_externalLocals.length} externos.',
+                              _unifiedLoaded
+                                  ? 'Loaded: ${_internalLocals.length} / $_internalCount consolidated; ${_externalLocals.length} in the separate regional batch.'
+                                  : 'Loaded: ${_internalLocals.length} / $_internalCount internal; ${_externalLocals.length} external.',
                             ),
                           ),
-                          CatalogStatus(controller: _catalog),
+                          if (!_unifiedLoaded)
+                            CatalogStatus(controller: _catalog),
                           if (_internalBounds != null)
                             Text(
                               context.mapText(
@@ -1885,7 +1988,10 @@ class _MainScreenState extends SafeState<MainScreen>
                             ),
                           if (_internalNext != null)
                             OutlinedButton(
-                              onPressed: _isLoadingLocals
+                              onPressed:
+                                  _isLoadingLocals ||
+                                      _internalLocals.length >=
+                                          DiscoveryController.maxLoaded
                                   ? null
                                   : () => _fetchEstablishments(more: true),
                               child: Text(
@@ -1895,7 +2001,9 @@ class _MainScreenState extends SafeState<MainScreen>
                           if (_localsLoadFailed)
                             OutlinedButton(
                               onPressed: () => _fetchEstablishments(
-                                more: _internalLocals.isNotEmpty,
+                                more:
+                                    _internalLocals.isNotEmpty &&
+                                    !_discoveryRestartRequired,
                               ),
                               child: Text(context.l10n.retry),
                             ),
@@ -2704,20 +2812,23 @@ class _MainScreenState extends SafeState<MainScreen>
                                     final area =
                                         _mapController.camera.visibleBounds;
                                     final query = _internalQuery;
-                                    _catalog.reset(
-                                      DiscoveryQuery(
-                                        search: _searchText,
-                                        filters: _filterState.filters,
-                                        ordering: query?.ordering ?? 'name',
-                                        origin: query?.origin,
-                                        bounds: [
-                                          area.south,
-                                          area.west,
-                                          area.north,
-                                          area.east,
-                                        ],
-                                      ),
-                                    );
+                                    if (!_unifiedLoaded &&
+                                        query?.unified != true) {
+                                      _catalog.reset(
+                                        DiscoveryQuery(
+                                          search: _searchText,
+                                          filters: _filterState.filters,
+                                          ordering: query?.ordering ?? 'name',
+                                          origin: query?.origin,
+                                          bounds: [
+                                            area.south,
+                                            area.west,
+                                            area.north,
+                                            area.east,
+                                          ],
+                                        ),
+                                      );
+                                    }
                                   });
                                   if (_routeFitPending) {
                                     WidgetsBinding.instance
@@ -2962,12 +3073,13 @@ class _MainScreenState extends SafeState<MainScreen>
                               ],
                             ),
                           ),
-                          if (!_isRouting)
+                          if (!_isRouting && !_preview.visible)
                             if (MediaQuery.sizeOf(context).height >= 480)
                               Positioned(
                                 top: MediaQuery.of(context).padding.top + 16,
                                 right: 16,
                                 child: Semantics(
+                                  key: _countAreaKey,
                                   liveRegion: true,
                                   child: Container(
                                     constraints: const BoxConstraints(
@@ -3406,6 +3518,10 @@ class _MainScreenState extends SafeState<MainScreen>
                               distanceLabel: _distanceLabelForLocal,
                               preferredResources:
                                   _filterState.appliedPreferences,
+                              matchResources: {
+                                ..._filterState.filters.resources,
+                                ..._filterState.appliedPreferences,
+                              },
                               outsideResults: !_matchingLocals.any(
                                 (p) => p['id'] == _selectedPlaceId,
                               ),
@@ -3607,18 +3723,110 @@ class _MainScreenState extends SafeState<MainScreen>
         '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
+  String get _osmCoverageLabel {
+    final sources = _discoveryScope['sources'];
+    final status = sources is Map ? sources['openstreetmap'] : null;
+    return switch (status) {
+      'complete' => context.mapText(
+        'cobertura completa do catálogo',
+        'complete catalog coverage',
+      ),
+      'partial' => context.mapText(
+        'cobertura parcial do catálogo',
+        'partial catalog coverage',
+      ),
+      _ => context.mapText('catálogo indisponível', 'catalog unavailable'),
+    };
+  }
+
   Widget _discoveryContents() => Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(context.l10n.mapStatusSources, style: const TextStyle(fontSize: 12)),
+      TextButton(
+        key: const ValueKey('toggle-regional-scope'),
+        onPressed: () {
+          setState(() => _regionalScope = !_regionalScope);
+          _placesRevision.value++;
+        },
+        child: Text(
+          context.mapText(
+            _regionalScope
+                ? 'Ver descoberta consolidada'
+                : 'Ver consulta regional externa',
+            _regionalScope
+                ? 'View consolidated discovery'
+                : 'View external regional query',
+          ),
+        ),
+      ),
+      if (_regionalScope)
+        Text(
+          context.mapText(
+            'Lote regional de até $_externalRadius m; pode ser limitado pelo provedor. Filtros e priorização valem neste lote, sem contagem global da cidade.',
+            'Regional batch within $_externalRadius m; may be provider-limited. Filters and prioritization apply to this batch, without a city-wide total.',
+          ),
+        ),
       Text(
         context.mapText(
           '$_visiblePlaceCount locais carregados nesta visualização',
           '$_visiblePlaceCount loaded places in this view',
         ),
       ),
-      CatalogStatus(controller: _catalog, compact: true),
+      if (!_unifiedLoaded) CatalogStatus(controller: _catalog, compact: true),
+      if (_unifiedLoaded && !_regionalScope)
+        Text(
+          context.mapText(
+            '${_internalLocals.length} / $_internalCount da descoberta consolidada. OSM: $_osmCoverageLabel.',
+            '${_internalLocals.length} / $_internalCount consolidated results. OSM: $_osmCoverageLabel.',
+          ),
+        ),
+      if (_unifiedLoaded && _discoveryScope['limited'] == true)
+        Text(
+          context.mapText(
+            'Recorte limitado no servidor; esta contagem não representa toda a cidade. Refine a área ou os filtros.',
+            'Server scope limit reached; this count does not cover the whole city. Refine area or filters.',
+          ),
+        ),
+      if (_filterState.filters.ordering == 'proximity' &&
+          _internalQuery?.origin == null)
+        Text(
+          context.mapText(
+            'Sem origem válida: desempate por nome.',
+            'No valid origin: name is used for tie-breaking.',
+          ),
+        ),
+      if (_internalLocals.length >= DiscoveryController.maxLoaded &&
+          _internalNext != null)
+        Text(
+          context.mapText(
+            'Limite de 1.000 resultados carregados. Refine a área ou os filtros.',
+            '1,000 loaded results limit reached. Refine area or filters.',
+          ),
+        ),
+      if (_discoveryNeedsRefresh)
+        TextButton(
+          key: const ValueKey('refresh-discovery-after-contribution'),
+          onPressed: () => _fetchEstablishments(),
+          child: Text(
+            context.mapText(
+              'Informações atualizadas. Atualizar a ordem da busca',
+              'Information updated. Refresh search ordering',
+            ),
+          ),
+        ),
+      if (_discoveryRestartRequired)
+        TextButton(
+          key: const ValueKey('restart-discovery'),
+          onPressed: () => _fetchEstablishments(),
+          child: Text(
+            context.mapText(
+              'As informações mudaram. Reiniciar busca',
+              'Information changed. Restart search',
+            ),
+          ),
+        ),
       TextButton(
         onPressed: () => setState(() => _discoveryDetails = !_discoveryDetails),
         child: Text(
@@ -3633,7 +3841,7 @@ class _MainScreenState extends SafeState<MainScreen>
       if (_discoveryDetails) ...[
         Text(
           context.mapText(
-            'Base do AcessoJá: ${_internalLocals.length} / $_internalCount carregados da consulta atual.',
+            'Descoberta persistente: ${_internalLocals.length} / $_internalCount carregados da consulta atual.',
             'AcessoJá: ${_internalLocals.length} / $_internalCount loaded from the current query.',
           ),
         ),
@@ -3645,7 +3853,7 @@ class _MainScreenState extends SafeState<MainScreen>
         ),
         Text(
           context.mapText(
-            'Externos carregados: ${_externalLocals.length}; raio consultado: $_externalRadius m. O lote pode ser limitado.',
+            'Consulta regional externa separada: ${_externalLocals.length}; raio $_externalRadius m. Não compõe o total consolidado.',
             'External places loaded: ${_externalLocals.length}; queried radius: $_externalRadius m. This batch may be limited.',
           ),
         ),

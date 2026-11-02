@@ -1,0 +1,59 @@
+[
+  {
+    "name": "flake8-final",
+    "command": [
+      "flake8",
+      ".",
+      "--max-line-length=120",
+      "--exclude=migrations,__pycache__,.venv,venv",
+      "--statistics",
+      "--count"
+    ],
+    "started_at": "2026-11-02T01:22:52.182855+00:00",
+    "finished_at": "2026-11-02T01:23:09.388889+00:00",
+    "seconds": 17.21,
+    "exit_code": 0,
+    "log": "flake8-final.log"
+  },
+  {
+    "name": "django-check-final",
+    "command": [
+      "django",
+      "check"
+    ],
+    "started_at": "2026-11-02T01:23:09.389610+00:00",
+    "finished_at": "2026-11-02T01:23:10.639807+00:00",
+    "seconds": 1.25,
+    "exit_code": 0,
+    "log": "django-check-final.log"
+  },
+  {
+    "name": "migrations-final",
+    "command": [
+      "django",
+      "makemigrations",
+      "--check",
+      "--dry-run"
+    ],
+    "started_at": "2026-11-02T01:23:10.640801+00:00",
+    "finished_at": "2026-11-02T01:23:12.007405+00:00",
+    "seconds": 1.37,
+    "exit_code": 0,
+    "log": "migrations-final.log"
+  },
+  {
+    "name": "openapi-final",
+    "command": [
+      "django",
+      "spectacular",
+      "--fail-on-warn",
+      "--file",
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/evidence/final/openapi.yaml"
+    ],
+    "started_at": "2026-11-02T01:23:12.007938+00:00",
+    "finished_at": "2026-11-02T01:23:14.359516+00:00",
+    "seconds": 2.35,
+    "exit_code": 0,
+    "log": "openapi-final.log"
+  }
+]

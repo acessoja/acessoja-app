@@ -22,6 +22,7 @@ from .catalog_serializers import (
 )
 from .discovery import DiscoveryOptions, OPTIONS
 from .models import Local, ManualRegistrationGuard
+from .services.categories import subcategory_for
 from .serializers import LocalSerializer
 from .services.accessibility import populate_accessibility_context
 from .services.catalog_query import catalog_place, catalog_queryset
@@ -80,6 +81,7 @@ class CatalogListAPIView(APIView):
             )
         rows = catalog_queryset(scope.active_batch_id if scope else None, options, filters)
         from evidencias.query_projection import annotate_quality
+
         rows = annotate_quality(rows, catalog=True)
         paginator = PageNumberPagination()
         paginator.page_size = options.page_size
@@ -90,6 +92,7 @@ class CatalogListAPIView(APIView):
 
         results = [catalog_place(entry, filters) for entry in page]
         from evidencias.external import project_catalog_places
+
         project_catalog_places(page, results)
         if (
             scope
@@ -129,6 +132,7 @@ class CatalogDetailAPIView(APIView):
         linked = LocalSerializer(local, context=context).data if local else None
         document = catalog_place(entry, linked_local=linked)
         from evidencias.external import project_catalog_places
+
         project_catalog_places([entry], [document])
         return Response(document, headers=PRIVATE)
 
@@ -196,6 +200,7 @@ class CatalogConfirmAPIView(APIView):
                         nome=data["nome"],
                         endereco=data["endereco"],
                         categoria=entry.category,
+                        subcategoria=subcategory_for(entry.tags, entry.category),
                         latitude=entry.latitude,
                         longitude=entry.longitude,
                         distancia=0,

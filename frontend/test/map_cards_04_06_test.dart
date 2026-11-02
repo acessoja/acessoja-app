@@ -1,3 +1,4 @@
+import 'discovery_fixture.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -657,8 +658,9 @@ void main() {
     (tester) async {
       final second = {...own(2), 'nome': 'Segundo local na mesma coordenada'};
       AppHttp.client = MockClient((request) async {
-        if (request.url.path == '/api/locais/') {
-          return jsonResponse([own(1), second]);
+        if ((request.url.path == '/api/locais/' ||
+            request.url.path == '/api/locais/descoberta/')) {
+          return asDiscoveryResponse(request, jsonResponse([own(1), second]));
         }
         if (request.url.path == '/api/locais/2/') {
           return jsonResponse(second);
@@ -701,8 +703,13 @@ void main() {
       final requests = <http.Request>[];
       AppHttp.client = MockClient((request) async {
         requests.add(request);
-        if (request.url.path == '/api/locais/') {
-          return jsonResponse([own(1), second]);
+        if ((request.url.path == '/api/locais/' ||
+            request.url.path == '/api/locais/descoberta/')) {
+          return asDiscoveryResponse(
+            request,
+            jsonResponse([own(1), second]),
+            additional: [osm()],
+          );
         }
         if (request.url.path == '/api/locais/1/') {
           return jsonResponse(own(1));
@@ -970,8 +977,13 @@ void main() {
         final requests = <http.Request>[];
         AppHttp.client = MockClient((request) async {
           requests.add(request);
-          if (request.url.path == '/api/locais/') {
-            return jsonResponse([own(1)]);
+          if ((request.url.path == '/api/locais/' ||
+              request.url.path == '/api/locais/descoberta/')) {
+            return asDiscoveryResponse(
+              request,
+              jsonResponse([own(1)]),
+              additional: [osm()],
+            );
           }
           if (request.url.path == '/api/locais/externos/') {
             return jsonResponse({

@@ -1,4 +1,5 @@
 """Resource evidence and predictable filters, independent of Django."""
+
 from copy import deepcopy
 from datetime import datetime
 
@@ -33,6 +34,7 @@ def validate_information(value):
                 if parsed.utcoffset() is None:
                     raise ValueError
                 from django.utils import timezone
+
                 if parsed > timezone.now():
                     raise ValueError
             except ValueError:
@@ -73,8 +75,19 @@ def osm_information(tags):
     """General wheelchair=yes is never evidence of a particular feature."""
     value = (tags or {}).get("toilets:wheelchair")
     state = {"yes": "presence_reported", "no": "absence_reported", "limited": "limited"}.get(value)
-    return {"banheiro_acessivel": {"state": state, "source": "openstreetmap", "observed_at": None,
-                                   "received_at": None, "tag": "toilets:wheelchair"}} if state else {}
+    return (
+        {
+            "banheiro_acessivel": {
+                "state": state,
+                "source": "openstreetmap",
+                "observed_at": None,
+                "received_at": None,
+                "tag": "toilets:wheelchair",
+            }
+        }
+        if state
+        else {}
+    )
 
 
 def resolve_information(registered=None, rows=(), external=None):
@@ -88,16 +101,26 @@ def resolve_information(registered=None, rows=(), external=None):
         evidence = []
         entry = registered.get(key)
         if isinstance(entry, dict) and entry.get("state") in WRITE_STATES:
-            evidence.append({"source": "not_recorded", "received_at": None, "observed_at": None,
-                             **entry, "kind": "registration"})
+            evidence.append(
+                {"source": "not_recorded", "received_at": None, "observed_at": None, **entry, "kind": "registration"}
+            )
         if feature and feature["respondents"]:
-            evidence.append({"state": feature["state"], "kind": "community", "source": "acessoja_community",
-                             "received_at": feature["latest_at"], "observed_at": None,
-                             "counts": feature["counts"], "respondents": feature["respondents"]})
+            evidence.append(
+                {
+                    "state": feature["state"],
+                    "kind": "community",
+                    "source": "acessoja_community",
+                    "received_at": feature["latest_at"],
+                    "observed_at": None,
+                    "counts": feature["counts"],
+                    "respondents": feature["respondents"],
+                }
+            )
         if key in external:
             evidence.append({**external[key], "kind": "external"})
         result[key] = {
-            "state": combine_states(item["state"] for item in evidence), "evidence": evidence,
+            "state": combine_states(item["state"] for item in evidence),
+            "evidence": evidence,
             "community_state": feature["state"] if feature else "not_asked_in_version",
             "legacy_not_comparable": summary["legacy_not_comparable"],
         }
@@ -114,7 +137,18 @@ def csv_values(value, allowed, name):
 
 
 def parse_filters(params):
-    accepted = {"recursos", "categorias", "origens", "incluir_desconhecidos", "search", "format", *LEGACY_FLAGS}
+    accepted = {
+        "recursos",
+        "categorias",
+        "origens",
+        "incluir_desconhecidos",
+        "search",
+        "format",
+        "combinacao_recursos",
+        "modo_recursos",
+        "subcategorias",
+        *LEGACY_FLAGS,
+    }
     if set(params) - accepted:
         raise ValueError("Parâmetro de filtro desconhecido.")
     resources = csv_values(params.get("recursos", ""), RESOURCE_IDS, "recursos")
@@ -130,19 +164,40 @@ def parse_filters(params):
     text = params.get("search", "")
     if not isinstance(text, str) or len(text) > 180:
         raise ValueError("Busca inválida ou muito longa.")
-    return {"resources": resources, "categories": csv_values(params.get("categorias", ""), CATEGORIES, "categorias"),
-            "sources": csv_values(params.get("origens", ""), ("acessoja", "openstreetmap"), "origens"),
-            "include_unknown": incomplete == "true", "search": text}
+    from .services.categories import SUBCATEGORIES, normalize_categories
+
+    combination = params.get("combinacao_recursos", "todos")
+    mode = params.get("modo_recursos", "filtrar")
+    if combination not in ("todos", "qualquer") or mode not in ("filtrar", "priorizar"):
+        raise ValueError("Modo ou combinação inválidos.")
+    if mode == "priorizar" and ("combinacao_recursos" in params or "incluir_desconhecidos" in params):
+        raise ValueError("Priorizar não aceita combinação ou inclusão de desconhecidos.")
+    parents, children = normalize_categories(
+        csv_values(params.get("categorias", ""), CATEGORIES, "categorias"),
+        csv_values(params.get("subcategorias", ""), SUBCATEGORIES, "subcategorias"),
+    )
+    return {
+        "resources": resources,
+        "categories": parents,
+        "subcategories": children,
+        "combination": combination,
+        "mode": mode,
+        "sources": csv_values(params.get("origens", ""), ("acessoja", "openstreetmap"), "origens"),
+        "include_unknown": incomplete == "true",
+        "search": text,
+    }
 
 
-def matching_resources(information, resources, include_unknown=False):
-    missing = []
-    for key in resources:
-        state = information.get(key, {}).get("state", "unknown")
-        if state == "presence_reported":
-            continue
-        if state == "unknown" and include_unknown:
-            missing.append(key)
-            continue
-        return False, []
-    return True, missing
+def matching_resources(information, resources, include_unknown=False, combination="todos", mode="filtrar"):
+    resources = list(dict.fromkeys(resources))
+    missing = [key for key in resources if information.get(key, {}).get("state", "unknown") == "unknown"]
+    values = [
+        information.get(key, {}).get("state", "unknown") == "presence_reported" or (include_unknown and key in missing)
+        for key in resources
+    ]
+    accepted = not values or mode == "priorizar" or (any(values) if combination == "qualquer" else all(values))
+    return accepted, missing if accepted and include_unknown else []
+
+
+def presence_count(information, resources):
+    return sum(information.get(key, {}).get("state") == "presence_reported" for key in set(resources))

@@ -1,0 +1,107 @@
+[
+  {
+    "name": "flake8",
+    "command": [
+      "flake8",
+      ".",
+      "--max-line-length=120",
+      "--exclude=migrations,__pycache__,.venv,venv",
+      "--statistics",
+      "--count"
+    ],
+    "started_at": "2026-11-02T00:50:10.544181+00:00",
+    "finished_at": "2026-11-02T00:50:24.444819+00:00",
+    "seconds": 13.9,
+    "exit_code": 1,
+    "log": "flake8.log"
+  },
+  {
+    "name": "django-check",
+    "command": [
+      "django",
+      "check"
+    ],
+    "started_at": "2026-11-02T00:50:24.445381+00:00",
+    "finished_at": "2026-11-02T00:50:25.771846+00:00",
+    "seconds": 1.33,
+    "exit_code": 0,
+    "log": "django-check.log"
+  },
+  {
+    "name": "migrations",
+    "command": [
+      "django",
+      "makemigrations",
+      "--check",
+      "--dry-run"
+    ],
+    "started_at": "2026-11-02T00:50:25.772295+00:00",
+    "finished_at": "2026-11-02T00:50:27.191790+00:00",
+    "seconds": 1.42,
+    "exit_code": 0,
+    "log": "migrations.log"
+  },
+  {
+    "name": "openapi",
+    "command": [
+      "django",
+      "spectacular",
+      "--fail-on-warn",
+      "--file",
+      "/workspace/scratch/b3b0ff1ac447/work/cards62_67/evidence/final/openapi.yaml"
+    ],
+    "started_at": "2026-11-02T00:50:27.193154+00:00",
+    "finished_at": "2026-11-02T00:50:29.558440+00:00",
+    "seconds": 2.37,
+    "exit_code": 0,
+    "log": "openapi.log"
+  },
+  {
+    "name": "migrate-clean-sqlite",
+    "command": [
+      "django",
+      "migrate",
+      "--noinput"
+    ],
+    "started_at": "2026-11-02T00:50:29.559213+00:00",
+    "finished_at": "2026-11-02T00:50:34.395719+00:00",
+    "seconds": 4.84,
+    "exit_code": 0,
+    "log": "migrate-clean-sqlite.log"
+  },
+  {
+    "name": "catalog-contract",
+    "command": [
+      "python",
+      "scripts/generate_place_categories.py"
+    ],
+    "started_at": "2026-11-02T00:50:34.396281+00:00",
+    "finished_at": "2026-11-02T00:50:34.521783+00:00",
+    "seconds": 0.13,
+    "exit_code": 0,
+    "log": "catalog-contract.log"
+  },
+  {
+    "name": "postgresql-job-collection",
+    "command": [
+      "pytest",
+      "--collect-only",
+      "-q",
+      "contribuicoes",
+      "favoritos",
+      "locais",
+      "usuarios",
+      "acessoja",
+      "evidencias",
+      "midia",
+      "modal_avaliacao",
+      "-k",
+      "postgresql_concurrent or postgresql_restore or catalog or discovery_integrated or category_migration"
+    ],
+    "started_at": "2026-11-02T00:50:34.522273+00:00",
+    "finished_at": "2026-11-02T00:50:38.287172+00:00",
+    "seconds": 3.76,
+    "exit_code": 0,
+    "log": "postgresql-job-collection.log"
+  }
+]

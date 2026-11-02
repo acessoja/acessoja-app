@@ -36,6 +36,7 @@ class MapPlacePreview extends StatefulWidget {
     this.coordinator,
     this.scrollController,
     this.preferredResources = const {},
+    this.matchResources = const {},
     this.outsideResults = false,
     this.onSearchPressed,
     this.onPickPointPressed,
@@ -56,7 +57,7 @@ class MapPlacePreview extends StatefulWidget {
   final bool loadingDetails, detailsFailed, detailed, outsideResults;
   final PlacePreviewController? coordinator;
   final ScrollController? scrollController;
-  final Set<String> preferredResources;
+  final Set<String> preferredResources, matchResources;
   @override
   State<MapPlacePreview> createState() => _MapPlacePreviewState();
 }
@@ -187,6 +188,10 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
               ],
             ),
             Text('${context.placeCategory(p)} · ${p.sourceLabel}'),
+            Text(
+              context.placeSubtype(p),
+              key: const ValueKey('preview-subcategory'),
+            ),
             Text(context.placeAddress(p)),
             if (expanded && widget.coordinator?.unavailable != true)
               PlaceMapsLink(
@@ -243,6 +248,18 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
               ],
               Text(reviews, key: const ValueKey('preview-rating')),
               if (widget.distanceLabel.isNotEmpty) Text(widget.distanceLabel),
+              if ((widget.matchResources.isNotEmpty ||
+                  widget.preferredResources.isNotEmpty))
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    context.mapText(
+                      '${(widget.matchResources.isEmpty ? widget.preferredResources : widget.matchResources).where((id) => p.accessibility(id) == AccessibilityValue.available).length} de ${(widget.matchResources.isEmpty ? widget.preferredResources : widget.matchResources).length} recursos selecionados com presença relatada',
+                      '${(widget.matchResources.isEmpty ? widget.preferredResources : widget.matchResources).where((id) => p.accessibility(id) == AccessibilityValue.available).length} of ${(widget.matchResources.isEmpty ? widget.preferredResources : widget.matchResources).length} selected features with reported presence',
+                    ),
+                    key: const ValueKey('personal-resource-match'),
+                  ),
+                ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
@@ -360,6 +377,7 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                                 onChanged: widget.onRetryDetails,
                               )
                             : AccessibilityResultsCard(
+                                preferredResources: widget.preferredResources,
                                 key: ValueKey(
                                   'panel-resources-${p.id}:$_session',
                                 ),

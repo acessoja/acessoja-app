@@ -1,3 +1,4 @@
+import 'discovery_fixture.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -489,12 +490,20 @@ void main() {
       final calls = <String>[];
       AppHttp.client = MockClient((request) async {
         calls.add(request.method);
-        if (request.url.path == '/api/locais/catalogo/') {
-          return fixture.jsonResponse(envelope([row(1)]));
+        if (request.url.path == '/api/locais/catalogo/' ||
+            request.url.path == '/api/locais/descoberta/') {
+          return asDiscoveryResponse(
+            request,
+            fixture.jsonResponse(envelope([row(1)])),
+          );
         }
-        if (request.url.path == '/api/locais/' ||
+        if ((request.url.path == '/api/locais/' ||
+                request.url.path == '/api/locais/descoberta/') ||
             request.url.path == '/api/locais/externos/') {
-          return fixture.jsonResponse({'detail': 'controlled failure'}, 503);
+          return asDiscoveryResponse(
+            request,
+            fixture.jsonResponse({'detail': 'controlled failure'}, 503),
+          );
         }
         return fixture.jsonResponse([]);
       });

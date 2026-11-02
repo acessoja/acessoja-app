@@ -1,0 +1,283 @@
+{
+  "version": 1,
+  "conflict_policy": "multiple_candidates_unknown",
+  "children": [
+    {
+      "id": "restaurante",
+      "parent": "restaurante",
+      "pt": "Restaurante",
+      "en": "Restaurant",
+      "tags": {
+        "amenity": "restaurant"
+      }
+    },
+    {
+      "id": "lanchonete",
+      "parent": "restaurante",
+      "pt": "Lanchonete",
+      "en": "Fast food",
+      "tags": {
+        "amenity": "fast_food"
+      }
+    },
+    {
+      "id": "cafeteria",
+      "parent": "cafeteria",
+      "pt": "Cafeteria",
+      "en": "Cafe",
+      "tags": {
+        "amenity": "cafe"
+      }
+    },
+    {
+      "id": "supermercado",
+      "parent": "supermercado",
+      "pt": "Supermercado",
+      "en": "Supermarket",
+      "tags": {
+        "shop": "supermarket"
+      }
+    },
+    {
+      "id": "conveniencia",
+      "parent": "supermercado",
+      "pt": "Conveniência",
+      "en": "Convenience store",
+      "tags": {
+        "shop": "convenience"
+      }
+    },
+    {
+      "id": "farmacia",
+      "parent": "farmacia",
+      "pt": "Farmácia",
+      "en": "Pharmacy",
+      "tags": {
+        "amenity": "pharmacy"
+      }
+    },
+    {
+      "id": "hospital",
+      "parent": "saude",
+      "pt": "Hospital",
+      "en": "Hospital",
+      "tags": {
+        "amenity": "hospital"
+      }
+    },
+    {
+      "id": "clinica",
+      "parent": "saude",
+      "pt": "Clínica",
+      "en": "Clinic",
+      "tags": {
+        "amenity": "clinic"
+      }
+    },
+    {
+      "id": "consultorio",
+      "parent": "saude",
+      "pt": "Consultório",
+      "en": "Doctors",
+      "tags": {
+        "amenity": "doctors"
+      }
+    },
+    {
+      "id": "escola",
+      "parent": "educacao",
+      "pt": "Escola",
+      "en": "School",
+      "tags": {
+        "amenity": "school"
+      }
+    },
+    {
+      "id": "universidade",
+      "parent": "educacao",
+      "pt": "Universidade",
+      "en": "University",
+      "tags": {
+        "amenity": "university"
+      }
+    },
+    {
+      "id": "roupas",
+      "parent": "loja",
+      "pt": "Loja de roupas",
+      "en": "Clothes store",
+      "tags": {
+        "shop": "clothes"
+      }
+    },
+    {
+      "id": "centro_comercial",
+      "parent": "loja",
+      "pt": "Centro comercial",
+      "en": "Shopping mall",
+      "tags": {
+        "shop": "mall"
+      }
+    },
+    {
+      "id": "parque",
+      "parent": "parque",
+      "pt": "Parque",
+      "en": "Park",
+      "tags": {
+        "leisure": "park"
+      }
+    },
+    {
+      "id": "playground",
+      "parent": "parque",
+      "pt": "Playground",
+      "en": "Playground",
+      "tags": {
+        "leisure": "playground"
+      }
+    },
+    {
+      "id": "banco",
+      "parent": "banco",
+      "pt": "Banco",
+      "en": "Bank",
+      "tags": {
+        "amenity": "bank"
+      }
+    },
+    {
+      "id": "prefeitura",
+      "parent": "publico",
+      "pt": "Prefeitura",
+      "en": "Town hall",
+      "tags": {
+        "amenity": "townhall"
+      }
+    },
+    {
+      "id": "orgao_governamental",
+      "parent": "publico",
+      "pt": "Órgão governamental",
+      "en": "Government office",
+      "tags": {
+        "office": "government"
+      }
+    },
+    {
+      "id": "biblioteca",
+      "parent": "outros",
+      "pt": "Biblioteca",
+      "en": "Library",
+      "tags": {
+        "amenity": "library"
+      }
+    },
+    {
+      "id": "cinema",
+      "parent": "outros",
+      "pt": "Cinema",
+      "en": "Cinema",
+      "tags": {
+        "amenity": "cinema"
+      }
+    },
+    {
+      "id": "teatro",
+      "parent": "outros",
+      "pt": "Teatro",
+      "en": "Theatre",
+      "tags": {
+        "amenity": "theatre"
+      }
+    },
+    {
+      "id": "centro_comunitario",
+      "parent": "outros",
+      "pt": "Centro comunitário",
+      "en": "Community centre",
+      "tags": {
+        "amenity": "community_centre"
+      }
+    }
+  ],
+  "parents": [
+    {
+      "id": "restaurante",
+      "pt": "Restaurante",
+      "en": "Restaurant",
+      "icon": "restaurant",
+      "label": "Restaurantes"
+    },
+    {
+      "id": "cafeteria",
+      "pt": "Cafeteria",
+      "en": "Cafe",
+      "icon": "local_cafe_outlined",
+      "label": "Cafeterias"
+    },
+    {
+      "id": "supermercado",
+      "pt": "Supermercado",
+      "en": "Supermarket",
+      "icon": "shopping_cart_outlined",
+      "label": "Supermercados"
+    },
+    {
+      "id": "farmacia",
+      "pt": "Farmácia",
+      "en": "Pharmacy",
+      "icon": "local_pharmacy_outlined",
+      "label": "Farmácias"
+    },
+    {
+      "id": "saude",
+      "pt": "Saúde",
+      "en": "Healthcare",
+      "icon": "medical_services_outlined",
+      "label": "Hospitais e clínicas"
+    },
+    {
+      "id": "educacao",
+      "pt": "Educação",
+      "en": "Education",
+      "icon": "school_outlined",
+      "label": "Escolas e universidades"
+    },
+    {
+      "id": "loja",
+      "pt": "Loja",
+      "en": "Shop",
+      "icon": "storefront_outlined",
+      "label": "Lojas e centros comerciais"
+    },
+    {
+      "id": "parque",
+      "pt": "Parque",
+      "en": "Park",
+      "icon": "park_outlined",
+      "label": "Parques e espaços públicos"
+    },
+    {
+      "id": "banco",
+      "pt": "Banco",
+      "en": "Bank",
+      "icon": "account_balance_outlined",
+      "label": "Bancos"
+    },
+    {
+      "id": "publico",
+      "pt": "Serviço público",
+      "en": "Public service",
+      "icon": "domain_outlined",
+      "label": "Órgãos públicos"
+    },
+    {
+      "id": "outros",
+      "pt": "Estabelecimento",
+      "en": "Establishment",
+      "icon": "place_outlined",
+      "label": "Outros estabelecimentos"
+    }
+  ]
+}

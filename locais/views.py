@@ -12,7 +12,7 @@ from .models import Local, VisitaRecente
 from .discovery import DiscoveryOptions, OPTIONS
 from .serializers import ArrivalRequestSerializer, LocalSerializer, VisitaRecenteSerializer
 from acessoja.accessibility_catalog import catalog
-from .accessibility import matching_resources, parse_filters
+from .accessibility import matching_resources, parse_filters, presence_count
 from .accessibility_serializers import ResourceCatalogSerializer
 from .services.accessibility import local_accessibility, populate_accessibility_context
 
@@ -33,48 +33,87 @@ class LocalViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         from evidencias.query_projection import annotate_quality
+
         return annotate_quality(self.queryset).order_by("id_local")
 
     @extend_schema(
         summary="Consultar locais com estados explícitos e filtros AND",
         description="Categorias e origens combinam por OR; todos os recursos são exigidos (AND). "
-                    "Desconhecimento é opcional; ausência, divergência, não aplicabilidade "
-                    "e acesso parcial são excluídos. "
-                    "Booleanos legados continuam na resposta, sem comprovar presença ou ausência.",
+        "Desconhecimento é opcional; ausência, divergência, não aplicabilidade "
+        "e acesso parcial são excluídos. "
+        "Booleanos legados continuam na resposta, sem comprovar presença ou ausência.",
         parameters=[
-            *[OpenApiParameter(key, str, description=description) for key, description in [
-                ("paginated", "true: count/next/previous/results; false: lista legada (padrão)."),
-                ("page", "Inteiro positivo."), ("page_size", "1..50; padrão 20."),
-                ("ordering", "name, proximity (exige origem), rating; ordena antes de paginar."),
-                ("origin_lat", "Latitude da origem; não persistida."), ("origin_lon", "Longitude da origem."),
-                ("bbox", "sul,oeste,norte,leste; opcional; aceita antimeridiano.")]],
+            *[
+                OpenApiParameter(key, str, description=description)
+                for key, description in [
+                    ("paginated", "true: count/next/previous/results; false: lista legada (padrão)."),
+                    ("page", "Inteiro positivo."),
+                    ("page_size", "1..50; padrão 20."),
+                    ("ordering", "name, proximity (exige origem), rating; ordena antes de paginar."),
+                    ("origin_lat", "Latitude da origem; não persistida."),
+                    ("origin_lon", "Longitude da origem."),
+                    ("bbox", "sul,oeste,norte,leste; opcional; aceita antimeridiano."),
+                ]
+            ],
+            OpenApiParameter("combinacao_recursos", str, description="todos (padrão) ou qualquer."),
+            OpenApiParameter(
+                "modo_recursos",
+                str,
+                description="filtrar (padrão) ou priorizar; priorizar não aceita combinação/unknown.",
+            ),
+            OpenApiParameter("subcategorias", str, description="IDs filhos do catálogo; pais omitidos são derivados."),
             OpenApiParameter("recursos", str, description="IDs do catálogo separados por vírgula (AND)."),
             OpenApiParameter("categorias", str, description="Categorias separadas por vírgula (OR)."),
-            OpenApiParameter("origens", str,
-                             description="acessoja,openstreetmap (OR); este endpoint só lista cadastrados."),
-            OpenApiParameter("incluir_desconhecidos", bool,
-                             description="Padrão false. Só admite unknown adicionalmente."),
+            OpenApiParameter(
+                "origens", str, description="acessoja,openstreetmap (OR); este endpoint só lista cadastrados."
+            ),
+            OpenApiParameter(
+                "incluir_desconhecidos", bool, description="Padrão false. Só admite unknown adicionalmente."
+            ),
             OpenApiParameter("search", str, description="Nome ou endereço; máximo 180 caracteres."),
         ],
-        responses={200: {"oneOf": [
-            {"type": "array", "items": {"$ref": "#/components/schemas/Local"}},
-            {"type": "object", "required": ["count", "next", "previous", "results"], "properties": {
-                "count": {"type": "integer"}, "next": {"type": "string", "nullable": True},
-                "previous": {"type": "string", "nullable": True},
-                "results": {"type": "array", "items": {"$ref": "#/components/schemas/Local"}}}},
-        ]}},
-        examples=[OpenApiExample("Recursos informados", response_only=True, value={
-            "accessibility_information": {}, "accessibility": {
-                "rampa_acesso": {"state": "unknown", "evidence": [], "community_state": "not_evaluated",
-                                 "legacy_not_comparable": 0}}, "missing_resources": [],
-        })],
+        responses={
+            200: {
+                "oneOf": [
+                    {"type": "array", "items": {"$ref": "#/components/schemas/Local"}},
+                    {
+                        "type": "object",
+                        "required": ["count", "next", "previous", "results"],
+                        "properties": {
+                            "count": {"type": "integer"},
+                            "next": {"type": "string", "nullable": True},
+                            "previous": {"type": "string", "nullable": True},
+                            "results": {"type": "array", "items": {"$ref": "#/components/schemas/Local"}},
+                        },
+                    },
+                ]
+            }
+        },
+        examples=[
+            OpenApiExample(
+                "Recursos informados",
+                response_only=True,
+                value={
+                    "accessibility_information": {},
+                    "accessibility": {
+                        "rampa_acesso": {
+                            "state": "unknown",
+                            "evidence": [],
+                            "community_state": "not_evaluated",
+                            "legacy_not_comparable": 0,
+                        }
+                    },
+                    "missing_resources": [],
+                },
+            )
+        ],
     )
     def list(self, request, *args, **kwargs):
         try:
             options = DiscoveryOptions(request.query_params)
-            filters = parse_filters({
-                key: request.query_params[key] for key in request.query_params if key not in OPTIONS
-            })
+            filters = parse_filters(
+                {key: request.query_params[key] for key in request.query_params if key not in OPTIONS}
+            )
         except ValueError as exc:
             raise ValidationError({"filters": str(exc)}) from None
         # Reject repeated parameters rather than silently accepting the last value.
@@ -87,23 +126,43 @@ class LocalViewSet(viewsets.ModelViewSet):
             qs = qs.filter(Q(nome__icontains=filters["search"]) | Q(endereco__icontains=filters["search"]))
         if filters["sources"] == ["openstreetmap"]:
             from .catalog_models import CatalogEntry, CatalogScope
-            editions = CatalogEntry.objects.filter(batch_id__in=Subquery(
-                CatalogScope.objects.filter(active_batch__isnull=False).values("active_batch_id")),
-                poi__local_id=OuterRef("pk"))
+
+            editions = CatalogEntry.objects.filter(
+                batch_id__in=Subquery(
+                    CatalogScope.objects.filter(active_batch__isnull=False).values("active_batch_id")
+                ),
+                poi__local_id=OuterRef("pk"),
+            )
             qs = qs.annotate(has_catalog=Exists(editions)).filter(
-                Q(has_catalog=True) | (Q(osm_id__isnull=False) & ~Q(osm_id="")))
+                Q(has_catalog=True) | (Q(osm_id__isnull=False) & ~Q(osm_id=""))
+            )
+        from .services.categories import matches_category
+
         locals_ = [local for local in qs if options.contains(local)]
         context = populate_accessibility_context(locals_, self.get_serializer_context())
         context["missing_resources"] = {}
         matched = []
         for local in locals_:
+            if not matches_category(
+                local.categoria,
+                context["resolved_subcategories"][local.pk],
+                filters["categories"],
+                filters["subcategories"],
+            ):
+                continue
             accepted, missing = matching_resources(
-                local_accessibility(local, context), filters["resources"], filters["include_unknown"]
+                local_accessibility(local, context),
+                filters["resources"],
+                filters["include_unknown"],
+                filters["combination"],
+                filters["mode"],
             )
             if accepted:
                 matched.append(local)
                 context["missing_resources"][local.pk] = missing
         rows = options.order(matched, context)
+        if filters["mode"] == "priorizar":
+            rows.sort(key=lambda local: -presence_count(local_accessibility(local, context), filters["resources"]))
         response = options.response(
             rows, request, lambda page: self.get_serializer(page, many=True, context=context).data
         )

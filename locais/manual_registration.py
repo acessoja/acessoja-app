@@ -23,6 +23,7 @@ class ManualRegistrationSerializer(serializers.Serializer):
     nome = serializers.CharField(max_length=255)
     endereco = serializers.CharField(max_length=255)
     categoria = serializers.ChoiceField(choices=list(CATEGORIES))
+    subcategoria = serializers.CharField(max_length=32, required=False, allow_blank=True)
     latitude = FiniteFloat(min_value=-90, max_value=90)
     longitude = FiniteFloat(min_value=-180, max_value=180)
     point_confirmed = serializers.BooleanField()
@@ -33,6 +34,14 @@ class ManualRegistrationSerializer(serializers.Serializer):
             raise serializers.ValidationError("Campo desconhecido.")
         if self.initial_data.get("point_confirmed") is not True:
             raise serializers.ValidationError("Confirme explicitamente o ponto do estabelecimento.")
+        from .services.categories import validate_category_pair
+
+        try:
+            validate_category_pair(attrs["categoria"], attrs.get("subcategoria", ""))
+        except ValueError as exc:
+            raise serializers.ValidationError({"subcategoria": str(exc)}) from None
+        if not attrs.get("subcategoria"):
+            attrs.pop("subcategoria", None)
         return attrs
 
 
@@ -89,6 +98,7 @@ class ManualRegistrationAPIView(APIView):
                         status=409,
                     )
                 from evidencias.capture import evidence_actor
+
                 with evidence_actor(request.user):
                     local = Local.objects.create(**data, distancia=0)
                 ManualPlaceRegistration.objects.create(

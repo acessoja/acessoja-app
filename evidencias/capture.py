@@ -67,7 +67,7 @@ def lock_external_sources(pairs):
 
 
 @transaction.atomic
-def capture_batch(specifications):
+def capture_batch(specifications, *, create_only=False):
     """Fixed query batches; caller holds source/author lock for mutable content."""
     specs = {item["key"]: item for item in specifications}
     if not specs:
@@ -101,8 +101,13 @@ def capture_batch(specifications):
         if osm_ids
         else set()
     )
-    revisions = []
+    revisions, writable = [], []
     for root in rows:
+        # A detail read may fill a missing assertion, but must not reassert a
+        # withdrawn or moderated assertion. Importers retain normal capture.
+        if create_only and root.current_revision_id is not None:
+            continue
+        writable.append(root)
         spec = specs[root.key]
         value = {
             "state": spec["state"],
@@ -157,7 +162,7 @@ def capture_batch(specifications):
             root.superseded = False
     EvidenceRevision.objects.bulk_create(revisions)
     ResourceEvidence.objects.bulk_update(
-        rows,
+        writable,
         [
             "current_revision",
             "source",

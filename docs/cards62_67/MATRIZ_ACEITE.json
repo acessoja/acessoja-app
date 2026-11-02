@@ -1,0 +1,3672 @@
+[
+  {
+    "id": "C62-01",
+    "criterion": "Mapa começa sem personalização; ação explícita aplica Priorizar como padrão",
+    "scenario_plan": "T001–T003",
+    "evidence_plan": "E01, E02, E03",
+    "scenario_ids": [
+      "T001",
+      "T002",
+      "T003"
+    ],
+    "implementation": [
+      "locais/discovery_integrated.py",
+      "frontend/lib/models/discovery_filters.dart",
+      "frontend/lib/screens/main_screen.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T001",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T002",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T003",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      }
+    ]
+  },
+  {
+    "id": "C62-02",
+    "criterion": "Priorizar mantém todos os elegíveis pelos critérios independentes, inclusive score zero",
+    "scenario_plan": "T004, T012, T014",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T004",
+      "T012",
+      "T014"
+    ],
+    "implementation": [
+      "locais/discovery_integrated.py",
+      "frontend/lib/models/discovery_filters.dart",
+      "frontend/lib/screens/main_screen.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T004",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T012",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T014",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      }
+    ]
+  },
+  {
+    "id": "C62-03",
+    "criterion": "Contagem e desempate são determinísticos, com ID canônico ao final",
+    "scenario_plan": "T005, T015–T018, T055",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T005",
+      "T015",
+      "T016",
+      "T017",
+      "T018",
+      "T055"
+    ],
+    "implementation": [
+      "locais/discovery_integrated.py",
+      "frontend/lib/models/discovery_filters.dart",
+      "frontend/lib/screens/main_screen.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T005",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T015",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T016",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T017",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T018",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T055",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      }
+    ]
+  },
+  {
+    "id": "C62-04",
+    "criterion": "Somente presença relatada conta, sem duplicação por ID ou fonte",
+    "scenario_plan": "T006, T007, T058, T059",
+    "evidence_plan": "E01, E02, E06",
+    "scenario_ids": [
+      "T006",
+      "T007",
+      "T058",
+      "T059"
+    ],
+    "implementation": [
+      "locais/discovery_integrated.py",
+      "frontend/lib/models/discovery_filters.dart",
+      "frontend/lib/screens/main_screen.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T006",
+        "status": "parcial",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T007",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T058",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T059",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      }
+    ]
+  },
+  {
+    "id": "C62-05",
+    "criterion": "Interface usa X de Y e não fabrica percentual/selo/nota de acessibilidade",
+    "scenario_plan": "T019, T020, T082",
+    "evidence_plan": "E02, E03, E08",
+    "scenario_ids": [
+      "T019",
+      "T020",
+      "T082"
+    ],
+    "implementation": [
+      "locais/discovery_integrated.py",
+      "frontend/lib/models/discovery_filters.dart",
+      "frontend/lib/screens/main_screen.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T019",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T020",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T082",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C62-06",
+    "criterion": "Rigoroso padrão conserva Todos e opt-in de desconhecidos",
+    "scenario_plan": "T008–T011, T013",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T008",
+      "T009",
+      "T010",
+      "T011",
+      "T013"
+    ],
+    "implementation": [
+      "locais/discovery_integrated.py",
+      "frontend/lib/models/discovery_filters.dart",
+      "frontend/lib/screens/main_screen.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T008",
+        "status": "parcial",
+        "automated_evidence_count": 26
+      },
+      {
+        "id": "T009",
+        "status": "parcial",
+        "automated_evidence_count": 26
+      },
+      {
+        "id": "T010",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T011",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T013",
+        "status": "parcial",
+        "automated_evidence_count": 21
+      }
+    ]
+  },
+  {
+    "id": "C62-07",
+    "criterion": "Aplicar/desativar preserva escolhas manuais e seu ownership",
+    "scenario_plan": "T021–T023, T034, T035",
+    "evidence_plan": "E02, E03, E04",
+    "scenario_ids": [
+      "T021",
+      "T022",
+      "T023",
+      "T034",
+      "T035"
+    ],
+    "implementation": [
+      "locais/discovery_integrated.py",
+      "frontend/lib/models/discovery_filters.dart",
+      "frontend/lib/screens/main_screen.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T021",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T022",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T023",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T034",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T035",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C62-08",
+    "criterion": "Editar cadastro não altera busca; reaplicar explicitamente lê a nova seleção",
+    "scenario_plan": "T027, T028",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T027",
+      "T028"
+    ],
+    "implementation": [
+      "locais/discovery_integrated.py",
+      "frontend/lib/models/discovery_filters.dart",
+      "frontend/lib/screens/main_screen.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T027",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T028",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      }
+    ]
+  },
+  {
+    "id": "C62-09",
+    "criterion": "Ranking, paginação, consolidação e fallback de distância respeitam o escopo",
+    "scenario_plan": "T017, T053–T066",
+    "evidence_plan": "E01, E04, E06",
+    "scenario_ids": [
+      "T017",
+      "T053",
+      "T054",
+      "T055",
+      "T056",
+      "T057",
+      "T058",
+      "T059",
+      "T060",
+      "T061",
+      "T062",
+      "T063",
+      "T064",
+      "T065",
+      "T066"
+    ],
+    "implementation": [
+      "locais/discovery_integrated.py",
+      "frontend/lib/models/discovery_filters.dart",
+      "frontend/lib/screens/main_screen.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T017",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T053",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T054",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T055",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T056",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T057",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T058",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T059",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T060",
+        "status": "parcial",
+        "automated_evidence_count": 14
+      },
+      {
+        "id": "T061",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T062",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T063",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T064",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T065",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T066",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      }
+    ]
+  },
+  {
+    "id": "C62-10",
+    "criterion": "Respostas antigas e mudanças de sessão não reativam dados privados",
+    "scenario_plan": "T031, T032, T070–T074",
+    "evidence_plan": "E01, E02, E06",
+    "scenario_ids": [
+      "T031",
+      "T032",
+      "T070",
+      "T071",
+      "T072",
+      "T073",
+      "T074"
+    ],
+    "implementation": [
+      "locais/discovery_integrated.py",
+      "frontend/lib/models/discovery_filters.dart",
+      "frontend/lib/screens/main_screen.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T031",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T032",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T070",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T071",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T072",
+        "status": "parcial",
+        "automated_evidence_count": 6
+      },
+      {
+        "id": "T073",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T074",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C62-11",
+    "criterion": "Seleção pessoal não aparece em URLs/terceiros/registros públicos",
+    "scenario_plan": "T075–T078",
+    "evidence_plan": "E01, E03, E06",
+    "scenario_ids": [
+      "T075",
+      "T076",
+      "T077",
+      "T078"
+    ],
+    "implementation": [
+      "locais/discovery_integrated.py",
+      "frontend/lib/models/discovery_filters.dart",
+      "frontend/lib/screens/main_screen.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T075",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T076",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T077",
+        "status": "parcial",
+        "automated_evidence_count": 7
+      },
+      {
+        "id": "T078",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      }
+    ]
+  },
+  {
+    "id": "C62-12",
+    "criterion": "Checks aplicáveis e homologação Chrome/Android comprovam o fluxo implementado",
+    "scenario_plan": "T096–T106",
+    "evidence_plan": "E04, E05, E07, E08",
+    "scenario_ids": [
+      "T096",
+      "T097",
+      "T098",
+      "T099",
+      "T100",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T105",
+      "T106"
+    ],
+    "implementation": [
+      "locais/discovery_integrated.py",
+      "frontend/lib/models/discovery_filters.dart",
+      "frontend/lib/screens/main_screen.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T096",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T097",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T098",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T099",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T100",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T101",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T102",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T103",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T104",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T105",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T106",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C63-01",
+    "criterion": "Recursos do snapshot pessoal aplicado aparecem primeiro no compacto e no expandido",
+    "scenario_plan": "T081, T083",
+    "evidence_plan": "E02, E03, E04",
+    "scenario_ids": [
+      "T081",
+      "T083"
+    ],
+    "implementation": [
+      "frontend/lib/widgets/resource_information_list.dart",
+      "frontend/lib/widgets/accessibility_results_card.dart",
+      "frontend/lib/widgets/map_place_preview.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T081",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T083",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      }
+    ]
+  },
+  {
+    "id": "C63-02",
+    "criterion": "Todos os dez recursos e quatro grupos continuam acessíveis, sem duplicação",
+    "scenario_plan": "T083, T084",
+    "evidence_plan": "E02, E03, E08",
+    "scenario_ids": [
+      "T083",
+      "T084"
+    ],
+    "implementation": [
+      "frontend/lib/widgets/resource_information_list.dart",
+      "frontend/lib/widgets/accessibility_results_card.dart",
+      "frontend/lib/widgets/map_place_preview.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T083",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T084",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C63-03",
+    "criterion": "Estados e resumo não certificam acessibilidade nem inventam dados",
+    "scenario_plan": "T006, T082, T089",
+    "evidence_plan": "E02, E03, E06",
+    "scenario_ids": [
+      "T006",
+      "T082",
+      "T089"
+    ],
+    "implementation": [
+      "frontend/lib/widgets/resource_information_list.dart",
+      "frontend/lib/widgets/accessibility_results_card.dart",
+      "frontend/lib/widgets/map_place_preview.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T006",
+        "status": "parcial",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T082",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T089",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C63-04",
+    "criterion": "Alertas relevantes permanecem perceptíveis além do limite do compacto",
+    "scenario_plan": "T085, T086",
+    "evidence_plan": "E02, E03, E08",
+    "scenario_ids": [
+      "T085",
+      "T086"
+    ],
+    "implementation": [
+      "frontend/lib/widgets/resource_information_list.dart",
+      "frontend/lib/widgets/accessibility_results_card.dart",
+      "frontend/lib/widgets/map_place_preview.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T085",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T086",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C63-05",
+    "criterion": "Fontes, datas e histórico continuam disponíveis e corretos",
+    "scenario_plan": "T087, T089",
+    "evidence_plan": "E02, E03, E06",
+    "scenario_ids": [
+      "T087",
+      "T089"
+    ],
+    "implementation": [
+      "frontend/lib/widgets/resource_information_list.dart",
+      "frontend/lib/widgets/accessibility_results_card.dart",
+      "frontend/lib/widgets/map_place_preview.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T087",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T089",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C63-06",
+    "criterion": "Cadastro não aplicado/desligamento não mantém destaque pessoal",
+    "scenario_plan": "T001, T027, T084, T074",
+    "evidence_plan": "E02, E03, E06",
+    "scenario_ids": [
+      "T001",
+      "T027",
+      "T074",
+      "T084"
+    ],
+    "implementation": [
+      "frontend/lib/widgets/resource_information_list.dart",
+      "frontend/lib/widgets/accessibility_results_card.dart",
+      "frontend/lib/widgets/map_place_preview.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T001",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T027",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T074",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T084",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C63-07",
+    "criterion": "Troca de local, navegação e atualização preservam contexto e descartam conteúdo antigo",
+    "scenario_plan": "T033, T088, T090, T091, T105",
+    "evidence_plan": "E02, E03, E04, E05",
+    "scenario_ids": [
+      "T033",
+      "T088",
+      "T090",
+      "T091",
+      "T105"
+    ],
+    "implementation": [
+      "frontend/lib/widgets/resource_information_list.dart",
+      "frontend/lib/widgets/accessibility_results_card.dart",
+      "frontend/lib/widgets/map_place_preview.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T033",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T088",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T090",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T091",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T105",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C63-08",
+    "criterion": "Preferências não são publicadas na ficha ou compartilhamento",
+    "scenario_plan": "T075–T078",
+    "evidence_plan": "E01, E03, E06",
+    "scenario_ids": [
+      "T075",
+      "T076",
+      "T077",
+      "T078"
+    ],
+    "implementation": [
+      "frontend/lib/widgets/resource_information_list.dart",
+      "frontend/lib/widgets/accessibility_results_card.dart",
+      "frontend/lib/widgets/map_place_preview.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T075",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T076",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T077",
+        "status": "parcial",
+        "automated_evidence_count": 7
+      },
+      {
+        "id": "T078",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      }
+    ]
+  },
+  {
+    "id": "C63-09",
+    "criterion": "Teclado, leitor de tela, foco e texto 200% funcionam nos modos do painel",
+    "scenario_plan": "T092–T095, T101, T102",
+    "evidence_plan": "E02, E03, E05, E08",
+    "scenario_ids": [
+      "T092",
+      "T093",
+      "T094",
+      "T095",
+      "T101",
+      "T102"
+    ],
+    "implementation": [
+      "frontend/lib/widgets/resource_information_list.dart",
+      "frontend/lib/widgets/accessibility_results_card.dart",
+      "frontend/lib/widgets/map_place_preview.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T092",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T093",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T094",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T095",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T101",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T102",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C63-10",
+    "criterion": "Integração e homologação Chrome/Android têm evidências reais",
+    "scenario_plan": "T096, T098, T100–T102, T105, T106",
+    "evidence_plan": "E04, E05, E07, E08",
+    "scenario_ids": [
+      "T096",
+      "T098",
+      "T100",
+      "T101",
+      "T102",
+      "T105",
+      "T106"
+    ],
+    "implementation": [
+      "frontend/lib/widgets/resource_information_list.dart",
+      "frontend/lib/widgets/accessibility_results_card.dart",
+      "frontend/lib/widgets/map_place_preview.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T096",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T098",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T100",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T101",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T102",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T105",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T106",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C64-01",
+    "criterion": "Priorizar conserva os elegíveis pelos demais critérios",
+    "scenario_plan": "T004, T012, T014",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T004",
+      "T012",
+      "T014"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T004",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T012",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T014",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      }
+    ]
+  },
+  {
+    "id": "C64-02",
+    "criterion": "Todos rigoroso e inclusão explícita de unknown preservam o contrato",
+    "scenario_plan": "T008–T011",
+    "evidence_plan": "E01, E02",
+    "scenario_ids": [
+      "T008",
+      "T009",
+      "T010",
+      "T011"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T008",
+        "status": "parcial",
+        "automated_evidence_count": 26
+      },
+      {
+        "id": "T009",
+        "status": "parcial",
+        "automated_evidence_count": 26
+      },
+      {
+        "id": "T010",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T011",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      }
+    ]
+  },
+  {
+    "id": "C64-03",
+    "criterion": "Todos os estados permanecem distintos em cálculo e exibição",
+    "scenario_plan": "T006, T010, T011, T082",
+    "evidence_plan": "E01, E02, E06",
+    "scenario_ids": [
+      "T006",
+      "T010",
+      "T011",
+      "T082"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T006",
+        "status": "parcial",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T010",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T011",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T082",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C64-04",
+    "criterion": "Nenhuma nota/selo fictício é produzido",
+    "scenario_plan": "T019, T082, T089",
+    "evidence_plan": "E02, E03, E08",
+    "scenario_ids": [
+      "T019",
+      "T082",
+      "T089"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T019",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T082",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T089",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C64-05",
+    "criterion": "Ordem, paginação e alcance são coerentes e documentados",
+    "scenario_plan": "T053–T066",
+    "evidence_plan": "E01, E04, E06",
+    "scenario_ids": [
+      "T053",
+      "T054",
+      "T055",
+      "T056",
+      "T057",
+      "T058",
+      "T059",
+      "T060",
+      "T061",
+      "T062",
+      "T063",
+      "T064",
+      "T065",
+      "T066"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T053",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T054",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T055",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T056",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T057",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T058",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T059",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T060",
+        "status": "parcial",
+        "automated_evidence_count": 14
+      },
+      {
+        "id": "T061",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T062",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T063",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T064",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T065",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T066",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      }
+    ]
+  },
+  {
+    "id": "C64-06",
+    "criterion": "Aplicação e desligamento dependem de ação explícita; perfil não reaplica busca",
+    "scenario_plan": "T001–T003, T027, T028",
+    "evidence_plan": "E02, E03, E04",
+    "scenario_ids": [
+      "T001",
+      "T002",
+      "T003",
+      "T027",
+      "T028"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T001",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T002",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T003",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T027",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T028",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      }
+    ]
+  },
+  {
+    "id": "C64-07",
+    "criterion": "Critérios manuais sobrevivem à personalização",
+    "scenario_plan": "T021–T026, T034, T035",
+    "evidence_plan": "E02, E04",
+    "scenario_ids": [
+      "T021",
+      "T022",
+      "T023",
+      "T024",
+      "T025",
+      "T026",
+      "T034",
+      "T035"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T021",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T022",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T023",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T024",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T025",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T026",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T034",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T035",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C64-08",
+    "criterion": "Painel usa somente seleção da sessão atual",
+    "scenario_plan": "T070–T074, T081, T084",
+    "evidence_plan": "E02, E03, E06",
+    "scenario_ids": [
+      "T070",
+      "T071",
+      "T072",
+      "T073",
+      "T074",
+      "T081",
+      "T084"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T070",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T071",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T072",
+        "status": "parcial",
+        "automated_evidence_count": 6
+      },
+      {
+        "id": "T073",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T074",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T081",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T084",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C64-09",
+    "criterion": "Logout, expiração e troca de conta descartam dados/respostas anteriores",
+    "scenario_plan": "T070–T074, T079",
+    "evidence_plan": "E01, E02, E04, E06",
+    "scenario_ids": [
+      "T070",
+      "T071",
+      "T072",
+      "T073",
+      "T074",
+      "T079"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T070",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T071",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T072",
+        "status": "parcial",
+        "automated_evidence_count": 6
+      },
+      {
+        "id": "T073",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T074",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T079",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 5
+      }
+    ]
+  },
+  {
+    "id": "C64-10",
+    "criterion": "Não há exposição pessoal pública/externa nem pedido de diagnóstico",
+    "scenario_plan": "T067–T069, T075–T080",
+    "evidence_plan": "E01, E03, E06",
+    "scenario_ids": [
+      "T067",
+      "T068",
+      "T069",
+      "T075",
+      "T076",
+      "T077",
+      "T078",
+      "T079",
+      "T080"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T067",
+        "status": "parcial",
+        "automated_evidence_count": 7
+      },
+      {
+        "id": "T068",
+        "status": "parcial",
+        "automated_evidence_count": 10
+      },
+      {
+        "id": "T069",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T075",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T076",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T077",
+        "status": "parcial",
+        "automated_evidence_count": 7
+      },
+      {
+        "id": "T078",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T079",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T080",
+        "status": "parcial",
+        "automated_evidence_count": 13
+      }
+    ]
+  },
+  {
+    "id": "C64-11",
+    "criterion": "Os dez recursos continuam consultáveis",
+    "scenario_plan": "T083, T084",
+    "evidence_plan": "E02, E03, E08",
+    "scenario_ids": [
+      "T083",
+      "T084"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T083",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T084",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C64-12",
+    "criterion": "Associação entre fontes não duplica local/recurso e respeita homônimos",
+    "scenario_plan": "T007, T058–T060",
+    "evidence_plan": "E01, E02, E06",
+    "scenario_ids": [
+      "T007",
+      "T058",
+      "T059",
+      "T060"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T007",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T058",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T059",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T060",
+        "status": "parcial",
+        "automated_evidence_count": 14
+      }
+    ]
+  },
+  {
+    "id": "C64-13",
+    "criterion": "Visitante continua buscando e filtrando sem cadastro",
+    "scenario_plan": "T036, T067, T096",
+    "evidence_plan": "E01, E03, E04",
+    "scenario_ids": [
+      "T036",
+      "T067",
+      "T096"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T036",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T067",
+        "status": "parcial",
+        "automated_evidence_count": 7
+      },
+      {
+        "id": "T096",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      }
+    ]
+  },
+  {
+    "id": "C64-14",
+    "criterion": "Acessibilidade da personalização e painel foi homologada",
+    "scenario_plan": "T092–T095, T100–T102",
+    "evidence_plan": "E03, E05, E08",
+    "scenario_ids": [
+      "T092",
+      "T093",
+      "T094",
+      "T095",
+      "T100",
+      "T101",
+      "T102"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T092",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T093",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T094",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T095",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T100",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T101",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T102",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C64-15",
+    "criterion": "Checks e Quality Gate da versão entregue estão aprovados",
+    "scenario_plan": "T103, T104, T106",
+    "evidence_plan": "E01, E02, E07",
+    "scenario_ids": [
+      "T103",
+      "T104",
+      "T106"
+    ],
+    "implementation": [
+      "acessoja/logging_filters.py",
+      "usuarios/accessibility_preferences.py",
+      "frontend/lib/services/places_service.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T103",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T104",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T106",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C65-01",
+    "criterion": "As três opções e seu alcance são claros e explícitos",
+    "scenario_plan": "T003, T021, T023, T092, T098",
+    "evidence_plan": "E02, E03, E08",
+    "scenario_ids": [
+      "T003",
+      "T021",
+      "T023",
+      "T092",
+      "T098"
+    ],
+    "implementation": [
+      "locais/accessibility.py",
+      "frontend/lib/widgets/accessibility_filter_panel.dart",
+      "frontend/lib/models/discovery_query.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T003",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T021",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T023",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T092",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T098",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C65-02",
+    "criterion": "Priorizar não exclui por score ou ausência de relato",
+    "scenario_plan": "T004, T012, T014",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T004",
+      "T012",
+      "T014"
+    ],
+    "implementation": [
+      "locais/accessibility.py",
+      "frontend/lib/widgets/accessibility_filter_panel.dart",
+      "frontend/lib/models/discovery_query.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T004",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T012",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T014",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      }
+    ]
+  },
+  {
+    "id": "C65-03",
+    "criterion": "Todos faz AND entre os recursos da seleção",
+    "scenario_plan": "T008–T011",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T008",
+      "T009",
+      "T010",
+      "T011"
+    ],
+    "implementation": [
+      "locais/accessibility.py",
+      "frontend/lib/widgets/accessibility_filter_panel.dart",
+      "frontend/lib/models/discovery_query.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T008",
+        "status": "parcial",
+        "automated_evidence_count": 26
+      },
+      {
+        "id": "T009",
+        "status": "parcial",
+        "automated_evidence_count": 26
+      },
+      {
+        "id": "T010",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T011",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      }
+    ]
+  },
+  {
+    "id": "C65-04",
+    "criterion": "Pelo menos um faz OR sem converter falhas de outro recurso em presença",
+    "scenario_plan": "T009–T011",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T009",
+      "T010",
+      "T011"
+    ],
+    "implementation": [
+      "locais/accessibility.py",
+      "frontend/lib/widgets/accessibility_filter_panel.dart",
+      "frontend/lib/models/discovery_query.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T009",
+        "status": "parcial",
+        "automated_evidence_count": 26
+      },
+      {
+        "id": "T010",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T011",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      }
+    ]
+  },
+  {
+    "id": "C65-05",
+    "criterion": "Unknown só permite inclusão por opt-in, sem somar score",
+    "scenario_plan": "T010, T011, T024",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T010",
+      "T011",
+      "T024"
+    ],
+    "implementation": [
+      "locais/accessibility.py",
+      "frontend/lib/widgets/accessibility_filter_panel.dart",
+      "frontend/lib/models/discovery_query.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T010",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T011",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T024",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C65-06",
+    "criterion": "Ausente/divergente/limitado/não aplicável não satisfazem presença",
+    "scenario_plan": "T006, T010, T011",
+    "evidence_plan": "E01, E02",
+    "scenario_ids": [
+      "T006",
+      "T010",
+      "T011"
+    ],
+    "implementation": [
+      "locais/accessibility.py",
+      "frontend/lib/widgets/accessibility_filter_panel.dart",
+      "frontend/lib/models/discovery_query.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T006",
+        "status": "parcial",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T010",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T011",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      }
+    ]
+  },
+  {
+    "id": "C65-07",
+    "criterion": "Seleção vazia é neutra em todos os modos",
+    "scenario_plan": "T013, T020",
+    "evidence_plan": "E01, E02",
+    "scenario_ids": [
+      "T013",
+      "T020"
+    ],
+    "implementation": [
+      "locais/accessibility.py",
+      "frontend/lib/widgets/accessibility_filter_panel.dart",
+      "frontend/lib/models/discovery_query.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T013",
+        "status": "parcial",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T020",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C65-08",
+    "criterion": "API antiga sem novos parâmetros mantém Todos e envelopes anteriores",
+    "scenario_plan": "T029, T030, T103",
+    "evidence_plan": "E01, E04, E07",
+    "scenario_ids": [
+      "T029",
+      "T030",
+      "T103"
+    ],
+    "implementation": [
+      "locais/accessibility.py",
+      "frontend/lib/widgets/accessibility_filter_panel.dart",
+      "frontend/lib/models/discovery_query.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T029",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T030",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T103",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C65-09",
+    "criterion": "Rascunho, Aplicar, Cancelar, fechar, chips e limpar respeitam escopo e ownership",
+    "scenario_plan": "T021–T026, T034, T035",
+    "evidence_plan": "E02, E03, E04",
+    "scenario_ids": [
+      "T021",
+      "T022",
+      "T023",
+      "T024",
+      "T025",
+      "T026",
+      "T034",
+      "T035"
+    ],
+    "implementation": [
+      "locais/accessibility.py",
+      "frontend/lib/widgets/accessibility_filter_panel.dart",
+      "frontend/lib/models/discovery_query.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T021",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T022",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T023",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T024",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T025",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T026",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T034",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T035",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C65-10",
+    "criterion": "Grupos, subtipo, ordenação, paginação e descarte de respostas usam a mesma consulta",
+    "scenario_plan": "T014, T031–T033, T045, T053–T066",
+    "evidence_plan": "E01, E02, E04, E06",
+    "scenario_ids": [
+      "T014",
+      "T031",
+      "T032",
+      "T033",
+      "T045",
+      "T053",
+      "T054",
+      "T055",
+      "T056",
+      "T057",
+      "T058",
+      "T059",
+      "T060",
+      "T061",
+      "T062",
+      "T063",
+      "T064",
+      "T065",
+      "T066"
+    ],
+    "implementation": [
+      "locais/accessibility.py",
+      "frontend/lib/widgets/accessibility_filter_panel.dart",
+      "frontend/lib/models/discovery_query.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T014",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T031",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T032",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T033",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T045",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T053",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T054",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T055",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T056",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T057",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T058",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T059",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T060",
+        "status": "parcial",
+        "automated_evidence_count": 14
+      },
+      {
+        "id": "T061",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T062",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T063",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T064",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T065",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T066",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      }
+    ]
+  },
+  {
+    "id": "C65-11",
+    "criterion": "Filtros funcionam com teclado, leitor de tela e Chrome/Android",
+    "scenario_plan": "T092–T095, T098, T100–T102",
+    "evidence_plan": "E02, E03, E05, E08",
+    "scenario_ids": [
+      "T092",
+      "T093",
+      "T094",
+      "T095",
+      "T098",
+      "T100",
+      "T101",
+      "T102"
+    ],
+    "implementation": [
+      "locais/accessibility.py",
+      "frontend/lib/widgets/accessibility_filter_panel.dart",
+      "frontend/lib/models/discovery_query.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T092",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T093",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T094",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T095",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T098",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T100",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T101",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T102",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C65-12",
+    "criterion": "Testes, schema e Quality Gate correspondem à implementação entregue",
+    "scenario_plan": "T103, T104, T106",
+    "evidence_plan": "E01, E02, E07",
+    "scenario_ids": [
+      "T103",
+      "T104",
+      "T106"
+    ],
+    "implementation": [
+      "locais/accessibility.py",
+      "frontend/lib/widgets/accessibility_filter_panel.dart",
+      "frontend/lib/models/discovery_query.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T103",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T104",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T106",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C66-01",
+    "criterion": "Os onze pais e seus IDs permanecem disponíveis",
+    "scenario_plan": "T037, T050, T103",
+    "evidence_plan": "E01, E02, E07",
+    "scenario_ids": [
+      "T037",
+      "T050",
+      "T103"
+    ],
+    "implementation": [
+      "locais/data/place_categories.json",
+      "locais/services/categories.py",
+      "locais/migrations/0012_local_subcategoria.py",
+      "frontend/lib/models/place_subcategories.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T037",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T050",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T103",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C66-02",
+    "criterion": "Filhos têm IDs estáveis e catálogo coerente PT/EN/backend/Flutter",
+    "scenario_plan": "T038, T049, T095",
+    "evidence_plan": "E01, E02, E03",
+    "scenario_ids": [
+      "T038",
+      "T049",
+      "T095"
+    ],
+    "implementation": [
+      "locais/data/place_categories.json",
+      "locais/services/categories.py",
+      "locais/migrations/0012_local_subcategoria.py",
+      "frontend/lib/models/place_subcategories.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T038",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T049",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T095",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C66-03",
+    "criterion": "Pai amplo inclui legados sem filho; filho específico não os inventa",
+    "scenario_plan": "T039, T040, T044",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T039",
+      "T040",
+      "T044"
+    ],
+    "implementation": [
+      "locais/data/place_categories.json",
+      "locais/services/categories.py",
+      "locais/migrations/0012_local_subcategoria.py",
+      "frontend/lib/models/place_subcategories.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T039",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T040",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T044",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      }
+    ]
+  },
+  {
+    "id": "C66-04",
+    "criterion": "Seleção de subtipo só retorna classificação demonstrável",
+    "scenario_plan": "T040–T044, T047",
+    "evidence_plan": "E01, E04, E06",
+    "scenario_ids": [
+      "T040",
+      "T041",
+      "T042",
+      "T043",
+      "T044",
+      "T047"
+    ],
+    "implementation": [
+      "locais/data/place_categories.json",
+      "locais/services/categories.py",
+      "locais/migrations/0012_local_subcategoria.py",
+      "frontend/lib/models/place_subcategories.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T040",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T041",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T042",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T043",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T044",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T047",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 15
+      }
+    ]
+  },
+  {
+    "id": "C66-05",
+    "criterion": "Nome/descrição/acessibilidade não inferem subtipo",
+    "scenario_plan": "T043, T044, T048",
+    "evidence_plan": "E01, E06",
+    "scenario_ids": [
+      "T043",
+      "T044",
+      "T048"
+    ],
+    "implementation": [
+      "locais/data/place_categories.json",
+      "locais/services/categories.py",
+      "locais/migrations/0012_local_subcategoria.py",
+      "frontend/lib/models/place_subcategories.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T043",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T044",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T048",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      }
+    ]
+  },
+  {
+    "id": "C66-06",
+    "criterion": "Tags OSM e classificação interna têm política consistente",
+    "scenario_plan": "T041, T042, T047–T049",
+    "evidence_plan": "E01, E06",
+    "scenario_ids": [
+      "T041",
+      "T042",
+      "T047",
+      "T048",
+      "T049"
+    ],
+    "implementation": [
+      "locais/data/place_categories.json",
+      "locais/services/categories.py",
+      "locais/migrations/0012_local_subcategoria.py",
+      "frontend/lib/models/place_subcategories.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T041",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T042",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T047",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T048",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T049",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C66-07",
+    "criterion": "Vínculos consolidados não duplicam locais, marcadores ou contagens",
+    "scenario_plan": "T058–T060",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T058",
+      "T059",
+      "T060"
+    ],
+    "implementation": [
+      "locais/data/place_categories.json",
+      "locais/services/categories.py",
+      "locais/migrations/0012_local_subcategoria.py",
+      "frontend/lib/models/place_subcategories.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T058",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T059",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T060",
+        "status": "parcial",
+        "automated_evidence_count": 14
+      }
+    ]
+  },
+  {
+    "id": "C66-08",
+    "criterion": "IDs/pares inválidos, parâmetros repetidos e payloads maliciosos são rejeitados",
+    "scenario_plan": "T030, T046, T048, T051",
+    "evidence_plan": "E01, E06",
+    "scenario_ids": [
+      "T030",
+      "T046",
+      "T048",
+      "T051"
+    ],
+    "implementation": [
+      "locais/data/place_categories.json",
+      "locais/services/categories.py",
+      "locais/migrations/0012_local_subcategoria.py",
+      "frontend/lib/models/place_subcategories.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T030",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T046",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T048",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T051",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      }
+    ]
+  },
+  {
+    "id": "C66-09",
+    "criterion": "Consulta antiga somente por categorias continua compatível",
+    "scenario_plan": "T029, T037, T039, T103",
+    "evidence_plan": "E01, E04, E07",
+    "scenario_ids": [
+      "T029",
+      "T037",
+      "T039",
+      "T103"
+    ],
+    "implementation": [
+      "locais/data/place_categories.json",
+      "locais/services/categories.py",
+      "locais/migrations/0012_local_subcategoria.py",
+      "frontend/lib/models/place_subcategories.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T029",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T037",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T039",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T103",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C66-10",
+    "criterion": "Dados e relações existentes permanecem íntegros",
+    "scenario_plan": "T050, T052, T103, T105",
+    "evidence_plan": "E01, E04, E07",
+    "scenario_ids": [
+      "T050",
+      "T052",
+      "T103",
+      "T105"
+    ],
+    "implementation": [
+      "locais/data/place_categories.json",
+      "locais/services/categories.py",
+      "locais/migrations/0012_local_subcategoria.py",
+      "frontend/lib/models/place_subcategories.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T050",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T052",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T103",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T105",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C66-11",
+    "criterion": "Seleção hierárquica funciona com teclado, leitor e texto 200%",
+    "scenario_plan": "T045, T049, T092–T095, T100–T102",
+    "evidence_plan": "E02, E03, E05, E08",
+    "scenario_ids": [
+      "T045",
+      "T049",
+      "T092",
+      "T093",
+      "T094",
+      "T095",
+      "T100",
+      "T101",
+      "T102"
+    ],
+    "implementation": [
+      "locais/data/place_categories.json",
+      "locais/services/categories.py",
+      "locais/migrations/0012_local_subcategoria.py",
+      "frontend/lib/models/place_subcategories.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T045",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T049",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T092",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T093",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T094",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T095",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T100",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T101",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T102",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C66-12",
+    "criterion": "Migration, reversão em teste, PostgreSQL e checks estão comprovados",
+    "scenario_plan": "T050–T052, T103, T104, T106",
+    "evidence_plan": "E01, E07",
+    "scenario_ids": [
+      "T050",
+      "T051",
+      "T052",
+      "T103",
+      "T104",
+      "T106"
+    ],
+    "implementation": [
+      "locais/data/place_categories.json",
+      "locais/services/categories.py",
+      "locais/migrations/0012_local_subcategoria.py",
+      "frontend/lib/models/place_subcategories.dart"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T050",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T051",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T052",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T103",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T104",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T106",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C67-01",
+    "criterion": "Priorizar/Todos/Pelo menos um e seleção vazia têm resultados corretos",
+    "scenario_plan": "T001–T014, T096, T098",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T001",
+      "T002",
+      "T003",
+      "T004",
+      "T005",
+      "T006",
+      "T007",
+      "T008",
+      "T009",
+      "T010",
+      "T011",
+      "T012",
+      "T013",
+      "T014",
+      "T096",
+      "T098"
+    ],
+    "implementation": [
+      "locais/test_discovery_integrated.py",
+      "locais/test_category_migration.py",
+      "frontend/test/discovery_cards62_67_test.dart",
+      "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      ".github/workflows/quality-gate.yml"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T001",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T002",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T003",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T004",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T005",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T006",
+        "status": "parcial",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T007",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T008",
+        "status": "parcial",
+        "automated_evidence_count": 26
+      },
+      {
+        "id": "T009",
+        "status": "parcial",
+        "automated_evidence_count": 26
+      },
+      {
+        "id": "T010",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T011",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T012",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T013",
+        "status": "parcial",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T014",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T096",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T098",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C67-02",
+    "criterion": "Estados de evidência não são inferidos ou convertidos indevidamente",
+    "scenario_plan": "T006–T011, T043, T082",
+    "evidence_plan": "E01, E02, E06",
+    "scenario_ids": [
+      "T006",
+      "T007",
+      "T008",
+      "T009",
+      "T010",
+      "T011",
+      "T043",
+      "T082"
+    ],
+    "implementation": [
+      "locais/test_discovery_integrated.py",
+      "locais/test_category_migration.py",
+      "frontend/test/discovery_cards62_67_test.dart",
+      "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      ".github/workflows/quality-gate.yml"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T006",
+        "status": "parcial",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T007",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T008",
+        "status": "parcial",
+        "automated_evidence_count": 26
+      },
+      {
+        "id": "T009",
+        "status": "parcial",
+        "automated_evidence_count": 26
+      },
+      {
+        "id": "T010",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T011",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 21
+      },
+      {
+        "id": "T043",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T082",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C67-03",
+    "criterion": "Pais, filhos e dados legados permanecem íntegros",
+    "scenario_plan": "T037–T052, T097",
+    "evidence_plan": "E01, E02, E04",
+    "scenario_ids": [
+      "T037",
+      "T038",
+      "T039",
+      "T040",
+      "T041",
+      "T042",
+      "T043",
+      "T044",
+      "T045",
+      "T046",
+      "T047",
+      "T048",
+      "T049",
+      "T050",
+      "T051",
+      "T052",
+      "T097"
+    ],
+    "implementation": [
+      "locais/test_discovery_integrated.py",
+      "locais/test_category_migration.py",
+      "frontend/test/discovery_cards62_67_test.dart",
+      "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      ".github/workflows/quality-gate.yml"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T037",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T038",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T039",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T040",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T041",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T042",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T043",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T044",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T045",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T046",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T047",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T048",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T049",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T050",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T051",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T052",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T097",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C67-04",
+    "criterion": "Priorizar não exclui elegíveis por ausência de correspondência",
+    "scenario_plan": "T004, T012, T014, T053",
+    "evidence_plan": "E01, E04",
+    "scenario_ids": [
+      "T004",
+      "T012",
+      "T014",
+      "T053"
+    ],
+    "implementation": [
+      "locais/test_discovery_integrated.py",
+      "locais/test_category_migration.py",
+      "frontend/test/discovery_cards62_67_test.dart",
+      "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      ".github/workflows/quality-gate.yml"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T004",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T012",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T014",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T053",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      }
+    ]
+  },
+  {
+    "id": "C67-05",
+    "criterion": "Ordenação/paginação, query identity e mudanças de versão são coerentes",
+    "scenario_plan": "T031–T033, T053–T066",
+    "evidence_plan": "E01, E02, E04, E06",
+    "scenario_ids": [
+      "T031",
+      "T032",
+      "T033",
+      "T053",
+      "T054",
+      "T055",
+      "T056",
+      "T057",
+      "T058",
+      "T059",
+      "T060",
+      "T061",
+      "T062",
+      "T063",
+      "T064",
+      "T065",
+      "T066"
+    ],
+    "implementation": [
+      "locais/test_discovery_integrated.py",
+      "locais/test_category_migration.py",
+      "frontend/test/discovery_cards62_67_test.dart",
+      "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      ".github/workflows/quality-gate.yml"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T031",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T032",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T033",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T053",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T054",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T055",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T056",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T057",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T058",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T059",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T060",
+        "status": "parcial",
+        "automated_evidence_count": 14
+      },
+      {
+        "id": "T061",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T062",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T063",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T064",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T065",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T066",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      }
+    ]
+  },
+  {
+    "id": "C67-06",
+    "criterion": "Fonte indisponível/parcial e limite real são comunicados corretamente",
+    "scenario_plan": "T061, T062, T066, T089",
+    "evidence_plan": "E02, E03, E06",
+    "scenario_ids": [
+      "T061",
+      "T062",
+      "T066",
+      "T089"
+    ],
+    "implementation": [
+      "locais/test_discovery_integrated.py",
+      "locais/test_category_migration.py",
+      "frontend/test/discovery_cards62_67_test.dart",
+      "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      ".github/workflows/quality-gate.yml"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T061",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T062",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T066",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T089",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C67-07",
+    "criterion": "Busca privada, sessão e seleção pessoal estão protegidas",
+    "scenario_plan": "T067–T080, T099",
+    "evidence_plan": "E01, E03, E04, E06",
+    "scenario_ids": [
+      "T067",
+      "T068",
+      "T069",
+      "T070",
+      "T071",
+      "T072",
+      "T073",
+      "T074",
+      "T075",
+      "T076",
+      "T077",
+      "T078",
+      "T079",
+      "T080",
+      "T099"
+    ],
+    "implementation": [
+      "locais/test_discovery_integrated.py",
+      "locais/test_category_migration.py",
+      "frontend/test/discovery_cards62_67_test.dart",
+      "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      ".github/workflows/quality-gate.yml"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T067",
+        "status": "parcial",
+        "automated_evidence_count": 7
+      },
+      {
+        "id": "T068",
+        "status": "parcial",
+        "automated_evidence_count": 10
+      },
+      {
+        "id": "T069",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T070",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T071",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T072",
+        "status": "parcial",
+        "automated_evidence_count": 6
+      },
+      {
+        "id": "T073",
+        "status": "parcial",
+        "automated_evidence_count": 2
+      },
+      {
+        "id": "T074",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T075",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T076",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T077",
+        "status": "parcial",
+        "automated_evidence_count": 7
+      },
+      {
+        "id": "T078",
+        "status": "parcial",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T079",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 5
+      },
+      {
+        "id": "T080",
+        "status": "parcial",
+        "automated_evidence_count": 13
+      },
+      {
+        "id": "T099",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C67-08",
+    "criterion": "Entradas inválidas são rejeitadas sem alteração de dados nem execução insegura",
+    "scenario_plan": "T030, T046, T048, T051",
+    "evidence_plan": "E01, E06",
+    "scenario_ids": [
+      "T030",
+      "T046",
+      "T048",
+      "T051"
+    ],
+    "implementation": [
+      "locais/test_discovery_integrated.py",
+      "locais/test_category_migration.py",
+      "frontend/test/discovery_cards62_67_test.dart",
+      "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      ".github/workflows/quality-gate.yml"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T030",
+        "status": "parcial",
+        "automated_evidence_count": 16
+      },
+      {
+        "id": "T046",
+        "status": "automacao_comprovada_no_escopo",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T048",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      },
+      {
+        "id": "T051",
+        "status": "parcial",
+        "automated_evidence_count": 15
+      }
+    ]
+  },
+  {
+    "id": "C67-09",
+    "criterion": "Controles e resultados são acessíveis nos ambientes exigidos",
+    "scenario_plan": "T092–T095, T100–T102",
+    "evidence_plan": "E02, E03, E05, E08",
+    "scenario_ids": [
+      "T092",
+      "T093",
+      "T094",
+      "T095",
+      "T100",
+      "T101",
+      "T102"
+    ],
+    "implementation": [
+      "locais/test_discovery_integrated.py",
+      "locais/test_category_migration.py",
+      "frontend/test/discovery_cards62_67_test.dart",
+      "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      ".github/workflows/quality-gate.yml"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T092",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T093",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T094",
+        "status": "parcial",
+        "automated_evidence_count": 4
+      },
+      {
+        "id": "T095",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T100",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T101",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T102",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C67-10",
+    "criterion": "Testes backend e Flutter realmente executados passaram",
+    "scenario_plan": "T103, T104, T106",
+    "evidence_plan": "E01, E02, E07",
+    "scenario_ids": [
+      "T103",
+      "T104",
+      "T106"
+    ],
+    "implementation": [
+      "locais/test_discovery_integrated.py",
+      "locais/test_category_migration.py",
+      "frontend/test/discovery_cards62_67_test.dart",
+      "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      ".github/workflows/quality-gate.yml"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T103",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T104",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T106",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  },
+  {
+    "id": "C67-11",
+    "criterion": "Homologações Android físico/Chrome possuem roteiro e resultado registrados",
+    "scenario_plan": "T096–T102, T105",
+    "evidence_plan": "E03, E04, E05, E08",
+    "scenario_ids": [
+      "T096",
+      "T097",
+      "T098",
+      "T099",
+      "T100",
+      "T101",
+      "T102",
+      "T105"
+    ],
+    "implementation": [
+      "locais/test_discovery_integrated.py",
+      "locais/test_category_migration.py",
+      "frontend/test/discovery_cards62_67_test.dart",
+      "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      ".github/workflows/quality-gate.yml"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T096",
+        "status": "parcial",
+        "automated_evidence_count": 3
+      },
+      {
+        "id": "T097",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T098",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T099",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T100",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T101",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T102",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 0
+      },
+      {
+        "id": "T105",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      }
+    ]
+  },
+  {
+    "id": "C67-12",
+    "criterion": "Não há regressões relevantes nem critérios obrigatórios sem comprovação",
+    "scenario_plan": "T103–T106 e toda a matriz aplicável",
+    "evidence_plan": "E01–E08",
+    "scenario_ids": [
+      "T103",
+      "T104",
+      "T105",
+      "T106"
+    ],
+    "implementation": [
+      "locais/test_discovery_integrated.py",
+      "locais/test_category_migration.py",
+      "frontend/test/discovery_cards62_67_test.dart",
+      "frontend/integration_test/discovery_cards62_67_browser_lab.py",
+      ".github/workflows/quality-gate.yml"
+    ],
+    "status": "implementado_validacao_parcial_aceite_integral_pendente",
+    "actual": [
+      {
+        "id": "T103",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T104",
+        "status": "bloqueado_ambiente_obrigatorio",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T105",
+        "status": "parcial",
+        "automated_evidence_count": 1
+      },
+      {
+        "id": "T106",
+        "status": "nao_executado_integralmente",
+        "automated_evidence_count": 0
+      }
+    ]
+  }
+]

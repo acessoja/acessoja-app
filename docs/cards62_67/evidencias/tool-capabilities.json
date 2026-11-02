@@ -1,0 +1,6 @@
+{
+  "playwright_mcp": false,
+  "checked_at": "2026-11-02T00:54:18.262Z",
+  "browser_fallback": "Python Playwright with real Chrome for Testing headless shell",
+  "git_mutations": []
+}

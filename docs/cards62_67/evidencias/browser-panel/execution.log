@@ -1,0 +1,20 @@
+geographic {"cache": "miss", "correlation_id": "14b8c74c9674427c902eff7b7aad54f7", "event": "cache", "provider": "overpass"}
+geographic {"correlation_id": "14b8c74c9674427c902eff7b7aad54f7", "event": "query", "provider": "overpass", "selectors": 4}
+geographic {"code": "connection_failed", "correlation_id": "14b8c74c9674427c902eff7b7aad54f7", "event": "failure", "retry_source": "application", "stage": "connect", "status": 503, "upstream_status": null}
+geographic {"correlation_id": "14b8c74c9674427c902eff7b7aad54f7", "event": "finished", "milliseconds": 14, "provider": "overpass", "retry_source": "application"}
+Service Unavailable: /api/locais/externos/
+Real login and map loaded
+CT-09 CT-17 selection opens one compact persistent panel
+CT-10 expanded accessibility surface
+CT-05 CT-06 genuine source details route
+CT-22 real approved media only
+CT-14 CT-44 real compiled panel at emulated mobile viewport
+CT-52 200 percent Informações
+CT-52 200 percent Acessibilidade
+CT-52 200 percent Avaliações e fotos
+CT-52 desktop 200 percent
+CT-11 Escape collapses panel
+CT-11 close restores map
+CT-35 CT-41 real cluster lists coincident members
+CT-41 select a coincident member
+CT-51 keyboard focus traverses actual web semantics

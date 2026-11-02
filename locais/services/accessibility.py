@@ -46,11 +46,20 @@ def populate_accessibility_context(locals_, context):
         .select_related("poi", "observed_in", "batch")
     )
     by_local, by_identity = {}, {}
+    classification_by_local, classification_by_identity = defaultdict(list), defaultdict(list)
     for edition in editions:
+        if edition.source_status == "available":
+            classification_by_identity[edition.poi.external_id].append(edition.tags)
+            if edition.poi.local_id:
+                classification_by_local[edition.poi.local_id].append(edition.tags)
         if edition.poi.local_id:
             by_local[edition.poi.local_id] = edition
         by_identity[edition.poi.external_id] = edition
+        if edition.poi.external_id not in identities:
+            identities.append(edition.poi.external_id)
     provenance = context.setdefault("catalog_provenance", {})
+    classifications = context.setdefault("resolved_subcategories", {})
+    from .categories import canonical_subcategory
     from evidencias.projection import public_evidence, effective, resource_summary, confirmation_stats
     from evidencias.query_projection import unpack_quality
 
@@ -88,8 +97,20 @@ def populate_accessibility_context(locals_, context):
     for local in locals_:
         local_rows = grouped[local.pk]
         edition = by_local.get(local.pk) or by_identity.get(local.osm_id)
+        classifications[local.pk] = canonical_subcategory(
+            local.categoria,
+            local.subcategoria,
+            [*classification_by_local[local.pk], *classification_by_identity[local.osm_id]],
+        )
         records = list(
-            {row.pk: row for row in [*evidence_by_local[local.pk], *evidence_by_identity[local.osm_id]]}.values()
+            {
+                row.pk: row
+                for row in [
+                    *evidence_by_local[local.pk],
+                    *evidence_by_identity[local.osm_id],
+                    *evidence_by_identity[edition.poi.external_id if edition else None],
+                ]
+            }.values()
         )
         legacy = sum(row["questionnaire_version"] != 2 for row in local_rows)
         states[(local.pk, own_id)] = resource_summary(records, legacy, confirmation_data)

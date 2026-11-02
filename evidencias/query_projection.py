@@ -28,7 +28,14 @@ def annotate_quality(rows, *, catalog=False):
     if catalog:
         scope = Q(external_id=OuterRef("poi__external_id"))
     else:
-        scope = Q(local_id=OuterRef("pk")) | (Q(external_id=OuterRef("osm_id")) & ~Q(external_id=""))
+        from locais.catalog_models import CatalogPOI
+
+        linked = CatalogPOI.objects.filter(local_id=OuterRef(OuterRef("pk"))).values("external_id")
+        scope = (
+            Q(external_id__in=Subquery(linked))
+            | Q(local_id=OuterRef("pk"))
+            | (Q(external_id=OuterRef("osm_id")) & ~Q(external_id=""))
+        )
     confirmations = EvidenceConfirmation.objects.filter(revision_id=OuterRef("current_revision_id")).values(
         "revision_id"
     )

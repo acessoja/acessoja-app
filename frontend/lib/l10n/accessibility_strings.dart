@@ -10,6 +10,9 @@ extension AccessibilityStrings on BuildContext {
   String get preferencesPurpose => accessibilityText(
     'As preferências são critérios de busca e não garantem que um local atenderá às suas necessidades.',
     'Preferences are search criteria and do not guarantee a place will meet your needs.');
+  String get categorySearchEmpty => accessibilityText(
+    'Nenhuma categoria encontrada. Ajuste ou limpe a pesquisa.',
+    'No categories found. Adjust or clear your search.');
   String resourceGroup(String id) => switch (id) {
     'entrada' => accessibilityText('Entrada e estacionamento', 'Entrance and parking'),
     'espaco' => accessibilityText('Uso do espaço', 'Use of the space'),

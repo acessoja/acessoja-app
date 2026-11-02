@@ -1,3 +1,4 @@
+import 'discovery_fixture.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_application_1/screens/review_editor_screen.dart';
 import 'dart:async';
@@ -141,8 +142,13 @@ void mockApi({
               'attribution': '© OpenStreetMap contributors',
             });
     }
-    if (request.url.path == '/api/locais/') {
-      return internalError ? jsonResponse({}, 500) : jsonResponse([internal]);
+    if ((request.url.path == '/api/locais/' ||
+        request.url.path == '/api/locais/descoberta/')) {
+      return asDiscoveryResponse(
+        request,
+        internalError ? jsonResponse({}, 500) : jsonResponse([internal]),
+        additional: externalError ? const [] : externals ?? [external],
+      );
     }
     if (request.url.path == '/api/locais/7/') {
       return jsonResponse(internal);
@@ -752,8 +758,9 @@ void main() {
         if (request.url.path == '/api/locais/externos/categorias/') {
           return jsonResponse(categories);
         }
-        if (request.url.path == '/api/locais/') {
-          return jsonResponse([internal]);
+        if ((request.url.path == '/api/locais/' ||
+            request.url.path == '/api/locais/descoberta/')) {
+          return asDiscoveryResponse(request, jsonResponse([internal]));
         }
         return jsonResponse({});
       });
@@ -807,6 +814,10 @@ void main() {
         isNot(areaRequests.first.url.queryParameters['longitude']),
       );
       expect(int.parse(query['raio']!), inInclusiveRange(100, 3000));
+      final regional = find.byKey(const ValueKey('toggle-regional-scope'));
+      await tester.ensureVisible(regional);
+      await tester.tap(regional);
+      await tester.pumpAndSettle();
       await openSearch(tester);
       expect(searchResult('Café Externo'), findsNothing);
       latest.complete(
