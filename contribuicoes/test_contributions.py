@@ -418,6 +418,7 @@ def test_reconcile_command_includes_reporters_without_reviews(author, place):
     assert PointActivity.objects.filter(event__user=reporter).count() == 1
 
 
+@pytest.mark.django_db(transaction=True)
 def test_postgresql_concurrent_report_rewards_award_once(author, place):
     if connection.vendor != "postgresql":
         pytest.skip("Concurrent report reward uniqueness requires PostgreSQL.")
