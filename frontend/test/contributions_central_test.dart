@@ -36,7 +36,7 @@ Map<String, dynamic> summary({int points = 15, bool maximum = false}) => {
         'Pessoa com nome completo bastante extenso para verificar a quebra de linhas',
     'photo': '',
   },
-  'rules': {'review': 10, 'survey': 5, 'useful_comment': 5},
+  'rules': {'review': 10, 'survey': 5, 'useful_comment': 5, 'report_upheld': 5},
   'achievements': [
     {
       'code': 'first',
@@ -210,7 +210,6 @@ Future<void> openEditor(
   await tester.tap(find.text('Abrir'));
   await tester.pumpAndSettle();
 }
-
 
 // O editor mantém o botão da publicação sob o modal; selecione apenas o botão
 // que está dentro da janela antiga de acessibilidade.
@@ -539,7 +538,13 @@ void main() {
       final service = FakeContributions();
       service.onImpact = () async => {
         ...summary(),
-        'rules': {'review': 13, 'survey': 7, 'useful_comment': 4},
+        'rules': {
+          'review': 13,
+          'survey': 7,
+          'useful_comment': 4,
+          'photo_evidence': 3,
+          'report_upheld': 5,
+        },
       };
       await tester.pumpWidget(harness(central(service)));
       await tester.pumpAndSettle();
@@ -548,6 +553,9 @@ void main() {
       expect(find.byType(ContributionHelpSheet), findsOneWidget);
       expect(find.text('13 pontos'), findsOneWidget);
       expect(find.text('7 pontos'), findsOneWidget);
+      expect(find.text('5 pontos'), findsOneWidget);
+      expect(find.text('Denúncia procedente'), findsOneWidget);
+      expect(find.text('Foto aprovada e publicável'), findsOneWidget);
       expect(service.saves, 0);
     },
   );
@@ -611,6 +619,34 @@ void main() {
       expect(find.text('Situação atual: Avaliação excluída'), findsOneWidget);
     },
   );
+  testWidgets('report reward history is not presented as a deleted review', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      harness(
+        Scaffold(
+          body: ContributionHistoryCard(
+            entry: {
+              ...history(3),
+              'delta': -5,
+              'action': 'report_upheld',
+              'operation': 'revoked',
+              'reason': 'fraud',
+              'status': 'inactive',
+              'evaluation_id': null,
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Denúncia procedente'), findsOneWidget);
+    expect(
+      find.textContaining('Recompensa da denúncia revogada'),
+      findsOneWidget,
+    );
+    expect(find.text('Avaliação excluída'), findsNothing);
+  });
   testWidgets('keyboard traversal reaches help and enter activates it', (
     tester,
   ) async {

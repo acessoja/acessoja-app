@@ -3,7 +3,7 @@ import json
 from django.core.management.base import BaseCommand, CommandError
 from usuarios.models import Usuario
 from modal_avaliacao.models import ModalAvaliacao
-from contribuicoes.models import ContributionPointEvent, UserAchievement
+from contribuicoes.models import ContributionPointEvent, ReportRewardAttribution, UserAchievement
 from contribuicoes.services import reconcile_user
 
 
@@ -26,6 +26,7 @@ class Command(BaseCommand):
         else:
             ids = set(ModalAvaliacao.objects.values_list("user_id", flat=True))
             ids.update(ContributionPointEvent.objects.values_list("user_id", flat=True))
+            ids.update(ReportRewardAttribution.objects.values_list("beneficiary_id", flat=True))
             ids.update(UserAchievement.objects.values_list("user_id", flat=True))
         rows = [reconcile_user(user_id, apply=options["apply"]) for user_id in sorted(ids)]
         report = {

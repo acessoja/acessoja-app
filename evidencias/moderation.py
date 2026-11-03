@@ -236,4 +236,8 @@ def decide(
         if case.pk == report.pk:
             primary = decision
     transaction.on_commit(publication_changed)
+    if primary and primary.action == "invalidate" and primary.effect_applied:
+        from contribuicoes.services import process_report_reward_for_decision
+
+        process_report_reward_for_decision(primary)
     return primary

@@ -270,6 +270,7 @@ def test_new_migrations_preserve_raw_flags_review_authors_dates_and_empty_prefer
         "locais": "0007_visitarecente_arrival_confirmed",
         "usuarios": "0003_usuario_is_active_usuario_is_staff_and_more",
         "modal_avaliacao": "0006_versioned_questionnaire",
+        "contribuicoes": "0002_activity_context",
     }
     before = [
         (app, before_names.get(app, name))
@@ -277,9 +278,8 @@ def test_new_migrations_preserve_raw_flags_review_authors_dates_and_empty_prefer
         if app not in {"favoritos", "evidencias", "midia"}
     ]
     try:
-        # Favorites and evidence depend on later schemas; neither existed at this historical
-        # target. Unapply it explicitly instead of mixing current model state
-        # with the downgraded local table. All original preservation checks stay.
+        # Cards 5A migrations require current evidence/local schemas; unapply them
+        # before exercising these historical targets.
         executor.migrate(before + [("favoritos", None), ("evidencias", None), ("midia", None)])
         apps = executor.loader.project_state(before).apps
         User = apps.get_model("usuarios", "Usuario")

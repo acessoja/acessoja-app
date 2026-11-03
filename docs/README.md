@@ -25,6 +25,7 @@ Este índice separa orientação **vigente** de **registros históricos**. Antes
 - [Matriz de canonicidade](organizacao/MATRIZ_CANONICIDADE.md) e [diagnóstico](organizacao/DIAGNOSTICO_DOCUMENTAL.md) — decisões editoriais.
 - [Registros dos Cards 52–58](cards52_58/IMPLEMENTACAO.md) e [verificação](cards52_58/VERIFICACAO_FINAL.md).
 - [Registros dos Cards 59–61](cards59_61/IMPLEMENTACAO.md) e [validação](cards59_61/VALIDACAO.md).
+- [Cards 5A–5C](cards5_abc/IMPLEMENTACAO.md), [matriz de aceite](cards5_abc/MATRIZ_ACEITE.md), [testes](cards5_abc/MATRIZ_TESTES.md), [validação](cards5_abc/VALIDACAO.md) e [handoff](cards5_abc/HANDOFF.md).
 - [Evidências dos Cards 47–51](EVIDENCIAS_CARD_51.md), [38–41](EVIDENCIAS_CARDS_38_41.md) e [42–46](EVIDENCIAS_CARD_46.md).
 
 - [Índice cronológico dos Cards 01–61](historico/INDICE_CARDS.md) e [resumos por grupo](historico/RESUMOS_GRUPOS.md).

@@ -26,6 +26,10 @@ class ContributionHistoryCard extends StatelessWidget {
         'Foto aprovada',
         'Approved photo',
       ),
+      'report_upheld' => context.contributionText(
+        'Denúncia procedente',
+        'Upheld report',
+      ),
       _ => context.contributionText('Contribuição', 'Contribution'),
     };
     final status = switch (entry['status']) {
@@ -37,6 +41,11 @@ class ContributionHistoryCard extends StatelessWidget {
         'Avaliação excluída',
         'Review deleted',
       ),
+      'inactive' when entry['action'] == 'report_upheld' =>
+        context.contributionText(
+          'Recompensa da denúncia revogada',
+          'Report reward revoked',
+        ),
       'invalidated' => context.contributionText(
         'Avaliação invalidada',
         'Invalidated review',
@@ -78,6 +87,26 @@ class ContributionHistoryCard extends StatelessWidget {
       'photo_evidence_eligible' => context.contributionText(
         'Existe uma foto atual, aprovada e publicável.',
         'A current, approved, publishable photo exists.',
+      ),
+      'report_upheld' || 'report_upheld_eligible' => context.contributionText(
+        'A denúncia foi procedente após análise da versão informada.',
+        'The report was upheld after review of the submitted version.',
+      ),
+      'fraud' => context.contributionText(
+        'A recompensa foi revogada após revisão por fraude.',
+        'The reward was revoked after a fraud review.',
+      ),
+      'formal_annulment' => context.contributionText(
+        'A recompensa foi revogada por anulação formal.',
+        'The reward was revoked by formal annulment.',
+      ),
+      'formal_restoration' => context.contributionText(
+        'A recompensa foi restaurada por decisão formal.',
+        'The reward was restored by formal decision.',
+      ),
+      'fraud_cleared' => context.contributionText(
+        'A revisão confirmou a recompensa e restaurou os pontos.',
+        'The review confirmed the reward and restored the points.',
       ),
       'photo_ineligible' => context.contributionText(
         'Não restou foto atual elegível para o bônus.',
