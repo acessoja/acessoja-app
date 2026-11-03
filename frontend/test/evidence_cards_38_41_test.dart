@@ -99,7 +99,9 @@ class FakeEvidence extends EvidenceService {
             {
               'protocol': protocol,
               'state': 'pending',
+              'target_kind': 'review',
               'target_status': 'changed',
+              'reward_status': 'granted',
             },
           ],
     next: null,
@@ -357,6 +359,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining(protocol), findsOneWidget);
     expect(find.textContaining('versão anterior'), findsOneWidget);
+    expect(find.text('Recompensa concedida'), findsOneWidget);
     await tester.tap(find.text('Revisões solicitadas'));
     await tester.pumpAndSettle();
     expect(find.text('Confira o recurso'), findsOneWidget);

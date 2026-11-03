@@ -153,6 +153,20 @@ class ContributionHelpSheet extends StatelessWidget {
                         'The bonus requires moderator approval. Writing a comment alone does not earn it.',
                       ),
                     ),
+                  if (rules['report_upheld'] is num)
+                    _rule(
+                      context,
+                      Icons.flag_outlined,
+                      context.contributionText(
+                        'Denúncia procedente',
+                        'Upheld report',
+                      ),
+                      rules['report_upheld'],
+                      context.contributionText(
+                        'O bônus é concedido uma vez quando a moderação invalida efetivamente uma avaliação denunciada. Denúncias de outros tipos não pontuam.',
+                        'The bonus is granted once when moderation effectively invalidates a reported review. Other report types do not earn points.',
+                      ),
+                    ),
                 ],
                 const SizedBox(height: 16),
                 Text(

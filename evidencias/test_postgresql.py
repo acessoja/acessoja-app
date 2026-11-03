@@ -7,7 +7,7 @@ import uuid
 from django.db import close_old_connections, connection
 import pytest
 
-from contribuicoes.models import ContributionPointEvent, PointActivity
+from contribuicoes.models import ContributionPointEvent, PointActivity, ReportRewardAttribution
 from usuarios.models import Usuario
 from . import test_flow
 from .exceptions import RevisionConflict
@@ -86,8 +86,18 @@ def test_postgresql_concurrent_moderators_get_one_effect_and_a_conflict(scenario
     assert sorted(concurrent(act)) == ["applied", "conflict"]
     review.refresh_from_db()
     assert not review.is_valid and ModerationDecision.objects.count() == 1
-    assert PointActivity.objects.count() == before + eligible
     assert not ContributionPointEvent.objects.filter(user=scenario[0], active=True).exists()
+    reporter_reward = ContributionPointEvent.objects.get(
+        user=reader, local=review.local, action="report_upheld"
+    )
+    assert reporter_reward.active
+    assert ReportRewardAttribution.objects.filter(
+        beneficiary=reader, review=review, status="granted"
+    ).count() == 1
+    assert PointActivity.objects.filter(
+        event=reporter_reward, operation="granted", delta=reporter_reward.points
+    ).count() == 1
+    assert PointActivity.objects.count() == before + eligible + 1
 
 
 def test_postgresql_concurrent_author_edit_and_decision_keep_revision_binding(scenario):

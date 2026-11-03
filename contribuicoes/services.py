@@ -1,11 +1,13 @@
 from django.conf import settings
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Sum
+from django.utils import timezone
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from usuarios.models import Usuario
 from modal_avaliacao.models import ModalAvaliacao
 from modal_avaliacao.questionnaire import complete
-from .models import ContributionPointEvent, PointActivity, UserAchievement
+from .models import ContributionPointEvent, PointActivity, ReportRewardAttribution, UserAchievement
 
 LEVELS = [
     (0, "Semente da Inclusão"),
@@ -21,7 +23,7 @@ ACHIEVEMENTS = [
     ("explorer", "Explorador da Cidade", "Avalie três categorias diferentes.", "categories", 3),
     ("guardian", "Guardião da Comunidade", "Publique vinte avaliações válidas.", "reviews", 20),
 ]
-ACTIONS = ("review", "survey", "useful_comment", "photo_evidence")
+ACTIONS = ("review", "survey", "useful_comment", "photo_evidence", "report_upheld")
 
 
 def eligible_reviews(user):
@@ -71,18 +73,219 @@ def _survey_complete(review):
     )
 
 
-def _criteria(review):
+def _criteria(review, user=None, local_id=None):
     from midia.permissions import public_photos
 
     eligible = bool(
         review and review.verified_author and review.is_current and review.is_valid and 1 <= review.estrelas <= 5
+    )
+    if review:
+        user, local_id = review.user, review.local_id
+    report_reward = bool(
+        user
+        and local_id
+        and ReportRewardAttribution.objects.filter(
+            beneficiary=user, local_id=local_id, status="granted"
+        ).exists()
     )
     return {
         "review": eligible,
         "survey": eligible and _survey_complete(review),
         "useful_comment": eligible and review.comment_verified and bool(review.comentario.strip()),
         "photo_evidence": eligible and public_photos().filter(review=review).exists(),
+        "report_upheld": report_reward,
     }
+
+
+@transaction.atomic
+def process_report_reward_for_decision(decision):
+    from evidencias.models import ContentReport
+
+    if decision is None or decision.action != "invalidate" or not decision.effect_applied:
+        return None
+    report = decision.report
+    if report is None or report.target_kind != "review":
+        return None
+    review = report.review_revision.review if report.review_revision else None
+    if review is None or review.local_id is None or review.user_id == report.reporter_id:
+        return None
+    if report.target_revision != decision.target_revision or review.content_revision != decision.target_revision:
+        return None
+    if review.is_valid:
+        return None
+    candidates = (
+        ContentReport.objects.filter(
+            target_key=report.target_key,
+            target_revision=report.target_revision,
+            target_kind="review",
+            reporter__isnull=False,
+            reporter__is_active=True,
+        )
+        .select_related("reporter", "review_revision__review__local", "review_revision__review__user")
+        .order_by("created_at", "protocol")
+    )
+    for candidate in candidates:
+        if candidate.reporter_id == review.user_id:
+            continue
+        if candidate.reporter_id is None:
+            continue
+        candidate_review = candidate.review_revision.review if candidate.review_revision else None
+        if candidate_review is None or candidate_review.pk != review.pk:
+            continue
+        if ReportRewardAttribution.objects.filter(review=review).exists() or (
+            candidate.reporter_id
+            and ReportRewardAttribution.objects.filter(
+                beneficiary_id=candidate.reporter_id,
+                local_id=review.local_id,
+                action="report_upheld",
+            ).exists()
+        ):
+            continue
+        if ContributionPointEvent.objects.filter(
+            user_id=candidate.reporter_id,
+            local_id=review.local_id,
+            action="report_upheld",
+            active=True,
+        ).exists():
+            continue
+        reward = ContributionPointEvent.objects.filter(
+            user_id=candidate.reporter_id,
+            local_id=review.local_id,
+            action="report_upheld",
+        ).select_for_update().first()
+        if reward is None:
+            try:
+                with transaction.atomic():
+                    reward = ContributionPointEvent.objects.create(
+                        user_id=candidate.reporter_id,
+                        local_id=review.local_id,
+                        evaluation=None,
+                        action="report_upheld",
+                        points=settings.CONTRIBUTION_POINTS["report_upheld"],
+                        active=True,
+                        idempotency_key=f"report_upheld:{candidate.reporter_id}:{review.local_id}:{review.pk}",
+                    )
+            except IntegrityError:
+                if not ContributionPointEvent.objects.filter(
+                    user_id=candidate.reporter_id,
+                    local_id=review.local_id,
+                    action="report_upheld",
+                ).exists():
+                    raise
+                continue
+        else:
+            reward.active = True
+            reward.points = settings.CONTRIBUTION_POINTS["report_upheld"]
+            reward.evaluation = None
+            reward.save(update_fields=["active", "points", "evaluation"])
+        item, created = ReportRewardAttribution.objects.get_or_create(
+            idempotency_key=f"report_upheld:{candidate.pk}:{decision.pk}",
+            defaults={
+                "report": candidate,
+                "decision": decision,
+                "review": review,
+                "local_id": review.local_id,
+                "beneficiary_id": candidate.reporter_id,
+                "action": "report_upheld",
+                "status": "granted",
+                "event": reward,
+                "reason": "report_upheld",
+                "updated_by": decision.moderator,
+                "granted_at": timezone.now(),
+            },
+        )
+        if not created:
+            item.report = candidate
+            item.decision = decision
+            item.review = review
+            item.local_id = review.local_id
+            item.beneficiary_id = candidate.reporter_id
+            item.action = "report_upheld"
+            item.status = "granted"
+            item.event = reward
+            item.reason = "report_upheld"
+            item.updated_by = decision.moderator
+            item.granted_at = timezone.now()
+            item.save(
+                update_fields=[
+                    "report",
+                    "decision",
+                    "review",
+                    "local",
+                    "beneficiary",
+                    "action",
+                    "status",
+                    "event",
+                    "reason",
+                    "updated_by",
+                    "granted_at",
+                ]
+            )
+        PointActivity.objects.get_or_create(
+            event=reward,
+            idempotency_key=f"report_upheld:{candidate.pk}:{decision.pk}",
+            defaults={
+                "delta": settings.CONTRIBUTION_POINTS["report_upheld"],
+                "actor": decision.moderator,
+                "operation": "granted",
+                "reason": "report_upheld",
+                "source_evaluation_id": None,
+            },
+        )
+        return item
+    return None
+
+
+@transaction.atomic
+def set_report_reward_status(attribution_id, actor, *, status, reason):
+    allowed_reasons = {
+        "revoked": {"formal_annulment", "fraud"},
+        "granted": {"formal_restoration", "fraud_cleared"},
+    }
+    if (
+        status not in allowed_reasons
+        or reason not in allowed_reasons[status]
+        or not actor
+        or not actor.is_active
+        or not actor.has_perm("evidencias.moderate_content")
+    ):
+        if status not in allowed_reasons or reason not in allowed_reasons.get(status, set()):
+            raise ValidationError("Status ou fundamento de revisão de recompensa inválido.")
+        raise PermissionDenied("Permissão específica de moderação necessária.")
+
+    event_id = ReportRewardAttribution.objects.filter(pk=attribution_id).values_list("event_id", flat=True).get()
+    if event_id is None:
+        raise ValidationError("A recompensa não possui evento de pontos para revisão.")
+    event = ContributionPointEvent.objects.select_for_update().get(pk=event_id)
+    attribution = ReportRewardAttribution.objects.select_for_update().get(pk=attribution_id)
+    target_active = status == "granted"
+    if attribution.status == status:
+        return False
+    if attribution.status not in {"granted", "revoked"}:
+        raise ValidationError("A recompensa ainda não foi concedida.")
+    if attribution.event_id != event.pk:
+        raise ValidationError("A recompensa mudou durante a revisão.")
+    if event.active == target_active:
+        raise ValidationError("O estado do evento não corresponde ao da atribuição.")
+
+    event.active = target_active
+    event.revision += 1
+    event.save(update_fields=["active", "revision"])
+    PointActivity.objects.create(
+        event=event,
+        actor=actor,
+        delta=event.points if target_active else -event.points,
+        idempotency_key=f"{event.idempotency_key}:{event.revision}",
+        operation="restored" if target_active else "revoked",
+        reason=reason,
+        source_evaluation_id=None,
+    )
+    attribution.status = status
+    attribution.reason = reason
+    attribution.updated_by = actor
+    attribution.revoked_at = None if target_active else timezone.now()
+    attribution.save(update_fields=["status", "reason", "updated_by", "revoked_at", "updated_at"])
+    return True
 
 
 def _revocation_reason(review, action, hint=None):
@@ -104,7 +307,7 @@ def _revocation_reason(review, action, hint=None):
 def _place_plan(user, local_id, hint=None, origin_id=None):
     # Derive eligibility from committed source rows, never from a stale signal.
     review = ModalAvaliacao.objects.filter(user=user, local_id=local_id, is_current=True).first()
-    criteria = _criteria(review)
+    criteria = _criteria(review, user=user, local_id=local_id)
     events = {
         event.action: event
         for event in ContributionPointEvent.objects.filter(user=user, local_id=local_id).select_related("evaluation")
@@ -122,7 +325,7 @@ def _place_plan(user, local_id, hint=None, origin_id=None):
         old_balance = event.points if event and event.active else 0
         state_changed = bool(event and event.active != active)
         points_changed = bool(event and event.points != points)
-        source_changed = bool(event and active and event.evaluation_id != review.pk)
+        source_changed = bool(event and active and event.evaluation_id != (review.pk if review else None))
         delta = expected - ledger_total
         if event and not (state_changed or points_changed or source_changed or delta):
             continue
@@ -173,6 +376,13 @@ def _apply_plan(user, plans):
                 active=plan["active"],
                 idempotency_key=key,
             )
+            if plan["action"] == "report_upheld":
+                ReportRewardAttribution.objects.filter(
+                    beneficiary=user,
+                    local_id=plan["local_id"],
+                    status="granted",
+                    event__isnull=True,
+                ).update(event=event)
         else:
             event.active = plan["active"]
             event.points = plan["points"]
@@ -218,6 +428,9 @@ def reconcile_user(user_id, apply=False):
     user = Usuario.objects.select_for_update().get(pk=user_id)
     places = set(ModalAvaliacao.objects.filter(user=user).values_list("local_id", flat=True))
     places.update(ContributionPointEvent.objects.filter(user=user).values_list("local_id", flat=True))
+    places.update(
+        ReportRewardAttribution.objects.filter(beneficiary=user).values_list("local_id", flat=True)
+    )
     plans = [plan for local_id in sorted(places) for plan in _place_plan(user, local_id)]
     counts = _achievement_counts(user)
     stored = {row.code: row.active for row in UserAchievement.objects.filter(user=user)}

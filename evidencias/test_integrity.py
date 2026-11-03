@@ -315,7 +315,11 @@ def test_backfill_distinguishes_reviews_and_preserves_unknown_observation_dates(
             (
                 "0006_versioned_questionnaire"
                 if app == "modal_avaliacao"
-                else "0007_usuario_groups_usuario_user_permissions" if app == "usuarios" else name
+                else (
+                    "0007_usuario_groups_usuario_user_permissions"
+                    if app == "usuarios"
+                    else "0002_activity_context" if app == "contribuicoes" else name
+                )
             ),
         )
         for app, name in latest
