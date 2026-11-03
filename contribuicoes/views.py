@@ -96,6 +96,8 @@ class ActivityView(ContributionView):
                     "status": (
                         "active"
                         if row.event.active
+                        else "inactive"
+                        if row.event.action == "report_upheld"
                         else (
                             "removed"
                             if row.event.evaluation is None

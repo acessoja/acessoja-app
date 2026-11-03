@@ -1,5 +1,66 @@
+import uuid
+
 from django.conf import settings
 from django.db import models
+
+
+class ReportRewardAttribution(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    report = models.ForeignKey("evidencias.ContentReport", on_delete=models.PROTECT, related_name="reward_attributions")
+    decision = models.ForeignKey(
+        "evidencias.ModerationDecision",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="reward_attributions",
+    )
+    review = models.ForeignKey(
+        "modal_avaliacao.ModalAvaliacao",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="report_rewards",
+    )
+    local = models.ForeignKey("locais.Local", on_delete=models.PROTECT, related_name="report_rewards")
+    beneficiary = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="report_rewards")
+    action = models.CharField(max_length=24, default="report_upheld")
+    status = models.CharField(
+        max_length=16,
+        default="pending",
+        choices=[("pending", "Pendente"), ("granted", "Concedida"), ("revoked", "Revogada")],
+    )
+    event = models.ForeignKey(
+        "ContributionPointEvent",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="report_reward_attributions",
+    )
+    idempotency_key = models.CharField(max_length=180, unique=True)
+    reason = models.CharField(max_length=200, blank=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="moderated_report_rewards",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    granted_at = models.DateTimeField(null=True, blank=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["review"], name="one_report_reward_per_review"),
+            models.UniqueConstraint(
+                fields=["beneficiary", "local", "action"],
+                name="one_report_reward_per_user_local_action",
+            )
+        ]
+
+    def __str__(self):
+        return f"ReportRewardAttribution {self.pk}"
 
 
 class ContributionPointEvent(models.Model):
@@ -22,6 +83,13 @@ class ContributionPointEvent(models.Model):
 
 class PointActivity(models.Model):
     event = models.ForeignKey(ContributionPointEvent, on_delete=models.CASCADE)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="point_activities",
+    )
     delta = models.IntegerField()
     idempotency_key = models.CharField(max_length=150, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)

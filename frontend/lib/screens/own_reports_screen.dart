@@ -106,6 +106,15 @@ class _OwnReportsScreenState extends State<OwnReportsScreen> {
         _ => accountText(context, 'Referente à versão consultada.',
             'Concerns the version you viewed.'),
       };
+
+  String _rewardStatus(Map<String, dynamic> row) => switch (row['reward_status']) {
+        'granted' => accountText(context, 'Recompensa concedida', 'Reward granted'),
+        'revoked' => accountText(context, 'Recompensa revogada', 'Reward revoked'),
+        'pending' => accountText(context, 'Recompensa em processamento', 'Reward processing'),
+        null => accountText(context, 'Situação da recompensa indisponível', 'Reward status unavailable'),
+        _ => accountText(context, 'Recompensa não concedida', 'Reward not granted'),
+      };
+
   @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
@@ -157,6 +166,8 @@ class _OwnReportsScreenState extends State<OwnReportsScreen> {
                               '${accountText(context, 'Protocolo', 'Protocol')}: ${row['protocol']}'),
                           Text(reportState(
                               context, row['state']?.toString() ?? '')),
+                          if (row['target_kind'] == 'review')
+                            Text(_rewardStatus(row)),
                           if (row['description'] is String &&
                               row['description'].isNotEmpty)
                             Text(row['description'] as String),

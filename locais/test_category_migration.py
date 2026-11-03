@@ -9,7 +9,11 @@ from django.utils import timezone
 def exercise_migration():
     executor = MigrationExecutor(connection)
     latest = executor.loader.graph.leaf_nodes()
-    old = [node for node in latest if node[0] != "locais"] + [("locais", "0011_municipal_catalog")]
+    old = [
+        (app, "0002_activity_context" if app == "contribuicoes" else name)
+        for app, name in latest
+        if app != "locais"
+    ] + [("locais", "0011_municipal_catalog")]
     try:
         executor.migrate(old)
         apps = executor.loader.project_state(old).apps

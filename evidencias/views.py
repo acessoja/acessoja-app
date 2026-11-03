@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -180,9 +180,15 @@ class ReportListCreateView(PrivateResponseMixin, ListAPIView):
             return ContentReport.objects.none()
         if set(self.request.query_params) - {"format", "page"}:
             raise ValidationError("Consulte somente seus protocolos, sem selecionar outra conta.")
-        return reports_related(ContentReport.objects.filter(reporter=self.request.user)).order_by(
-            "-created_at", "protocol"
-        )
+        from contribuicoes.models import ReportRewardAttribution
+
+        return reports_related(ContentReport.objects.filter(reporter=self.request.user)).prefetch_related(
+            Prefetch(
+                "reward_attributions",
+                queryset=ReportRewardAttribution.objects.filter(beneficiary=self.request.user),
+                to_attr="_own_reward_attributions",
+            )
+        ).order_by("-created_at", "protocol")
 
     @extend_schema(tags=["Denúncias"], responses={200: ReportReadSerializer(many=True), **READ_ERRORS})
     def list(self, request, *args, **kwargs):
@@ -215,7 +221,15 @@ class OwnReportDetailView(PrivateResponseMixin, RetrieveAPIView):
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return ContentReport.objects.none()
-        return reports_related(ContentReport.objects.filter(reporter=self.request.user))
+        from contribuicoes.models import ReportRewardAttribution
+
+        return reports_related(ContentReport.objects.filter(reporter=self.request.user)).prefetch_related(
+            Prefetch(
+                "reward_attributions",
+                queryset=ReportRewardAttribution.objects.filter(beneficiary=self.request.user),
+                to_attr="_own_reward_attributions",
+            )
+        )
 
     @extend_schema(tags=["Denúncias"], responses={200: ReportReadSerializer, **READ_ERRORS})
     def retrieve(self, request, *args, **kwargs):

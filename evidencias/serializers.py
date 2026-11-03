@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from acessoja.accessibility_catalog import RESOURCE_IDS
@@ -107,6 +108,7 @@ class ReportWriteSerializer(StrictSerializer):
 class ReportReadSerializer(serializers.ModelSerializer):
     target_status = serializers.CharField(read_only=True)
     repeated = serializers.BooleanField(read_only=True, required=False)
+    reward_status = serializers.SerializerMethodField()
 
     class Meta:
         model = ContentReport
@@ -122,8 +124,27 @@ class ReportReadSerializer(serializers.ModelSerializer):
             "updated_at",
             "target_status",
             "repeated",
+            "reward_status",
         ]
         read_only_fields = fields
+
+    @extend_schema_field(
+        serializers.ChoiceField(
+            choices=["granted", "revoked", "pending", "not_granted", "not_applicable"]
+        )
+    )
+    def get_reward_status(self, report: ContentReport) -> str:
+        if report.target_kind != "review":
+            return "not_applicable"
+        rewards = getattr(report, "_own_reward_attributions", None)
+        if rewards is None:
+            from contribuicoes.models import ReportRewardAttribution
+
+            reward = ReportRewardAttribution.objects.filter(
+                report=report, beneficiary_id=report.reporter_id
+            ).first()
+            return reward.status if reward else "not_granted"
+        return rewards[0].status if rewards else "not_granted"
 
 
 class RevisionRequestSerializer(serializers.Serializer):

@@ -258,7 +258,13 @@ if CACHES["default"]["BACKEND"] == "django.core.cache.backends.redis.RedisCache"
 
 # Pontos somente por ações verificáveis; comentários exigem moderação real.
 AUTH_TOKEN_TTL = 43200
-CONTRIBUTION_POINTS = {"review": 10, "survey": 5, "useful_comment": 5, "photo_evidence": 3}
+CONTRIBUTION_POINTS = {
+    "review": 10,
+    "survey": 5,
+    "useful_comment": 5,
+    "photo_evidence": 3,
+    "report_upheld": 5,
+}
 
 NOMINATIM_PUBLIC_OPT_IN = env.bool("NOMINATIM_PUBLIC_OPT_IN", default=False)
 
