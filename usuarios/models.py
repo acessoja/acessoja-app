@@ -93,6 +93,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         with transaction.atomic(using=using):
             previous = type(self).objects.using(using).select_for_update().filter(pk=self.pk).first()
             result = super().save(*args, **kwargs)
+            if previous and previous.is_active and not self.is_active:
+                from .account_services import revoke_credentials
+                revoke_credentials(self)
             if previous and any(getattr(previous, f) != getattr(self, f) for f in watches):
                 from contribuicoes.services import reconcile_user
 

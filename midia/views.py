@@ -239,10 +239,9 @@ class PhotoView(PrivateResponseMixin, APIView):
 
 
 class ImageFileView(PrivateResponseMixin, APIView):
-    from acessoja.authentication import ExpiringTokenAuthentication
-    from rest_framework.authentication import SessionAuthentication
+    from acessoja.authentication import ExpiringTokenAuthentication, MediaSessionAuthentication
 
-    authentication_classes = [ExpiringTokenAuthentication, SessionAuthentication]
+    authentication_classes = [ExpiringTokenAuthentication, MediaSessionAuthentication]
     permission_classes = [AllowAny]
 
     @extend_schema(

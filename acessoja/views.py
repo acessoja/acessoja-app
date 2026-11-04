@@ -8,7 +8,7 @@ from .api_schema import ErroMessageSerializer, LoginRequestSerializer, LoginSuce
 
 
 from usuarios.account_services import login_token
-from usuarios.security_throttles import SecurityThrottle
+from usuarios.security_throttles import SecurityThrottle, LoginProtection
 
 
 @extend_schema(
@@ -60,6 +60,7 @@ class LoginAPIView(APIView):
     authentication_classes = []
     throttle_classes = [SecurityThrottle]
     security_scope = "login"
+    credential_login = True
 
     def post(self, request):
         serializer = LoginRequestSerializer(data=request.data)
@@ -67,7 +68,10 @@ class LoginAPIView(APIView):
         nome = serializer.validated_data["nome"]
         password = serializer.validated_data["password"]
 
+        protection = LoginProtection(request, nome)
+        protection.check()
         result = login_token(nome, password)
+        protection.result(result is not None)
         if result is not None:
             user, token = result
             # Login bem-sucedido

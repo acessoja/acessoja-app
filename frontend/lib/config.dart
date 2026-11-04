@@ -27,7 +27,8 @@ class Config {
     }
 
     if (kIsWeb) {
-      return 'http://localhost:8000';
+      return Uri.base.host == 'localhost' || Uri.base.host == '127.0.0.1'
+          ? 'http://localhost:8000' : Uri.base.origin;
     }
 
     if (defaultTargetPlatform == TargetPlatform.android) {

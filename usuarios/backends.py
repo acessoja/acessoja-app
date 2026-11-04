@@ -1,19 +1,23 @@
 from django.contrib.auth.backends import BaseBackend
+from django.core.exceptions import PermissionDenied
 from .models import Usuario
 
 
 class UsuarioBackend(BaseBackend):
     def authenticate(self, request, nome=None, password=None, **kwargs):
         nome = nome or kwargs.get("username")
+        password = password or kwargs.get("password")
+        if not nome or not password:
+            return None
         try:
             usuario = Usuario.objects.get(nome=nome)
         except Usuario.DoesNotExist:
-            return None
+            Usuario().set_password(password)
+            raise PermissionDenied() from None
 
-        if usuario.is_active and usuario.check_password(password):
+        if usuario.check_password(password) and usuario.is_active:
             return usuario
-        else:
-            return None
+        raise PermissionDenied()
 
     def get_user(self, user_id):
         try:

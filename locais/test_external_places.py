@@ -75,8 +75,9 @@ def user(db):
 
 @pytest.fixture
 def auth_client(client, user):
-    encoded = base64.b64encode(b"contributor:Senha123!").decode()
-    client.credentials(HTTP_AUTHORIZATION=f"Basic {encoded}")
+    from rest_framework.authtoken.models import Token
+    token, _ = Token.objects.get_or_create(user=user)
+    client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
     return client
 
 

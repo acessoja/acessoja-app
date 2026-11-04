@@ -52,7 +52,8 @@ def test_i01_staging_restricts_authentication_hosts_origins_cookies_and_logs(tmp
     assert not config['SECURE_HSTS_PRELOAD'] and not config['SECURE_HSTS_INCLUDE_SUBDOMAINS']
     assert config['SECURE_HSTS_SECONDS'] == 3600
     assert config['REST_FRAMEWORK']['DEFAULT_AUTHENTICATION_CLASSES'] == [
-        'acessoja.authentication.ExpiringTokenAuthentication']
+        'acessoja.authentication.ExpiringTokenAuthentication',
+        'acessoja.authentication.WebSessionAuthentication']
     assert config['SPECTACULAR_SETTINGS']['SERVE_PERMISSIONS'] == ['rest_framework.permissions.IsAdminUser']
     assert not config['SPECTACULAR_SETTINGS']['SWAGGER_UI_SETTINGS']['persistAuthorization']
     assert config['LOGGING']['handlers']['safe']['class'] == 'logging.handlers.WatchedFileHandler'
