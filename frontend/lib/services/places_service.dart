@@ -425,7 +425,7 @@ class PlacesService {
       ),
       headers: {
         'Content-Type': 'application/json',
-        if (AppHttp.token == null || password.isNotEmpty)
+        if (!AppHttp.authenticated || password.isNotEmpty)
           'Authorization': 'Basic $credential',
       },
       body: jsonEncode({

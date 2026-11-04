@@ -364,6 +364,9 @@ def test_private_session_authentication_keeps_csrf_and_expiration():
     owner = user()
     client = APIClient(enforce_csrf_checks=True)
     client.force_login(owner)
+    session = client.session
+    session["web_login_at"] = timezone.now().timestamp()
+    session.save()
     assert client.post(URL, personal(), format="json").status_code == 403
     client.logout()
     assert client.post(URL, personal(), format="json").status_code == 401

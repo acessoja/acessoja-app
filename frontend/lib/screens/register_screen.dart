@@ -1,3 +1,4 @@
+import '../l10n/account_strings.dart';
 import '../reading_presentation.dart';
 import '../widgets/preference_controls.dart';
 import '../widgets/safe_state.dart';
@@ -20,6 +21,8 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends SafeState<RegisterScreen> {
   bool _isSubmitting = false;
+  bool _showPassword = false;
+  final Map<String, String> _errors = {};
   @override
   void dispose() {
     _nameController.dispose();
@@ -60,6 +63,24 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
       return;
     }
 
+    _errors.clear();
+    if (password.runes.length < 8) {
+      _errors['password'] = accountText(
+        context,
+        'Use pelo menos 8 caracteres.',
+        'Use at least 8 characters.',
+      );
+    }
+    if (password != confirmPassword) {
+      _errors['confirm'] = context.l10n.passwordMismatch;
+    }
+    if (_errors.isNotEmpty) {
+      setState(() {});
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_errors.values.first)));
+      return;
+    }
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -75,8 +96,9 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
     }
 
     if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(context.l10n.invalidEmail)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.invalidEmail)));
       return;
     }
     setState(() => _isSubmitting = true);
@@ -113,6 +135,7 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
             for (final entry in data.entries) {
               final value = entry.value;
               final detail = value is List ? value.join(' ') : value.toString();
+              _errors[entry.key.toString()] = detail;
               messages.add('${entry.key}: $detail');
             }
             if (messages.isNotEmpty) errorMessage = messages.join('\n');
@@ -295,6 +318,27 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
                               textInputAction: TextInputAction.done,
                               onSubmitted: (_) => _register(context),
                             ),
+                            TextButton.icon(
+                              onPressed: () => setState(
+                                () => _showPassword = !_showPassword,
+                              ),
+                              icon: Icon(
+                                _showPassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              label: Text(
+                                accountText(
+                                  context,
+                                  _showPassword
+                                      ? 'Ocultar senha'
+                                      : 'Mostrar senha',
+                                  _showPassword
+                                      ? 'Hide password'
+                                      : 'Show password',
+                                ),
+                              ),
+                            ),
                             const SizedBox(height: 20),
                             Semantics(
                               button: true,
@@ -303,8 +347,9 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
                                   ? context.l10n.working
                                   : context.l10n.register,
                               child: ConstrainedBox(
-                                constraints:
-                                    const BoxConstraints(minHeight: 48),
+                                constraints: const BoxConstraints(
+                                  minHeight: 48,
+                                ),
                                 child: ElevatedButton(
                                   onPressed: _isSubmitting
                                       ? null
@@ -321,13 +366,14 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Flexible(
-                                          child: Text(
-                                        context.l10n.register,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
+                                        child: Text(
+                                          context.l10n.register,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                         ),
-                                      )),
+                                      ),
                                       const SizedBox(width: 8),
                                       const Icon(
                                         Icons.arrow_forward_rounded,
@@ -381,7 +427,15 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
-        obscureText: obscureText,
+        obscureText: obscureText && !_showPassword,
+        autofillHints: [
+          obscureText
+              ? AutofillHints.newPassword
+              : controller == _emailController
+              ? AutofillHints.email
+              : AutofillHints.newUsername,
+        ],
+        onChanged: (_) => setState(() {}),
         textInputAction: textInputAction,
         onSubmitted: onSubmitted,
         style: TextStyle(
@@ -390,6 +444,23 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
           fontWeight: FontWeight.w500,
         ),
         decoration: InputDecoration(
+          helperMaxLines: 3,
+          errorMaxLines: 4,
+          helperText: controller == _passwordController
+              ? accountText(
+                  context,
+                  'Pelo menos 8 caracteres; frases maiores são mais seguras. ${controller.text.runes.length} caracteres.',
+                  'At least 8 characters; longer phrases are safer. ${controller.text.runes.length} characters.',
+                )
+              : null,
+          errorText:
+              _errors[controller == _nameController
+                  ? 'nome'
+                  : controller == _emailController
+                  ? 'email'
+                  : controller == _confirmPasswordController
+                  ? 'confirm'
+                  : 'password'],
           labelText: label,
           hintText: hint,
           hintStyle: TextStyle(color: colors.muted, fontSize: 14),

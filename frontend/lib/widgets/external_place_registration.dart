@@ -203,7 +203,7 @@ class _RegistrationState extends State<ExternalPlaceRegistration> {
                           : context.contributionText('Endereço', 'Address'),
                     ),
                   ),
-                  if (AppHttp.token == null && !_catalog)
+                  if (!AppHttp.authenticated && !_catalog)
                     TextFormField(
                       controller: _password,
                       obscureText: true,

@@ -5,7 +5,10 @@ from .accessibility_preferences import AccessibilityPreferencesAPIView
 from .route_history_preferences import RouteHistoryPreferencesAPIView
 from .privacy_views import PrivacyDocumentAPIView, AccountExportAPIView, AccountDeleteAPIView
 
+from .account_views import SessionUserView
+
 urlpatterns = [
+    path("me/", SessionUserView.as_view(), name="session-user"),
     path('me/privacy/', PrivacyDocumentAPIView.as_view(), name='my-privacy'),
     path('me/data-export/', AccountExportAPIView.as_view(), name='my-data-export'),
     path('me/delete-account/', AccountDeleteAPIView.as_view(), name='my-delete-account'),

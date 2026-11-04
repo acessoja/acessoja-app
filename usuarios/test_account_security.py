@@ -227,3 +227,20 @@ def test_r08_postgresql_concurrent_reset_accepts_only_one_confirmation(account):
     with ThreadPoolExecutor(max_workers=2) as pool:
         assert sorted(pool.map(lambda _: confirm(), range(2))) == [204, 400]
     assert AccountMailJob.objects.filter(kind="changed").count() == 1
+
+
+def test_session_login_sets_django_cookie_and_preserves_web_identity(account):
+    client = APIClient()
+    response = client.post('/auth/session/login/', {'nome': account.nome, 'password': OLD}, format='json')
+    assert response.status_code == 200
+    assert response.cookies
+    assert client.cookies
+    session = client.session
+    assert session.get('_auth_user_id') == str(account.pk)
+
+    me = client.get('/auth/session/me/', format='json')
+    assert me.status_code == 200
+    assert me.json()['nome'] == account.nome
+
+    logout = client.post('/auth/session/logout/', format='json')
+    assert logout.status_code == 204

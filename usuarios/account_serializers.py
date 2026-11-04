@@ -1,5 +1,8 @@
+import re
+
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import connection, transaction
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 
@@ -30,7 +33,31 @@ class AccountUserSerializer(serializers.ModelSerializer):
 
 
 class AccountCreateSerializer(UserCreateSerializer):
+    nome = serializers.CharField(max_length=30, trim_whitespace=False)
     password = serializers.CharField(write_only=True, trim_whitespace=False, max_length=4096)
+
+    email = serializers.EmailField(max_length=254)
+
+    @transaction.atomic
+    def create(self, validated_data):
+        # Serialize public registrations on PostgreSQL without changing legacy
+        # account identifiers or adding constraints over unexamined old data.
+        if connection.vendor == "postgresql":
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT pg_advisory_xact_lock(%s)", [613334])
+        self.validate_nome(validated_data["nome"])
+        normalized_email(validated_data["email"])
+        return super().create(validated_data)
+
+    def validate_nome(self, value):
+        if not re.fullmatch(r"[A-Za-z0-9À-ÖØ-öø-ÿ._-]{3,30}", value) or value.casefold() in {
+            "admin", "administrator", "root", "support", "suporte", "acessoja", "moderador"
+        }:
+            raise serializers.ValidationError(
+                "Use 3–30 letras, números, ponto, _ ou hífen; nome reservado não permitido.")
+        if Usuario.objects.filter(nome__iexact=value).exists():
+            raise serializers.ValidationError("Não foi possível usar este nome.")
+        return value
 
     def validate_email(self, value):
         return normalized_email(value)
