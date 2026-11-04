@@ -1,3 +1,5 @@
+import '../services/auth_session_controller.dart';
+import 'dart:async';
 import '../reading_presentation.dart';
 import '../widgets/preference_controls.dart';
 import '../widgets/safe_state.dart';
@@ -26,6 +28,7 @@ class LoginScreen extends StatefulWidget {
   /// Em produção usa [HttpApiService]; nos testes pode receber um mock.
   final ApiService? apiService;
   final VoidCallback? onGuest;
+  final DateTime Function()? clock;
 
   /// Permite controlar, em testes, o que acontece após um login
   /// bem-sucedido, evitando navegar para a [MainScreen] real.
@@ -36,6 +39,7 @@ class LoginScreen extends StatefulWidget {
     super.key,
     this.apiService,
     this.onGuest,
+    this.clock,
     this.onLoginSuccess,
   });
 
@@ -47,10 +51,20 @@ class _LoginScreenState extends SafeState<LoginScreen> {
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isSubmitting = false;
+  DateTime? _retryUntil;
+  Timer? _retryTimer;
+  DateTime get _now => widget.clock?.call() ?? DateTime.now();
+  int get _retrySeconds => _retryUntil == null
+      ? 0
+      : (_retryUntil!.difference(_now).inMilliseconds / 1000).ceil().clamp(
+          0,
+          86400,
+        );
   late final ApiService _apiService = widget.apiService ?? HttpApiService();
 
   @override
   void dispose() {
+    _retryTimer?.cancel();
     _userController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -58,7 +72,7 @@ class _LoginScreenState extends SafeState<LoginScreen> {
 
   // A lógica de autenticação permanece preservada.
   Future<void> _login(BuildContext context) async {
-    if (_isSubmitting) return;
+    if (_isSubmitting || _retrySeconds > 0) return;
     final nome = _userController.text.trim();
     final password = _passwordController.text;
 
@@ -78,6 +92,19 @@ class _LoginScreenState extends SafeState<LoginScreen> {
 
       if (result.success) {
         final user = result.user ?? <String, dynamic>{};
+        if (AppHttp.session.warning == 'secure_storage_unavailable') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                accountText(
+                  context,
+                  'Não foi possível confirmar o armazenamento seguro. Pode ser necessário entrar novamente.',
+                  'Secure storage could not be confirmed. You may need to sign in again.',
+                ),
+              ),
+            ),
+          );
+        }
 
         if (widget.onLoginSuccess != null) {
           widget.onLoginSuccess!(context, user);
@@ -113,13 +140,29 @@ class _LoginScreenState extends SafeState<LoginScreen> {
           ),
         );
       } else {
+        if (result.retryAfter != null) {
+          setState(
+            () => _retryUntil = _now.add(Duration(seconds: result.retryAfter!)),
+          );
+          _retryTimer?.cancel();
+          _retryTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+            if (!mounted || _retrySeconds == 0) timer.cancel();
+            if (mounted) setState(() {});
+          });
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              context.apiMessage(
-                result.message,
-                fallback: context.l10n.invalidCredentials,
-              ),
+              result.retryAfter != null
+                  ? accountText(
+                      context,
+                      'Muitas tentativas. Aguarde para tentar novamente.',
+                      'Too many attempts. Wait before trying again.',
+                    )
+                  : context.apiMessage(
+                      result.message,
+                      fallback: context.l10n.invalidCredentials,
+                    ),
             ),
           ),
         );
@@ -184,6 +227,40 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                           fit: BoxFit.contain,
                         ),
                       ),
+                      ListenableBuilder(
+                        listenable: AppHttp.session,
+                        builder: (context, _) {
+                          final warning = AppHttp.session.warning;
+                          if (warning == null) return const SizedBox.shrink();
+                          return Semantics(
+                            liveRegion: true,
+                            child: Text(
+                              warning == 'remote_logout_unconfirmed'
+                                  ? accountText(
+                                      context,
+                                      'Sessão local encerrada; não foi possível confirmar a revogação no servidor.',
+                                      'Local session ended; server revocation could not be confirmed.',
+                                    )
+                                  : accountText(
+                                      context,
+                                      'Não foi possível confirmar a limpeza ou o salvamento seguro da sessão.',
+                                      'Secure session cleanup or persistence could not be confirmed.',
+                                    ),
+                            ),
+                          );
+                        },
+                      ),
+                      if (_retrySeconds > 0)
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            accountText(
+                              context,
+                              'Muitas tentativas. Aguarde para tentar novamente ($_retrySeconds s).',
+                              'Too many attempts. Wait before trying again ($_retrySeconds s).',
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: 12),
                       Text(
                         context.l10n.accessAccount,
@@ -277,7 +354,7 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                             ConstrainedBox(
                               constraints: const BoxConstraints(minHeight: 48),
                               child: ElevatedButton(
-                                onPressed: _isSubmitting
+                                onPressed: (_isSubmitting || _retrySeconds > 0)
                                     ? null
                                     : () => _login(context),
                                 style: ElevatedButton.styleFrom(
@@ -326,6 +403,7 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                                   ? null
                                   : () {
                                       AppHttp.clearSession();
+                                      AppHttp.session.update(AuthStatus.guest);
                                       if (widget.onGuest != null) {
                                         widget.onGuest!();
                                         return;

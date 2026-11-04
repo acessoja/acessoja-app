@@ -75,7 +75,7 @@ class SecurityAuditMiddleware:
                 pass  # Preserve a server-generated provider header; never log arbitrary text.
         else:
             response["X-Correlation-ID"] = request.correlation_id
-        if request.path.startswith(("/auth/", "/api/usuarios/", "/api/favoritos/", "/api/route-history/",
+        if request.path.startswith(("/api/login/", "/auth/", "/api/usuarios/", "/api/favoritos/", "/api/route-history/",
                                     "/api/visitas/", "/api/contribuicoes/")):
             response["Cache-Control"] = "private, no-store"
             response["Pragma"] = "no-cache"

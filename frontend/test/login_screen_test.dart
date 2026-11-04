@@ -33,6 +33,76 @@ void main() {
     );
   }
 
+  testWidgets('storage and remote logout warnings are visible and reactive', (
+    tester,
+  ) async {
+    try {
+      AppHttp.session.warning = 'secure_storage_unavailable';
+      await tester.pumpWidget(buildLoginScreen());
+      expect(find.textContaining('Secure session cleanup'), findsOneWidget);
+      AppHttp.session.warning = 'remote_logout_unconfirmed';
+      await tester.pump();
+      expect(find.textContaining('server revocation'), findsOneWidget);
+    } finally {
+      AppHttp.session.warning = null;
+    }
+  });
+
+  testWidgets(
+    '429 keeps recovery reachable and expires using an injected clock without retry',
+    (tester) async {
+      var now = DateTime(2026, 11, 3);
+      when(
+        () => mockApiService.login(
+          nome: any(named: 'nome'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer(
+        (_) async => const LoginResult(
+          success: false,
+          message: 'rate_limited',
+          retryAfter: 30,
+        ),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: LoginScreen(apiService: mockApiService, clock: () => now),
+        ),
+      );
+      await tester.enterText(find.byType(TextField).at(0), 'synthetic');
+      await tester.enterText(find.byType(TextField).at(1), 'incorrect');
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Entrar'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('30 s'), findsOneWidget);
+      expect(find.text('Esqueceu sua senha?'), findsOneWidget);
+      expect(
+        tester
+            .widget<ElevatedButton>(
+              find.widgetWithText(ElevatedButton, 'Entrar'),
+            )
+            .onPressed,
+        isNull,
+      );
+      now = now.add(const Duration(seconds: 31));
+      await tester.pump(const Duration(seconds: 31));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<ElevatedButton>(
+              find.widgetWithText(ElevatedButton, 'Entrar'),
+            )
+            .onPressed,
+        isNotNull,
+      );
+      verify(
+        () => mockApiService.login(
+          nome: any(named: 'nome'),
+          password: any(named: 'password'),
+        ),
+      ).called(1);
+    },
+  );
+
   testWidgets('renderiza os campos de usuário e senha', (tester) async {
     await tester.pumpWidget(buildLoginScreen());
 
@@ -263,8 +333,9 @@ void main() {
         tester.widget<TextField>(input('Usuário')).controller!.text,
         'keyboard',
       );
-      verify(() => mockApiService.login(nome: 'keyboard', password: 'password'))
-          .called(1);
+      verify(
+        () => mockApiService.login(nome: 'keyboard', password: 'password'),
+      ).called(1);
     },
   );
 }

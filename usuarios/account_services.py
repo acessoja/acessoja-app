@@ -100,7 +100,7 @@ def confirm_password_reset(uid, token, password):
 
 
 def reauthenticate(user, password):
-    if not user.is_active or not user.check_password(password):
+    if not user.check_password(password) or not user.is_active:
         raise ValidationError({"current_password": ["Senha atual incorreta. Nenhum dado foi alterado."]})
 
 
@@ -117,7 +117,7 @@ def login_token(name, password):
     if user is None:
         Usuario().set_password(password)  # Similar password-hash cost for unknown names.
         return None
-    if not user.is_active or not user.check_password(password):
+    if not user.check_password(password) or not user.is_active:
         return None
     token, _ = Token.objects.get_or_create(user=user)
     if token.created + timedelta(seconds=settings.AUTH_TOKEN_TTL) <= timezone.now():

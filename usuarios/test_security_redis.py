@@ -54,3 +54,61 @@ def test_real_redis_workers_share_identifier_budget_and_keys_contain_no_personal
         if keys:
             client.delete(*keys)
         output.close()
+
+
+def progressive_failures(url, prefix, start, output):
+    import django
+    django.setup()
+    from django.test import override_settings
+    from usuarios.security_throttles import LoginProtection
+    config = {'default': {'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+                          'LOCATION': url, 'KEY_PREFIX': prefix}}
+    with override_settings(CACHES=config):
+        guard = LoginProtection(SimpleNamespace(META={'REMOTE_ADDR': '192.0.2.1'}), 'synthetic-user')
+        start.wait(15)
+        for _ in range(3):
+            guard.result(False)
+        output.put(True)
+
+
+def test_real_redis_progressive_failures_are_atomic_and_reset_only_the_pair():
+    import redis
+    from django.test import override_settings
+    from rest_framework.exceptions import Throttled
+    from usuarios.security_throttles import LoginProtection
+    client = redis.Redis.from_url(URL)
+    prefix = 'progressive-auth-' + uuid.uuid4().hex
+    config = {'default': {'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+                          'LOCATION': URL, 'KEY_PREFIX': prefix}}
+    ctx = multiprocessing.get_context('spawn')
+    start, output = ctx.Event(), ctx.Queue()
+    workers = [ctx.Process(target=progressive_failures, args=(URL, prefix, start, output)) for _ in range(4)]
+    try:
+        for worker in workers:
+            worker.start()
+        start.set()
+        assert all(output.get(timeout=30) for _ in workers)
+        for worker in workers:
+            worker.join(10)
+            assert worker.exitcode == 0
+        with override_settings(CACHES=config):
+            from django.core.cache import cache
+            guard = LoginProtection(SimpleNamespace(META={'REMOTE_ADDR': '192.0.2.1'}), 'synthetic-user')
+            assert cache.get(guard.key) == 12
+            with pytest.raises(Throttled) as exc:
+                guard.check()
+            assert 870 <= exc.value.wait <= 900
+            other = LoginProtection(SimpleNamespace(META={'REMOTE_ADDR': '192.0.2.2'}), 'synthetic-user')
+            other.result(False)
+            guard.result(True)
+            assert cache.get(guard.key) is None and cache.get(other.key) == 1
+            assert all(b'synthetic-user' not in key and b'192.0.2' not in key for key in client.keys(prefix + '*'))
+    finally:
+        for worker in workers:
+            if worker.is_alive():
+                worker.terminate()
+                worker.join(5)
+        keys = client.keys(prefix + '*')
+        if keys:
+            client.delete(*keys)
+        output.close()

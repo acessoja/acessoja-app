@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
+from corsheaders.defaults import default_headers
 
 
 def require(condition, message):
@@ -57,6 +58,8 @@ def configure_security(config, env):
         TRUSTED_PROXY_CIDRS=proxies, USE_X_FORWARDED_HOST=False,
         SECURE_PROXY_SSL_HEADER=("HTTP_X_FORWARDED_PROTO", "https") if proxies else None,
         SECURE_REFERRER_POLICY="same-origin", SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_AGE=43200, SESSION_SAVE_EVERY_REQUEST=False,
+        CORS_ALLOW_CREDENTIALS=True, CORS_ALLOW_HEADERS=[*default_headers, "x-session-user"],
         SESSION_COOKIE_SAMESITE="Lax", CSRF_COOKIE_SAMESITE="Lax",
         CSRF_TRUSTED_ORIGINS=env.list("CSRF_TRUSTED_ORIGINS", default=[]),
         STATIC_ROOT=Path(env("STATIC_ROOT", default=str(config["BASE_DIR"] / "staticfiles"))),
@@ -67,12 +70,18 @@ def configure_security(config, env):
         PRIVACY_EXPORT_MAX_BYTES=8 * 1024 * 1024,
         DELETION_JOURNAL_DIR=Path(env("DELETION_JOURNAL_DIR", default=str(config["BASE_DIR"] / "private-deletions"))),
         ACCOUNT_MAIL_MAX_PENDING=10000, ACCOUNT_MAIL_MAX_AGE=3600, ACCOUNT_MAIL_MAX_ATTEMPTS=5,
+        LOGIN_FAILURE_WINDOW=env.int("LOGIN_FAILURE_WINDOW", default=900),
+        LOGIN_FAILURE_STAGES=((5, env.int("LOGIN_COOLDOWN_5", default=30)),
+                              (8, env.int("LOGIN_COOLDOWN_8", default=120)),
+                              (12, env.int("LOGIN_COOLDOWN_12", default=900))),
         SECURITY_RATES={
             "reset_request": (30, 5, 3600), "reset_confirm": (30, 10, 900),
             "login": (30, 10, 60), "export": (20, 3, 3600),
             "delete": (30, 5, 3600), "password_change": (30, 10, 3600),
         },
     )
+    require(config["LOGIN_FAILURE_WINDOW"] >= 900 and all(
+        1 <= delay <= 900 for _, delay in config["LOGIN_FAILURE_STAGES"]), "Invalid login cooldown policy.")
     require(bool(config["EMAIL_HOST_USER"]) == bool(config["EMAIL_HOST_PASSWORD"]),
             "SMTP username and password must be configured together.")
     config["MIDDLEWARE"].insert(0, "acessoja.security_middleware.ProxyGuardMiddleware")
@@ -116,7 +125,8 @@ def configure_security(config, env):
                       SECURE_REDIRECT_EXEMPT=[r"^health/live/$", r"^health/ready/$"],
                       GEO_REQUIRE_SHARED_COORDINATION=True)
         config["REST_FRAMEWORK"]["DEFAULT_AUTHENTICATION_CLASSES"] = [
-            "acessoja.authentication.ExpiringTokenAuthentication"
+            "acessoja.authentication.ExpiringTokenAuthentication",
+            "acessoja.authentication.WebSessionAuthentication",
         ]
         config["SPECTACULAR_SETTINGS"].update(
             SERVE_PERMISSIONS=["rest_framework.permissions.IsAdminUser"],

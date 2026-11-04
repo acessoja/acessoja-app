@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'auth_session_controller.dart';
 import 'dart:convert';
 import 'app_http.dart';
 import '../config.dart';
@@ -8,8 +10,14 @@ class LoginResult {
   final bool success;
   final Map<String, dynamic>? user;
   final String? message;
+  final int? retryAfter;
 
-  const LoginResult({required this.success, this.user, this.message});
+  const LoginResult({
+    required this.success,
+    this.user,
+    this.message,
+    this.retryAfter,
+  });
 }
 
 /// Resultado do envio de uma avaliação de acessibilidade.
@@ -18,7 +26,11 @@ class SubmitEvaluationResult {
   final String? message;
   final int pointsDelta;
 
-  const SubmitEvaluationResult({required this.success, this.message, this.pointsDelta = 0});
+  const SubmitEvaluationResult({
+    required this.success,
+    this.message,
+    this.pointsDelta = 0,
+  });
 }
 
 /// Abstração das chamadas HTTP usadas pelas telas de login e de avaliação.
@@ -55,45 +67,93 @@ class HttpApiService implements ApiService {
     required String password,
   }) async {
     final attempt = ++_loginAttempt;
-    AppHttp.clearSession();
-    final session = AppHttp.sessionRevision.value;
-    final response = await AppHttp.post(
-      Uri.parse('${Config.baseUrl}/api/login/'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'nome': nome, 'password': password}),
-    );
-
-    if (attempt != _loginAttempt || session != AppHttp.sessionRevision.value) {
+    final generation = AppHttp.sessionRevision.value;
+    final previousStatus = AppHttp.session.status;
+    if (!AppHttp.authenticated) {
+      AppHttp.session.update(AuthStatus.authenticating);
+    }
+    try {
+      if (kIsWeb) AppHttp.csrfToken = null;
+      final response = await AppHttp.postPublic(
+        Uri.parse(
+          '${Config.baseUrl}${kIsWeb ? '/auth/session/login/' : '/api/login/'}',
+        ),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'nome': nome, 'password': password}),
+      );
+      if (attempt != _loginAttempt ||
+          generation != AppHttp.sessionRevision.value) {
+        return const LoginResult(success: false, message: 'connection_error');
+      }
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        if (data['status'] == 'success' &&
+            (kIsWeb || data['token'] is String)) {
+          AppHttp.clearSession();
+          final loginGeneration = AppHttp.sessionRevision.value;
+          if (kIsWeb) {
+            AppHttp.csrfToken = data['csrfToken'] as String?;
+            final me = await AppHttp.get(
+              Uri.parse('${Config.baseUrl}/api/usuarios/me/'),
+            );
+            final meUser = me.statusCode == 200
+                ? jsonDecode(utf8.decode(me.bodyBytes))
+                : null;
+            if (me.statusCode != 200 ||
+                meUser['id_usuario'] != data['user']['id_usuario'] ||
+                attempt != _loginAttempt ||
+                loginGeneration != AppHttp.sessionRevision.value) {
+              return const LoginResult(
+                success: false,
+                message: 'connection_error',
+              );
+            }
+          }
+          AppHttp.session.userName = data['user']['nome'] as String?;
+          AppHttp.session.token = kIsWeb ? null : data['token'] as String?;
+          AppHttp.session.userId = (data['user']['id_usuario'] as num?)
+              ?.toInt();
+          AppHttp.session.profile = Map<String, dynamic>.from(data['user']);
+          AppHttp.session.update(AuthStatus.authenticated, invalidate: true);
+          final savedGeneration = AppHttp.sessionRevision.value;
+          await AppHttp.saveSession();
+          if (attempt != _loginAttempt ||
+              savedGeneration != AppHttp.sessionRevision.value) {
+            return const LoginResult(
+              success: false,
+              message: 'connection_error',
+            );
+          }
+          return LoginResult(success: true, user: data['user']);
+        }
+      }
+      AppHttp.session.update(previousStatus);
+      if (response.statusCode == 429) {
+        return LoginResult(
+          success: false,
+          message: 'rate_limited',
+          retryAfter: int.tryParse(response.headers['retry-after'] ?? '') ?? 30,
+        );
+      }
+      return LoginResult(
+        success: false,
+        message: response.statusCode == 401
+            ? 'invalid_credentials'
+            : 'connection_error',
+      );
+    } catch (_) {
+      if (generation == AppHttp.sessionRevision.value) {
+        AppHttp.session.update(previousStatus);
+      }
       return const LoginResult(success: false, message: 'connection_error');
     }
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(utf8.decode(response.bodyBytes));
-      if (data['status'] == 'success') {
-        AppHttp.userName = data['user']['nome'] as String?;
-        AppHttp.token = data['token'] as String?;
-        AppHttp.userId = (data['user']['id_usuario'] as num?)?.toInt();
-        return LoginResult(success: true, user: data['user']);
-      }
-      return const LoginResult(
-        success: false,
-        message: 'invalid_credentials',
-      );
-    } else { if (response.statusCode == 401) {
-      return const LoginResult(
-        success: false,
-        message: 'invalid_credentials',
-      );
-    } }
-    return const LoginResult(
-      success: false,
-      message: 'connection_error',
-    );
   }
 
   @override
   Future<List<dynamic>> fetchEvaluations({required dynamic localId}) async {
-    if (localId is! num) { throw const FormatException('invalid_local_id'); }
+    if (localId is! num) {
+      throw const FormatException('invalid_local_id');
+    }
     return const ContributionService().placeReviews(localId.toInt());
   }
 
@@ -109,22 +169,36 @@ class HttpApiService implements ApiService {
     required String comentario,
   }) async {
     final payload = {
-      'local': localId, 'nome_usuario': userName,
-      'pergunta_1': pergunta1, 'pergunta_2': pergunta2,
-      'pergunta_3': pergunta3, 'pergunta_4': pergunta4,
-      'estrelas': estrelas, 'comentario': comentario,
+      'local': localId,
+      'nome_usuario': userName,
+      'pergunta_1': pergunta1,
+      'pergunta_2': pergunta2,
+      'pergunta_3': pergunta3,
+      'pergunta_4': pergunta4,
+      'estrelas': estrelas,
+      'comentario': comentario,
     };
     try {
       int? reviewId;
-      if (AppHttp.token != null && localId is num) {
-        final existing = await const ContributionService().ownReview(localId.toInt());
+      if (AppHttp.authenticated && localId is num) {
+        final existing = await const ContributionService().ownReview(
+          localId.toInt(),
+        );
         reviewId = (existing?['id'] as num?)?.toInt();
       }
-      final result = await const ContributionService().saveReview(payload, id: reviewId);
-      return SubmitEvaluationResult(success: true,
-          pointsDelta: (result['points_delta'] as num?)?.toInt() ?? 0);
+      final result = await const ContributionService().saveReview(
+        payload,
+        id: reviewId,
+      );
+      return SubmitEvaluationResult(
+        success: true,
+        pointsDelta: (result['points_delta'] as num?)?.toInt() ?? 0,
+      );
     } on ContributionException {
-      return const SubmitEvaluationResult(success: false, message: 'evaluation_error');
+      return const SubmitEvaluationResult(
+        success: false,
+        message: 'evaluation_error',
+      );
     }
   }
 }

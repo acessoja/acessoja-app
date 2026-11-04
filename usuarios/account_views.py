@@ -1,6 +1,14 @@
 """Extend the deployed Djoser contract, keeping one implementation per flow."""
+from django.conf import settings
+from django.middleware.csrf import get_token
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_protect
+from acessoja.authentication import WebSessionAuthentication, ExpiringTokenAuthentication
+from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
-from acessoja.api_schema import LoginRequestSerializer
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.decorators import method_decorator
+from acessoja.api_schema import LoginRequestSerializer, UsuarioResumoSerializer
 from djoser.views import UserViewSet
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
@@ -16,7 +24,7 @@ from .account_services import change_password, confirm_password_reset, login_tok
 from .account_services import locked_request_user, revoke_credentials
 from .models import Usuario
 from .privacy_services import delete_account
-from .security_throttles import SecurityThrottle
+from .security_throttles import SecurityThrottle, LoginProtection
 
 
 class AuthTokenSerializer(serializers.Serializer):
@@ -28,16 +36,105 @@ class AccountTokenLoginView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [SecurityThrottle]
     security_scope = "login"
+    credential_login = True
 
     @extend_schema(tags=["Autenticação"], request=LoginRequestSerializer,
                    responses={200: AuthTokenSerializer}, summary="Login pelo contrato de token do Djoser")
     def post(self, request):
         serializer = LoginRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        protection = LoginProtection(request, serializer.validated_data["nome"])
+        protection.check()
         result = login_token(serializer.validated_data["nome"], serializer.validated_data["password"])
+        protection.result(result is not None)
         if result is None:
-            raise ValidationError({"detail": "Nome de usuário ou senha incorretos."})
+            return Response({"detail": "Nome de usuário ou senha incorretos."}, status=401)
         return Response({"auth_token": result[1].key})
+
+
+class CsrfSerializer(serializers.Serializer):
+    csrfToken = serializers.CharField(read_only=True)
+
+
+class WebLoginSerializer(CsrfSerializer):
+    status = serializers.CharField(read_only=True)
+    message = serializers.CharField(read_only=True)
+    user = UsuarioResumoSerializer(read_only=True)
+
+
+@method_decorator(csrf_protect, name="dispatch")
+@method_decorator(ensure_csrf_cookie, name="dispatch")
+class SessionLoginView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    throttle_classes = [SecurityThrottle]
+    security_scope = "login"
+    credential_login = True
+
+    def get_throttles(self):
+        return [] if self.request.method == "GET" else super().get_throttles()
+
+    @extend_schema(responses={200: CsrfSerializer}, tags=["Autenticação"])
+    def get(self, request):
+        return Response({"csrfToken": get_token(request)})
+
+    @extend_schema(tags=["Autenticação"], request=LoginRequestSerializer,
+                   responses={200: WebLoginSerializer}, summary="Login Web com cookie HttpOnly e CSRF")
+    def post(self, request):
+        serializer = LoginRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        protection = LoginProtection(request, serializer.validated_data["nome"])
+        protection.check()
+        user = authenticate(request, username=serializer.validated_data["nome"],
+                            password=serializer.validated_data["password"])
+        protection.result(user is not None and user.is_active)
+        if user is None or not getattr(user, "is_active", False):
+            return Response({"detail": "Nome de usuário ou senha incorretos."}, status=401)
+        login(request, user)
+        request.session["web_login_at"] = timezone.now().timestamp()
+        request.session.set_expiry(settings.AUTH_TOKEN_TTL)
+        return Response({
+            "csrfToken": get_token(request),
+            "status": "success",
+            "message": "Sessão iniciada.",
+            "user": {
+                "id_usuario": user.id_usuario,
+                "nome": user.nome,
+                "email": user.email,
+                "nome_completo": user.nome_completo,
+                "telefone": user.telefone,
+                "foto_perfil": user.foto_perfil,
+            },
+        })
+
+
+class SessionLogoutView(APIView):
+    authentication_classes = [WebSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(tags=["Autenticação"], request=None, responses={204: None},
+                   summary="Encerrar a sessão Web Django e limpar a identidade local")
+    def post(self, request):
+        logout(request)
+        return Response(status=204)
+
+
+class SessionUserView(APIView):
+    authentication_classes = [ExpiringTokenAuthentication, WebSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(tags=["Autenticação"], responses={200: UsuarioResumoSerializer},
+                   summary="Dados do usuário autenticado pela sessão")
+    def get(self, request):
+        user = request.user
+        return Response({
+            "id_usuario": user.id_usuario,
+            "nome": user.nome,
+            "email": user.email,
+            "nome_completo": user.nome_completo,
+            "telefone": user.telefone,
+            "foto_perfil": user.foto_perfil,
+        })
 
 
 class AccountUserViewSet(UserViewSet):

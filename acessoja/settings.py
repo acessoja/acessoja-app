@@ -121,6 +121,7 @@ DATABASES = {
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "OPTIONS": {"user_attributes": ["nome", "nome_completo", "email"]},
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -159,8 +160,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "acessoja.authentication.ExpiringTokenAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.BasicAuthentication",
+        "acessoja.authentication.WebSessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [],
     # Gera o schema OpenAPI a partir do proprio codigo.
