@@ -562,11 +562,15 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          Text(
-                                            context.l10n.register,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
+                                          Flexible(
+                                            child: Text(
+                                              context.l10n.register,
+                                              textAlign: TextAlign.center,
+                                              softWrap: true,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700,
+                                              ),
                                             ),
                                           ),
                                           const SizedBox(width: 8),
