@@ -1,0 +1,46 @@
+# Arquivos que nunca devem entrar na análise local do Graphify.
+# Estas regras complementam o .gitignore e valem mesmo quando um arquivo
+# estiver presente apenas na cópia de trabalho.
+
+# Credenciais e material de autenticação
+.env
+.env.*
+**/*credentials*
+**/*secret*
+**/*password*
+**/*token*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+
+# Bancos, dumps e backups
+*.sqlite3
+*.sqlite3-*
+*.sqlite3.backup*
+*.db
+*.db-*
+*.dump
+*.bak
+**/backups/
+**/private-backups/
+
+# Dados privados e mídia local
+private-media/
+private-deletions/
+media/
+**/uploads/
+
+# Temporários, caches e artefatos derivados
+.git/
+.venv/
+__pycache__/
+*.pyc
+*.log
+*.tmp
+*.temp
+.pytest_cache/
+frontend/.dart_tool/
+frontend/build/
+graphify-out/
+reports/
