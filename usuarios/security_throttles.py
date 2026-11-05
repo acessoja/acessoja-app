@@ -22,8 +22,12 @@ class SecurityThrottle(BaseThrottle):
             return True
         ip_limit, identifier_limit, period = settings.SECURITY_RATES[scope]
         body = request.data if isinstance(request.data, dict) else {}
-        identifier = (body.get("nome", "") if getattr(view, "credential_login", False)
-                      else body.get("email", body.get("uid", body.get("nome", ""))))
+        query_field = getattr(view, "throttle_query_identifier", None)
+        if query_field:
+            identifier = request.query_params.get(query_field, "")
+        else:
+            identifier = (body.get("nome", "") if getattr(view, "credential_login", False)
+                          else body.get("email", body.get("uid", body.get("nome", ""))))
         if request.user.is_authenticated:
             identifier = str(request.user.pk)
         identifier = str(identifier)[:512].strip().casefold()

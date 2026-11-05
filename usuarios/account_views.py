@@ -18,7 +18,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .account_serializers import ResetConfirmSerializer, ResetRequestSerializer, SetPasswordSerializer
+from .account_serializers import (
+    ResetConfirmSerializer,
+    ResetRequestSerializer,
+    SetPasswordSerializer,
+    validate_username_format,
+)
 from .account_serializers import DeleteAccountSerializer
 from .account_services import change_password, confirm_password_reset, login_token, request_password_reset
 from .account_services import locked_request_user, revoke_credentials
@@ -29,6 +34,26 @@ from .security_throttles import SecurityThrottle, LoginProtection
 
 class AuthTokenSerializer(serializers.Serializer):
     auth_token = serializers.CharField(read_only=True)
+
+
+class UsernameAvailabilityView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    throttle_classes = [SecurityThrottle]
+    security_scope = "username_availability"
+    throttle_query_identifier = "nome"
+
+    def get(self, request):
+        value = str(request.query_params.get("nome", ""))
+        try:
+            validate_username_format(value)
+        except ValidationError as exc:
+            return Response({"nome": exc.detail}, status=400)
+
+        available = not Usuario.objects.filter(nome__iexact=value).exists()
+        suggestions = [f"{value}123", f"{value}_user", f"{value}2026"]
+        suggestions = [candidate[:30] for candidate in suggestions]
+        return Response({"available": available, "suggestions": suggestions})
 
 
 class AccountTokenLoginView(APIView):
