@@ -9,6 +9,20 @@ from rest_framework import serializers
 from .models import Usuario
 
 
+USERNAME_PATTERN = re.compile(r"[A-Za-z0-9À-ÖØ-öø-ÿ._-]{3,30}")
+RESERVED_USERNAMES = {
+    "admin", "administrator", "root", "support", "suporte", "acessoja", "moderador",
+}
+
+
+def validate_username_format(value):
+    if not USERNAME_PATTERN.fullmatch(value) or value.casefold() in RESERVED_USERNAMES:
+        raise serializers.ValidationError(
+            "Use 3–30 letras, números, ponto, _ ou hífen; nome reservado não permitido."
+        )
+    return value
+
+
 class StrictAccountSerializer(serializers.Serializer):
     def to_internal_value(self, data):
         if not isinstance(data, dict) or set(data) - set(self.fields):
@@ -50,6 +64,7 @@ class AccountCreateSerializer(UserCreateSerializer):
         return super().create(validated_data)
 
     def validate_nome(self, value):
+        validate_username_format(value)
         if not re.fullmatch(r"[A-Za-z0-9À-ÖØ-öø-ÿ._-]{3,30}", value) or value.casefold() in {
             "admin", "administrator", "root", "support", "suporte", "acessoja", "moderador"
         }:

@@ -10,7 +10,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from acessoja.api_schema import LoginRequestSerializer, UsuarioResumoSerializer
 from djoser.views import UserViewSet
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, NotAuthenticated, ValidationError
@@ -18,7 +18,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .account_serializers import ResetConfirmSerializer, ResetRequestSerializer, SetPasswordSerializer
+from .account_serializers import (
+    ResetConfirmSerializer,
+    ResetRequestSerializer,
+    SetPasswordSerializer,
+    validate_username_format,
+)
 from .account_serializers import DeleteAccountSerializer
 from .account_services import change_password, confirm_password_reset, login_token, request_password_reset
 from .account_services import locked_request_user, revoke_credentials
@@ -29,6 +34,59 @@ from .security_throttles import SecurityThrottle, LoginProtection
 
 class AuthTokenSerializer(serializers.Serializer):
     auth_token = serializers.CharField(read_only=True)
+
+
+class UsernameAvailabilityResponseSerializer(serializers.Serializer):
+    available = serializers.BooleanField(read_only=True)
+    suggestions = serializers.ListField(
+        child=serializers.CharField(), read_only=True
+    )
+
+
+class UsernameAvailabilityErrorSerializer(serializers.Serializer):
+    nome = serializers.ListField(child=serializers.CharField(), read_only=True)
+
+
+class UsernameAvailabilityView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    throttle_classes = [SecurityThrottle]
+    security_scope = "username_availability"
+    throttle_query_identifier = "nome"
+
+    @extend_schema(
+        tags=["Autenticação"],
+        summary="Consultar disponibilidade de nome de usuário",
+        description=(
+            "Consulta pública e limitada por requisições. O resultado é informativo: "
+            "a unicidade é validada novamente ao concluir o cadastro."
+        ),
+        parameters=[
+            OpenApiParameter(
+                name="nome",
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=True,
+                description="Nome de usuário candidato (3 a 30 caracteres).",
+            ),
+        ],
+        responses={
+            200: UsernameAvailabilityResponseSerializer,
+            400: UsernameAvailabilityErrorSerializer,
+            429: OpenApiResponse(description="Limite de consultas atingido."),
+        },
+    )
+    def get(self, request):
+        value = str(request.query_params.get("nome", ""))
+        try:
+            validate_username_format(value)
+        except ValidationError as exc:
+            return Response({"nome": exc.detail}, status=400)
+
+        available = not Usuario.objects.filter(nome__iexact=value).exists()
+        suggestions = [f"{value}123", f"{value}_user", f"{value}2026"]
+        suggestions = [candidate[:30] for candidate in suggestions]
+        return Response({"available": available, "suggestions": suggestions})
 
 
 class AccountTokenLoginView(APIView):

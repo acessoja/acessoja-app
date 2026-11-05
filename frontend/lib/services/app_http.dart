@@ -226,7 +226,16 @@ class AppHttp {
       request.followRedirects = false;
     }
     request.headers.addAll(_headers(uri, headers));
-    if (public) request.headers.remove('Authorization');
+    if (public) {
+      request.headers.removeWhere(
+        (key, _) => [
+          'authorization',
+          'cookie',
+          'x-csrftoken',
+          'x-session-user',
+        ].contains(key.toLowerCase()),
+      );
+    }
     if (body is String) {
       request.body = body;
     } else if (body is Map<String, String>) {
@@ -243,6 +252,8 @@ class AppHttp {
 
   static Future<http.Response> get(Uri uri, {Map<String, String>? headers}) =>
       _request('GET', uri, headers: headers);
+  static Future<http.Response> getPublic(Uri uri, {Map<String, String>? headers}) =>
+      _request('GET', uri, headers: headers, public: true);
   static Future<http.Response> post(
     Uri uri, {
     Map<String, String>? headers,

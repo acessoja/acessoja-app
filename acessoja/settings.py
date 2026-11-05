@@ -308,6 +308,7 @@ REPORT_SNAPSHOT_RETENTION_DAYS = 30
 REPORT_AUDIT_RETENTION_DAYS = 180
 SECURITY_RATES = {
     **globals()["SECURITY_RATES"],
+    "username_availability": (30, 10, 60),
     "evidence_confirm": (120, 30, 3600),
     "evidence_change": (60, 20, 3600),
     "report_create": (
