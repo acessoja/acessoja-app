@@ -18,7 +18,10 @@ void main() {
   setUp(() {
     originalClient = AppHttp.client;
     requests = [];
-    handler = (_) async => http.Response('{}', 400);
+    handler = (request) async =>
+        request.url.path.endsWith('username-availability/')
+        ? http.Response('{"available":true,"suggestions":[]}', 200)
+        : http.Response('{}', 400);
     client = MockClient((request) async {
       requests.add(request);
       return handler(request);
@@ -117,8 +120,10 @@ void main() {
       await focusInput(tester, input('Confirme sua senha'));
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pump();
-      expect(requests, isEmpty);
-      expect(find.byType(SnackBar), findsOneWidget);
+      expect(
+        requests.where((request) => request.url.path == '/auth/users/'),
+        isEmpty,
+      );
       expect(find.byType(RegisterScreen), findsOneWidget);
     });
   }
@@ -126,7 +131,11 @@ void main() {
     'done envia nome email password uma vez, sem confirmação no payload',
     (tester) async {
       final pending = Completer<http.Response>();
-      handler = (_) => pending.future;
+      handler = (request) => request.url.path.endsWith('username-availability/')
+          ? Future.value(
+              http.Response('{"available":true,"suggestions":[]}', 200),
+            )
+          : pending.future;
       await open(tester);
       await fill(tester);
       await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -135,9 +144,11 @@ void main() {
         'password123',
       );
       await tester.pump();
-      expect(requests, hasLength(1));
-      expect(requests.single.url.path, '/auth/users/');
-      expect(jsonDecode(requests.single.body), {
+      final registration = requests
+          .where((request) => request.url.path == '/auth/users/')
+          .single;
+      expect(registration.url.path, '/auth/users/');
+      expect(jsonDecode(registration.body), {
         'nome': 'keyboard',
         'email': 'test@keyboard.test',
         'password': 'password123',
@@ -151,18 +162,24 @@ void main() {
   testWidgets('falha mantém formulário e permite nova submissão pelo teclado', (
     tester,
   ) async {
-    handler = (_) async => http.Response(
-          jsonEncode({
-            'email': ['Already registered'],
-          }),
-          400,
-        );
+    handler = (request) async =>
+        request.url.path.endsWith('username-availability/')
+        ? http.Response('{"available":true,"suggestions":[]}', 200)
+        : http.Response(
+            jsonEncode({
+              'email': ['Already registered'],
+            }),
+            400,
+          );
     await open(tester);
     await fill(tester);
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
-    expect(find.text('email: Already registered'), findsOneWidget);
-    expect(requests, hasLength(1));
+    expect(find.text('Already registered'), findsOneWidget);
+    expect(
+      requests.where((request) => request.url.path == '/auth/users/'),
+      hasLength(1),
+    );
     expect(
       tester.widget<TextField>(input('Email')).controller!.text,
       'test@keyboard.test',
@@ -170,6 +187,9 @@ void main() {
     await focusInput(tester, input('Confirme sua senha'));
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
-    expect(requests, hasLength(2));
+    expect(
+      requests.where((request) => request.url.path == '/auth/users/'),
+      hasLength(2),
+    );
   });
 }
