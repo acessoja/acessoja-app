@@ -118,6 +118,9 @@ class _PersistentPlacePanelState extends State<PersistentPlacePanel> {
             !c.unavailable && (p.internalId != null || p.isExternal)
             ? () => widget.onAction('evaluate')
             : null,
+        onSharePressed: !c.unavailable
+            ? () => widget.onAction('share')
+            : null,
         onReviewsPressed: c.reviewTarget == null
             ? null
             : () => widget.onAction('reviews'),

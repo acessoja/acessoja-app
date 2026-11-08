@@ -9,6 +9,7 @@ import '../l10n/map_strings.dart';
 import '../services/place_preview_controller.dart';
 import '../services/review_changes.dart';
 import '../services/app_http.dart';
+import '../widgets/place_share_sheet.dart';
 
 /// OSM details are read-only. Explicit actions return to the map coordinator.
 class MapPlaceDetailsScreen extends StatefulWidget {
@@ -103,6 +104,7 @@ class _DetailsState extends State<MapPlaceDetailsScreen> {
                   onRetryDetails: _original.catalogId == null
                       ? null
                       : _preview.retry,
+                  onSharePressed: () => showPlaceShareSheet(context, model),
                   onDetailsPressed: () {},
                   onRoutePressed: model.hasCoordinates
                       ? () => widget.onRouteRequested == null
