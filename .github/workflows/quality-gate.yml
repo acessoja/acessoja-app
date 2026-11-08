@@ -161,6 +161,9 @@ jobs:
         # Nenhum teste depende do backend Django estar em execução:
         # o ApiService é mockado com mocktail.
 
+      - name: Executar testes exclusivos do Chrome
+        run: flutter test --platform chrome test/auth_web_csrf_test.dart
+
       - name: Compilar para navegador (flutter build web)
         run: flutter build web
 
