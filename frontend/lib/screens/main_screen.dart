@@ -48,6 +48,7 @@ import '../models/map_place.dart';
 import '../services/location_service.dart';
 import '../widgets/external_place_registration.dart';
 import '../widgets/persistent_place_panel.dart';
+import '../widgets/place_share_sheet.dart';
 
 import 'package:flutter/services.dart';
 
@@ -2494,6 +2495,10 @@ class _MainScreenState extends SafeState<MainScreen>
     final focus = FocusManager.instance.primaryFocus;
     _panelActionBusy = true;
     try {
+      if (action == 'share') {
+        await showPlaceShareSheet(context, selected);
+        return;
+      }
       if (action == 'route' || action == 'recover') {
         _routePanelReturn = ticket;
         _preview.suspend();
