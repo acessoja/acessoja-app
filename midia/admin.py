@@ -64,7 +64,9 @@ class PhotoAdmin(RestrictedImageAdmin):
     readonly_fields = [field.name for field in ReviewPhoto._meta.fields]
 
     def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context={**(extra_context or {}), "title": "Fotografias", "nav_active": "photos"})
+        return super().changelist_view(
+            request, extra_context={**(extra_context or {}), "title": "Fotografias", "nav_active": "photos"}
+        )
 
     @admin.display(description="Estado")
     def status(self, obj):
@@ -92,7 +94,10 @@ class PhotoAdmin(RestrictedImageAdmin):
     def decision_view(self, request, photo_id):
         if not allowed(request.user):
             raise PermissionDenied()
-        photo = get_object_or_404(ReviewPhoto.objects.select_related("current_revision__asset", "review__user", "review__local"), pk=photo_id)
+        photo = get_object_or_404(
+            ReviewPhoto.objects.select_related("current_revision__asset", "review__user", "review__local"),
+            pk=photo_id,
+        )
         revision = photo.current_revision
         form = PhotoDecisionForm(
             request.POST or None,
@@ -108,7 +113,13 @@ class PhotoAdmin(RestrictedImageAdmin):
         )
         if not can_approve:
             form.fields["action"].choices = [("reject", "Rejeitar fotografia")]
-        if request.method == "POST" and revision and revision.asset.state == "ready" and not photo.deleted_at and form.is_valid():
+        if (
+            request.method == "POST"
+            and revision
+            and revision.asset.state == "ready"
+            and not photo.deleted_at
+            and form.is_valid()
+        ):
             try:
                 decide_photo(request.user.pk, photo_id, **form.cleaned_data)
             except APIException as error:
@@ -141,7 +152,10 @@ class ImageDecisionAdmin(RestrictedImageAdmin):
     list_select_related = ("revision",)
 
     def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context={**(extra_context or {}), "title": "Histórico de fotografias", "nav_active": "history"})
+        return super().changelist_view(
+            request,
+            extra_context={**(extra_context or {}), "title": "Histórico de fotografias", "nav_active": "history"},
+        )
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
         if not allowed(request.user):

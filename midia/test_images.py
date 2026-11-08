@@ -37,6 +37,7 @@ from .models import (
 )
 from .moderation import decide_photo
 from .processing import process_image
+from .storage import image_storage
 
 
 def test_image_worker_startup_and_infrastructure_error(monkeypatch, settings):
@@ -58,7 +59,7 @@ def test_image_worker_invalid_file_remains_rejected(monkeypatch):
     monkeypatch.setattr(subprocess, "run", lambda *a, **kw: SimpleNamespace(returncode=2, stdout=b""))
     with pytest.raises(ImageRejected):
         process_image(b"invalid", ".png", "image/png", "review")
-from .storage import image_storage
+
 
 pytestmark = pytest.mark.django_db
 PASSWORD = "Synthetic-photo-password!42"

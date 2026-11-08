@@ -123,7 +123,10 @@ class ReportAdmin(admin.ModelAdmin):
         queryset = reports_related(self.get_queryset(request)).select_related(
             "review_revision__review__local", "photo_revision__photo__review__local", "evidence__local"
         )
-        counts = {state: queryset.filter(state=state).count() for state in ("pending", "reviewing", "revision_requested", "closed")}
+        counts = {
+            state: queryset.filter(state=state).count()
+            for state in ("pending", "reviewing", "revision_requested", "closed")
+        }
         state = request.GET.get("state", "")
         kind = request.GET.get("kind", "")
         search = request.GET.get("q", "").strip()
@@ -186,7 +189,11 @@ class ReportAdmin(admin.ModelAdmin):
         )
         status = target_status(report)
         if status == "current":
-            actions = [(key, label) for key, label in ACTIONS if key != "unavailable" and not (key == "start" and report.state != "pending")]
+            actions = [
+                (key, label)
+                for key, label in ACTIONS
+                if key != "unavailable" and not (key == "start" and report.state != "pending")
+            ]
         else:
             actions = [(key, label) for key, label in ACTIONS if key == "unavailable"]
         form.fields["action"].choices = actions
@@ -225,7 +232,10 @@ class DecisionAdmin(admin.ModelAdmin):
     change_list_template = "admin/moderation/change_list.html"
 
     def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context={**(extra_context or {}), "title": "Histórico de denúncias", "nav_active": "history"})
+        return super().changelist_view(
+            request,
+            extra_context={**(extra_context or {}), "title": "Histórico de denúncias", "nav_active": "history"},
+        )
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
         if not allowed(request.user):

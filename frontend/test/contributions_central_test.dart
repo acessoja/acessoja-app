@@ -735,7 +735,13 @@ void main() {
         await publishWithoutSurvey(tester);
         expect(find.text(sample.message), findsOneWidget);
         expect(service.saves, 1);
+        expect(find.text('Obrigado por contribuir!'), findsOneWidget);
+        expect(find.byType(ReviewEditorScreen), findsOneWidget);
+        await tester.tap(find.text('Voltar ao estabelecimento'));
+        await tester.pumpAndSettle();
         expect(find.byType(ReviewEditorScreen), findsNothing);
+        expect(find.text('Abrir'), findsOneWidget);
+        expect(service.saves, 1);
       },
     );
   }
@@ -831,8 +837,12 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('review-star-4')));
       await publishWithoutSurvey(tester);
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pumpAndSettle();
+      expect(find.text('Obrigado por contribuir!'), findsOneWidget);
+      expect(service.saves, 1);
+      await tester.tap(find.text('Voltar ao estabelecimento'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.pump();
       expect(
         find.text(
           'Avaliação salva. Não foi possível atualizar seu resumo agora.',
