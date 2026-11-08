@@ -16,11 +16,13 @@ import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../reading_presentation.dart';
 import '../services/api_service.dart';
+import '../models/map_place.dart';
 import 'review_editor_screen.dart';
 import 'place_reviews_screen.dart';
 import '../media/photo_gallery_screen.dart';
 import '../widgets/accessibility_results_card.dart';
 import '../widgets/survey_answers_view.dart';
+import '../widgets/place_share_sheet.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> place;
@@ -764,6 +766,28 @@ class _PlaceDetailScreenState extends SafeState<PlaceDetailScreen> {
             fontWeight: FontWeight.w800,
           ),
         ),
+        actions: [
+          Semantics(
+            button: true,
+            label: context.l10n.share,
+            child: Tooltip(
+              message: context.l10n.share,
+              child: IconButton(
+                key: const ValueKey('detail-share'),
+                icon: const Icon(Icons.share_outlined),
+                tooltip: context.l10n.share,
+                onPressed: _unavailable
+                    ? null
+                    : () => showPlaceShareSheet(
+                        context,
+                        widget.place['source'] == 'openstreetmap'
+                            ? MapPlace.external(widget.place)
+                            : MapPlace.internal(widget.place),
+                      ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: _unavailable
           ? Center(

@@ -26,6 +26,7 @@ class MapPlacePreview extends StatefulWidget {
     required this.onDetailsPressed,
     required this.onRoutePressed,
     this.onEvaluatePressed,
+    this.onSharePressed,
     this.onReviewsPressed,
     this.onContributePressed,
     this.onClosePressed,
@@ -48,6 +49,7 @@ class MapPlacePreview extends StatefulWidget {
   final VoidCallback onDetailsPressed;
   final VoidCallback? onRoutePressed,
       onEvaluatePressed,
+      onSharePressed,
       onReviewsPressed,
       onContributePressed,
       onClosePressed,
@@ -276,6 +278,12 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                     onPressed: widget.onEvaluatePressed,
                     icon: const Icon(Icons.rate_review_outlined),
                     label: Text(context.mapText('Avaliar', 'Review')),
+                  ),
+                  OutlinedButton.icon(
+                    key: const ValueKey('preview-share'),
+                    onPressed: widget.onSharePressed,
+                    icon: const Icon(Icons.share_outlined),
+                    label: Text(context.l10n.share),
                   ),
                 ],
               ),
