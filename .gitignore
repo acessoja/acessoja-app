@@ -64,13 +64,4 @@ frontend/android/.gradle/
 *.sqlite3
 *.sqlite3-wal
 *.sqlite3-shm
-*.sqlite3.backup*
-*.db
-*.db-*
-*.dump
-*.bak
 *.pbf
-
-# Graphify local outputs and sensitive analysis inputs
-graphify-out/
-.graphifyignore.local

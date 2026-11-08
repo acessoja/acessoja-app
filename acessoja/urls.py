@@ -1,7 +1,5 @@
 from django.urls import path, include
 from django.contrib import admin
-from evidencias.moderation import allowed as can_moderate
-from evidencias.models import ContentReport
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -11,15 +9,6 @@ from . import views
 from .views import LoginAPIView
 from .health import LivenessView, ReadinessView
 
-
-def moderation_admin_index(request):
-    if can_moderate(request.user):
-        return admin.site._registry[ContentReport].dashboard_view(request)
-    return admin.site.index(request)
-
-
-moderation_admin_index = admin.site.admin_view(moderation_admin_index)
-
 urlpatterns = [
     path('api/', include('midia.urls')),
     path('api/', include('evidencias.urls')),
@@ -28,8 +17,6 @@ urlpatterns = [
     path('api/favoritos/', include('favoritos.urls')),
     path('api/contribuicoes/', include('contribuicoes.urls')),
     path('home/', views.home, name='home'),  # Página inicial
-    path('admin/', moderation_admin_index, name='moderation-admin-index'),
-    path('admin/areas/', admin.site.admin_view(admin.site.index), name='moderation-admin-apps'),
     path('admin/', admin.site.urls),
 
     # ---------------------------------------------------------------

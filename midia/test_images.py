@@ -553,51 +553,6 @@ def test_admin_session_can_read_pending_file_and_has_initial_review_surface(scen
     response.close()
 
 
-def test_moderation_photo_queue_shows_protected_thumbnail(scene):
-    owner, reader, moderator, local, review = scene
-    photo = ReviewPhoto.objects.create(review=review, owner=owner)
-    asset = ImageAsset.objects.create(
-        owner=owner, purpose="photo", state="ready", image_key=f"test/{photo.pk}-image.jpg",
-        thumb_key=f"test/{photo.pk}-thumb.jpg",
-    )
-    from django.core.files.base import ContentFile
-
-    image_storage().save(asset.image_key, ContentFile(raster("JPEG")))
-    image_storage().save(asset.thumb_key, ContentFile(raster("JPEG")))
-    revision = PhotoRevision.objects.create(photo=photo, owner=owner, asset=asset, description="Rampa de acesso")
-    photo.current_revision = revision
-    photo.save(update_fields=["current_revision"])
-    browser = Client()
-    browser.force_login(moderator)
-    page = browser.get("/admin/midia/reviewphoto/")
-    assert page.status_code == 200
-    assert local.nome.encode() in page.content
-    assert f"/api/midia/arquivos/{asset.pk}/thumb/".encode() in page.content
-    preview = browser.get(f"/api/midia/arquivos/{asset.pk}/thumb/")
-    assert preview.status_code == 200
-    preview.close()
-    browser.force_login(reader)
-    assert browser.get(f"/api/midia/arquivos/{asset.pk}/thumb/").status_code == 404
-    first = decide_photo(
-        moderator.pk, photo.pk, revision_id=revision.pk, expected_version=revision.moderation_version,
-        operation_id=uuid.uuid4(), action="approve", reason="Imagem mostra o recurso informado.",
-    )
-    assert first.next_state == "approved"
-    revision.refresh_from_db()
-    second = decide_photo(
-        moderator.pk, photo.pk, revision_id=revision.pk, expected_version=revision.moderation_version,
-        operation_id=uuid.uuid4(), action="reject", reason="Revisão posterior identificou problema.",
-    )
-    assert second.next_state == "rejected"
-    browser.force_login(moderator)
-    history = browser.get("/admin/midia/imagedecision/")
-    assert history.status_code == 200
-    assert b"Hist\xc3\xb3rico de fotografias" in history.content
-    assert history.content.count(b"Aprovar") >= 1 and history.content.count(b"Rejeitar") >= 1
-    detail = browser.get(f"/admin/midia/imagedecision/{second.pk}/change/")
-    assert detail.status_code == 302 and str(photo.pk) in detail["Location"]
-
-
 def test_c42_live_session_is_rechecked_after_actual_processing(scene):
     from .processing import process_image as real_process
 

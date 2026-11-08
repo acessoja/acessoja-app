@@ -1,8 +1,24 @@
-{% extends "admin/moderation/base.html" %}
-{% load moderation_ui %}
-{% block mod_subtitle %}Compare o relato com as informações disponíveis e registre uma decisão fundamentada.{% endblock %}
-{% block mod_content %}<nav class="mod-crumb" aria-label="Caminho"><a href="{% url 'admin:evidencias_contentreport_changelist' %}">Denúncias</a><span aria-hidden="true">›</span><span>Analisar denúncia</span></nav>
-<div class="mod-columns"><section class="mod-card"><h2>1. Contexto do caso</h2><p><strong>Protocolo:</strong> <span class="mod-id" title="{{ report.protocol }}">{{ report.protocol|stringformat:"s"|slice:":8" }}</span></p><p><strong>Alvo:</strong> {% if report.review_revision and report.review_revision.review %}{{ report.review_revision.review.local.nome }}{% elif report.photo_revision and report.photo_revision.photo %}{{ report.photo_revision.photo.review.local.nome }}{% elif report.evidence and report.evidence.local %}{{ report.evidence.local.nome }}{% else %}{{ report.get_target_kind_display }}{% endif %}</p><p><strong>Tipo:</strong> {{ report.get_target_kind_display }}</p><p><strong>Motivo:</strong> {{ report.get_reason_display }}</p><p><strong>Envio:</strong> {{ report.created_at|date:"d/m/Y H:i" }}</p><p><strong>Estado:</strong> <span class="mod-badge {{ report.state }}">{{ report.get_state_display }}</span></p><h3>Relato da comunidade</h3><div class="mod-notice">{{ report.description|default:"Nenhum relato textual enviado."|linebreaksbr }}</div><p>Não há anexos vinculados diretamente a esta denúncia.</p></section>
-<section class="mod-card"><h2>2. Comparação de informações</h2>{% if target_status == 'changed' %}<p class="mod-notice">A revisão denunciada mudou. Não invalide a versão nova.</p>{% elif target_status == 'unavailable' %}<p class="mod-notice">O conteúdo atual está indisponível.</p>{% endif %}<h3>Conteúdo denunciado</h3><dl class="mod-fields">{% for label,value in snapshot_fields %}<div><dt>{{ label }}</dt><dd>{{ value|linebreaksbr }}</dd></div>{% empty %}<p>Conteúdo denunciado indisponível.</p>{% endfor %}</dl><h3>Conteúdo atual</h3><dl class="mod-fields">{% for label,value in current_fields %}<div><dt>{{ label }}</dt><dd>{{ value|linebreaksbr }}</dd></div>{% empty %}<p>Conteúdo atual indisponível.</p>{% endfor %}</dl></section>
-<section class="mod-card"><h2>3. Decisão da moderação</h2>{% if report.state != 'closed' %}<form method="post">{% csrf_token %}{{ form.non_field_errors }}{{ form.expected_version }}{{ form.expected_target_revision }}{{ form.operation_id }}<fieldset><legend>Escolha uma ação</legend><div class="mod-choice-list">{{ form.action }}</div>{{ form.action.errors }}</fieldset><div class="mod-field">{{ form.reason.label_tag }}{{ form.reason }}{{ form.reason.errors }}<small>Justificativa interna de 10 a 1000 caracteres.</small></div><div class="mod-field">{{ form.author_message.label_tag }}{{ form.author_message }}{{ form.author_message.errors }}</div><p class="mod-notice">Ao solicitar revisão, escolha uma orientação ao autor. Não inclua identidade ou dados do denunciante.</p><button type="submit">Registrar decisão</button></form>{% else %}<p class="mod-notice">Processo encerrado. As decisões não podem ser editadas.</p>{% endif %}</section></div>
-<section class="mod-card mod-history"><h2>Histórico do caso</h2>{% for item in history %}<article><h3>{{ item.get_action_display }} · {{ item.created_at|date:"d/m/Y H:i" }}</h3><p>{{ item.previous_state|moderation_state }} → {{ item.next_state|moderation_state }}</p><p>{{ item.reason|linebreaksbr }}</p>{% if item.author_message %}<p>Orientação ao autor: {{ item.author_message }}</p>{% endif %}</article>{% empty %}<p>Nenhuma decisão registrada.</p>{% endfor %}</section>{% endblock %}
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>Analisar denúncia</h1>
+<p>Protocolo: {{ report.protocol }}. Estado: {{ report.get_state_display }}.</p>
+<p>Alvo: {{ report.get_target_kind_display }}. Revisão denunciada: {{ report.target_revision }}.</p>
+<p>Situação atual: {{ target_status }}. Uma revisão alterada exige encerramento por alvo alterado; não invalide a versão nova.</p>
+<p>Motivo: {{ report.get_reason_display }}. Contexto: {{ report.description }}</p>
+<h2>Conteúdo denunciado, acesso restrito</h2>
+<pre style="white-space:pre-wrap;overflow-wrap:anywhere">{{ snapshot }}</pre>
+{% if current_content %}<h2>Conteúdo atual, acesso restrito</h2>
+<pre style="white-space:pre-wrap;overflow-wrap:anywhere">{{ current_content }}</pre>{% else %}
+<p>Conteúdo atual indisponível para este alvo.</p>{% endif %}
+{% if report.state != 'closed' %}
+<form method="post">{% csrf_token %}{{ form.as_p }}
+<p>Não inclua identidade ou dados do denunciante na orientação ao autor.</p>
+<button type="submit">Registrar decisão</button></form>
+{% else %}<p>Processo encerrado. As decisões não podem ser editadas neste fluxo.</p>{% endif %}
+<h2>Histórico de decisões</h2>
+{% for item in history %}
+<article><h3>{{ item.get_action_display }} — {{ item.created_at }}</h3>
+<p>{{ item.previous_state }} → {{ item.next_state }}. {{ item.reason }}</p>
+{% if item.author_message %}<p>Orientação ao autor: {{ item.author_message }}</p>{% endif %}</article>
+{% empty %}<p>Nenhuma decisão registrada.</p>{% endfor %}
+{% endblock %}
