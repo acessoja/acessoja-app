@@ -25,12 +25,18 @@ class AppEmpty extends StatelessWidget {
 
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xl,
+        ),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.section,
+          ),
           decoration: BoxDecoration(
             color: colors.surface,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppGeometry.cardRadius),
             border: Border.all(color: colors.border),
           ),
           child: Column(
@@ -45,13 +51,16 @@ class AppEmpty extends StatelessWidget {
                 child: Icon(icon, color: colors.primaryDark, size: 32),
               ),
               const SizedBox(height: 16),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: colors.text,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
+              Semantics(
+                header: true,
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: colors.text,
+                    fontSize: AppTypography.cardTitle,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -60,8 +69,8 @@ class AppEmpty extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: colors.muted,
-                  fontSize: 13,
-                  height: context.readingHeight(1.4),
+                  fontSize: AppTypography.caption,
+                  height: context.readingHeight(AppTypography.readingHeight),
                 ),
               ),
               if (actionText != null && onAction != null) ...[

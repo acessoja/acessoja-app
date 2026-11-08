@@ -231,10 +231,17 @@ class AppHttp {
         (key, _) => [
           'authorization',
           'cookie',
-          'x-csrftoken',
           'x-session-user',
         ].contains(key.toLowerCase()),
       );
+      // The Web login endpoint is intentionally public, but it still requires
+      // the CSRF proof obtained by ensureCsrf(). BrowserClient owns cookies;
+      // never synthesize a Cookie header here.
+      if (!kIsWeb || request.url.origin != Uri.parse(Config.baseUrl).origin) {
+        request.headers.removeWhere(
+          (key, _) => key.toLowerCase() == 'x-csrftoken',
+        );
+      }
     }
     if (body is String) {
       request.body = body;

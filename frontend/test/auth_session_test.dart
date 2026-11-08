@@ -208,4 +208,14 @@ void main() {
     expect(requests, 1);
     expect(AppHttp.authenticated, false);
   });
+
+  test('login distinguishes a CSRF rejection from a connection failure', () async {
+    AppHttp.client = MockClient((_) async => http.Response('{}', 403));
+    final result = await HttpApiService().login(
+      nome: 'synthetic',
+      password: 'synthetic',
+    );
+    expect(result.success, false);
+    expect(result.message, 'csrf_error');
+  });
 }

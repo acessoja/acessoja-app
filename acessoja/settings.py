@@ -183,7 +183,13 @@ AUTHENTICATION_BACKENDS = [
 
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=["http://localhost:7357"])
-
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[
+        "http://localhost:7357",
+        "http://127.0.0.1:7357",
+    ],
+)
 # ---------------------------------------------------------------------------
 # Documentacao da API (drf-spectacular)
 # Swagger UI: /api/docs/  |  ReDoc: /api/redoc/  |  OpenAPI 3: /api/schema/

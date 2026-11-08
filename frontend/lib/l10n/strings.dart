@@ -6,6 +6,16 @@ extension AppStrings on BuildContext {
   String apiMessage(String? code, {required String fallback}) => switch (code) {
         'invalid_credentials' => l10n.invalidCredentials,
         'connection_error' => l10n.connectionError,
+        'csrf_error' => Localizations.localeOf(this).languageCode == 'en'
+            ? 'The security check could not be completed. Refresh the page and try again.'
+            : 'Não foi possível validar a sessão. Atualize a página e tente novamente.',
+        'server_error' => Localizations.localeOf(this).languageCode == 'en'
+            ? 'The server encountered a problem. Please try again shortly.'
+            : 'O servidor encontrou um problema. Tente novamente em instantes.',
+        'unexpected_response' =>
+            Localizations.localeOf(this).languageCode == 'en'
+                ? 'The server returned an unexpected response.'
+                : 'O servidor retornou uma resposta inesperada.',
         'evaluation_error' => l10n.evaluationError,
         _ => code == null || code.isEmpty ? fallback : code,
       };
