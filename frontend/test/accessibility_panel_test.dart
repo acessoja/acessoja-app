@@ -29,7 +29,7 @@ Future<void> revealReading(WidgetTester tester, Finder target) async {
     await tester.scrollUntilVisible(target, 200,
         scrollable: scroll.first, maxScrolls: 80);
   }
-  await tester.ensureVisible(target);
+  await Scrollable.ensureVisible(tester.element(target), alignment: 0.5);
   await tester.pumpAndSettle();
 }
 
@@ -141,6 +141,31 @@ void main() {
     } finally {
       semantics.dispose();
     }
+  });
+
+  testWidgets('compact panel expands, selects every contrast and updates preview',
+      (tester) async {
+    await open(tester);
+    await tester.tap(floating);
+    await tester.pumpAndSettle();
+    expect(control('reading-more'), findsOneWidget);
+    expect(control('reading-font-serif'), findsNothing);
+    for (final mode in ReadingContrast.values) {
+      await tapReading(tester, control('reading-contrast-${mode.name}'));
+      expect(preferences.reading.contrast, mode);
+    }
+    await tapReading(tester, control('reading-more'));
+    await tapReading(tester, control('reading-font-serif'));
+    expect(preferences.reading.serif, isTrue);
+    await tapReading(tester, control('reading-letters-plus'));
+    await tapReading(tester, control('reading-lines-plus'));
+    expect(preferences.reading.letterSpacing, .5);
+    expect(preferences.reading.lineHeight, closeTo(1.1, .001));
+    await tapReading(tester, control('reading-reset-all'));
+    expect(preferences.reading.serif, isFalse);
+    expect(preferences.reading.contrast, ReadingContrast.standard);
+    await tapReading(tester, control('reading-more'));
+    expect(control('reading-font-serif'), findsNothing);
   });
 
   testWidgets('physical Tab can reach the floating action from the login route',
@@ -257,6 +282,8 @@ void main() {
     await tester.tap(floating);
     await tester.pumpAndSettle();
     final previous = preferences.buttonPosition;
+    await tapReading(tester, control('reading-more'));
+    await tapReading(tester, control('reading-position-expand'));
     await tapReading(tester, control('reading-move-up'));
     expect(preferences.buttonPosition.dy, closeTo(previous.dy - .1, .0001));
     await tapReading(tester, control('reading-move-left'));
@@ -278,6 +305,7 @@ void main() {
     await tester.pumpAndSettle();
     await tapReading(tester, control('reading-size-plus'));
     expect(preferences.reading.textSize, 1.25);
+    await tapReading(tester, control('reading-more'));
     await tapReading(tester, control('reading-button-visible'));
     await tester.tap(control('reading-close'));
     await tester.pumpAndSettle();
@@ -297,6 +325,7 @@ void main() {
     await tester.tap(floating);
     await tester.pumpAndSettle();
     await tapReading(tester, control('reading-size-plus'));
+    await tapReading(tester, control('reading-more'));
     await tapReading(tester, control('reading-letters-plus'));
     await tapReading(tester, control('reading-lines-plus'));
     await tester.tap(control('reading-close'));
@@ -444,6 +473,7 @@ void main() {
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pumpAndSettle();
+    await tapReading(tester, control('reading-more'));
     await tapReading(tester, control('reading-button-visible'));
     await tester.tap(control('reading-close'));
     await tester.pumpAndSettle();
