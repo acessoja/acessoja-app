@@ -2,9 +2,41 @@ import 'package:flutter/material.dart';
 
 const _brandColor = Color(0xFF4CABFF);
 
+/// Shared spacing for application content; map coordinates remain independent.
+abstract final class AppSpacing {
+  static const double xs = 4;
+  static const double sm = 8;
+  static const double md = 12;
+  static const double lg = 16;
+  static const double xl = 24;
+  static const double section = 32;
+
+  static double page(double width) => width < 600 ? lg : xl;
+}
+
+abstract final class AppGeometry {
+  static const double controlRadius = 12;
+  static const double cardRadius = 20;
+  static const double panelRadius = 16;
+  static const double touchTarget = 48;
+  static const double iconSize = 24;
+  static const double focusWidth = 2.5;
+  static const double contentMaxWidth = 680;
+}
+
+/// Sizes already used by AcessoJá; platform text scaling is never capped.
+abstract final class AppTypography {
+  static const double pageTitle = 19;
+  static const double cardTitle = 17;
+  static const double sectionTitle = 16;
+  static const double body = 14;
+  static const double caption = 13;
+  static const double readingHeight = 1.4;
+}
+
 class AppThemeController extends ChangeNotifier {
   AppThemeController({ThemeMode initialMode = ThemeMode.system, this.onChanged})
-      : _themeMode = initialMode;
+    : _themeMode = initialMode;
   final ValueChanged<ThemeMode>? onChanged;
   ThemeMode _themeMode;
 
@@ -32,9 +64,7 @@ class AppThemeScope extends InheritedNotifier<AppThemeController> {
     super.key,
     required this.controller,
     required super.child,
-  }) : super(
-          notifier: controller,
-        );
+  }) : super(notifier: controller);
 
   static AppThemeController of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<AppThemeScope>();
@@ -62,6 +92,12 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color warningSoft;
   final Color shadow;
   final Color onPrimary;
+
+  // Semantic aliases share the existing palette, including reading contrasts.
+  Color get focus => primary;
+  Color get selected => primarySoft;
+  Color get disabled => muted;
+  Color get controlBorder => muted;
 
   const AppColors({
     required this.pageBackground,
@@ -180,11 +216,7 @@ class AppColors extends ThemeExtension<AppColors> {
     return AppColors(
       pageBackground: Color.lerp(pageBackground, other.pageBackground, t)!,
       surface: Color.lerp(surface, other.surface, t)!,
-      surfaceElevated: Color.lerp(
-        surfaceElevated,
-        other.surfaceElevated,
-        t,
-      )!,
+      surfaceElevated: Color.lerp(surfaceElevated, other.surfaceElevated, t)!,
       primary: Color.lerp(primary, other.primary, t)!,
       primaryDark: Color.lerp(primaryDark, other.primaryDark, t)!,
       primarySoft: Color.lerp(primarySoft, other.primarySoft, t)!,
@@ -221,8 +253,9 @@ class AppThemes {
             muted: yellow ? const Color(0xFFFFFFB0) : const Color(0xFFE2E2E2),
             border: const Color(0xFFE2E2E2),
             primary: yellow ? const Color(0xFFFFFF00) : const Color(0xFFA6D4FF),
-            primaryDark:
-                yellow ? const Color(0xFFFFFF00) : const Color(0xFFA6D4FF),
+            primaryDark: yellow
+                ? const Color(0xFFFFFF00)
+                : const Color(0xFFA6D4FF),
             primarySoft: const Color(0xFF172431),
             onPrimary: Colors.black,
             success: const Color(0xFF9FFFB0),
@@ -255,21 +288,66 @@ class AppThemes {
   }
 
   static ThemeData _buildTheme(AppColors colors, Brightness brightness) {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: _brandColor,
-      brightness: brightness,
-    ).copyWith(
-      primary: colors.primary,
-      onPrimary: colors.onPrimary,
-      secondary: colors.primary,
-      onSecondary: colors.onPrimary,
-      surface: colors.surface,
-      onSurface: colors.text,
-      error: colors.danger,
-      onError: colors.onPrimary,
-      onSurfaceVariant: colors.muted,
-      outline: colors.muted,
+    const minimumControl = Size(
+      AppGeometry.touchTarget,
+      AppGeometry.touchTarget,
     );
+    final controlShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppGeometry.controlRadius),
+    );
+    BorderSide focusSide(Set<WidgetState> states) =>
+        states.contains(WidgetState.focused)
+        ? BorderSide(color: colors.focus, width: AppGeometry.focusWidth)
+        : BorderSide.none;
+    ButtonStyle actionStyle() => ButtonStyle(
+      minimumSize: const WidgetStatePropertyAll(minimumControl),
+      padding: const WidgetStatePropertyAll(
+        EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+      ),
+      shape: WidgetStatePropertyAll(controlShape),
+      elevation: const WidgetStatePropertyAll(0),
+      foregroundColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.disabled)
+            ? colors.disabled
+            : colors.onPrimary,
+      ),
+      backgroundColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.disabled)
+            ? colors.selected
+            : colors.primary,
+      ),
+      side: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.focused)
+            ? BorderSide(color: colors.text, width: AppGeometry.focusWidth)
+            : BorderSide.none,
+      ),
+      overlayColor: WidgetStateProperty.resolveWith(
+        (states) =>
+            states.contains(WidgetState.pressed) ||
+                states.contains(WidgetState.hovered)
+            ? colors.onPrimary.withValues(alpha: .12)
+            : null,
+      ),
+    );
+    final colorScheme =
+        ColorScheme.fromSeed(
+          seedColor: _brandColor,
+          brightness: brightness,
+        ).copyWith(
+          primary: colors.primary,
+          onPrimary: colors.onPrimary,
+          secondary: colors.primary,
+          onSecondary: colors.onPrimary,
+          surface: colors.surface,
+          onSurface: colors.text,
+          error: colors.danger,
+          onError: colors.onPrimary,
+          onSurfaceVariant: colors.muted,
+          outline: colors.muted,
+        );
 
     return ThemeData(
       fontFamily: 'Roboto',
@@ -281,6 +359,9 @@ class AppThemes {
       cardColor: colors.surface,
       dividerColor: colors.border,
       focusColor: colors.primary.withValues(alpha: .22),
+      disabledColor: colors.disabled,
+      materialTapTargetSize: MaterialTapTargetSize.padded,
+      visualDensity: VisualDensity.standard,
       colorScheme: colorScheme,
       appBarTheme: AppBarTheme(
         backgroundColor: colors.pageBackground,
@@ -290,7 +371,7 @@ class AppThemes {
         titleTextStyle: TextStyle(
           fontFamily: 'Roboto',
           color: colors.text,
-          fontSize: 19,
+          fontSize: AppTypography.pageTitle,
           fontWeight: FontWeight.w800,
         ),
       ),
@@ -299,17 +380,91 @@ class AppThemes {
         fillColor: colors.fieldBackground,
         labelStyle: TextStyle(color: colors.muted),
         hintStyle: TextStyle(color: colors.muted),
+        contentPadding: const EdgeInsets.all(AppSpacing.lg),
+        errorMaxLines: 8,
+        errorStyle: TextStyle(color: colors.danger),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppGeometry.controlRadius),
+          borderSide: BorderSide(color: colors.danger, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppGeometry.controlRadius),
+          borderSide: BorderSide(
+            color: colors.danger,
+            width: AppGeometry.focusWidth,
+          ),
+        ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(13),
+          borderRadius: BorderRadius.circular(AppGeometry.controlRadius),
           borderSide: BorderSide(color: colors.muted),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(13),
-          borderSide: BorderSide(color: colors.primary, width: 2.5),
+          borderRadius: BorderRadius.circular(AppGeometry.controlRadius),
+          borderSide: BorderSide(
+            color: colors.focus,
+            width: AppGeometry.focusWidth,
+          ),
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(13),
+          borderRadius: BorderRadius.circular(AppGeometry.controlRadius),
           borderSide: BorderSide(color: colors.border),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(style: actionStyle()),
+      elevatedButtonTheme: ElevatedButtonThemeData(style: actionStyle()),
+      cardTheme: CardThemeData(
+        color: colors.surface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppGeometry.cardRadius),
+          side: BorderSide(color: colors.border),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: colors.surface,
+        selectedColor: colors.selected,
+        disabledColor: colors.selected,
+        labelStyle: TextStyle(color: colors.text),
+        secondaryLabelStyle: TextStyle(color: colors.primaryDark),
+        checkmarkColor: colors.primaryDark,
+        deleteIconColor: colors.text,
+        side: WidgetStateBorderSide.resolveWith(
+          (states) => BorderSide(
+            color: states.contains(WidgetState.focused)
+                ? colors.focus
+                : colors.controlBorder,
+            width: states.contains(WidgetState.focused)
+                ? AppGeometry.focusWidth
+                : 1,
+          ),
+        ),
+        padding: const EdgeInsets.all(AppSpacing.sm),
+      ),
+      checkboxTheme: CheckboxThemeData(
+        materialTapTargetSize: MaterialTapTargetSize.padded,
+        side: BorderSide(color: colors.controlBorder, width: 2),
+        fillColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? colors.primary
+              : Colors.transparent,
+        ),
+        checkColor: WidgetStatePropertyAll(colors.onPrimary),
+      ),
+      radioTheme: RadioThemeData(
+        materialTapTargetSize: MaterialTapTargetSize.padded,
+        fillColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? colors.primary
+              : colors.controlBorder,
+        ),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: colors.primary),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: colors.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppGeometry.panelRadius),
+          ),
         ),
       ),
       snackBarTheme: SnackBarThemeData(
@@ -319,28 +474,35 @@ class AppThemes {
         behavior: SnackBarBehavior.floating,
       ),
       textButtonTheme: TextButtonThemeData(
-          style: ButtonStyle(
-        minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
-        side: WidgetStateProperty.resolveWith((states) =>
-            states.contains(WidgetState.focused)
-                ? BorderSide(color: colors.primary, width: 2.5)
-                : BorderSide.none),
-      )),
+        style: ButtonStyle(
+          minimumSize: const WidgetStatePropertyAll(minimumControl),
+          foregroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled)
+                ? colors.disabled
+                : colors.primary,
+          ),
+          side: WidgetStateProperty.resolveWith(focusSide),
+        ),
+      ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-          style: ButtonStyle(
-        minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
-        side: WidgetStateProperty.resolveWith((states) => BorderSide(
+        style: ButtonStyle(
+          minimumSize: const WidgetStatePropertyAll(minimumControl),
+          shape: WidgetStatePropertyAll(controlShape),
+          side: WidgetStateProperty.resolveWith(
+            (states) => BorderSide(
               color: states.contains(WidgetState.focused)
                   ? colors.primary
                   : colors.muted,
               width: states.contains(WidgetState.focused) ? 2.5 : 1,
-            )),
-      )),
+            ),
+          ),
+        ),
+      ),
       dialogTheme: DialogThemeData(
         backgroundColor: colors.surface,
         titleTextStyle: TextStyle(
           color: colors.text,
-          fontSize: 19,
+          fontSize: AppTypography.pageTitle,
           fontWeight: FontWeight.w800,
         ),
         contentTextStyle: TextStyle(color: colors.muted),

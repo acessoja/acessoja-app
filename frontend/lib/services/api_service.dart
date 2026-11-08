@@ -137,9 +137,13 @@ class HttpApiService implements ApiService {
       }
       return LoginResult(
         success: false,
-        message: response.statusCode == 401
-            ? 'invalid_credentials'
-            : 'connection_error',
+        message: switch (response.statusCode) {
+          401 => 'invalid_credentials',
+          403 => 'csrf_error',
+          408 => 'connection_error',
+          >= 500 => 'server_error',
+          _ => 'unexpected_response',
+        },
       );
     } catch (_) {
       if (generation == AppHttp.sessionRevision.value) {

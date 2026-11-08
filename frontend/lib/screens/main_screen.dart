@@ -8,7 +8,6 @@ import 'map_point_picker.dart';
 import 'manual_registration_screen.dart';
 import '../widgets/responsive_navigation_bar.dart';
 import '../widgets/accessibility_host.dart';
-import '../reading_presentation.dart';
 import '../models/discovery_filters.dart';
 import '../models/accessibility_catalog.dart';
 import '../services/accessibility_preferences_service.dart';
@@ -41,7 +40,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../services/app_http.dart';
 import '../services/review_changes.dart';
@@ -60,6 +58,7 @@ import '../l10n/map_strings.dart';
 import '../widgets/map_search_sheet.dart';
 import '../app_theme.dart';
 import '../config.dart';
+import '../widgets/stadia_map_surface.dart';
 import 'saved_places_screen.dart';
 import 'explorar_screen.dart';
 import 'sugestoes_screen.dart';
@@ -2636,6 +2635,8 @@ class _MainScreenState extends SafeState<MainScreen>
         .clamp(56.0, double.infinity)
         .toDouble();
     searchMeasure.dispose();
+    // Scaffold removes viewInsets from its body after resizing it.
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.escape): _handleMapBack,
@@ -2775,869 +2776,996 @@ class _MainScreenState extends SafeState<MainScreen>
                 ),
               ),
             ),
-            body: Column(
-              children: [
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, mapBounds) {
-                      _measureMapAreas();
-                      return Stack(
-                        key: _mapSurfaceKey,
-                        children: [
-                          // Mapa em tempo real (OpenStreetMap)
-                          Semantics(
-                            label: context.mapText(
-                              'Mapa interativo de locais',
-                              'Interactive places map',
-                            ),
-                            child: FlutterMap(
-                              mapController: _mapController,
-                              options: MapOptions(
-                                initialCenter:
-                                    _currentLocation, // Anápolis, GO default
-                                initialZoom: 14.5,
-                                interactionOptions: const InteractionOptions(
-                                  flags:
-                                      InteractiveFlag.all &
-                                      ~InteractiveFlag.rotate,
-                                ),
-                                onMapReady: () {
-                                  _mapReady = true;
-                                  WidgetsBinding.instance.addPostFrameCallback((
-                                    _,
-                                  ) {
-                                    if (!mounted) {
-                                      return;
-                                    }
-                                    final area =
-                                        _mapController.camera.visibleBounds;
-                                    final query = _internalQuery;
-                                    if (!_unifiedLoaded &&
-                                        query?.unified != true) {
-                                      _catalog.reset(
-                                        DiscoveryQuery(
-                                          search: _searchText,
-                                          filters: _filterState.filters,
-                                          ordering: query?.ordering ?? 'name',
-                                          origin: query?.origin,
-                                          bounds: [
-                                            area.south,
-                                            area.west,
-                                            area.north,
-                                            area.east,
-                                          ],
-                                        ),
-                                      );
-                                    }
-                                  });
-                                  if (_routeFitPending) {
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                          if (mounted) {
-                                            _fitRouteBounds();
-                                          }
-                                        });
-                                  }
-                                  if (_hasLocation) {
-                                    _mapController.move(_currentLocation, 14.5);
-                                  }
-                                },
-                                onLongPress: (_, point) =>
-                                    _choosePoint(initial: point),
-                                onPositionChanged: (position, hasGesture) {
-                                  if (hasGesture) _cameraRevision++;
-                                  if (_routeFitPending) {
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                          if (mounted) {
-                                            _fitRouteBounds();
-                                          }
-                                        });
-                                  }
-                                  if (hasGesture &&
-                                      _navigation.phase ==
-                                          NavigationPhase.running &&
-                                      _navigation.follow) {
-                                    _navigation.setFollow(false);
-                                  }
-                                  _pendingViewportCenter = position.center;
-                                  _pendingViewportGesture =
-                                      _pendingViewportGesture || hasGesture;
-                                  if (_viewportTimer?.isActive == true) {
-                                    return;
-                                  }
-                                  _viewportTimer = Timer(
-                                    const Duration(milliseconds: 100),
-                                    () {
-                                      if (!mounted) {
-                                        return;
-                                      }
-                                      setState(() {
-                                        if (_pendingViewportCenter != null) {
-                                          _viewportCenter =
-                                              _pendingViewportCenter!;
-                                        }
-                                        if (_pendingViewportGesture) {
-                                          _areaMoved = true;
-                                        }
-                                      });
-                                      _pendingViewportGesture = false;
-                                    },
-                                  );
-                                },
-                              ),
-                              children: [
-                                TileLayer(
-                                  tileProvider: widget.tileProvider,
-                                  urlTemplate:
-                                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                  userAgentPackageName: 'br.com.acessoja.app',
-                                ),
-                                if (_isRouting && _routePoints.isNotEmpty)
-                                  PolylineLayer(
-                                    polylines: [
-                                      Polyline(
-                                        points: _routePoints,
-                                        strokeWidth: 5.0,
-                                        color: colors.primary,
-                                        borderStrokeWidth: 2.0,
-                                        borderColor: colors.surface,
-                                      ),
-                                    ],
-                                  ),
-                                if (_navigation.phase !=
-                                    NavigationPhase.running)
-                                  AdaptivePlaceLayer(
-                                    places: _matchingLocals
-                                        .map(
-                                          (p) => p['source'] == 'openstreetmap'
-                                              ? MapPlace.external(p)
-                                              : MapPlace.internal(p),
-                                        )
-                                        .toList(),
-                                    selectedId: _selectedPlaceId,
-                                    onReturnFocusTarget: (node) =>
-                                        _panelReturnFocus = node,
-                                    reservedRects: [
-                                      ..._controlRects,
-                                      if (_preview.visible &&
-                                          _panelRect != null)
-                                        _panelRect!,
-                                    ],
-                                    reservedInsets: const EdgeInsets.only(
-                                      right: 64,
+            body: LayoutBuilder(
+              builder: (context, bodyBounds) => SingleChildScrollView(
+                primary: false,
+                child: SizedBox(
+                  height: keyboardOpen && bodyBounds.maxHeight < 400
+                      ? 400
+                      : bodyBounds.maxHeight,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: StadiaMapSurface(
+                          tileProvider: widget.tileProvider,
+                          builder: (context, tiles) => LayoutBuilder(
+                            builder: (context, mapBounds) {
+                              // Credits consume real layout space. On short canvases,
+                              // keep actions in the top row instead of overlaying the
+                              // status panel with the full-width search field.
+                              final compactMapControls =
+                                  mapBounds.maxHeight <
+                                  searchHeight + 82 + 64 + 56 + 32;
+                              _measureMapAreas();
+                              return Stack(
+                                key: _mapSurfaceKey,
+                                children: [
+                                  // Shared Stadia cartography; place sources stay independent.
+                                  Semantics(
+                                    label: context.mapText(
+                                      'Mapa interativo de locais',
+                                      'Interactive places map',
                                     ),
-                                    onSelect: (place) =>
-                                        _openLocalPreview(place.toMap()),
-                                    onCluster: _openCluster,
-                                  ),
-                                if (_selectedPoint != null)
-                                  MarkerLayer(
-                                    markers: [
-                                      Marker(
-                                        point: _selectedPoint!,
-                                        width: 56,
-                                        height: 56,
-                                        child: IconButton(
-                                          tooltip: context.mapText(
-                                            'Abrir ponto selecionado',
-                                            'Open selected point',
-                                          ),
-                                          onPressed: () => _openPoint(
-                                            _selectedPoint!,
-                                            name: _selectedPointName,
-                                          ),
-                                          icon: const Icon(
-                                            Icons.add_location_alt,
-                                            color: Colors.red,
-                                            size: 36,
-                                          ),
-                                        ),
+                                    child: FlutterMap(
+                                      mapController: _mapController,
+                                      options: MapOptions(
+                                        backgroundColor: colors.pageBackground,
+                                        initialCenter:
+                                            _currentLocation, // Anápolis, GO default
+                                        initialZoom: 14.5,
+                                        interactionOptions:
+                                            const InteractionOptions(
+                                              flags:
+                                                  InteractiveFlag.all &
+                                                  ~InteractiveFlag.rotate,
+                                            ),
+                                        onMapReady: () {
+                                          _mapReady = true;
+                                          WidgetsBinding.instance
+                                              .addPostFrameCallback((_) {
+                                                if (!mounted) {
+                                                  return;
+                                                }
+                                                final area = _mapController
+                                                    .camera
+                                                    .visibleBounds;
+                                                final query = _internalQuery;
+                                                if (!_unifiedLoaded &&
+                                                    query?.unified != true) {
+                                                  _catalog.reset(
+                                                    DiscoveryQuery(
+                                                      search: _searchText,
+                                                      filters:
+                                                          _filterState.filters,
+                                                      ordering:
+                                                          query?.ordering ??
+                                                          'name',
+                                                      origin: query?.origin,
+                                                      bounds: [
+                                                        area.south,
+                                                        area.west,
+                                                        area.north,
+                                                        area.east,
+                                                      ],
+                                                    ),
+                                                  );
+                                                }
+                                              });
+                                          if (_routeFitPending) {
+                                            WidgetsBinding.instance
+                                                .addPostFrameCallback((_) {
+                                                  if (mounted) {
+                                                    _fitRouteBounds();
+                                                  }
+                                                });
+                                          }
+                                          if (_hasLocation) {
+                                            _mapController.move(
+                                              _currentLocation,
+                                              14.5,
+                                            );
+                                          }
+                                        },
+                                        onLongPress: (_, point) =>
+                                            _choosePoint(initial: point),
+                                        onPositionChanged: (position, hasGesture) {
+                                          if (hasGesture) _cameraRevision++;
+                                          if (_routeFitPending) {
+                                            WidgetsBinding.instance
+                                                .addPostFrameCallback((_) {
+                                                  if (mounted) {
+                                                    _fitRouteBounds();
+                                                  }
+                                                });
+                                          }
+                                          if (hasGesture &&
+                                              _navigation.phase ==
+                                                  NavigationPhase.running &&
+                                              _navigation.follow) {
+                                            _navigation.setFollow(false);
+                                          }
+                                          _pendingViewportCenter =
+                                              position.center;
+                                          _pendingViewportGesture =
+                                              _pendingViewportGesture ||
+                                              hasGesture;
+                                          if (_viewportTimer?.isActive ==
+                                              true) {
+                                            return;
+                                          }
+                                          _viewportTimer = Timer(
+                                            const Duration(milliseconds: 100),
+                                            () {
+                                              if (!mounted) {
+                                                return;
+                                              }
+                                              setState(() {
+                                                if (_pendingViewportCenter !=
+                                                    null) {
+                                                  _viewportCenter =
+                                                      _pendingViewportCenter!;
+                                                }
+                                                if (_pendingViewportGesture) {
+                                                  _areaMoved = true;
+                                                }
+                                              });
+                                              _pendingViewportGesture = false;
+                                            },
+                                          );
+                                        },
                                       ),
-                                    ],
-                                  ),
-                                IgnorePointer(
-                                  child: MarkerLayer(
-                                    markers: [
-                                      if (_isRouting &&
-                                          _navigation.origin != null)
-                                        Marker(
-                                          point: _navigation.origin!,
-                                          width: markerWidth,
-                                          height: markerHeight,
-                                          child: Semantics(
-                                            label: context.routeText(
-                                              'Origem da rota',
-                                              'Route origin',
-                                            ),
-                                            excludeSemantics: true,
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.trip_origin,
-                                                  color: colors.primary,
-                                                  size: 30,
-                                                ),
-                                                Text(
-                                                  'O',
-                                                  style: TextStyle(
-                                                    color: colors.text,
-                                                    backgroundColor:
-                                                        colors.surface,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                      children: [
+                                        tiles,
+                                        if (_isRouting &&
+                                            _routePoints.isNotEmpty)
+                                          PolylineLayer(
+                                            polylines: [
+                                              Polyline(
+                                                points: _routePoints,
+                                                strokeWidth: 5.0,
+                                                color: colors.primary,
+                                                borderStrokeWidth: 2.0,
+                                                borderColor: colors.surface,
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                      // Só mostra o ponto azul quando a localização real foi
-                                      // obtida. Antes disso, Anápolis é apenas o centro de
-                                      // referência do mapa e não deve parecer a posição do usuário.
-                                      if (_hasLocation)
-                                        Marker(
-                                          point: _currentLocation,
-                                          width: 60,
-                                          height: 60,
-                                          child: Semantics(
-                                            label: context.l10n.currentLocation,
-                                            child: Stack(
-                                              alignment: Alignment.center,
-                                              children: [
-                                                Container(
-                                                  width: 24,
-                                                  height: 24,
-                                                  decoration: BoxDecoration(
-                                                    color: colors.primary
-                                                        .withValues(alpha: 0.3),
-                                                    shape: BoxShape.circle,
+                                        if (_navigation.phase !=
+                                            NavigationPhase.running)
+                                          AdaptivePlaceLayer(
+                                            places: _matchingLocals
+                                                .map(
+                                                  (p) =>
+                                                      p['source'] ==
+                                                          'openstreetmap'
+                                                      ? MapPlace.external(p)
+                                                      : MapPlace.internal(p),
+                                                )
+                                                .toList(),
+                                            selectedId: _selectedPlaceId,
+                                            onReturnFocusTarget: (node) =>
+                                                _panelReturnFocus = node,
+                                            reservedRects: [
+                                              ..._controlRects,
+                                              if (_preview.visible &&
+                                                  _panelRect != null)
+                                                _panelRect!,
+                                            ],
+                                            reservedInsets:
+                                                const EdgeInsets.only(
+                                                  right: 64,
+                                                ),
+                                            onSelect: (place) =>
+                                                _openLocalPreview(
+                                                  place.toMap(),
+                                                ),
+                                            onCluster: _openCluster,
+                                          ),
+                                        if (_selectedPoint != null)
+                                          MarkerLayer(
+                                            markers: [
+                                              Marker(
+                                                point: _selectedPoint!,
+                                                width: 56,
+                                                height: 56,
+                                                child: IconButton(
+                                                  tooltip: context.mapText(
+                                                    'Abrir ponto selecionado',
+                                                    'Open selected point',
+                                                  ),
+                                                  onPressed: () => _openPoint(
+                                                    _selectedPoint!,
+                                                    name: _selectedPointName,
+                                                  ),
+                                                  icon: const Icon(
+                                                    Icons.add_location_alt,
+                                                    color: Colors.red,
+                                                    size: 36,
                                                   ),
                                                 ),
-                                                Container(
-                                                  width: 14,
-                                                  height: 14,
-                                                  decoration: BoxDecoration(
-                                                    color: colors.primary,
-                                                    shape: BoxShape.circle,
-                                                    border: Border.all(
-                                                      color: colors.surface,
-                                                      width: 2,
+                                              ),
+                                            ],
+                                          ),
+                                        IgnorePointer(
+                                          child: MarkerLayer(
+                                            markers: [
+                                              if (_isRouting &&
+                                                  _navigation.origin != null)
+                                                Marker(
+                                                  point: _navigation.origin!,
+                                                  width: markerWidth,
+                                                  height: markerHeight,
+                                                  child: Semantics(
+                                                    label: context.routeText(
+                                                      'Origem da rota',
+                                                      'Route origin',
+                                                    ),
+                                                    excludeSemantics: true,
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.trip_origin,
+                                                          color: colors.primary,
+                                                          size: 30,
+                                                        ),
+                                                        Text(
+                                                          'O',
+                                                          style: TextStyle(
+                                                            color: colors.text,
+                                                            backgroundColor:
+                                                                colors.surface,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                 ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      if (_isRouting &&
-                                          _destinationLocation != null)
-                                        Marker(
-                                          point: _destinationLocation!,
-                                          width: markerWidth,
-                                          height: markerHeight,
-                                          child: Semantics(
-                                            label:
-                                                context.routeText(
-                                                  'Destino: ',
-                                                  'Destination: ',
-                                                ) +
-                                                _destinationAddress,
-                                            excludeSemantics: true,
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.location_on_rounded,
-                                                  color: colors.danger,
-                                                  size: 30,
-                                                ),
-                                                Text(
-                                                  'D',
-                                                  style: TextStyle(
-                                                    color: colors.text,
-                                                    backgroundColor:
-                                                        colors.surface,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 14,
+                                              // Só mostra o ponto azul quando a localização real foi
+                                              // obtida. Antes disso, Anápolis é apenas o centro de
+                                              // referência do mapa e não deve parecer a posição do usuário.
+                                              if (_hasLocation)
+                                                Marker(
+                                                  point: _currentLocation,
+                                                  width: 60,
+                                                  height: 60,
+                                                  child: Semantics(
+                                                    label: context
+                                                        .l10n
+                                                        .currentLocation,
+                                                    child: Stack(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      children: [
+                                                        Container(
+                                                          width: 24,
+                                                          height: 24,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                                color: colors
+                                                                    .primary
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.3,
+                                                                    ),
+                                                                shape: BoxShape
+                                                                    .circle,
+                                                              ),
+                                                        ),
+                                                        Container(
+                                                          width: 14,
+                                                          height: 14,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                                color: colors
+                                                                    .primary,
+                                                                shape: BoxShape
+                                                                    .circle,
+                                                                border: Border.all(
+                                                                  color: colors
+                                                                      .surface,
+                                                                  width: 2,
+                                                                ),
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ],
-                                            ),
+                                              if (_isRouting &&
+                                                  _destinationLocation != null)
+                                                Marker(
+                                                  point: _destinationLocation!,
+                                                  width: markerWidth,
+                                                  height: markerHeight,
+                                                  child: Semantics(
+                                                    label:
+                                                        context.routeText(
+                                                          'Destino: ',
+                                                          'Destination: ',
+                                                        ) +
+                                                        _destinationAddress,
+                                                    excludeSemantics: true,
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons
+                                                              .location_on_rounded,
+                                                          color: colors.danger,
+                                                          size: 30,
+                                                        ),
+                                                        Text(
+                                                          'D',
+                                                          style: TextStyle(
+                                                            color: colors.text,
+                                                            backgroundColor:
+                                                                colors.surface,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
                                           ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (!_isRouting && !_preview.visible)
-                            if (MediaQuery.sizeOf(context).height >= 480)
-                              Positioned(
-                                top: MediaQuery.of(context).padding.top + 16,
-                                right: 16,
-                                child: Semantics(
-                                  key: _countAreaKey,
-                                  liveRegion: true,
-                                  child: Container(
-                                    constraints: const BoxConstraints(
-                                      maxWidth: 170,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: colors.surface,
-                                      borderRadius: BorderRadius.circular(14),
-                                      border: Border.all(color: colors.border),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: colors.shadow,
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 3),
                                         ),
                                       ],
                                     ),
-                                    child: _isLoadingLocals
-                                        ? Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              SizedBox(
-                                                width: 16,
-                                                height: 16,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      color: colors.primary,
-                                                    ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Flexible(
-                                                child: Text(
-                                                  context.l10n.loadingPlaces,
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    color: colors.text,
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        : _localsLoadFailed
-                                        ? InkWell(
-                                            key: const ValueKey(
-                                              'map-retry-places',
+                                  ),
+                                  if (!_isRouting && !_preview.visible)
+                                    if (MediaQuery.sizeOf(context).height >=
+                                            480 &&
+                                        !compactMapControls)
+                                      Positioned(
+                                        top:
+                                            MediaQuery.of(context).padding.top +
+                                            16,
+                                        right: 16,
+                                        child: Semantics(
+                                          key: _countAreaKey,
+                                          liveRegion: true,
+                                          child: Container(
+                                            constraints: const BoxConstraints(
+                                              maxWidth: 170,
                                             ),
-                                            onTap: _fetchEstablishments,
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.refresh_rounded,
-                                                  color: colors.danger,
-                                                  size: 18,
-                                                ),
-                                                const SizedBox(width: 6),
-                                                Flexible(
-                                                  child: Text(
-                                                    context.l10n.retry,
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                      color: colors.danger,
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w800,
-                                                    ),
-                                                  ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 8,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: colors.surface,
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                              border: Border.all(
+                                                color: colors.border,
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: colors.shadow,
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 3),
                                                 ),
                                               ],
                                             ),
-                                          )
-                                        : Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.place_outlined,
-                                                color: colors.primaryDark,
-                                                size: 17,
+                                            child: _isLoadingLocals
+                                                ? Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 16,
+                                                        height: 16,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                              color: colors
+                                                                  .primary,
+                                                            ),
+                                                      ),
+                                                      const SizedBox(width: 8),
+                                                      Flexible(
+                                                        child: Text(
+                                                          context
+                                                              .l10n
+                                                              .loadingPlaces,
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                            color: colors.text,
+                                                            fontSize: 11,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )
+                                                : _localsLoadFailed
+                                                ? InkWell(
+                                                    key: const ValueKey(
+                                                      'map-retry-places',
+                                                    ),
+                                                    onTap: _fetchEstablishments,
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.refresh_rounded,
+                                                          color: colors.danger,
+                                                          size: 18,
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 6,
+                                                        ),
+                                                        Flexible(
+                                                          child: Text(
+                                                            context.l10n.retry,
+                                                            maxLines: 2,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            style: TextStyle(
+                                                              color:
+                                                                  colors.danger,
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w800,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  )
+                                                : Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Icon(
+                                                        Icons.place_outlined,
+                                                        color:
+                                                            colors.primaryDark,
+                                                        size: 17,
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      Flexible(
+                                                        child: Text(
+                                                          context.l10n.placeCount(
+                                                            _visiblePlaceCount,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                            color: colors.text,
+                                                            fontSize: 11,
+                                                            fontWeight:
+                                                                FontWeight.w800,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                          ),
+                                        ),
+                                      ),
+                                  if (!_isRouting &&
+                                      MediaQuery.sizeOf(context).height >= 480)
+                                    Positioned(
+                                      top:
+                                          MediaQuery.of(context).padding.top +
+                                          82,
+                                      left: 16,
+                                      right: 16,
+                                      child: _discoveryStatus(
+                                        (mapBounds.maxHeight -
+                                                (compactMapControls
+                                                    ? 16
+                                                    : searchHeight + 16 + 48) -
+                                                82 -
+                                                8)
+                                            .clamp(
+                                              64.0,
+                                              (mapBounds.maxHeight * .22).clamp(
+                                                64.0,
+                                                240.0,
                                               ),
-                                              const SizedBox(width: 6),
-                                              Flexible(
-                                                child: Text(
-                                                  context.l10n.placeCount(
-                                                    _visiblePlaceCount,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    color: colors.text,
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w800,
-                                                  ),
+                                            )
+                                            .toDouble(),
+                                      ),
+                                    ),
+                                  if (!_isRouting &&
+                                      MediaQuery.sizeOf(context).height < 480)
+                                    Positioned(
+                                      top:
+                                          MediaQuery.paddingOf(context).top +
+                                          16,
+                                      left: 136,
+                                      child: Material(
+                                        key: _statusButtonAreaKey,
+                                        color: colors.surface,
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: IconButton(
+                                          key: const ValueKey(
+                                            'map-status-open',
+                                          ),
+                                          tooltip: context.l10n.mapStatusExpand,
+                                          icon: const Icon(Icons.tune),
+                                          onPressed: () => showModalBottomSheet<void>(
+                                            context: context,
+                                            useSafeArea: true,
+                                            isScrollControlled: true,
+                                            constraints: BoxConstraints(
+                                              maxWidth: 680,
+                                              maxHeight:
+                                                  MediaQuery.sizeOf(
+                                                    context,
+                                                  ).height *
+                                                  .88,
+                                            ),
+                                            builder: (_) =>
+                                                ValueListenableBuilder<int>(
+                                                  valueListenable:
+                                                      _statusUpdates,
+                                                  builder: (_, value, child) =>
+                                                      SingleChildScrollView(
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                              20,
+                                                            ),
+                                                        child:
+                                                            _discoveryContents(),
+                                                      ),
                                                 ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  if (!_isRouting)
+                                    Positioned(
+                                      top:
+                                          MediaQuery.of(context).padding.top +
+                                          16,
+                                      left: 80,
+                                      child: Material(
+                                        key: _legendAreaKey,
+                                        color: colors.surface,
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: IconButton(
+                                          key: const ValueKey('map-legend'),
+                                          tooltip: context.mapText(
+                                            'Legenda do mapa',
+                                            'Map legend',
+                                          ),
+                                          constraints: const BoxConstraints(
+                                            minWidth: 48,
+                                            minHeight: 48,
+                                          ),
+                                          icon: const Icon(Icons.info_outline),
+                                          onPressed: () =>
+                                              showModalBottomSheet<void>(
+                                                context: context,
+                                                useSafeArea: true,
+                                                isScrollControlled: true,
+                                                constraints: BoxConstraints(
+                                                  maxWidth: 680,
+                                                  maxHeight:
+                                                      MediaQuery.sizeOf(
+                                                        context,
+                                                      ).height *
+                                                      .85,
+                                                ),
+                                                builder: (_) =>
+                                                    const MapLegendSheet(),
+                                              ),
+                                        ),
+                                      ),
+                                    ),
+                                  Positioned(
+                                    top:
+                                        MediaQuery.of(context).padding.top + 16,
+                                    left: 16,
+                                    child: InkWell(
+                                      key: _menuAreaKey,
+                                      onTap: () async {
+                                        final account =
+                                            AppHttp.sessionRevision.value;
+                                        _routeRequest++;
+                                        _navigation.interrupt('screen_changed');
+                                        final result = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => SettingsScreen(
+                                              userName: _activeUserName,
+                                              onRouteRequested: _requestsFrom(
+                                                account,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                        if (!mounted ||
+                                            account !=
+                                                AppHttp.sessionRevision.value) {
+                                          return;
+                                        }
+                                        await _loadUserProfile();
+                                        await _historyRecorder.refresh();
+                                        if (!mounted ||
+                                            account !=
+                                                AppHttp.sessionRevision.value) {
+                                          return;
+                                        }
+                                        if (mounted &&
+                                            result is PlaceRouteRequest) {
+                                          await _startRoute(result);
+                                        } else if (mounted &&
+                                            routePlace(result) != null) {
+                                          await _startRoute(
+                                            routePlace(result)!,
+                                          );
+                                        }
+                                      },
+                                      child: Semantics(
+                                        button: true,
+                                        label: context.l10n.openSettings,
+                                        child: Container(
+                                          width: 52,
+                                          height: 52,
+                                          decoration: BoxDecoration(
+                                            color: colors.primary,
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            border: Border.all(
+                                              color: colors.surface,
+                                              width: 2,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: colors.shadow,
+                                                blurRadius: 12,
+                                                offset: const Offset(0, 4),
                                               ),
                                             ],
                                           ),
-                                  ),
-                                ),
-                              ),
-                          if (!_isRouting &&
-                              MediaQuery.sizeOf(context).height >= 480)
-                            Positioned(
-                              top: MediaQuery.of(context).padding.top + 82,
-                              left: 16,
-                              right: 16,
-                              child: _discoveryStatus(
-                                (mapBounds.maxHeight -
-                                        searchHeight -
-                                        16 -
-                                        48 -
-                                        82 -
-                                        8)
-                                    .clamp(
-                                      64.0,
-                                      (MediaQuery.sizeOf(context).height * .22)
-                                          .clamp(64.0, 240.0),
-                                    )
-                                    .toDouble(),
-                              ),
-                            ),
-                          if (!_isRouting &&
-                              MediaQuery.sizeOf(context).height < 480)
-                            Positioned(
-                              top: MediaQuery.paddingOf(context).top + 16,
-                              left: 136,
-                              child: Material(
-                                key: _statusButtonAreaKey,
-                                color: colors.surface,
-                                borderRadius: BorderRadius.circular(16),
-                                child: IconButton(
-                                  key: const ValueKey('map-status-open'),
-                                  tooltip: context.l10n.mapStatusExpand,
-                                  icon: const Icon(Icons.tune),
-                                  onPressed: () => showModalBottomSheet<void>(
-                                    context: context,
-                                    useSafeArea: true,
-                                    isScrollControlled: true,
-                                    constraints: BoxConstraints(
-                                      maxWidth: 680,
-                                      maxHeight:
-                                          MediaQuery.sizeOf(context).height *
-                                          .88,
+                                          child: _avatarImage() != null
+                                              ? ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(14),
+                                                  child: Image(
+                                                    image: _avatarImage()!,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                )
+                                              : Icon(
+                                                  Icons.menu_rounded,
+                                                  color: colors.onPrimary,
+                                                  size: 28,
+                                                ),
+                                        ),
+                                      ),
                                     ),
-                                    builder: (_) => ValueListenableBuilder<int>(
-                                      valueListenable: _statusUpdates,
-                                      builder: (_, value, child) =>
-                                          SingleChildScrollView(
-                                            padding: const EdgeInsets.all(20),
-                                            child: _discoveryContents(),
+                                  ),
+                                  // Floating Action Button para recentralizar o mapa
+                                  Positioned(
+                                    top: compactMapControls ? 16 : null,
+                                    bottom: compactMapControls
+                                        ? null
+                                        : _isRouting
+                                        ? 8
+                                        : searchHeight + 32,
+                                    right: compactMapControls ? 80 : 16,
+                                    child: FloatingActionButton(
+                                      key: const ValueKey(
+                                        'map-location-refresh',
+                                      ),
+                                      mini: false,
+                                      backgroundColor: colors.surface,
+                                      foregroundColor: colors.primary,
+                                      tooltip: context.l10n.centerLocation,
+                                      elevation: 3,
+                                      onPressed: () async {
+                                        if (_freshLocation) {
+                                          if (_navigation.phase ==
+                                              NavigationPhase.running) {
+                                            _navigation.setFollow(true);
+                                          }
+                                          _mapController.move(
+                                            _currentLocation,
+                                            14.5,
+                                          );
+                                          return;
+                                        }
+                                        if (widget.trackLocation) {
+                                          await _initLocationTracking();
+                                        }
+                                        if (!context.mounted) {
+                                          return;
+                                        }
+                                        if (_freshLocation) {
+                                          if (_navigation.phase ==
+                                              NavigationPhase.running) {
+                                            _navigation.setFollow(true);
+                                          }
+                                          _mapController.move(
+                                            _currentLocation,
+                                            14.5,
+                                          );
+                                        } else if (_locationMessage == null) {
+                                          _showErrorSnackBar(
+                                            context.l10n.locationUnavailable,
+                                          );
+                                        }
+                                      },
+                                      child: const Icon(Icons.my_location),
+                                    ),
+                                  ),
+                                  if (_isRouting &&
+                                      _navigation.phase ==
+                                          NavigationPhase.choosingOrigin)
+                                    const IgnorePointer(
+                                      child: Center(
+                                        child: Icon(Icons.add, size: 28),
+                                      ),
+                                    ),
+                                  if (_isRouting ||
+                                      _preview.visible ||
+                                      compactMapControls)
+                                    Positioned(
+                                      top:
+                                          MediaQuery.of(context).padding.top +
+                                          16,
+                                      right:
+                                          _preview.visible &&
+                                              mapBounds.maxWidth >= 1000
+                                          ? (_panelRect?.width ?? 460) + 16
+                                          : 16,
+                                      child: Material(
+                                        key: _searchControlKey,
+                                        color: colors.surface,
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: IconButton(
+                                          key: const ValueKey(
+                                            'map-open-search',
                                           ),
+                                          tooltip:
+                                              context.l10n.searchDestination,
+                                          constraints: const BoxConstraints(
+                                            minWidth: 48,
+                                            minHeight: 48,
+                                          ),
+                                          onPressed: () =>
+                                              _openSearchBottomSheet(context),
+                                          icon: const Icon(Icons.search),
+                                        ),
+                                      ),
+                                    ),
+                                  if (!_isRouting &&
+                                      !_preview.visible &&
+                                      !compactMapControls)
+                                    // Campo de busca flutuante sobreposto ao mapa
+                                    Positioned(
+                                      bottom: 16,
+                                      left: 16,
+                                      right: 16,
+                                      child: Semantics(
+                                        key: _searchControlKey,
+                                        button: true,
+                                        label: context.l10n.searchDestination,
+                                        child: InkWell(
+                                          key: const ValueKey(
+                                            'map-open-search',
+                                          ),
+                                          onTap: () =>
+                                              _openSearchBottomSheet(context),
+                                          child: Container(
+                                            constraints: const BoxConstraints(
+                                              minHeight: 56,
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 20,
+                                              vertical: 12,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: colors.surface,
+                                              borderRadius:
+                                                  BorderRadius.circular(18),
+                                              border: Border.all(
+                                                color: colors.border,
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: colors.shadow,
+                                                  blurRadius: 18,
+                                                  offset: const Offset(0, 6),
+                                                ),
+                                              ],
+                                            ),
+                                            child: IgnorePointer(
+                                              child: Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: ExcludeSemantics(
+                                                      child: Text(
+                                                        searchText,
+                                                        style: searchStyle,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Icon(
+                                                    Icons.search_rounded,
+                                                    color: colors.primary,
+                                                    size: 26,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  if (_preview.visible)
+                                    PersistentPlacePanel(
+                                      externalNavigation:
+                                          widget.externalNavigation ??
+                                          const ExternalNavigation(),
+                                      controller: _preview,
+                                      distanceLabel: _distanceLabelForLocal,
+                                      preferredResources:
+                                          _filterState.appliedPreferences,
+                                      matchResources: {
+                                        ..._filterState.filters.resources,
+                                        ..._filterState.appliedPreferences,
+                                      },
+                                      outsideResults: !_matchingLocals.any(
+                                        (p) => p['id'] == _selectedPlaceId,
+                                      ),
+                                      onClose: _closePlacePanel,
+                                      onAction: (action) =>
+                                          _placePanelAction(action),
+                                      onSearch: () =>
+                                          _openSearchBottomSheet(context),
+                                      onGeometry: (rect) {
+                                        if (mounted && _panelRect != rect) {
+                                          setState(() => _panelRect = rect);
+                                        }
+                                      },
+                                    ),
+                                  Positioned(
+                                    top: 8,
+                                    left:
+                                        MediaQuery.sizeOf(context).height < 480
+                                        ? 192
+                                        : 136,
+                                    child: Material(
+                                      key: _resultsAreaKey,
+                                      shape: const CircleBorder(),
+                                      elevation: 3,
+                                      child: IconButton(
+                                        key: const ValueKey('map-results'),
+                                        focusNode: _mapResultsFocus,
+                                        tooltip: context.mapText(
+                                          'Lista dos resultados do mapa',
+                                          'Map results list',
+                                        ),
+                                        onPressed: _openVisiblePlaceList,
+                                        icon: const Icon(
+                                          Icons.format_list_bulleted,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            ),
-                          if (!_isRouting)
-                            Positioned(
-                              top: MediaQuery.of(context).padding.top + 16,
-                              left: 80,
-                              child: Material(
-                                key: _legendAreaKey,
-                                color: colors.surface,
-                                borderRadius: BorderRadius.circular(16),
-                                child: IconButton(
-                                  key: const ValueKey('map-legend'),
-                                  tooltip: context.mapText(
-                                    'Legenda do mapa',
-                                    'Map legend',
-                                  ),
-                                  constraints: const BoxConstraints(
-                                    minWidth: 48,
-                                    minHeight: 48,
-                                  ),
-                                  icon: const Icon(Icons.info_outline),
-                                  onPressed: () => showModalBottomSheet<void>(
-                                    context: context,
-                                    useSafeArea: true,
-                                    isScrollControlled: true,
-                                    constraints: BoxConstraints(
-                                      maxWidth: 680,
-                                      maxHeight:
-                                          MediaQuery.sizeOf(context).height *
-                                          .85,
-                                    ),
-                                    builder: (_) => const MapLegendSheet(),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          Positioned(
-                            bottom: _isRouting ? 8 : searchHeight + 16,
-                            left: 12,
-                            child: Material(
-                              color: colors.surface,
-                              borderRadius: BorderRadius.circular(8),
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth:
-                                      (MediaQuery.sizeOf(context).width - 100)
-                                          .clamp(100.0, 600.0)
-                                          .toDouble(),
-                                ),
-                                child: AppLink(
-                                  label: '© OpenStreetMap contributors · ODbL',
-                                  onPressed: () => launchUrl(
-                                    Uri.parse(
-                                      'https://www.openstreetmap.org/copyright',
-                                    ),
-                                  ),
-                                  style: const TextStyle(fontSize: 10),
-                                ),
-                              ),
-                            ),
+                                ],
+                              );
+                            },
                           ),
-                          // Botão flutuante do Menu (hambúrguer)
-                          Positioned(
-                            top: MediaQuery.of(context).padding.top + 16,
-                            left: 16,
-                            child: InkWell(
-                              key: _menuAreaKey,
-                              onTap: () async {
+                        ),
+                      ),
+                      AccessibilityBottomBoundary(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_isRouting)
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  12,
+                                  4,
+                                  12,
+                                  4,
+                                ),
+                                child: _buildRoutePanel(context),
+                              ),
+                            ResponsiveNavigationBar(
+                              destinations: [
+                                NavigationDestination(
+                                  icon: const Icon(Icons.explore_rounded),
+                                  label: context.l10n.explore,
+                                ),
+                                NavigationDestination(
+                                  icon: const Icon(Icons.rate_review_outlined),
+                                  label: context.contributionText(
+                                    'Avaliar',
+                                    'Review',
+                                  ),
+                                ),
+                                NavigationDestination(
+                                  icon: const Icon(Icons.bookmark_outline),
+                                  label: context.l10n.savedPlacesTitle,
+                                ),
+                                NavigationDestination(
+                                  icon: const Icon(Icons.public_rounded),
+                                  label: context.l10n.suggestions,
+                                ),
+                              ],
+                              onSelected: (index) async {
                                 final account = AppHttp.sessionRevision.value;
                                 _routeRequest++;
                                 _navigation.interrupt('screen_changed');
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => SettingsScreen(
-                                      userName: _activeUserName,
-                                      onRouteRequested: _requestsFrom(account),
-                                    ),
-                                  ),
-                                );
-                                if (!mounted ||
-                                    account != AppHttp.sessionRevision.value) {
+                                if (index == 1) {
+                                  await _openContributions();
                                   return;
                                 }
-                                await _loadUserProfile();
-                                await _historyRecorder.refresh();
-                                if (!mounted ||
-                                    account != AppHttp.sessionRevision.value) {
+                                if (index == 2) {
+                                  await _navigateToSavedPlaces();
                                   return;
                                 }
-                                if (mounted && result is PlaceRouteRequest) {
-                                  await _startRoute(result);
-                                } else if (mounted &&
-                                    routePlace(result) != null) {
-                                  await _startRoute(routePlace(result)!);
-                                }
-                              },
-                              child: Semantics(
-                                button: true,
-                                label: context.l10n.openSettings,
-                                child: Container(
-                                  width: 52,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    color: colors.primary,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: colors.surface,
-                                      width: 2,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: colors.shadow,
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: _avatarImage() != null
-                                      ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            14,
-                                          ),
-                                          child: Image(
-                                            image: _avatarImage()!,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        )
-                                      : Icon(
-                                          Icons.menu_rounded,
-                                          color: colors.onPrimary,
-                                          size: 28,
-                                        ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Floating Action Button para recentralizar o mapa
-                          Positioned(
-                            bottom: _isRouting ? 8 : searchHeight + 32,
-                            right: 16,
-                            child: FloatingActionButton(
-                              key: const ValueKey('map-location-refresh'),
-                              mini: false,
-                              backgroundColor: colors.surface,
-                              foregroundColor: colors.primary,
-                              tooltip: context.l10n.centerLocation,
-                              elevation: 3,
-                              onPressed: () async {
-                                if (_freshLocation) {
-                                  if (_navigation.phase ==
-                                      NavigationPhase.running) {
-                                    _navigation.setFollow(true);
-                                  }
-                                  _mapController.move(_currentLocation, 14.5);
-                                  return;
-                                }
-                                if (widget.trackLocation) {
-                                  await _initLocationTracking();
-                                }
-                                if (!context.mounted) {
-                                  return;
-                                }
-                                if (_freshLocation) {
-                                  if (_navigation.phase ==
-                                      NavigationPhase.running) {
-                                    _navigation.setFollow(true);
-                                  }
-                                  _mapController.move(_currentLocation, 14.5);
-                                } else if (_locationMessage == null) {
-                                  _showErrorSnackBar(
-                                    context.l10n.locationUnavailable,
-                                  );
-                                }
-                              },
-                              child: const Icon(Icons.my_location),
-                            ),
-                          ),
-                          if (_isRouting &&
-                              _navigation.phase ==
-                                  NavigationPhase.choosingOrigin)
-                            const IgnorePointer(
-                              child: Center(child: Icon(Icons.add, size: 28)),
-                            ),
-                          if (_isRouting || _preview.visible)
-                            Positioned(
-                              top: MediaQuery.of(context).padding.top + 16,
-                              right:
-                                  _preview.visible && mapBounds.maxWidth >= 1000
-                                  ? (_panelRect?.width ?? 460) + 16
-                                  : 16,
-                              child: Material(
-                                key: _searchControlKey,
-                                color: colors.surface,
-                                borderRadius: BorderRadius.circular(16),
-                                child: IconButton(
-                                  key: const ValueKey('map-open-search'),
-                                  tooltip: context.l10n.searchDestination,
-                                  constraints: const BoxConstraints(
-                                    minWidth: 48,
-                                    minHeight: 48,
-                                  ),
-                                  onPressed: () =>
-                                      _openSearchBottomSheet(context),
-                                  icon: const Icon(Icons.search),
-                                ),
-                              ),
-                            ),
-                          if (!_isRouting && !_preview.visible)
-                            // Campo de busca flutuante sobreposto ao mapa
-                            Positioned(
-                              bottom: 16,
-                              left: 16,
-                              right: 16,
-                              child: Semantics(
-                                key: _searchControlKey,
-                                button: true,
-                                label: context.l10n.searchDestination,
-                                child: InkWell(
-                                  key: const ValueKey('map-open-search'),
-                                  onTap: () => _openSearchBottomSheet(context),
-                                  child: Container(
-                                    constraints: const BoxConstraints(
-                                      minHeight: 56,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: colors.surface,
-                                      borderRadius: BorderRadius.circular(18),
-                                      border: Border.all(color: colors.border),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: colors.shadow,
-                                          blurRadius: 18,
-                                          offset: const Offset(0, 6),
-                                        ),
-                                      ],
-                                    ),
-                                    child: IgnorePointer(
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: ExcludeSemantics(
-                                              child: Text(
-                                                searchText,
-                                                style: searchStyle,
+                                final selectedLocal =
+                                    await Navigator.push<Object?>(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => index == 0
+                                            ? ExplorarScreen(
+                                                onRouteRequested: _requestsFrom(
+                                                  account,
+                                                ),
+                                                userName: _activeUserName,
+                                                currentLocation:
+                                                    _currentLocation,
+                                                hasCurrentLocation:
+                                                    _freshLocation,
+                                                unidadeDistancia: _distanceUnit,
+                                              )
+                                            : SugestoesScreen(
+                                                onRouteRequested: _requestsFrom(
+                                                  account,
+                                                ),
+                                                allowSuggestions:
+                                                    _allowSuggestions,
+                                                userName: _activeUserName,
+                                                unidadeDistancia: _distanceUnit,
                                               ),
-                                            ),
-                                          ),
-                                          Icon(
-                                            Icons.search_rounded,
-                                            color: colors.primary,
-                                            size: 26,
-                                          ),
-                                        ],
                                       ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          if (_preview.visible)
-                            PersistentPlacePanel(
-                              externalNavigation:
-                                  widget.externalNavigation ??
-                                  const ExternalNavigation(),
-                              controller: _preview,
-                              distanceLabel: _distanceLabelForLocal,
-                              preferredResources:
-                                  _filterState.appliedPreferences,
-                              matchResources: {
-                                ..._filterState.filters.resources,
-                                ..._filterState.appliedPreferences,
-                              },
-                              outsideResults: !_matchingLocals.any(
-                                (p) => p['id'] == _selectedPlaceId,
-                              ),
-                              onClose: _closePlacePanel,
-                              onAction: (action) => _placePanelAction(action),
-                              onSearch: () => _openSearchBottomSheet(context),
-                              onGeometry: (rect) {
-                                if (mounted && _panelRect != rect) {
-                                  setState(() => _panelRect = rect);
+                                    );
+                                if (!mounted ||
+                                    account != AppHttp.sessionRevision.value) {
+                                  return;
+                                }
+                                if (mounted &&
+                                    selectedLocal is PlaceRouteRequest) {
+                                  await _startRoute(selectedLocal);
+                                } else if (mounted &&
+                                    routePlace(selectedLocal) != null) {
+                                  await _startRoute(routePlace(selectedLocal)!);
                                 }
                               },
                             ),
-                          Positioned(
-                            top: 8,
-                            left: MediaQuery.sizeOf(context).height < 480
-                                ? 192
-                                : 136,
-                            child: Material(
-                              key: _resultsAreaKey,
-                              shape: const CircleBorder(),
-                              elevation: 3,
-                              child: IconButton(
-                                key: const ValueKey('map-results'),
-                                focusNode: _mapResultsFocus,
-                                tooltip: context.mapText(
-                                  'Lista dos resultados do mapa',
-                                  'Map results list',
-                                ),
-                                onPressed: _openVisiblePlaceList,
-                                icon: const Icon(Icons.format_list_bulleted),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                AccessibilityBottomBoundary(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_isRouting)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
-                          child: _buildRoutePanel(context),
+                          ],
                         ),
-                      ResponsiveNavigationBar(
-                        destinations: [
-                          NavigationDestination(
-                            icon: const Icon(Icons.explore_rounded),
-                            label: context.l10n.explore,
-                          ),
-                          NavigationDestination(
-                            icon: const Icon(Icons.rate_review_outlined),
-                            label: context.contributionText(
-                              'Avaliar',
-                              'Review',
-                            ),
-                          ),
-                          NavigationDestination(
-                            icon: const Icon(Icons.bookmark_outline),
-                            label: context.l10n.savedPlacesTitle,
-                          ),
-                          NavigationDestination(
-                            icon: const Icon(Icons.public_rounded),
-                            label: context.l10n.suggestions,
-                          ),
-                        ],
-                        onSelected: (index) async {
-                          final account = AppHttp.sessionRevision.value;
-                          _routeRequest++;
-                          _navigation.interrupt('screen_changed');
-                          if (index == 1) {
-                            await _openContributions();
-                            return;
-                          }
-                          if (index == 2) {
-                            await _navigateToSavedPlaces();
-                            return;
-                          }
-                          final selectedLocal = await Navigator.push<Object?>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => index == 0
-                                  ? ExplorarScreen(
-                                      onRouteRequested: _requestsFrom(account),
-                                      userName: _activeUserName,
-                                      currentLocation: _currentLocation,
-                                      hasCurrentLocation: _freshLocation,
-                                      unidadeDistancia: _distanceUnit,
-                                    )
-                                  : SugestoesScreen(
-                                      onRouteRequested: _requestsFrom(account),
-                                      allowSuggestions: _allowSuggestions,
-                                      userName: _activeUserName,
-                                      unidadeDistancia: _distanceUnit,
-                                    ),
-                            ),
-                          );
-                          if (!mounted ||
-                              account != AppHttp.sessionRevision.value) {
-                            return;
-                          }
-                          if (mounted && selectedLocal is PlaceRouteRequest) {
-                            await _startRoute(selectedLocal);
-                          } else if (mounted &&
-                              routePlace(selectedLocal) != null) {
-                            await _startRoute(routePlace(selectedLocal)!);
-                          }
-                        },
                       ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -3647,12 +3775,20 @@ class _MainScreenState extends SafeState<MainScreen>
 
   Widget _discoveryStatus(double maxHeight) {
     final colors = AppColors.of(context);
+    final headerHeight =
+        (MediaQuery.textScalerOf(context).scale(12) *
+                (Theme.of(context).textTheme.bodyMedium?.height ?? 1.4) *
+                2)
+            .clamp(AppGeometry.touchTarget, double.infinity)
+            .toDouble();
     return Material(
       key: _discoveryStatusKey,
       color: colors.surface,
       borderRadius: BorderRadius.circular(14),
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxHeight),
+        constraints: BoxConstraints(
+          maxHeight: maxHeight < headerHeight ? headerHeight : maxHeight,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

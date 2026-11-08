@@ -8,6 +8,7 @@ import '../media/media_models.dart';
 import '../media/media_widgets.dart';
 import '../media/photo_gallery_screen.dart';
 import '../l10n/map_strings.dart';
+import 'app_feedback.dart';
 
 /// Independent review/photo states. A media failure never discards review data.
 class PlaceReviewsSection extends StatefulWidget {
@@ -146,10 +147,17 @@ class _PlaceReviewsSectionState extends State<PlaceReviewsSection> {
           ),
         ),
       if (_reviewBusy)
-        Text(context.mapText('Carregando avaliações…', 'Loading reviews…')),
+        AppFeedback(
+          kind: AppFeedbackKind.loading,
+          message: context.mapText(
+            'Carregando avaliações…',
+            'Loading reviews…',
+          ),
+        ),
       if (_reviewFailed) ...[
-        Text(
-          context.mapText(
+        AppFeedback(
+          kind: AppFeedbackKind.error,
+          message: context.mapText(
             'Consulta de avaliações indisponível',
             'Review lookup unavailable',
           ),
@@ -181,15 +189,17 @@ class _PlaceReviewsSectionState extends State<PlaceReviewsSection> {
           child: Text(context.mapText('Ver avaliações', 'View reviews')),
         ),
       if (_photoBusy)
-        Text(
-          context.mapText(
+        AppFeedback(
+          kind: AppFeedbackKind.loading,
+          message: context.mapText(
             'Carregando fotos públicas…',
             'Loading public photos…',
           ),
         ),
       if (_photoFailed) ...[
-        Text(
-          context.mapText(
+        AppFeedback(
+          kind: AppFeedbackKind.error,
+          message: context.mapText(
             'Não foi possível consultar as fotos públicas.',
             'Public photos could not be loaded.',
           ),

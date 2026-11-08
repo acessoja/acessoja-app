@@ -5,6 +5,8 @@ import 'package:latlong2/latlong.dart';
 import '../l10n/route_strings.dart';
 import '../models/navigation_route.dart';
 import '../services/navigation_controller.dart';
+import '../widgets/stadia_map_surface.dart';
+import '../app_theme.dart';
 
 /// Presentation above the source stack. It shares the map coordinator's route,
 /// GPS and recorder; it owns only this surface's camera, never another session.
@@ -92,6 +94,7 @@ class _RoutePlanningScreenState extends State<RoutePlanningScreen> {
           builder: (context, _) {
             final nav = widget.controller;
             final center = nav.origin ?? nav.destination ?? const LatLng(0, 0);
+            final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
             return Scaffold(
               appBar: AppBar(
                 automaticallyImplyLeading: false,
@@ -104,102 +107,114 @@ class _RoutePlanningScreenState extends State<RoutePlanningScreen> {
                   icon: const Icon(Icons.arrow_back),
                 ),
               ),
-              body: Column(
-                children: [
-                  Expanded(
-                    child: Stack(
+              body: LayoutBuilder(
+                builder: (context, bounds) => SingleChildScrollView(
+                  primary: false,
+                  child: SizedBox(
+                    // Keep the map, credits and route actions scrollable when
+                    // the keyboard leaves less space than their minimum sizes.
+                    height: keyboardOpen && bounds.maxHeight < 400
+                        ? 400
+                        : bounds.maxHeight,
+                    child: Column(
                       children: [
-                        FlutterMap(
-                          mapController: _map,
-                          options: MapOptions(
-                            initialCenter: center,
-                            initialZoom: 14,
-                            onMapReady: () {
-                              _ready = true;
-                              _changed();
-                            },
-                            onPositionChanged: (_, gesture) {
-                              if (gesture && nav.follow) nav.setFollow(false);
-                            },
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate:
-                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'br.com.acessoja.app',
-                              tileProvider: widget.tileProvider,
-                            ),
-                            if (nav.route != null)
-                              PolylineLayer(
-                                polylines: [
-                                  Polyline(
-                                    points: nav.route!.points,
-                                    strokeWidth: 5,
-                                    color: Theme.of(
+                        Expanded(
+                          child: StadiaMapSurface(
+                            tileProvider: widget.tileProvider,
+                            builder: (context, tiles) => Stack(
+                              children: [
+                                FlutterMap(
+                                  mapController: _map,
+                                  options: MapOptions(
+                                    backgroundColor: AppColors.of(
                                       context,
-                                    ).colorScheme.primary,
+                                    ).pageBackground,
+                                    initialCenter: center,
+                                    initialZoom: 14,
+                                    onMapReady: () {
+                                      _ready = true;
+                                      _changed();
+                                    },
+                                    onPositionChanged: (_, gesture) {
+                                      if (gesture && nav.follow) {
+                                        nav.setFollow(false);
+                                      }
+                                    },
                                   ),
-                                ],
-                              ),
-                            MarkerLayer(
-                              markers: [
-                                if (nav.origin != null)
-                                  Marker(
-                                    point: nav.origin!,
-                                    width: 48,
-                                    height: 48,
-                                    child: const Icon(
-                                      Icons.trip_origin,
-                                      color: Colors.blue,
-                                      size: 32,
+                                  children: [
+                                    tiles,
+                                    if (nav.route != null)
+                                      PolylineLayer(
+                                        polylines: [
+                                          Polyline(
+                                            points: nav.route!.points,
+                                            strokeWidth: 5,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                            borderStrokeWidth: 2,
+                                            borderColor: AppColors.of(
+                                              context,
+                                            ).surface,
+                                          ),
+                                        ],
+                                      ),
+                                    MarkerLayer(
+                                      markers: [
+                                        if (nav.origin != null)
+                                          Marker(
+                                            point: nav.origin!,
+                                            width: 48,
+                                            height: 48,
+                                            child: StadiaMapPin(
+                                              icon: Icons.trip_origin,
+                                              label: context.routeText(
+                                                'Origem da rota',
+                                                'Route origin',
+                                              ),
+                                            ),
+                                          ),
+                                        if (nav.destination != null)
+                                          Marker(
+                                            point: nav.destination!,
+                                            width: 48,
+                                            height: 48,
+                                            child: StadiaMapPin(
+                                              icon: Icons.location_on,
+                                              label: context.routeText(
+                                                'Destino da rota',
+                                                'Route destination',
+                                              ),
+                                              destination: true,
+                                            ),
+                                          ),
+                                      ],
                                     ),
+                                  ],
+                                ),
+                                const Center(
+                                  child: IgnorePointer(
+                                    child: Icon(Icons.add, size: 28),
                                   ),
-                                if (nav.destination != null)
-                                  Marker(
-                                    point: nav.destination!,
-                                    width: 48,
-                                    height: 48,
-                                    child: const Icon(
-                                      Icons.location_on,
-                                      color: Colors.red,
-                                      size: 36,
-                                    ),
-                                  ),
+                                ),
                               ],
                             ),
-                          ],
-                        ),
-                        const Positioned(
-                          bottom: 0,
-                          right: 4,
-                          child: Text(
-                            '© OpenStreetMap contributors · ODbL',
-                            style: TextStyle(
-                              fontSize: 11,
-                              backgroundColor: Colors.white,
-                              color: Colors.black,
-                            ),
                           ),
                         ),
-                        const Center(
-                          child: IgnorePointer(
-                            child: Icon(Icons.add, size: 28),
+                        SafeArea(
+                          top: false,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: widget.panelBuilder(
+                              context,
+                              _ready ? _map.camera.center : center,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  SafeArea(
-                    top: false,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: widget.panelBuilder(
-                        context,
-                        _ready ? _map.camera.center : center,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             );
           },
