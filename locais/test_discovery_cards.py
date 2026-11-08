@@ -271,6 +271,11 @@ def test_access_logs_redact_origin_without_changing_query():
     assert "search=Cafe" in record.getMessage()
 
 
+def test_visit_identity_cannot_be_selected_by_query_parameter():
+    response = client(owner()).get("/api/visitas/", {"nome_usuario": "outra-conta"})
+    assert response.status_code == 400
+
+
 @pytest.mark.django_db(transaction=True)
 def test_manual_migration_preserves_existing_domains():
     from django.db.migrations.executor import MigrationExecutor

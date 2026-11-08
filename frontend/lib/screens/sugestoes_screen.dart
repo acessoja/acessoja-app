@@ -1,6 +1,5 @@
 import '../models/map_place.dart';
 import '../services/current_position.dart';
-import '../models/place_distance.dart';
 import '../reading_presentation.dart';
 import '../widgets/place_media.dart';
 import '../widgets/load_error.dart';
@@ -10,6 +9,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import '../services/app_http.dart';
+import '../services/accessibility_preferences_service.dart';
+import '../services/places_service.dart';
+import '../services/recommendation_engine.dart';
+import '../models/discovery_query.dart';
 
 import '../app_theme.dart';
 import '../config.dart';
@@ -37,14 +40,9 @@ class SugestoesScreen extends StatefulWidget {
 class _SugestoesScreenState extends SafeState<SugestoesScreen> {
   List<dynamic> _recentVisits = [];
   List<dynamic> _allLocales = [];
+  Set<String> _preferences = {};
   bool _isLoading = true;
   bool _loadFailed = false;
-
-  String _formatDistance(dynamic value) => placeDistanceLabel(
-    context,
-    MapPlace.internal(value is Map ? Map<String, dynamic>.from(value) : {}),
-    unit: widget.unidadeDistancia,
-  );
 
   @override
   void initState() {
@@ -58,32 +56,34 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
       _loadFailed = false;
     });
     try {
-      final visitsResponse = await AppHttp.get(
-        Uri.parse(
-          '${Config.baseUrl}/api/visitas/?nome_usuario=${Uri.encodeComponent(widget.userName)}',
-        ),
+      final localesPage = await const PlacesService().fetchDiscoveryPage(
+        query: DiscoveryQuery(ordering: 'rating'),
       );
-      final localesResponse = await AppHttp.get(
-        Uri.parse('${Config.baseUrl}/api/locais/'),
-      );
-
-      if (visitsResponse.statusCode == 200 &&
-          localesResponse.statusCode == 200) {
-        final List visitsData = json.decode(
-          utf8.decode(visitsResponse.bodyBytes),
+      List visitsData = [];
+      if (AppHttp.authenticated) {
+        final visitsResponse = await AppHttp.get(
+          Uri.parse('${Config.baseUrl}/api/visitas/'),
         );
-        final List localesData = json.decode(
-          utf8.decode(localesResponse.bodyBytes),
-        );
-
-        setState(() {
-          _recentVisits = visitsData;
-          _allLocales = localesData;
-          _isLoading = false;
-        });
-      } else {
-        _loadFailed = true;
+        if (visitsResponse.statusCode != 200) throw StateError('visits_load_failed');
+        final decoded = json.decode(utf8.decode(visitsResponse.bodyBytes));
+        visitsData = decoded is List ? decoded : (decoded['results'] as List? ?? []);
       }
+      Set<String> preferences = {};
+      if (AppHttp.authenticated) {
+        try {
+          final loaded = await const AccessibilityPreferencesService().load();
+          preferences = loaded.resources;
+        } catch (_) {
+          // Suggestions remain usable as general recommendations if preferences fail.
+        }
+      }
+      if (!mounted) return;
+      setState(() {
+        _recentVisits = visitsData;
+        _allLocales = localesPage.places.map((p) => p.toMap()).toList(growable: false);
+        _preferences = preferences;
+        _isLoading = false;
+      });
     } catch (e) {
       if (!mounted) return;
       _loadFailed = true;
@@ -122,85 +122,14 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
   // If no visits, suggest top rated.
   List<dynamic> get recommendedPlaces {
     if (!widget.allowSuggestions || _allLocales.isEmpty) return [];
-
-    final visited = visitedPlaces;
-    final Set<int> visitedIds = visited
-        .map<int>((e) => e['id_local'] as int)
-        .toSet();
-
-    if (visited.isEmpty) {
-      // General recommendations: sort all by rating average (highest first).
-      final List<dynamic> candidates = List.from(_allLocales);
-      candidates.sort((a, b) {
-        final ratingA = (a['media_estrelas'] ?? 0.0) as num;
-        final ratingB = (b['media_estrelas'] ?? 0.0) as num;
-        return ratingB.compareTo(ratingA);
-      });
-      return candidates.take(3).toList();
-    }
-
-    // Visited is not empty. Count frequented features.
-    int rampaCount = 0;
-    int banheiroCount = 0;
-    int mesaCount = 0;
-    int caoCount = 0;
-    int brailleCount = 0;
-
-    for (var p in visited) {
-      if (p['rampa_acesso'] == true) {
-        rampaCount++;
-      }
-      if (p['banheiro_acessivel'] == true) {
-        banheiroCount++;
-      }
-      if (p['mesa_acessivel'] == true) {
-        mesaCount++;
-      }
-      if (p['cao_guia'] == true) {
-        caoCount++;
-      }
-      if (p['cardapio_braille'] == true) {
-        brailleCount++;
-      }
-    }
-
-    // Determine the most common feature.
-    final featuresMap = {
-      'rampa_acesso': rampaCount,
-      'banheiro_acessivel': banheiroCount,
-      'mesa_acessivel': mesaCount,
-      'cao_guia': caoCount,
-      'cardapio_braille': brailleCount,
-    };
-
-    String topFeature = 'rampa_acesso';
-    int maxVal = -1;
-    featuresMap.forEach((key, val) {
-      if (val > maxVal) {
-        maxVal = val;
-        topFeature = key;
-      }
-    });
-
-    // Filter candidate places that have this top feature, prioritizing those
-    // the user has not visited yet.
-    final List<dynamic> candidates = _allLocales.where((place) {
-      return place[topFeature] == true;
-    }).toList();
-
-    // Sort: unvisited first, then higher rating.
-    candidates.sort((a, b) {
-      final aVisited = visitedIds.contains(a['id_local']) ? 1 : 0;
-      final bVisited = visitedIds.contains(b['id_local']) ? 1 : 0;
-      if (aVisited != bVisited) {
-        return aVisited.compareTo(bVisited);
-      }
-      final ratingA = (a['media_estrelas'] ?? 0.0) as num;
-      final ratingB = (b['media_estrelas'] ?? 0.0) as num;
-      return ratingB.compareTo(ratingA);
-    });
-
-    return candidates.take(3).toList();
+    final ranked = const RecommendationEngine().rank(
+      _allLocales.map((value) => MapPlace.internal(Map<String, dynamic>.from(value))),
+      preferences: _preferences,
+    );
+    return ranked.take(3).map((item) => {
+      ...item.place.toMap(),
+      '_recommendation_reasons': const RecommendationEngine().reasons(item),
+    }).toList(growable: false);
   }
 
   String getLocalDisplayName(String name) {
@@ -495,7 +424,6 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
     final name = (place['nome'] ?? '').toString();
     final displayName = getLocalDisplayName(name);
     final address = (place['endereco'] ?? '').toString();
-    final isOpen = place['aberto'] is bool ? place['aberto'] as bool : null;
 
     return Container(
       margin: const EdgeInsets.only(top: 12),
@@ -554,51 +482,20 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
                       ),
                     ],
                     const SizedBox(height: 7),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 5,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 7,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isOpen == null
-                                ? colors.primarySoft
-                                : isOpen
-                                ? colors.successSoft
-                                : colors.dangerSoft,
-                            borderRadius: BorderRadius.circular(7),
-                          ),
-                          child: Text(
-                            isOpen == null
-                                ? context.l10n.placeHoursUnknown
-                                : isOpen
-                                ? context.l10n.open
-                                : context.l10n.closed,
-                            style: TextStyle(
-                              color: isOpen == null
-                                  ? colors.muted
-                                  : isOpen
-                                  ? colors.success
-                                  : colors.danger,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          _formatDistance(place),
-                          style: TextStyle(
-                            color: colors.muted,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+                    if (place['_recommendation_reasons'] is List)
+                      ...((place['_recommendation_reasons'] as List)
+                          .whereType<String>()
+                          .map((reason) => Padding(
+                                padding: const EdgeInsets.only(top: 5),
+                                child: Text(
+                                  reason,
+                                  style: TextStyle(
+                                    color: colors.muted,
+                                    fontSize: 11,
+                                    height: context.readingHeight(1.25),
+                                  ),
+                                ),
+                              ))),
                     const SizedBox(height: 7),
                     ReportedPlaceRating(
                       rating: place['media_estrelas'],

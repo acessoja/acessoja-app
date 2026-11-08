@@ -46,7 +46,7 @@ void main() {
     expect(places.single['id_local'], 7);
   });
 
-  test('registerVisit envia o local e o usuário no corpo', () async {
+  test('registerVisit usa a sessão e não envia identidade arbitrária', () async {
     late http.Request captured;
     AppHttp.client = MockClient((request) async {
       captured = request;
@@ -59,6 +59,7 @@ void main() {
     expect(captured.url.path, '/api/visitas/');
     final body = jsonDecode(captured.body) as Map<String, dynamic>;
     expect(body['local'], 3);
-    expect(body['nome_usuario'], 'gabriel');
+    expect(body.containsKey('nome_usuario'), isFalse);
+    expect(captured.url.queryParameters.containsKey('nome_usuario'), isFalse);
   });
 }

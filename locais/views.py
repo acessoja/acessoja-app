@@ -186,6 +186,11 @@ class VisitaRecenteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     http_method_names = ["get", "post", "delete", "head", "options"]
 
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if set(request.query_params) - {"format"}:
+            raise ValidationError("A identidade da conta vem exclusivamente da sessão autenticada.")
+
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
 

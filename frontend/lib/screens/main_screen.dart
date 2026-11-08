@@ -519,8 +519,6 @@ class _MainScreenState extends SafeState<MainScreen>
 
   Future<void> _openContributions() async {
     final account = AppHttp.sessionRevision.value;
-    _routeRequest++;
-    _navigation.interrupt('screen_changed');
     final result = await Navigator.push<Object?>(
       context,
       MaterialPageRoute(
@@ -2580,8 +2578,6 @@ class _MainScreenState extends SafeState<MainScreen>
 
   Future<void> _navigateToSavedPlaces() async {
     final account = AppHttp.sessionRevision.value;
-    _routeRequest++;
-    _navigation.interrupt('screen_changed');
     final selectedLocal = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -3709,8 +3705,6 @@ class _MainScreenState extends SafeState<MainScreen>
                               ],
                               onSelected: (index) async {
                                 final account = AppHttp.sessionRevision.value;
-                                _routeRequest++;
-                                _navigation.interrupt('screen_changed');
                                 if (index == 1) {
                                   await _openContributions();
                                   return;
