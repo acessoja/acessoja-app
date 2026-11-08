@@ -554,7 +554,6 @@ class PlacesService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'local': localId,
-        'nome_usuario': userName,
         if (latitude != null) 'latitude': latitude,
         if (longitude != null) 'longitude': longitude,
         if (accuracy != null) 'accuracy': accuracy,
