@@ -6,11 +6,13 @@ import subprocess
 import sys
 import tempfile
 import threading
+import logging
 
 from django.conf import settings
 from .exceptions import ImageRejected, ImageTooLarge, ImageUnavailable
 
 SLOTS = threading.BoundedSemaphore(2)
+logger = logging.getLogger(__name__)
 
 
 def read_input(upload):
@@ -38,6 +40,9 @@ def process_image(content, suffix, mime, purpose):
                 timeout=25,
                 env={"PATH": os.environ.get("PATH", ""), "PYTHONIOENCODING": "utf-8"},
             )
+            if worker.returncode == 3:
+                logger.error("Image worker unavailable (exit code 3)")
+                raise ImageUnavailable("Processamento indisponível. Tente novamente mais tarde.")
             if worker.returncode != 0:
                 raise ImageRejected()
             data = json.loads(worker.stdout)
@@ -45,7 +50,11 @@ def process_image(content, suffix, mime, purpose):
             data["thumb"] = (Path(directory) / "thumb.jpg").read_bytes()
             data["sha256"] = hashlib.sha256(data["image"]).hexdigest()
             return data
-    except (subprocess.TimeoutExpired, ValueError, OSError):
-        raise ImageRejected() from None
+    except (subprocess.TimeoutExpired, OSError):
+        logger.error("Image worker failed to start or timed out")
+        raise ImageUnavailable("Processamento indisponível. Tente novamente mais tarde.") from None
+    except ValueError:
+        logger.error("Image worker returned an invalid receipt")
+        raise ImageUnavailable("Processamento indisponível. Tente novamente mais tarde.") from None
     finally:
         SLOTS.release()

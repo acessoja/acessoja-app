@@ -325,6 +325,57 @@ def test_c41_permission_is_specific_and_admin_does_not_expose_queue_to_staff_alo
     assert browser.get("/admin/evidencias/contentreport/").status_code == 200
 
 
+def test_moderation_dashboard_uses_real_cases_and_restricts_access(scenario):
+    _, visitor, moderator, _, review, _ = scenario
+    case = report_review(visitor, review)
+    browser = Client()
+    url = "/admin/evidencias/contentreport/central/"
+    assert browser.get(url).status_code == 302
+    visitor.is_staff = True
+    visitor.save(update_fields=["is_staff"])
+    browser.force_login(visitor, backend="django.contrib.auth.backends.ModelBackend")
+    assert browser.get(url).status_code == 403
+    assert b"Central de Modera" not in browser.get("/admin/").content
+    browser.force_login(moderator, backend="django.contrib.auth.backends.ModelBackend")
+    response = browser.get(url)
+    assert response.status_code == 200
+    assert str(case.protocol) in response.content.decode()
+    assert response.context["counts"]["pending"] == 1
+    assert browser.get(url, {"state": "closed"}).context["page"].paginator.count == 0
+
+
+def test_moderation_navigation_renders_all_listings(scenario):
+    _, visitor, moderator, _, review, _ = scenario
+    report_review(visitor, review)
+    browser = Client()
+    browser.force_login(moderator, backend="django.contrib.auth.backends.ModelBackend")
+    home = browser.get("/admin/")
+    assert home.status_code == 200
+    assert b"Central de Modera" in home.content
+    assert b"Django administration" not in home.content
+    assert home.content.count(b'class="mod-sidebar"') == 1
+    assert b"Abrir Central de Modera" not in home.content
+    login = Client().get("/admin/login/?next=/admin/")
+    assert login.status_code == 200
+    assert b"Entrar na modera" in login.content
+    for path in (
+        "/admin/evidencias/contentreport/",
+        "/admin/evidencias/moderationdecision/",
+        "/admin/midia/reviewphoto/",
+        "/admin/midia/imagedecision/",
+    ):
+        response = browser.get(path)
+        assert response.status_code == 200, path
+        assert b"mod-shell" in response.content, path
+        assert response.content.count(b'class="mod-sidebar"') == 1, path
+        assert b"Django administration" not in response.content, path
+    case = ContentReport.objects.first()
+    item = decision(moderator, case, action="start")
+    detail = browser.get(f"/admin/evidencias/moderationdecision/{item.pk}/change/")
+    assert detail.status_code == 302
+    assert str(case.pk) in detail["Location"]
+
+
 def test_c41_03_invalidation_reconciles_points_and_is_idempotent(scenario):
     a, b, mod, local, review, _ = scenario
     case = report_review(b, review)

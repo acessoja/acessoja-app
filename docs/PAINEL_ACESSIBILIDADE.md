@@ -1,5 +1,9 @@
 # Painel de acessibilidade — Cards 20–23
 
+## Atualização visual — Card 174
+
+O painel abre no estado compacto com tamanho do texto, quatro cartões de contraste, links, ilustrações, prévia e restauração geral. **Mais ajustes de leitura** expande fonte, espaçamento, altura de linha, posição e visibilidade do botão no mesmo modal. O fechamento permanece acessível durante a rolagem. A restauração geral atua somente nas sete escolhas de leitura; posição e visibilidade continuam independentes. Os controles individuais de redefinição descritos na tabela histórica abaixo foram substituídos pelo botão geral.
+
 Entrega de 15/10/2026 (UTC). Correspondência do painel: Card 23 / [Trello #128](https://trello.com/c/U1U4Rdwl); fonte e contraste: Card 21 / [#25](https://trello.com/c/jnz37keo).
 
 ## Acesso e fonte de verdade

@@ -1,9 +1,8 @@
-{% extends 'admin/base_site.html' %}{% block content %}
-<h1>Analisar fotografia da avaliação</h1>
-<p>Revisão: {{ revision.id }}. Estado: {{ revision.get_state_display }}. Envio não comprova visita ou data da fotografia.</p>
-<p>{{ revision.description }}</p>
-<img src="{{ image_url }}" alt="{{ revision.description }}" style="max-width:100%;max-height:65vh;object-fit:contain">
-{% if not photo.deleted_at %}<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Confirmar decisão</button></form>{% endif %}
-<h2>Histórico de análise da imagem</h2>
-{% for decision in history %}<p>{{ decision.get_action_display }} — {{ decision.created_at }} — {{ decision.reason }}</p>{% empty %}<p>Sem decisões. Aprovação inicial não exige denúncia.</p>{% endfor %}
-{% endblock %}
+{% extends "admin/moderation/base.html" %}
+{% load moderation_ui %}
+{% block mod_subtitle %}Verifique a imagem e sua relação com a avaliação antes de registrar a decisão.{% endblock %}
+{% block mod_content %}<nav class="mod-crumb" aria-label="Caminho"><a href="{% url 'admin:midia_reviewphoto_changelist' %}">Fotografias</a><span aria-hidden="true">›</span><span>Analisar fotografia</span></nav>
+<div class="mod-columns two"><section class="mod-card"><h2>Fotografia enviada</h2>{% if revision and revision.asset.state == 'ready' and not photo.deleted_at %}<a href="{{ image_url }}" target="_blank" rel="noopener" aria-label="Abrir imagem ampliada"><img class="mod-photo" src="{{ image_url }}" alt="{{ revision.description|default:'Fotografia enviada para moderação' }}" onerror="this.hidden=true;this.parentElement.nextElementSibling.hidden=false"></a><p hidden>Imagem indisponível para visualização.</p>{% else %}<p class="mod-notice">Imagem indisponível para visualização.</p>{% endif %}<p>{{ revision.description|default:"Sem descrição"|linebreaksbr }}</p></section>
+<section class="mod-card"><h2>Contexto da fotografia</h2><p><strong>Estabelecimento:</strong> {{ photo.review.local.nome }}</p><p><strong>Avaliação:</strong> {{ photo.review_id }}</p><p><strong>Envio:</strong> {{ photo.created_at|date:"d/m/Y H:i" }}</p><p><strong>Estado:</strong> <span class="mod-badge {{ revision.state }}">{% if photo.deleted_at %}Excluída{% elif revision %}{{ revision.get_state_display }}{% else %}Processando{% endif %}</span></p><h2>Decisão</h2>
+{% if revision and revision.asset.state == 'ready' and not photo.deleted_at %}<form method="post">{% csrf_token %}{{ form.non_field_errors }}{{ form.revision_id }}{{ form.expected_version }}{{ form.operation_id }}<fieldset><legend>Escolha uma ação</legend><div class="mod-choice-list">{{ form.action }}</div>{{ form.action.errors }}</fieldset><div class="mod-field">{{ form.reason.label_tag }}{{ form.reason }}{{ form.reason.errors }}<small>Justifique com 10 a 1000 caracteres.</small></div><div class="mod-field">{{ form.author_reason.label_tag }}{{ form.author_reason }}{{ form.author_reason.errors }}</div><button type="submit">Registrar decisão</button></form>{% else %}<p class="mod-notice">Esta fotografia não está disponível para decisão.</p>{% endif %}</section></div>
+<section class="mod-card mod-history"><h2>Histórico de moderação</h2>{% for decision in history %}<article><h3>{{ decision.get_action_display }} · {{ decision.created_at|date:"d/m/Y H:i" }}</h3><p>{{ decision.previous_state|moderation_state }} → {{ decision.next_state|moderation_state }}</p><p>{{ decision.reason|linebreaksbr }}</p></article>{% empty %}<p>Nenhuma decisão registrada.</p>{% endfor %}</section>{% endblock %}
