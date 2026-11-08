@@ -62,12 +62,11 @@ class RecommendationEngine {
       reasons.add(
         'Possui informação confirmada sobre: ${recommendation.matchedResources.map(_label).join(', ')}.',
       );
+    } else {
+      reasons.add('Indicação geral baseada nos dados públicos disponíveis.');
     }
     if (place.hasCommunityReviews) {
       reasons.add('Tem avaliações reais do AcessoJá.');
-    }
-    if (reasons.isEmpty) {
-      reasons.add('Indicação geral baseada nos dados públicos disponíveis.');
     }
     return reasons;
   }
