@@ -39,6 +39,28 @@ from .moderation import decide_photo
 from .processing import process_image
 from .storage import image_storage
 
+
+def test_image_worker_startup_and_infrastructure_error(monkeypatch, settings):
+    """A broken Pillow installation is a service fault, not an invalid photo."""
+    import subprocess
+    from types import SimpleNamespace
+    from .exceptions import ImageUnavailable
+
+    monkeypatch.setattr(subprocess, "run", lambda *a, **kw: SimpleNamespace(returncode=3, stdout=b""))
+    with pytest.raises(ImageUnavailable):
+        process_image(b"valid bytes checked by worker", ".png", "image/png", "review")
+
+
+def test_image_worker_invalid_file_remains_rejected(monkeypatch):
+    import subprocess
+    from types import SimpleNamespace
+    from .exceptions import ImageRejected
+
+    monkeypatch.setattr(subprocess, "run", lambda *a, **kw: SimpleNamespace(returncode=2, stdout=b""))
+    with pytest.raises(ImageRejected):
+        process_image(b"invalid", ".png", "image/png", "review")
+
+
 pytestmark = pytest.mark.django_db
 PASSWORD = "Synthetic-photo-password!42"
 

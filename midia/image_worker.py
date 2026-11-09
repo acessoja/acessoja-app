@@ -57,5 +57,8 @@ if __name__ == "__main__":
         pass
     try:
         run(*sys.argv[1:])
+    except ImportError:
+        # Parent receives a distinct infrastructure exit code, without private data.
+        sys.exit(3)
     except Exception:
         sys.exit(2)

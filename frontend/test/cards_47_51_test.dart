@@ -662,7 +662,8 @@ void main() {
       await visible(tester, find.byKey(const ValueKey('survey-skip')));
       await visible(tester, originalModalSubmit());
       await visible(tester, find.byKey(const ValueKey('survey-submit')));
-      expect(find.byKey(const ValueKey('review-done')), findsOneWidget);
+      expect(find.text('Obrigado por contribuir!'), findsOneWidget);
+      expect(find.text('Voltar ao estabelecimento'), findsOneWidget);
       expect(r.saves, 1);
     },
   );
@@ -682,6 +683,28 @@ void main() {
     expect(reviews.saves, 0);
     await visible(tester, find.byKey(const ValueKey('survey-submit')));
     expect(reviews.sent!['answers'], {'rampa_acesso': 'yes'});
+    expect(reviews.saves, 1);
+  });
+  testWidgets('Saved review with failed photo can finish without resaving review', (tester) async {
+    final reviews = Reviews(), photos = Photos()..failAt = 1;
+    await tester.pumpWidget(app(ReviewEditorScreen(
+      place: place, service: reviews, evidence: Statements(), media: photos, picker: Picker(),
+    )));
+    await tester.pumpAndSettle();
+    await visible(tester, find.byKey(const ValueKey('review-star-4')));
+    await visible(tester, find.byKey(const ValueKey('review-add-photos')));
+    await visible(tester, find.byKey(const ValueKey('editor-pick-photo')));
+    await visible(tester, find.text('Galeria ou arquivo'));
+    await tester.enterText(find.byType(TextFormField), 'Rampa na entrada principal');
+    await visible(tester, find.text('Revisar e publicar').last);
+    await visible(tester, find.byKey(const ValueKey('survey-skip')));
+    await visible(tester, originalModalSubmit());
+    await visible(tester, find.byKey(const ValueKey('survey-submit')));
+    expect(find.byKey(const ValueKey('finish-without-photo')), findsOneWidget);
+    expect(reviews.saves, 1);
+    await visible(tester, find.byKey(const ValueKey('finish-without-photo')));
+    await visible(tester, find.text('Concluir sem fotografia').last);
+    expect(find.text('Obrigado por contribuir!'), findsOneWidget);
     expect(reviews.saves, 1);
   });
   testWidgets(
