@@ -25,6 +25,7 @@ import 'package:flutter_application_1/screens/privacidade_screen.dart';
 import 'package:flutter_application_1/screens/informacoes_pessoais_screen.dart';
 import 'package:flutter_application_1/screens/ajuda_screen.dart';
 import 'package:flutter_application_1/screens/place_detail_screen.dart';
+import 'package:flutter_application_1/screens/review_editor_screen.dart';
 import 'package:flutter_application_1/widgets/evaluation_survey_dialog.dart';
 import 'package:flutter_application_1/models/accessibility_survey.dart';
 import 'package:latlong2/latlong.dart';
@@ -346,6 +347,13 @@ void main() {
   testWidgets(
     'successful review refreshes detail content instead of spinning forever',
     (tester) async {
+      var reviewSaves = 0;
+      AppHttp.client = MockClient((request) async {
+        if (request.method == 'POST' && request.url.path.contains('modal-avaliacoes')) {
+          reviewSaves++;
+        }
+        return fixtureResponse(request);
+      });
       await tester.pumpWidget(
         harness(PlaceDetailScreen(place: place, userName: 'teste')),
       );
@@ -365,6 +373,11 @@ void main() {
       await tapVisible(tester, find.byKey(const ValueKey('survey-skip')));
       await tapVisible(tester, originalModalSubmit());
       await tapVisible(tester, find.byKey(const ValueKey('survey-submit')));
+      expect(reviewSaves, 1);
+      expect(find.text('Obrigado por contribuir!'), findsOneWidget);
+      expect(find.byType(ReviewEditorScreen), findsOneWidget);
+      await tapVisible(tester, find.text('Voltar ao estabelecimento'));
+      expect(reviewSaves, 1);
       // After save, the detail page rebuilds and the button can remain below
       // the visible part of its scrolling content. Scroll before asserting.
       expect(find.byType(PlaceDetailScreen), findsOneWidget);

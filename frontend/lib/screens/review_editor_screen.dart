@@ -48,7 +48,8 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
   bool _allowExit = false,
       _expired = false,
       _selecting = false,
-      _expanded = false;
+      _expanded = false,
+      _showConfirmation = false;
   int _generation = 0;
   String? _selectionError, _recoveryScope;
   late String _scope;
@@ -290,22 +291,8 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
     if (!mounted || !_draft.current) {
       return;
     }
-    if (_draft.complete && Navigator.canPop(context)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _draft.mutation == null
-                ? text('Relatos registrados.', 'Statements saved.')
-                : context.contributionFeedback(_draft.mutation!),
-          ),
-        ),
-      );
-      setState(() => _allowExit = true);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          Navigator.pop(context, true);
-        }
-      });
+    if (_draft.complete && _draft.hasConfirmed) {
+      setState(() => _showConfirmation = true);
       return;
     }
     if (_draft.error is ContributionException &&
@@ -320,6 +307,10 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
   }
 
   Future<void> _exit({bool leave = false}) async {
+    if (_showConfirmation) {
+      _finish();
+      return;
+    }
     if (!leave && _draft.step > 0 && !_draft.complete && !_draft.busy) {
       _move(_draft.step - 1);
       return;
@@ -365,6 +356,86 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
         Navigator.pop(context, _draft.hasConfirmed || _draft.complete);
       }
     });
+  }
+
+  void _finish() {
+    if (!mounted) return;
+    _draft.photos.stop = true;
+    setState(() => _allowExit = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && Navigator.canPop(context)) Navigator.pop(context, true);
+    });
+  }
+
+  Future<void> _finishWithoutPhotos() async {
+    final discard = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(text('Concluir sem fotografia?', 'Finish without photo?')),
+        content: Text(text(
+          'Sua avaliação permanece salva. Fotografias ainda não enviadas não ficam armazenadas e precisarão ser selecionadas novamente.',
+          'Your review stays saved. Unsent photos are not stored and must be selected again.',
+        )),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(text('Voltar', 'Back'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(text('Concluir sem fotografia', 'Finish without photo'))),
+        ],
+      ),
+    );
+    if (!mounted || discard != true) return;
+    _draft.photos.drafts.removeWhere((photo) => !photo.confirmed);
+    setState(() => _showConfirmation = true);
+  }
+
+  Widget _confirmation() {
+    final colors = Theme.of(context).colorScheme;
+    final received = _draft.photos.confirmed;
+    final pending = _draft.photos.remaining;
+    final confirmedStatements = _draft.statements.where((s) => s.state == 'committed').length;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Center(child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 680),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Icon(Icons.check_circle, size: 72, color: colors.primary),
+          const SizedBox(height: 12),
+          Semantics(header: true, child: Text(text('Obrigado por contribuir!', 'Thank you for contributing!'), textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineMedium)),
+          const SizedBox(height: 12),
+          Text(widget.independent
+              ? text('Seus relatos de acessibilidade foram registrados.', 'Your accessibility statements were saved.')
+              : _draft.mutation?.operation == 'updated'
+                  ? text('Sua avaliação foi atualizada.', 'Your review was updated.')
+                  : text('Sua avaliação foi registrada com sucesso.', 'Your review was saved successfully.'), textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text((widget.place['nome'] ?? '').toString(), style: Theme.of(context).textTheme.titleLarge),
+            if (!widget.independent) Text(text('Nota: ${_draft.stars} de 5', 'Rating: ${_draft.stars} of 5')),
+            Text(text('${_draft.surveyCount + confirmedStatements} respostas ou relatos informados', '${_draft.surveyCount + confirmedStatements} answers or statements provided')),
+            Text(text('$received fotografias recebidas', '$received photos received')),
+            if (received > 0) Text(text('Fotografias recebidas aguardam moderação.', 'Received photos await moderation.')),
+            if (pending > 0) Text(text('$pending fotografias ainda não confirmadas.', '$pending photos not yet confirmed.')),
+          ]))),
+          if (_draft.mutation != null) Card(child: Padding(padding: const EdgeInsets.all(16), child: Text(context.contributionFeedback(_draft.mutation!)))),
+          if (widget.independent) Card(child: Padding(padding: const EdgeInsets.all(16), child: Text(text('Relatos individuais não geram bônus de avaliação.', 'Individual statements do not earn review points.')))),
+          const SizedBox(height: 16),
+          if (!widget.independent) FilledButton.icon(
+            onPressed: () => showDialog<void>(context: context, builder: (context) => AlertDialog(
+              title: Text(text('Minha avaliação', 'My review')),
+              content: SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                Text((widget.place['nome'] ?? '').toString()),
+                Text(text('Nota: ${_draft.review?['estrelas'] ?? _draft.stars} de 5', 'Rating: ${_draft.review?['estrelas'] ?? _draft.stars} of 5')),
+                if ((_draft.review?['comentario'] ?? '').toString().isNotEmpty) Text(_draft.review!['comentario'].toString()),
+                for (final entry in _draft.answers.entries)
+                  Text('${AccessibilityCatalog.find(entry.key)?.name(context) ?? entry.key}: ${SurveyContract.answer(context, entry.value)}'),
+              ])),
+              actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(text('Fechar', 'Close')))],
+            )),
+            icon: const Icon(Icons.rate_review_outlined), label: Text(text('Ver minha avaliação', 'View my review')),
+          ),
+          OutlinedButton(onPressed: _finish, child: Text(text('Voltar ao estabelecimento', 'Back to place'))),
+        ]),
+      )),
+    );
   }
 
   Future<void> _managePhotos() async {
@@ -593,10 +664,13 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
       'Resultado não confirmado. Consulte a operação.',
       'Unconfirmed result. Check the operation.',
     ),
-    'failed' => text(
-      'Foto pendente. Corrija ou tente somente a pendência novamente.',
-      'Pending photo. Correct or retry only this item.',
-    ),
+    'failed' => draft.error == '413'
+        ? text('A fotografia excede o limite de tamanho.', 'The photo exceeds the size limit.')
+        : draft.error == '401'
+        ? text('Sessão expirada. Entre novamente.', 'Session expired. Sign in again.')
+        : draft.error == '422'
+        ? text('Arquivo inválido ou não suportado. Escolha outra foto.', 'Invalid or unsupported file. Choose another photo.')
+        : text('Envio não confirmado. Corrija ou tente novamente.', 'Upload not confirmed. Correct or try again.'),
     _ => text(
       'Seleção local. Ainda não enviada.',
       'Local selection. Not uploaded yet.',
@@ -681,6 +755,13 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
                   },
                 ),
                 Semantics(liveRegion: true, child: Text(_photoStatus(draft))),
+                if (draft.uncertain && _draft.review?['id'] is num)
+                  TextButton(
+                    onPressed: _draft.busy ? null : () async {
+                      await _draft.photos.reconcile(draft, 'review:${_draft.review!['id']}');
+                    },
+                    child: Text(text('Verificar envio', 'Check upload')),
+                  ),
                 if (!draft.confirmed && !draft.uncertain)
                   TextButton.icon(
                     onPressed: _draft.busy
@@ -725,7 +806,8 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _title('Revisar e publicar', 'Review and publish'),
-        if (!widget.independent) ...[
+        if (!widget.independent) Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Text(text('Sua avaliação', 'Your review'), style: Theme.of(context).textTheme.titleMedium),
           Text('${text('Nota geral', 'General rating')}: ${_draft.stars} / 5'),
           Text(
             _draft.comment.trim().isEmpty
@@ -733,7 +815,8 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
                 : _draft.comment,
           ),
           _edit(0, text('nota e comentário', 'rating and comment')),
-        ],
+        ]))),
+        Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Text(
           text(
             'Informações de acessibilidade (opcionais)',
@@ -778,7 +861,9 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
         if (_expanded)
           for (final resource in missing) Text(resource.name(context)),
         _edit(1, text('recursos', 'features')),
-        if (!widget.independent) ...[
+        ]))),
+        if (!widget.independent) Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Text(text('Fotografias', 'Photos'), style: Theme.of(context).textTheme.titleMedium),
           Text(
             text(
               'Fotos: ${_draft.existingPhotos.length} existentes; ${_draft.photos.drafts.length} seleções neste fluxo.',
@@ -788,9 +873,12 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
           for (final photo in _draft.existingPhotos)
             Text('${photo.description}: ${photoState(context, photo.state)}'),
           for (final draft in _draft.photos.drafts)
-            Text('${draft.description}: ${_photoStatus(draft)}'),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              if (draft.file != null) SizedBox(height: 120, child: SelectedImagePreview(file: draft.file!)),
+              Text('${draft.description}: ${_photoStatus(draft)}'),
+            ]),
           _edit(2, text('fotos', 'photos')),
-        ],
+        ]))),
         if (_draft.hasConfirmed || _draft.complete)
           Semantics(
             liveRegion: true,
@@ -815,6 +903,12 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
           ),
         if (_draft.mutation != null)
           Text(context.contributionFeedback(_draft.mutation!)),
+        if (!widget.independent && _draft.review != null && _draft.photos.remaining > 0) ...[
+          Text(text('Sua avaliação foi registrada, mas algumas fotografias não foram enviadas.', 'Your review was saved, but some photos were not uploaded.')),
+          OutlinedButton(key: const ValueKey('retry-photos'), onPressed: _draft.locked ? null : _publish, child: Text(text('Tentar novamente', 'Try again'))),
+          OutlinedButton(key: const ValueKey('correct-photo'), onPressed: _draft.busy ? null : () => _move(2), child: Text(text('Corrigir fotografia', 'Correct photo'))),
+          TextButton(key: const ValueKey('finish-without-photo'), onPressed: _draft.busy || _draft.reviewUncertain ? null : _finishWithoutPhotos, child: Text(text('Concluir sem fotografia', 'Finish without photo'))),
+        ],
         if (!_draft.complete)
           FilledButton(
             key: const ValueKey('survey-submit'),
@@ -892,7 +986,7 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
                 ),
         ),
       ),
-      body: _expired
+      body: _showConfirmation && !_expired ? _confirmation() : _expired
           ? Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
