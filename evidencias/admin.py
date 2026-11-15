@@ -10,13 +10,14 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 from rest_framework.exceptions import APIException
 
+from .admin_presentation import REPORT_SEARCH_FIELDS, report_place, report_queue, report_search
 from .models import ACTIONS, ContentReport, GUIDANCE, ModerationDecision
 from .moderation import allowed, decide
-from .services import reports_related, target_status
+from .services import target_status
 
 
 class DecisionForm(forms.Form):
-    action = forms.ChoiceField(label="Decisão", choices=ACTIONS)
+    action = forms.ChoiceField(label="Decisão", choices=ACTIONS, widget=forms.RadioSelect)
     reason = forms.CharField(
         label="Justificativa interna", min_length=10, max_length=1000, widget=forms.Textarea
     )
@@ -32,13 +33,15 @@ class DecisionForm(forms.Form):
 
 @admin.register(ContentReport)
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ["protocol", "target_kind", "reason", "state", "created_at", "review_link"]
+    change_list_template = "admin/moderation/queue.html"
+    list_display = ["protocol", "place_name", "target_kind", "reason", "display_state", "created_at", "review_link"]
     list_filter = ["state", "reason", "target_kind", ("created_at", admin.DateFieldListFilter)]
-    search_fields = ["protocol"]
+    search_fields = REPORT_SEARCH_FIELDS
+    list_display_links = None
     readonly_fields = [field.name for field in ContentReport._meta.fields if field.name != "reporter"]
     exclude = ["reporter"]
     actions = None
-    ordering = ["created_at", "protocol"]
+    ordering = ["-created_at", "protocol"]
 
     def has_module_permission(self, request):
         return allowed(request.user)
@@ -56,13 +59,39 @@ class ReportAdmin(admin.ModelAdmin):
         return False
 
     def get_queryset(self, request):
-        return super().get_queryset(request) if allowed(request.user) else ContentReport.objects.none()
+        return report_queue(super().get_queryset(request)) if allowed(request.user) else ContentReport.objects.none()
+
+    def get_search_results(self, request, queryset, search_term):
+        return report_search(queryset, search_term), False
+
+    def changelist_view(self, request, extra_context=None):
+        return super().changelist_view(request, {**(extra_context or {}), "moderation_section": "reports"})
+
+    @admin.display(description="Estabelecimento")
+    def place_name(self, obj):
+        place = report_place(obj)
+        return place.nome if place else "Não disponível"
+
+    @admin.display(description="Estado", ordering="state")
+    def display_state(self, obj):
+        return format_html('<span class="mod-badge {}">{}</span>', obj.state, obj.get_state_display())
 
     @admin.display(description="Análise")
     def review_link(self, obj):
         return format_html(
-            '<a href="{}">Analisar</a>', reverse("admin:evidence-report-decision", args=[obj.pk])
+            '<a class="mod-button" href="{}">{}</a>',
+            reverse("admin:evidence-report-decision", args=[obj.pk]),
+            "Ver histórico" if obj.state == "closed" else "Analisar",
         )
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        if request.method in {"GET", "HEAD"}:
+            if not allowed(request.user):
+                raise PermissionDenied()
+            obj = self.get_object(request, object_id)
+            if obj is not None:
+                return redirect(reverse("admin:evidence-report-decision", args=[obj.pk]))
+        return super().change_view(request, object_id, form_url, extra_context)
 
     def get_urls(self):
         return [
@@ -77,7 +106,7 @@ class ReportAdmin(admin.ModelAdmin):
     def decision_view(self, request, protocol):
         if not allowed(request.user):
             raise PermissionDenied()
-        report = get_object_or_404(reports_related(ContentReport.objects.all()), pk=protocol)
+        report = get_object_or_404(report_queue(ContentReport.objects.all()), pk=protocol)
         form = DecisionForm(
             request.POST or None,
             initial={
@@ -128,11 +157,18 @@ class ReportAdmin(admin.ModelAdmin):
             **self.admin_site.each_context(request),
             "title": "Analisar denúncia",
             "report": report,
+            "moderation_section": "reports",
+            "place": report_place(report),
+            "status_label": {
+                "current": "Versão atual", "changed": "Versão alterada", "unavailable": "Conteúdo indisponível",
+            }.get(status, status),
             "target_status": status,
             "current_content": (
                 json.dumps(current_content, ensure_ascii=False, indent=2) if current_content else None
             ),
             "snapshot": json.dumps(snapshot, ensure_ascii=False, indent=2),
+            "reported_data": snapshot,
+            "current_data": current_content,
             "form": form,
             "history": report.decisions.select_related("moderator").order_by("created_at"),
             "opts": self.model._meta,
@@ -142,7 +178,19 @@ class ReportAdmin(admin.ModelAdmin):
 
 @admin.register(ModerationDecision)
 class DecisionAdmin(admin.ModelAdmin):
-    list_display = ["report", "action", "previous_state", "next_state", "created_at"]
+    change_list_template = "admin/moderation/queue.html"
+    list_display = ["case_link", "action", "previous_state", "next_state", "created_at"]
+    list_display_links = None
+
+    @admin.display(description="Protocolo")
+    def case_link(self, obj):
+        return format_html(
+            '<a href="{}">{}</a>',
+            reverse("admin:evidence-report-decision", args=[obj.report_id]), obj.report_id,
+        )
+
+    def changelist_view(self, request, extra_context=None):
+        return super().changelist_view(request, {**(extra_context or {}), "moderation_section": "history"})
     readonly_fields = [field.name for field in ModerationDecision._meta.fields]
     actions = None
 

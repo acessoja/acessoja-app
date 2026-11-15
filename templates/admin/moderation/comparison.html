@@ -1,0 +1,9 @@
+{% if report.target_kind == 'review' %}
+  {% if data.estrelas %}<p><strong>Nota:</strong> {{ data.estrelas }} de 5</p>{% endif %}
+  <p class="mod-text"><strong>Comentário:</strong> {{ data.comentario|default:"Sem comentário." }}</p>
+  <details><summary>Dados da avaliação</summary><pre>{{ raw }}</pre></details>
+{% elif report.target_kind == 'photo' and data.description %}
+  <p class="mod-text">{{ data.description }}</p>
+{% else %}
+  <pre>{{ raw }}</pre>
+{% endif %}

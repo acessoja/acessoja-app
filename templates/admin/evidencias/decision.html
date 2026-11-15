@@ -1,24 +1,45 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin/moderation/base.html" %}
+{% block title %}Análise de denúncia{% endblock %}
 {% block content %}
-<h1>Analisar denúncia</h1>
-<p>Protocolo: {{ report.protocol }}. Estado: {{ report.get_state_display }}.</p>
-<p>Alvo: {{ report.get_target_kind_display }}. Revisão denunciada: {{ report.target_revision }}.</p>
-<p>Situação atual: {{ target_status }}. Uma revisão alterada exige encerramento por alvo alterado; não invalide a versão nova.</p>
-<p>Motivo: {{ report.get_reason_display }}. Contexto: {{ report.description }}</p>
-<h2>Conteúdo denunciado, acesso restrito</h2>
-<pre style="white-space:pre-wrap;overflow-wrap:anywhere">{{ snapshot }}</pre>
-{% if current_content %}<h2>Conteúdo atual, acesso restrito</h2>
-<pre style="white-space:pre-wrap;overflow-wrap:anywhere">{{ current_content }}</pre>{% else %}
-<p>Conteúdo atual indisponível para este alvo.</p>{% endif %}
-{% if report.state != 'closed' %}
-<form method="post">{% csrf_token %}{{ form.as_p }}
-<p>Não inclua identidade ou dados do denunciante na orientação ao autor.</p>
-<button type="submit">Registrar decisão</button></form>
-{% else %}<p>Processo encerrado. As decisões não podem ser editadas neste fluxo.</p>{% endif %}
-<h2>Histórico de decisões</h2>
-{% for item in history %}
-<article><h3>{{ item.get_action_display }} — {{ item.created_at }}</h3>
-<p>{{ item.previous_state }} → {{ item.next_state }}. {{ item.reason }}</p>
-{% if item.author_message %}<p>Orientação ao autor: {{ item.author_message }}</p>{% endif %}</article>
-{% empty %}<p>Nenhuma decisão registrada.</p>{% endfor %}
+<a class="mod-back" href="{% url 'admin:evidencias_contentreport_changelist' %}">← Voltar para denúncias</a>
+<h1>Análise de denúncia</h1>
+<p class="mod-lead">Compare a versão denunciada com o conteúdo atual antes de registrar uma decisão.</p>
+<div class="mod-columns">
+  <section class="mod-card"><h2>1. Contexto do caso</h2>
+    <h3>{{ place.nome|default:"Estabelecimento não disponível" }}</h3>
+    <dl class="mod-facts">
+      <dt>Protocolo</dt><dd>{{ report.protocol }}</dd>
+      <dt>Envio</dt><dd>{{ report.created_at|date:"d/m/Y H:i" }}</dd>
+      <dt>Tipo</dt><dd>{{ report.get_target_kind_display }}</dd>
+      <dt>Estado</dt><dd><span class="mod-badge {{ report.state }}">{{ report.get_state_display }}</span></dd>
+      <dt>Motivo</dt><dd>{{ report.get_reason_display }}</dd>
+      <dt>Relato</dt><dd class="mod-text">{{ report.description|default:"Sem relato adicional." }}</dd>
+    </dl>
+  </section>
+  <section class="mod-card"><h2>2. Comparação das informações</h2>
+    <p><strong>Situação do conteúdo:</strong> {{ status_label }}</p>
+    <div class="mod-case mod-reported"><h3>Conteúdo denunciado</h3>{% include "admin/moderation/comparison.html" with data=reported_data raw=snapshot %}</div>
+    <div class="mod-case mod-current"><h3>Conteúdo atual</h3>
+    {% if current_content %}{% include "admin/moderation/comparison.html" with data=current_data raw=current_content %}{% else %}<p>Não disponível para este caso.</p>{% endif %}
+    </div>
+    {% if target_status == 'changed' %}<p class="mod-notice">O conteúdo foi alterado. Não invalide a nova versão a partir deste protocolo.</p>{% endif %}
+  </section>
+  <section class="mod-card"><h2>3. Decisão da moderação</h2>
+    {% if report.state != 'closed' %}
+    <form method="post" class="mod-decision">{% csrf_token %}{{ form.as_p }}
+      <p>Não inclua dados do denunciante na orientação ao autor.</p>
+      <button class="mod-button" type="submit">Registrar decisão</button>
+    </form>
+    {% else %}<p>Este protocolo foi concluído. As decisões ficam disponíveis no histórico.</p>{% endif %}
+  </section>
+</div>
+<details class="mod-card mod-secondary" {% if report.state == 'closed' %}open{% endif %}>
+  <summary>Histórico de decisões</summary>
+  {% for item in history %}
+  <article class="mod-entry"><h3>{{ item.get_action_display }}</h3>
+    <p>{{ item.created_at|date:"d/m/Y H:i" }}</p><p class="mod-text">{{ item.reason }}</p>
+    {% if item.author_message %}<p>Orientação ao autor: {{ item.author_message }}</p>{% endif %}
+  </article>
+  {% empty %}<p>Nenhuma decisão registrada.</p>{% endfor %}
+</details>
 {% endblock %}

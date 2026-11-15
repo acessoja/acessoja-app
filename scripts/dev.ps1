@@ -15,6 +15,7 @@
 
     Opcoes:
       .\scripts\dev.ps1 -BackendOnly     # so inicia o Django
+      .\scripts\dev.ps1 -BackendOnly -OpenModeration # inicia Django e abre a Central
       .\scripts\dev.ps1 -FrontendOnly    # so inicia o Flutter
       .\scripts\dev.ps1 -Device <id>     # forca um device id especifico do Flutter
 #>
@@ -22,7 +23,8 @@
 param(
     [switch]$BackendOnly,
     [switch]$FrontendOnly,
-    [string]$Device
+    [string]$Device,
+    [switch]$OpenModeration
 )
 
 $ErrorActionPreference = 'Stop'
@@ -36,9 +38,12 @@ function Write-Err($msg) { Write-Host "[dev.ps1] ERRO: $msg" -ForegroundColor Re
 # Backend
 # ---------------------------------------------------------------------------
 if (-not $FrontendOnly) {
-    $venvActivate = Join-Path $RepoRoot 'venv\Scripts\Activate.ps1'
+    $venvActivate = Join-Path $RepoRoot '.venv\Scripts\Activate.ps1'
     if (-not (Test-Path $venvActivate)) {
-        Write-Err "Virtualenv nao encontrado em .\venv. Rode '.\scripts\setup-dev.ps1' primeiro."
+        $venvActivate = Join-Path $RepoRoot 'venv\Scripts\Activate.ps1'
+    }
+    if (-not (Test-Path $venvActivate)) {
+        Write-Err "Virtualenv nao encontrado em .venv ou venv. Rode '.\scripts\setup-dev.ps1' primeiro."
     } else {
         $envFile = Join-Path $RepoRoot '.env'
         if (-not (Test-Path $envFile)) {
@@ -46,7 +51,23 @@ if (-not $FrontendOnly) {
         } else {
             Write-Info "Iniciando backend Django em nova janela (0.0.0.0:8000)..."
             $backendCmd = "cd '$RepoRoot'; . '$venvActivate'; python manage.py runserver 0.0.0.0:8000"
+            Write-Info 'Central de Moderacao: http://127.0.0.1:8000/admin/'
             Start-Process powershell -ArgumentList '-NoExit', '-Command', $backendCmd
+            if ($OpenModeration) {
+                $adminUrl = 'http://127.0.0.1:8000/admin/'
+                for ($attempt = 0; $attempt -lt 20; $attempt++) {
+                    Start-Sleep -Milliseconds 500
+                    try {
+                        $health = Invoke-WebRequest -Uri 'http://127.0.0.1:8000/health/live/' -UseBasicParsing -TimeoutSec 1
+                        if ($health.StatusCode -eq 200) {
+                            Start-Process $adminUrl
+                            break
+                        }
+                    } catch {
+                        if ($attempt -eq 19) { Write-Err 'Django ainda indisponivel. Confira o terminal do backend.' }
+                    }
+                }
+            }
         }
     }
 }

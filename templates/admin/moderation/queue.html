@@ -1,0 +1,31 @@
+{% extends "admin/moderation/base.html" %}
+{% load admin_list i18n %}
+{% block title %}{% if moderation_section == 'reports' %}Denúncias{% elif moderation_section == 'photos' %}Fotografias{% else %}Histórico{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if moderation_section == 'reports' %}Denúncias{% elif moderation_section == 'photos' %}Fotografias{% elif moderation_section == 'history' %}Histórico de denúncias{% else %}Histórico de fotos{% endif %}</h1>
+{% language 'pt-br' %}
+<section class="mod-card mod-filters" aria-label="Busca e filtros">
+  {% if cl.search_fields %}
+  <form method="get" class="mod-search">
+    <label for="mod-search">Buscar por estabelecimento ou identificador</label>
+    <div><input id="mod-search" type="search" name="q" value="{{ cl.query }}"><button class="mod-button" type="submit">Buscar</button></div>
+    {% for key, value in cl.params.items %}{% if key != 'q' and key != 'p' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+  </form>
+  {% endif %}
+  {% if cl.has_filters %}
+  <div class="mod-filter-list">{% for spec in cl.filter_specs %}{% admin_list_filter cl spec %}{% endfor %}</div>
+  {% endif %}
+  {% if cl.has_active_filters or cl.query %}<a href="{{ request.path }}">Limpar filtros e busca</a>{% endif %}
+</section>
+<section class="mod-card" aria-label="Resultados">
+  <div class="mod-section-head"><h2>Resultados</h2><span>{{ cl.result_count }} registro{{ cl.result_count|pluralize }}</span></div>
+  {% if cl.result_count %}
+  <form method="post" class="mod-scroll" tabindex="0" aria-label="Tabela de resultados">
+    {% csrf_token %}
+    {% result_list cl %}
+    {% pagination cl %}
+  </form>
+  {% else %}<p>Nenhum registro encontrado.</p>{% endif %}
+</section>
+{% endlanguage %}
+{% endblock %}
