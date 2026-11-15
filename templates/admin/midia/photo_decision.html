@@ -1,9 +1,37 @@
-{% extends 'admin/base_site.html' %}{% block content %}
-<h1>Analisar fotografia da avaliação</h1>
-<p>Revisão: {{ revision.id }}. Estado: {{ revision.get_state_display }}. Envio não comprova visita ou data da fotografia.</p>
-<p>{{ revision.description }}</p>
-<img src="{{ image_url }}" alt="{{ revision.description }}" style="max-width:100%;max-height:65vh;object-fit:contain">
-{% if not photo.deleted_at %}<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Confirmar decisão</button></form>{% endif %}
-<h2>Histórico de análise da imagem</h2>
-{% for decision in history %}<p>{{ decision.get_action_display }} — {{ decision.created_at }} — {{ decision.reason }}</p>{% empty %}<p>Sem decisões. Aprovação inicial não exige denúncia.</p>{% endfor %}
+{% extends "admin/moderation/base.html" %}
+{% block title %}Moderação de fotografia{% endblock %}
+{% block content %}
+<a class="mod-back" href="{% url 'admin:midia_reviewphoto_changelist' %}">← Voltar para fotografias</a>
+<h1>Moderação de fotografia</h1>
+<p class="mod-lead">Confira a imagem enviada, a descrição e sua relação com o estabelecimento.</p>
+<div class="mod-columns mod-photo">
+  <section class="mod-card"><h2>Fotografia da avaliação</h2>
+    {% if image_url %}
+    <a href="{{ image_url }}"><img class="mod-image" src="{{ image_url }}" alt="{{ revision.description|default:'Abra a fotografia da avaliação' }}"></a>
+    <p><a href="{{ image_url }}">Abrir imagem em tamanho original</a></p>
+    {% else %}<p>A imagem não está disponível para análise.</p>{% endif %}
+  </section>
+  <section class="mod-card"><h2>Contexto da fotografia</h2>
+    <h3>{{ photo.review.local.nome }}</h3>
+    <dl class="mod-facts">
+      <dt>Envio</dt><dd>{{ photo.created_at|date:"d/m/Y H:i" }}</dd>
+      <dt>Estado</dt>
+      <dd>{% if photo.deleted_at %}Retirada{% elif revision %}<span class="mod-badge {{ revision.state }}">{{ revision.get_state_display }}</span>{% else %}Sem versão disponível{% endif %}</dd>
+      {% if revision %}<dt>Descrição</dt><dd class="mod-text">{{ revision.description|default:"Sem descrição." }}</dd>{% endif %}
+    </dl>
+    <p>O envio não comprova visita ou data da fotografia.</p>
+    {% if form %}
+    <h2>Decisão</h2>
+    <form method="post" class="mod-decision">{% csrf_token %}{{ form.as_p }}<button class="mod-button" type="submit">Registrar decisão</button></form>
+    {% endif %}
+  </section>
+</div>
+<details class="mod-card mod-secondary">
+  <summary>Histórico da moderação</summary>
+  {% for decision in history %}
+  <article class="mod-entry"><h3>{{ decision.get_action_display }}</h3>
+    <p>{{ decision.created_at|date:"d/m/Y H:i" }}</p><p class="mod-text">{{ decision.reason }}</p>
+  </article>
+  {% empty %}<p>Nenhuma decisão registrada. A análise inicial não depende de denúncia.</p>{% endfor %}
+</details>
 {% endblock %}

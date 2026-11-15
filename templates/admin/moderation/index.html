@@ -1,0 +1,43 @@
+{% extends "admin/moderation/base.html" %}
+{% block content %}
+<h1>{% if can_moderate %}Central de Moderação{% else %}Administração do AcessoJá{% endif %}</h1>
+{% if can_moderate %}
+<p class="mod-lead">Acompanhe denúncias, fotos e solicitações de revisão.</p>
+<div class="mod-stats" aria-label="Denúncias por estado">
+  {% for card in state_cards %}
+  <a class="mod-card mod-stat {{ card.state }}" href="{{ card.url }}"><span>{{ card.label }}</span><strong>{{ card.total }}</strong></a>
+  {% endfor %}
+</div>
+<section class="mod-card" aria-labelledby="fila">
+  <div class="mod-section-head"><h2 id="fila">Fila de moderação</h2><a class="mod-button" href="{% url 'admin:evidencias_contentreport_changelist' %}">Todas as denúncias</a></div>
+  <div class="mod-scroll" tabindex="0" role="region" aria-label="Denúncias recentes">
+  <table>
+    <thead><tr><th scope="col">Estabelecimento</th><th scope="col">Tipo</th><th scope="col">Motivo</th><th scope="col">Estado</th><th scope="col">Envio</th><th scope="col">Ação</th></tr></thead>
+    <tbody>
+      {% for row in recent_reports %}
+      <tr>
+        <td>{{ row.place.nome|default:"Não disponível" }}<small class="mod-id">{{ row.report.protocol }}</small></td>
+        <td>{{ row.report.get_target_kind_display }}</td>
+        <td>{{ row.report.get_reason_display }}</td>
+        <td><span class="mod-badge {{ row.report.state }}">{{ row.report.get_state_display }}</span></td>
+        <td>{{ row.report.created_at|date:"d/m/Y H:i" }}</td>
+        <td><a class="mod-button" href="{% url 'admin:evidence-report-decision' row.report.pk %}">{% if row.report.state == 'closed' %}Ver histórico{% else %}Analisar{% endif %}</a></td>
+      </tr>
+      {% empty %}<tr><td colspan="6">Nenhuma denúncia registrada.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endif %}
+{% if not can_moderate or request.user.is_superuser %}
+<section class="mod-card mod-secondary">
+  <h2>Outras áreas administrativas</h2>
+  {% for app in app_list %}
+  {% if app.app_label != "evidencias" and app.app_label != "midia" %}
+  <h3>{{ app.name }}</h3>
+  <ul>{% for model in app.models %}{% if model.admin_url %}<li><a href="{{ model.admin_url }}">{{ model.name }}</a></li>{% endif %}{% endfor %}</ul>
+  {% endif %}
+  {% empty %}<p>Não há outras áreas disponíveis para sua conta.</p>{% endfor %}
+</section>
+{% endif %}
+{% endblock %}

@@ -15,6 +15,7 @@ import '../widgets/favorites_scope.dart';
 import '../widgets/local_card.dart';
 import 'place_detail_screen.dart';
 import 'review_editor_screen.dart';
+import 'personal_lists_screen.dart';
 
 class SavedPlacesScreen extends StatefulWidget {
   const SavedPlacesScreen({
@@ -181,6 +182,18 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
         title: Text(context.l10n.savedPlaces),
         toolbarHeight: 56 * MediaQuery.textScalerOf(context).scale(1),
         actions: [
+          IconButton(
+            tooltip: 'Minhas listas',
+            onPressed: controller.authenticated
+                ? () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PersonalListsScreen(),
+                    ),
+                  )
+                : null,
+            icon: const Icon(Icons.collections_bookmark_outlined),
+          ),
           IconButton(
             focusNode: _refreshFocus,
             tooltip: context.l10n.favoritesRefresh,

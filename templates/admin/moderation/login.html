@@ -1,0 +1,26 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrar na moderação · AcessoJá</title>
+<link rel="stylesheet" href="{% static 'evidencias/moderation.css' %}">
+</head>
+<body class="mod-login">
+<main class="mod-card" id="conteudo">
+  <p class="mod-login-brand">AcessoJá</p>
+  <h1>Central de Moderação</h1>
+  <p>Entre com sua conta administrativa para continuar.</p>
+  <form method="post" action="{{ app_path }}">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form.visible_fields %}
+    <div class="mod-field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>
+    {% endfor %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="mod-button" type="submit">Entrar</button>
+  </form>
+</main>
+</body>
+</html>

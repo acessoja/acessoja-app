@@ -149,7 +149,13 @@ class _PersistentPlacePanelState extends State<PersistentPlacePanel> {
           final maximum = bounds.maxHeight <= 0
               ? .90
               : (1 - 80 / bounds.maxHeight).clamp(.45, .90).toDouble();
-          final desired = compact ? .38 : maximum;
+          // On short viewports the fixed 38% sheet cuts across the primary
+          // actions. Keep those actions visible while reserving room for the map.
+          final compactCap = (maximum * .72).clamp(.38, maximum).toDouble();
+          final compactExtent = bounds.maxHeight <= 0
+              ? .38
+              : (270 / bounds.maxHeight).clamp(.38, compactCap).toDouble();
+          final desired = compact ? compactExtent : maximum;
           final changed =
               _wide != wide ||
               _identity != c.place!.id ||
