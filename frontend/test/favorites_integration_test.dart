@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,9 +27,113 @@ void main() {
   setUp(() {
     original = AppHttp.client;
     AppHttp.token = 'integration-a';
-    AppHttp.client = MockClient((request) async => fixtureResponse(request));
     service = FakeFavorites();
     controller = FavoritesController(service: service);
+    final memberships = <int, Set<int>>{};
+    AppHttp.client = MockClient((request) async {
+      if (request.method == 'GET' &&
+          request.url.path == '/api/favoritos/listas/') {
+        for (final local in service.records.keys) {
+          memberships.putIfAbsent(local, () => {7});
+        }
+        final rows = <Map<String, dynamic>>[
+          {
+            'id': 7,
+            'nome': 'Favoritos',
+            'descricao': '',
+            'icone': 'favorite',
+            'cor': 'red',
+            'sistema': true,
+            'visivel_mapa': true,
+            'ordem': 0,
+            'quantidade': memberships.values
+                .where((value) => value.contains(7))
+                .length,
+            'itens': [
+              for (final entry in memberships.entries.where(
+                (entry) => entry.value.contains(7),
+              ))
+                {
+                  ...favoriteJson(
+                    id: service.records[entry.key]?.id ?? 91,
+                    local: entry.key,
+                  ),
+                  'local_detalhes':
+                      service.records[entry.key]?.place ??
+                      favoritePlace(local: entry.key),
+                },
+            ],
+          },
+          {
+            'id': 8,
+            'nome': 'Restaurantes',
+            'descricao': '',
+            'icone': 'utensils',
+            'cor': 'orange',
+            'sistema': false,
+            'visivel_mapa': true,
+            'ordem': 1,
+            'quantidade': memberships.values
+                .where((value) => value.contains(8))
+                .length,
+            'itens': [
+              for (final entry in memberships.entries.where(
+                (entry) => entry.value.contains(8),
+              ))
+                {
+                  ...favoriteJson(id: 92, local: entry.key),
+                  'local_detalhes': favoritePlace(local: entry.key),
+                },
+            ],
+          },
+        ];
+        return http.Response.bytes(utf8.encode(jsonEncode(rows)), 200);
+      }
+      if (request.method == 'GET' &&
+          RegExp(r'^/api/favoritos/estados/\d+/$').hasMatch(request.url.path)) {
+        return http.Response('', 404);
+      }
+      if (request.method == 'POST' &&
+          request.url.path == '/api/favoritos/listas/aplicar/') {
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        final local = body['local'] as int;
+        final ids = (body['listas'] as List).cast<int>().toSet();
+        final drafts = (body['novas'] as List).cast<Map<String, dynamic>>();
+        ids.addAll(List.generate(drafts.length, (index) => 9 + index));
+        memberships[local] = ids;
+        if (ids.contains(7)) {
+          service.records.putIfAbsent(
+            local,
+            () => favorite(id: 900 + local, local: local),
+          );
+        } else {
+          service.records.remove(local);
+        }
+        final names = <int, String>{7: 'Favoritos', 8: 'Restaurantes'};
+        for (var index = 0; index < drafts.length; index++) {
+          names[9 + index] = drafts[index]['nome'] as String;
+        }
+        return http.Response.bytes(
+          utf8.encode(
+            jsonEncode({
+              'local': local,
+              'listas': [
+                for (final id in ids)
+                  {'id': id, 'nome': names[id] ?? 'Lista', 'sistema': id == 7},
+              ],
+              'favorito': ids.contains(7),
+              'favorito_id': ids.contains(7)
+                  ? service.records[local]?.id
+                  : null,
+              'status': body['status'],
+              'nota': body['nota'],
+            }),
+          ),
+          200,
+        );
+      }
+      return fixtureResponse(request);
+    });
   });
   tearDown(() {
     controller.dispose();
@@ -50,55 +153,62 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets(
-    'last removal updates total and shared icon; undo before DELETE is real',
-    (tester) async {
-      service.records[1] = favorite();
-      final deletion = Completer<void>();
-      service.onRemove = (_) async {
-        await deletion.future;
-        service.records.remove(1);
-      };
-      await tester.pumpWidget(host(const SavedPlacesScreen(userName: 'a')));
-      await tester.pumpAndSettle();
-      await tapVisible(
-        tester,
-        find.widgetWithText(OutlinedButton, 'Remover dos favoritos'),
-      );
-      expect(find.text('Total de favoritos: 0'), findsOneWidget);
-      expect(find.text('Você ainda não salvou locais'), findsOneWidget);
-      await tester.tap(find.text('Desfazer'));
-      await tester.pumpAndSettle();
-      expect(service.adds, 0);
-      expect(controller.saved(1), isTrue);
-      deletion.complete();
-      await tester.pumpAndSettle();
-      expect(service.adds, 1);
-      expect(service.records[1]!.id, isNot(91));
-      expect(find.text('Total de favoritos: 1'), findsOneWidget);
-      expect(find.text('Biblioteca Municipal'), findsOneWidget);
-      expect(
-        find.text('Biblioteca Municipal salvo novamente.'),
-        findsOneWidget,
-      );
-    },
-  );
-  testWidgets(
-    'failed removal restores row; refresh error after confirmed removal does not',
-    (tester) async {
-      service.records[1] = favorite();
-      service.onRemove = (_) async => throw const FormatException('network');
-      await tester.pumpWidget(host(const SavedPlacesScreen(userName: 'a')));
-      await tester.pumpAndSettle();
-      await tapVisible(
-        tester,
-        find.widgetWithText(OutlinedButton, 'Remover dos favoritos'),
-      );
-      expect(find.text('Biblioteca Municipal'), findsOneWidget);
-      expect(controller.saved(1), isTrue);
-      expect(find.textContaining('Estado anterior mantido'), findsOneWidget);
-    },
-  );
+  testWidgets('complete list removal can be undone exactly once', (
+    tester,
+  ) async {
+    service.records[1] = favorite();
+    await tester.pumpWidget(host(const SavedPlacesScreen(userName: 'a')));
+    await tester.pumpAndSettle();
+    await tapVisible(tester, find.byType(FavoriteButton));
+    await tapVisible(tester, find.text('Remover de Favoritos'));
+    expect(controller.saved(1), isTrue, reason: 'checkbox changes are staged');
+    await tester.tap(find.text('Concluir'));
+    await tester.pumpAndSettle();
+    expect(find.text('Local removido das listas salvas.'), findsOneWidget);
+    await tester.tap(find.text('Desfazer'));
+    await tester.pumpAndSettle();
+    expect(controller.saved(1), isTrue);
+    expect(find.text('Listas salvas restauradas.'), findsOneWidget);
+    expect(find.text('Local removido das listas salvas.'), findsNothing);
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle();
+    expect(find.text('Listas salvas restauradas.'), findsNothing);
+  });
+  testWidgets('cancel closes the staged save form without changing favorites', (
+    tester,
+  ) async {
+    service.records[1] = favorite();
+    await tester.pumpWidget(host(const SavedPlacesScreen(userName: 'a')));
+    await tester.pumpAndSettle();
+    await tapVisible(tester, find.byType(FavoriteButton));
+    await tapVisible(tester, find.text('Remover de Favoritos'));
+    expect(controller.saved(1), isTrue);
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(controller.saved(1), isTrue);
+    expect(find.text('Local removido das listas salvas.'), findsNothing);
+  });
+  testWidgets('transfer from Favorites to Restaurants waits for Concluir', (
+    tester,
+  ) async {
+    service.records[1] = favorite();
+    await tester.pumpWidget(
+      host(Scaffold(body: FavoriteButton(place: favoritePlace()))),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(FavoriteButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('save-list-7')));
+    await tester.tap(find.byKey(const ValueKey('save-list-8')));
+    await tester.pumpAndSettle();
+    expect(find.text('Local salvo em Restaurantes.'), findsNothing);
+    expect(controller.saved(1), isTrue);
+    await tester.tap(find.text('Concluir'));
+    await tester.pumpAndSettle();
+    expect(controller.saved(1), isFalse);
+    expect(find.text('Local salvo em Restaurantes.'), findsOneWidget);
+    expect(find.text('Local removido das listas salvas.'), findsNothing);
+  });
   testWidgets(
     'shared LocalCard, map and details icons reflect the same confirmed state',
     (tester) async {
@@ -122,10 +232,14 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(service.lookups, 1);
-      expect(find.text('Salvar local'), findsNWidgets(2));
-      await tapVisible(tester, find.text('Salvar local').last);
-      expect(service.adds, 1);
-      expect(find.text('Remover dos favoritos'), findsNWidgets(2));
+      expect(find.byType(FavoriteButton), findsNWidgets(2));
+      await tapVisible(tester, find.byType(FavoriteButton).last);
+      await tapVisible(tester, find.text('Adicionar a Favoritos'));
+      expect(service.adds, 0);
+      await tester.tap(find.text('Concluir'));
+      await tester.pumpAndSettle();
+      expect(controller.saved(1), isTrue);
+      expect(find.byType(FavoriteButton), findsNWidgets(2));
       await tester.pumpWidget(
         host(
           MapPlaceDetailsScreen(
@@ -136,17 +250,17 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.byTooltip('Remover dos favoritos: Biblioteca Municipal'), findsOneWidget);
+      expect(find.byType(FavoriteButton), findsOneWidget);
       await tester.pumpWidget(
         host(PlaceDetailScreen(place: favoritePlace(), userName: 'a')),
       );
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
-        find.text('Remover dos favoritos'),
+        find.byType(FavoriteButton).last,
         200,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.text('Remover dos favoritos'), findsOneWidget);
+      expect(find.byType(FavoriteButton), findsOneWidget);
     },
   );
   testWidgets(
@@ -155,7 +269,10 @@ void main() {
       service.records[1] = favorite();
       await tester.pumpWidget(host(const SavedPlacesScreen(userName: 'a')));
       await tester.pumpAndSettle();
-      await tapVisible(tester, find.text('Remover dos favoritos'));
+      await tapVisible(tester, find.byType(FavoriteButton));
+      await tapVisible(tester, find.text('Remover de Favoritos'));
+      await tester.tap(find.text('Concluir'));
+      await tester.pumpAndSettle();
       expect(find.text('Desfazer'), findsOneWidget);
       AppHttp.token = 'b';
       await tester.pumpAndSettle();
@@ -208,8 +325,8 @@ void main() {
       await tester.pumpWidget(host(const SavedPlacesScreen(userName: 'a')));
       await tester.pumpAndSettle();
       expect(lookups, 0);
-      expect(find.text('Sua avaliação: 2,0 de 5'), findsOneWidget);
-      await tapVisible(tester, find.text('Editar minha avaliação'));
+      expect(find.textContaining('2,0 de 5'), findsOneWidget);
+      await tapVisible(tester, find.textContaining('Editar minha'));
       expect(lookups, 1);
       expect(posts, 0);
       expect(find.text('My private comment'), findsOneWidget);
@@ -231,7 +348,7 @@ void main() {
     expect(find.text('Tentar novamente'), findsOneWidget);
   });
   testWidgets(
-    'Tab focus and Space activate a single save without parent action',
+    'Tab focus and Space open list selection without triggering parent action',
     (tester) async {
       var parent = 0;
       await tester.pumpWidget(
@@ -249,14 +366,197 @@ void main() {
       await tester.pumpAndSettle();
       await tester.sendKeyEvent(LogicalKeyboardKey.space);
       await tester.pumpAndSettle();
-      expect(service.adds, 1);
+      expect(service.adds, 0);
       expect(parent, 0);
+      expect(find.text('Escolha uma ou mais listas'), findsOneWidget);
     },
   );
+  testWidgets(
+    'main save button creates a colored icon list and saves the selected place',
+    (tester) async {
+      Map<String, Object?> listJson({
+        required int id,
+        required String name,
+        required String icon,
+        required String color,
+        bool system = false,
+        List<Map<String, dynamic>> items = const [],
+      }) => {
+        'id': id,
+        'nome': name,
+        'descricao': '',
+        'icone': icon,
+        'cor': color,
+        'sistema': system,
+        'visivel_mapa': true,
+        'ordem': id,
+        'quantidade': items.length,
+        'itens': items,
+      };
+      Map<String, Object?>? createdPayload;
+      Map<String, dynamic>? appliedPayload;
+      final personalListPaths = <String>[];
+      var applyCalls = 0;
+      AppHttp.client = MockClient((request) async {
+        personalListPaths.add(request.url.path);
+        if (request.method == 'GET' &&
+            request.url.path == '/api/favoritos/listas/') {
+          return http.Response(
+            jsonEncode([
+              listJson(
+                id: 7,
+                name: 'Favoritos',
+                icon: 'favorite',
+                color: 'red',
+                system: true,
+              ),
+            ]),
+            200,
+          );
+        }
+        if (request.method == 'GET' &&
+            request.url.path == '/api/favoritos/estados/1/') {
+          return http.Response('', 404);
+        }
+        if (request.method == 'POST' &&
+            request.url.path == '/api/favoritos/listas/aplicar/') {
+          applyCalls++;
+          appliedPayload = jsonDecode(request.body) as Map<String, dynamic>;
+          createdPayload =
+              (appliedPayload!['novas'] as List).single as Map<String, Object?>;
+          return http.Response(
+            jsonEncode({
+              'local': 1,
+              'listas': [
+                {'id': 8, 'nome': createdPayload!['nome'], 'sistema': false},
+              ],
+              'favorito': false,
+              'favorito_id': null,
+              'status': appliedPayload!['status'],
+              'nota': appliedPayload!['nota'],
+            }),
+            200,
+          );
+        }
+        return fixtureResponse(request);
+      });
+      await tester.pumpWidget(
+        host(Scaffold(body: FavoriteButton(place: favoritePlace()))),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FavoriteButton));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Criar lista e salvar este local'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField), 'Acessivel');
+      final accessibility = find.byKey(
+        const ValueKey('personal-list-category-accessibility'),
+      );
+      await tester.ensureVisible(accessibility);
+      await tester.pumpAndSettle();
+      await tester.tap(accessibility);
+      await tester.pumpAndSettle();
+      final iconOption = find.byKey(
+        const ValueKey('personal-list-icon-wheelchair'),
+      );
+      await tester.ensureVisible(iconOption);
+      await tester.tap(iconOption);
+      final purple = find.byKey(const ValueKey('personal-list-color-purple'));
+      await tester.ensureVisible(purple);
+      await tester.tap(purple);
+      await tester.tap(find.widgetWithText(FilledButton, 'Salvar'));
+      await tester.pumpAndSettle();
+
+      expect(applyCalls, 0);
+      expect(
+        personalListPaths,
+        isNot(contains('/api/favoritos/listas/aplicar/')),
+      );
+      expect(
+        tester
+            .widget<CheckboxListTile>(
+              find.byKey(const ValueKey('save-list--1')),
+            )
+            .value,
+        isTrue,
+      );
+      await tester.tap(find.text('Concluir'));
+      await tester.pumpAndSettle();
+      expect(applyCalls, 1);
+      expect(createdPayload, {
+        'nome': 'Acessivel',
+        'descricao': '',
+        'icone': 'wheelchair',
+        'cor': 'purple',
+      });
+      expect(appliedPayload!['listas'], isEmpty);
+      expect(appliedPayload!['novas'], [createdPayload]);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets('Salvar em confirma edição de lista existente somente ao concluir', (
+    tester,
+  ) async {
+    final initial = {
+      'nome': 'Passeios',
+      'descricao': '',
+      'icone': 'map-pin',
+      'cor': 'blue',
+    };
+    Map<String, dynamic>? submission;
+    AppHttp.client = MockClient((request) async {
+      if (request.method == 'GET' &&
+          request.url.path == '/api/favoritos/listas/') {
+        return http.Response(
+          jsonEncode([
+            {'id': 8, ...initial, 'sistema': false, 'quantidade': 0},
+          ]),
+          200,
+        );
+      }
+      if (request.method == 'GET' &&
+          request.url.path == '/api/favoritos/estados/1/') {
+        return http.Response('', 404);
+      }
+      if (request.method == 'POST' &&
+          request.url.path == '/api/favoritos/listas/aplicar/') {
+        submission = jsonDecode(request.body) as Map<String, dynamic>;
+        return http.Response(
+          jsonEncode({
+            'local': 1,
+            'listas': [],
+            'favorito': false,
+            'favorito_id': null,
+            'status': 'unknown',
+            'nota': '',
+          }),
+          200,
+        );
+      }
+      return fixtureResponse(request);
+    });
+    await tester.pumpWidget(
+      host(Scaffold(body: FavoriteButton(place: favoritePlace()))),
+    );
+    await tester.pumpAndSettle();
+    await tapVisible(tester, find.byType(FavoriteButton));
+    await tapVisible(tester, find.byTooltip('Ações da lista Passeios'));
+    await tapVisible(tester, find.text('Editar lista: nome, ícone e cor'));
+    await tester.enterText(find.byType(TextFormField), 'Preferidos');
+    await tapVisible(tester, find.widgetWithText(FilledButton, 'Salvar'));
+    expect(submission, isNull);
+    await tapVisible(tester, find.text('Concluir'));
+    expect(submission?['edicoes'], [
+      {'id': 8, 'esperado': initial, 'dados': {...initial, 'nome': 'Preferidos'}},
+    ]);
+    expect(submission?['listas'], isEmpty);
+    expect(find.text('Listas atualizadas com sucesso.'), findsOneWidget);
+  });
+
   final external = <String, dynamic>{
     'source': 'openstreetmap',
     'external_id': 'osm:way:123',
-    'nome': 'Café OSM',
+    'nome': 'CafÃƒÂ© OSM',
     'endereco': 'Rua A',
     'registration_token': 'signed-fixture',
     'latitude': 0,
@@ -269,13 +569,15 @@ void main() {
         var imports = 0;
         service.onAdd = (_) async => throw const FormatException('offline');
         AppHttp.client = MockClient((request) async {
-          expect(request.url.path, '/api/locais/externos/cadastrar/');
+          if (request.url.path != '/api/locais/externos/cadastrar/') {
+            return fixtureResponse(request);
+          }
           expect(request.method, 'POST');
           imports++;
           expect(request.headers['Authorization'], 'Token integration-a');
           expect(jsonDecode(request.body), {
             'registration_token': 'signed-fixture',
-            'nome': 'Café OSM',
+            'nome': 'CafÃƒÂ© OSM',
             'endereco': 'Rua A',
           });
           return http.Response.bytes(
@@ -307,15 +609,10 @@ void main() {
         await tester.pumpAndSettle();
         if (status < 300) {
           expect(imports, 1);
-          expect(service.adds, 1);
+          expect(service.adds, 0);
           expect(controller.saved(45), isFalse);
           expect(controller.resolvedExternal('osm:way:123'), 45);
-          service.onAdd = null;
-          await tester.tap(find.text('Salvar local'));
-          await tester.pumpAndSettle();
-          expect(imports, 1);
-          expect(service.adds, 2);
-          expect(controller.saved(45), isTrue);
+          expect(find.text('Escolha uma ou mais listas'), findsOneWidget);
         } else {
           expect(service.adds, 0);
           expect(
@@ -330,9 +627,12 @@ void main() {
     'external cancel never imports or saves; linked external uses internal ID',
     (tester) async {
       var calls = 0;
-      AppHttp.client = MockClient((_) async {
-        calls++;
-        throw StateError('unexpected import');
+      AppHttp.client = MockClient((request) async {
+        if (request.url.path == '/api/locais/externos/cadastrar/') {
+          calls++;
+          throw StateError('unexpected import');
+        }
+        return fixtureResponse(request);
       });
       await tester.pumpWidget(
         host(Scaffold(body: FavoriteButton(place: external))),
@@ -352,10 +652,11 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Salvar local'));
+      await tester.tap(find.byType(FavoriteButton));
       await tester.pumpAndSettle();
       expect(calls, 0);
-      expect(service.records.keys, contains(55));
+      expect(service.adds, 0);
+      expect(find.text('Escolha uma ou mais listas'), findsOneWidget);
     },
   );
   testWidgets(

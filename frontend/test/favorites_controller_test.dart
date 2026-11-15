@@ -26,7 +26,9 @@ class FakeFavorites extends FavoritesService {
       throw const FavoriteException(404);
     }
     return records.putIfAbsent(
-        localId, () => favorite(id: nextId++, local: localId));
+      localId,
+      () => favorite(id: nextId++, local: localId),
+    );
   }
 
   @override
@@ -40,15 +42,17 @@ class FakeFavorites extends FavoritesService {
   }
 
   @override
-  Future<Map<int, FavoriteState>> states(Iterable<int> localIds,
-      {required int session}) async {
+  Future<Map<int, FavoriteState>> states(
+    Iterable<int> localIds, {
+    required int session,
+  }) async {
     lookups++;
     if (onStates != null) {
       return onStates!(localIds);
     }
     return {
       for (final id in localIds)
-        id: FavoriteState(records[id]?.id, !deletedLocals.contains(id))
+        id: FavoriteState(records[id]?.id, !deletedLocals.contains(id)),
     };
   }
 
@@ -56,16 +60,21 @@ class FakeFavorites extends FavoritesService {
   Future<Favorite> retrieve(int id, {required int session}) async =>
       records.values.firstWhere((f) => f.id == id);
   @override
-  Future<FavoritePage> page(
-      {required int session, String query = '', Uri? next}) async {
+  Future<FavoritePage> page({
+    required int session,
+    String query = '',
+    Uri? next,
+  }) async {
     pages++;
     if (onPage != null) {
       return onPage!(query, next);
     }
     final rows = records.values
-        .where((f) => '${f.place['nome']} ${f.place['endereco']}'
-            .toLowerCase()
-            .contains(query))
+        .where(
+          (f) => '${f.place['nome']} ${f.place['endereco']}'
+              .toLowerCase()
+              .contains(query),
+        )
         .toList();
     return FavoritePage(rows, rows.length, records.length, null);
   }
@@ -85,32 +94,36 @@ void main() {
     controller.dispose();
     AppHttp.clearSession();
   });
-  test('unknown remains unknown after failed batched lookup; explicit retry',
-      () async {
-    service.onStates = (_) async => throw const FavoriteException(503);
-    controller.ensureKnown(1);
-    controller.ensureKnown(2);
-    controller.ensureKnown(1);
-    expect(controller.saved(1), isNull);
-    await tick();
-    expect(service.lookups, 1);
-    expect(controller.saved(1), isNull);
-    expect(controller.lookupFailed(1), isTrue);
-    service.onStates = null;
-    controller.ensureKnown(1, force: true);
-    await tick();
-    expect(controller.saved(1), isFalse);
-  });
-  test('visible icons use bounded batch chunks, including unloaded favorites',
-      () async {
-    service.records[145] = favorite(local: 145);
-    for (var i = 1; i <= 220; i++) {
-      controller.ensureKnown(i);
-    }
-    await tick();
-    expect(service.lookups, 3);
-    expect(controller.saved(145), isTrue);
-  });
+  test(
+    'unknown remains unknown after failed batched lookup; explicit retry',
+    () async {
+      service.onStates = (_) async => throw const FavoriteException(503);
+      controller.ensureKnown(1);
+      controller.ensureKnown(2);
+      controller.ensureKnown(1);
+      expect(controller.saved(1), isNull);
+      await tick();
+      expect(service.lookups, 1);
+      expect(controller.saved(1), isNull);
+      expect(controller.lookupFailed(1), isTrue);
+      service.onStates = null;
+      controller.ensureKnown(1, force: true);
+      await tick();
+      expect(controller.saved(1), isFalse);
+    },
+  );
+  test(
+    'visible icons use bounded batch chunks, including unloaded favorites',
+    () async {
+      service.records[145] = favorite(local: 145);
+      for (var i = 1; i <= 220; i++) {
+        controller.ensureKnown(i);
+      }
+      await tick();
+      expect(service.lookups, 3);
+      expect(controller.saved(145), isTrue);
+    },
+  );
   test('new visible icons do not re-request an in-flight batch', () async {
     final first = Completer<Map<int, FavoriteState>>();
     service.onStates = (ids) => ids.contains(1)
@@ -126,24 +139,26 @@ void main() {
     expect(controller.saved(1), isTrue);
     expect(controller.saved(2), isFalse);
   });
-  test('optimistic addition, duplicate click coalesces and real ID is used',
-      () async {
-    final delayed = Completer<Favorite>();
-    service.onAdd = (_) => delayed.future;
-    final first = controller.setSaved(1, true),
-        second = controller.setSaved(1, true);
-    expect(identical(first, second), isTrue);
-    expect(controller.saved(1), isTrue);
-    expect(controller.busy(1), isTrue);
-    await tick();
-    expect(service.adds, 1);
-    delayed.complete(favorite(id: 802));
-    expect(await first, FavoriteOutcome.confirmed);
-    expect(controller.busy(1), isFalse);
-    expect(await controller.setSaved(1, false), FavoriteOutcome.confirmed);
-    expect(service.deletedIds, [802]);
-    expect(controller.saved(1), isFalse);
-  });
+  test(
+    'optimistic addition, duplicate click coalesces and real ID is used',
+    () async {
+      final delayed = Completer<Favorite>();
+      service.onAdd = (_) => delayed.future;
+      final first = controller.setSaved(1, true),
+          second = controller.setSaved(1, true);
+      expect(identical(first, second), isTrue);
+      expect(controller.saved(1), isTrue);
+      expect(controller.busy(1), isTrue);
+      await tick();
+      expect(service.adds, 1);
+      delayed.complete(favorite(id: 802));
+      expect(await first, FavoriteOutcome.confirmed);
+      expect(controller.busy(1), isFalse);
+      expect(await controller.setSaved(1, false), FavoriteOutcome.confirmed);
+      expect(service.deletedIds, [802]);
+      expect(controller.saved(1), isFalse);
+    },
+  );
   test('failed DELETE restores confirmed row and total', () async {
     service.records[1] = favorite();
     await controller.load();
@@ -155,32 +170,34 @@ void main() {
     expect(controller.total, 1);
     expect(controller.rows(''), hasLength(1));
   });
-  test('undo before DELETE completes is serialized; recreated ID used later',
-      () async {
-    service.records[1] = favorite();
-    await controller.load();
-    final deletion = Completer<void>();
-    service.onRemove = (id) async {
-      await deletion.future;
-      service.records.remove(1);
-    };
-    final ticket = controller.removeWithUndo(1);
-    await tick();
-    final undo = controller.undo(ticket);
-    expect(controller.saved(1), isTrue);
-    expect(service.adds, 0);
-    expect(controller.total, 1);
-    deletion.complete();
-    expect(await ticket.removal, FavoriteOutcome.confirmed);
-    expect(await undo, FavoriteOutcome.confirmed);
-    expect(service.adds, 1);
-    final newId = service.records[1]!.id;
-    expect(newId, isNot(91));
-    service.onRemove = null;
-    await controller.setSaved(1, false);
-    expect(service.deletedIds, [91, newId]);
-    expect(controller.total, 0);
-  });
+  test(
+    'undo before DELETE completes is serialized; recreated ID used later',
+    () async {
+      service.records[1] = favorite();
+      await controller.load();
+      final deletion = Completer<void>();
+      service.onRemove = (id) async {
+        await deletion.future;
+        service.records.remove(1);
+      };
+      final ticket = controller.removeWithUndo(1);
+      await tick();
+      final undo = controller.undo(ticket);
+      expect(controller.saved(1), isTrue);
+      expect(service.adds, 0);
+      expect(controller.total, 1);
+      deletion.complete();
+      expect(await ticket.removal, FavoriteOutcome.confirmed);
+      expect(await undo, FavoriteOutcome.confirmed);
+      expect(service.adds, 1);
+      final newId = service.records[1]!.id;
+      expect(newId, isNot(91));
+      service.onRemove = null;
+      await controller.setSaved(1, false);
+      expect(service.deletedIds, [91, newId]);
+      expect(controller.total, 0);
+    },
+  );
   test('failed undo stays removed; no duplicate undo POST', () async {
     service.records[1] = favorite();
     await controller.load();
@@ -213,24 +230,26 @@ void main() {
     expect(controller.saved(2), isTrue);
     expect(controller.total, 1);
   });
-  test('logout invalidates queued undo and late writes; no call under B',
-      () async {
-    service.records[1] = favorite();
-    await controller.load();
-    final deletion = Completer<void>();
-    service.onRemove = (_) => deletion.future;
-    final ticket = controller.removeWithUndo(1);
-    await tick();
-    final undo = controller.undo(ticket);
-    AppHttp.token = 'b';
-    expect(controller.rows(''), isEmpty);
-    expect(controller.saved(1), isNull);
-    deletion.complete();
-    expect(await undo, FavoriteOutcome.sessionChanged);
-    expect(service.adds, 0);
-    expect(controller.total, 0);
-    expect(await controller.undo(ticket), FavoriteOutcome.sessionChanged);
-  });
+  test(
+    'logout invalidates queued undo and late writes; no call under B',
+    () async {
+      service.records[1] = favorite();
+      await controller.load();
+      final deletion = Completer<void>();
+      service.onRemove = (_) => deletion.future;
+      final ticket = controller.removeWithUndo(1);
+      await tick();
+      final undo = controller.undo(ticket);
+      AppHttp.token = 'b';
+      expect(controller.rows(''), isEmpty);
+      expect(controller.saved(1), isNull);
+      deletion.complete();
+      expect(await undo, FavoriteOutcome.sessionChanged);
+      expect(service.adds, 0);
+      expect(controller.total, 0);
+      expect(await controller.undo(ticket), FavoriteOutcome.sessionChanged);
+    },
+  );
   test('late list of A cannot populate B', () async {
     final response = Completer<FavoritePage>();
     service.onPage = (_, __) => response.future;
@@ -251,37 +270,42 @@ void main() {
     await tick();
     expect(controller.saved(1), isNull);
   });
-  test('timeout after successful POST is reconciled, not reported failed',
-      () async {
-    service.onAdd = (id) async {
-      service.records[id] = favorite(id: 701);
-      throw TimeoutException('lost reply');
-    };
-    expect(await controller.setSaved(1, true), FavoriteOutcome.confirmed);
-    expect(controller.saved(1), isTrue);
-    expect(controller.uncertain(1), isFalse);
-    await controller.setSaved(1, false);
-    expect(service.deletedIds, [701]);
-  });
   test(
-      'timeout with unreachable reconciliation retains last known state and uncertainty',
-      () async {
-    service.records[1] = favorite();
-    await controller.load();
-    service.onRemove = (_) async => throw TimeoutException('offline');
-    service.onStates = (_) async => throw const FavoriteException(503);
-    expect(await controller.setSaved(1, false), FavoriteOutcome.uncertain);
-    expect(controller.saved(1), isTrue);
-    expect(controller.uncertain(1), isTrue);
-  });
-  test('timeout before write confirmed not applied restores last state',
-      () async {
-    service.records[1] = favorite();
-    await controller.load();
-    service.onRemove = (_) async => throw TimeoutException('offline');
-    expect(await controller.setSaved(1, false), FavoriteOutcome.failed);
-    expect(controller.saved(1), isTrue);
-  });
+    'timeout after successful POST is reconciled, not reported failed',
+    () async {
+      service.onAdd = (id) async {
+        service.records[id] = favorite(id: 701);
+        throw TimeoutException('lost reply');
+      };
+      expect(await controller.setSaved(1, true), FavoriteOutcome.confirmed);
+      expect(controller.saved(1), isTrue);
+      expect(controller.uncertain(1), isFalse);
+      await controller.setSaved(1, false);
+      expect(service.deletedIds, [701]);
+    },
+  );
+  test(
+    'timeout with unreachable reconciliation retains last known state and uncertainty',
+    () async {
+      service.records[1] = favorite();
+      await controller.load();
+      service.onRemove = (_) async => throw TimeoutException('offline');
+      service.onStates = (_) async => throw const FavoriteException(503);
+      expect(await controller.setSaved(1, false), FavoriteOutcome.uncertain);
+      expect(controller.saved(1), isTrue);
+      expect(controller.uncertain(1), isTrue);
+    },
+  );
+  test(
+    'timeout before write confirmed not applied restores last state',
+    () async {
+      service.records[1] = favorite();
+      await controller.load();
+      service.onRemove = (_) async => throw TimeoutException('offline');
+      expect(await controller.setSaved(1, false), FavoriteOutcome.failed);
+      expect(controller.saved(1), isTrue);
+    },
+  );
   test('confirmed write survives failing refresh', () async {
     service.records[1] = favorite();
     await controller.load();
@@ -306,28 +330,30 @@ void main() {
     expect(controller.rows(''), isEmpty);
     expect(controller.total, 0);
   });
-  test('next-page failure preserves first page, count and safe retry',
-      () async {
-    final next = Uri.parse('http://localhost/api/favoritos/?page=2');
-    var failure = true;
-    service.onPage = (_, link) async {
-      if (link == null) {
-        return FavoritePage([favorite()], 2, 5, next);
-      }
-      if (failure) {
-        throw const FavoriteException(503);
-      }
-      return FavoritePage([favorite(local: 2, id: 92)], 2, 5, null);
-    };
-    await controller.load();
-    await controller.load(more: true);
-    expect(controller.rows(''), hasLength(1));
-    expect(controller.total, 5);
-    expect(controller.listing('').failedMore, isTrue);
-    failure = false;
-    await controller.load(more: true);
-    expect(controller.rows(''), hasLength(2));
-  });
+  test(
+    'next-page failure preserves first page, count and safe retry',
+    () async {
+      final next = Uri.parse('http://localhost/api/favoritos/?page=2');
+      var failure = true;
+      service.onPage = (_, link) async {
+        if (link == null) {
+          return FavoritePage([favorite()], 2, 5, next);
+        }
+        if (failure) {
+          throw const FavoriteException(503);
+        }
+        return FavoritePage([favorite(local: 2, id: 92)], 2, 5, null);
+      };
+      await controller.load();
+      await controller.load(more: true);
+      expect(controller.rows(''), hasLength(1));
+      expect(controller.total, 5);
+      expect(controller.listing('').failedMore, isTrue);
+      failure = false;
+      await controller.load(more: true);
+      expect(controller.rows(''), hasLength(2));
+    },
+  );
   test('pagination cycle fails without clearing known rows', () async {
     final a = Uri.parse('http://localhost/api/favoritos/?page=2');
     service.onPage = (_, __) async => FavoritePage([favorite()], 2, 2, a);
@@ -336,29 +362,58 @@ void main() {
     expect(controller.listing('').error, isNotNull);
     expect(controller.rows(''), hasLength(1));
   });
-  test('out of order searches remain separate; spaces and accents normalize',
-      () async {
-    final old = Completer<FavoritePage>();
-    service.onPage = (q, _) async =>
-        q == 'cafe' ? old.future : const FavoritePage([], 0, 8, null);
-    final first = controller.load(query: '  CAFÉ  ');
-    await controller.load(query: 'unknown');
-    old.complete(FavoritePage([favorite()], 1, 8, null));
-    await first;
-    expect(controller.activeQuery, 'unknown');
-    expect(controller.rows('unknown'), isEmpty);
-    expect(controller.rows('cafe'), hasLength(1));
-    expect(controller.total, 8);
-  });
   test(
-      'review mutation refreshes own summary/public DTO without a per-card review lookup',
-      () async {
-    service.records[1] = favorite();
-    await controller.load();
-    service.records[1] = favorite(place: favoritePlace(average: 5));
-    reviewChanges.value++;
-    await tick();
-    expect(controller.rows('').single.place['public_rating']['average'], 5);
-    expect(service.lookups, 0);
-  });
+    'out of order searches remain separate; spaces and accents normalize',
+    () async {
+      final old = Completer<FavoritePage>();
+      service.onPage = (q, _) async =>
+          q == 'cafe' ? old.future : const FavoritePage([], 0, 8, null);
+      final first = controller.load(query: '  CAFÉ  ');
+      await controller.load(query: 'unknown');
+      old.complete(FavoritePage([favorite()], 1, 8, null));
+      await first;
+      expect(controller.activeQuery, 'unknown');
+      expect(controller.rows('unknown'), isEmpty);
+      expect(controller.rows('cafe'), hasLength(1));
+      expect(controller.total, 8);
+    },
+  );
+  test(
+    'legacy favorite mutation waits for a personal-list transaction',
+    () async {
+      service.records[1] = favorite();
+      final entered = Completer<void>();
+      final release = Completer<void>();
+      final batch = controller.runPersonalSave<String>(
+        1,
+        operation: () async {
+          entered.complete();
+          await release.future;
+          return 'confirmed';
+        },
+        onConfirmed: (_) {},
+      );
+      await entered.future;
+      final legacy = controller.setSaved(1, false);
+      await tick();
+      expect(service.deletes, 0, reason: 'legacy DELETE waits behind batch');
+      release.complete();
+      expect(await batch, 'confirmed');
+      expect(await legacy, FavoriteOutcome.confirmed);
+      expect(service.deletes, 1);
+      expect(controller.saved(1), isFalse);
+    },
+  );
+  test(
+    'review mutation refreshes own summary/public DTO without a per-card review lookup',
+    () async {
+      service.records[1] = favorite();
+      await controller.load();
+      service.records[1] = favorite(place: favoritePlace(average: 5));
+      reviewChanges.value++;
+      await tick();
+      expect(controller.rows('').single.place['public_rating']['average'], 5);
+      expect(service.lookups, 0);
+    },
+  );
 }

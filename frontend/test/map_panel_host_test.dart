@@ -11,6 +11,38 @@ import 'map_cards_04_06_test.dart' as fixture;
 import 'map_panel_cards_52_58_test.dart' as panel;
 
 void main() {
+  testWidgets('compact map panel keeps primary actions inside a narrow viewport', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({'onboarding_completed': true});
+    final preferences = AppPreferences(await SharedPreferences.getInstance());
+    AppHttp.clearSession();
+    panel.apiFixture();
+    await tester.pumpWidget(app.MyApp(preferences: preferences));
+    await tester.pumpAndSettle();
+    tester.state<NavigatorState>(find.byType(Navigator).first).push(
+      MaterialPageRoute<void>(builder: (_) => MainScreen(
+        userName: 'synthetic', trackLocation: false, tileProvider: fixture.OfflineMapTiles(),
+      )),
+    );
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 5));
+    await panel.chooseFromResults(tester, 1);
+    final boundary = find.descendant(
+      of: find.byType(PersistentPlacePanel),
+      matching: find.byType(AccessibilityBottomBoundary),
+    );
+    final route = find.byKey(const ValueKey('preview-route'));
+    expect(route, findsOneWidget);
+    expect(tester.getRect(route).bottom, lessThanOrEqualTo(tester.getRect(boundary).bottom));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+    AppHttp.client.close();
+    AppHttp.clearSession();
+  });
+
   for (final size in [
     const Size(390, 844),
     const Size(1280, 900),

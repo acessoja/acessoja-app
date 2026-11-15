@@ -7,6 +7,10 @@ import '../l10n/map_strings.dart';
 import '../models/map_place.dart';
 import '../models/map_marker_layout.dart';
 import '../models/place_category.dart';
+import '../models/personal_list.dart';
+import '../services/app_http.dart';
+import '../services/personal_lists_service.dart';
+import 'personal_list_presentation.dart';
 
 class AdaptivePlaceLayer extends StatefulWidget {
   final List<MapPlace> places;
@@ -32,8 +36,50 @@ class AdaptivePlaceLayer extends StatefulWidget {
 
 class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
   final _focusNodes = <String, FocusNode>{};
+  int _listLoadGeneration = 0;
+  int _layerLoadGeneration = 0;
+  @override
+  void initState() {
+    super.initState();
+    personalListsRevision.addListener(_personalChanged);
+    _loadPersonalLists();
+  }
+
+  void _personalChanged() {
+    if (mounted) {
+      _listLoadGeneration++;
+      _layerLoadGeneration++;
+      _personal = {};
+      _personalKey = '';
+      if (!AppHttp.authenticated) {
+        _lists = const [];
+        _personalListId = null;
+      }
+      setState(() {});
+      _loadPersonalLists();
+    }
+  }
+
+  Future<void> _loadPersonalLists() async {
+    final session = AppHttp.sessionRevision.value;
+    final generation = ++_listLoadGeneration;
+    if (!AppHttp.authenticated) {
+      if (mounted) setState(() => _lists = const []);
+      return;
+    }
+    try {
+      final lists = await _personalService.lists(session: session);
+      if (mounted &&
+          generation == _listLoadGeneration &&
+          session == AppHttp.sessionRevision.value) {
+        setState(() => _lists = lists);
+      }
+    } catch (_) {}
+  }
+
   @override
   void dispose() {
+    personalListsRevision.removeListener(_personalChanged);
     for (final node in _focusNodes.values) {
       node.dispose();
     }
@@ -54,6 +100,67 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
 
   final _measurements =
       <(String, TextStyle, TextScaler, TextDirection), Size>{};
+  final _personalService = const PersonalListsService();
+  Map<int, PersonalMarker> _personal = {};
+  List<PersonalList> _lists = const [];
+  int? _personalListId;
+  bool _personalVisible = true, _onlyPersonal = false;
+  String _personalKey = '';
+
+  Future<void> _loadPersonalLayer(List<MapPlace> places) async {
+    if (!_personalVisible) {
+      if (_personal.isNotEmpty) {
+        _layerLoadGeneration++;
+        setState(() => _personal = {});
+      }
+      return;
+    }
+    if (!AppHttp.authenticated) {
+      if (_personal.isNotEmpty || _personalKey.isNotEmpty) {
+        _personal = {};
+        _personalKey = '';
+        if (mounted) setState(() {});
+      }
+      return;
+    }
+    final ids = places
+        .where((place) => !place.isExternal && place.internalId != null)
+        .map((place) => place.internalId!)
+        .toSet()
+        .toList();
+    final session = AppHttp.sessionRevision.value;
+    final key =
+        '$session:${personalListsRevision.value}:$_personalListId:${ids.join(',')}';
+    if (key == _personalKey) return;
+    _personalKey = key;
+    final generation = ++_layerLoadGeneration;
+    try {
+      final value = <int, PersonalMarker>{};
+      for (var offset = 0; offset < ids.length; offset += 100) {
+        final batch = ids.skip(offset).take(100);
+        value.addAll(
+          await _personalService.markerLayer(
+            batch,
+            session: session,
+            listId: _personalListId,
+          ),
+        );
+      }
+      if (mounted &&
+          generation == _layerLoadGeneration &&
+          key == _personalKey &&
+          session == AppHttp.sessionRevision.value) {
+        setState(() => _personal = value);
+      }
+    } catch (_) {
+      if (mounted &&
+          generation == _layerLoadGeneration &&
+          key == _personalKey) {
+        setState(() => _personal = {});
+      }
+    }
+  }
+
   Size _measure(String text, TextStyle style, BuildContext context) {
     final scaler = MediaQuery.textScalerOf(context);
     final direction = Directionality.of(context);
@@ -81,6 +188,12 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
     // The inherited camera updates this layer immediately during map gestures.
     final camera = MapCamera.of(context);
     final colors = AppColors.of(context);
+    _loadPersonalLayer(widget.places);
+    final places = _onlyPersonal
+        ? widget.places
+              .where((place) => _personal.containsKey(place.internalId))
+              .toList()
+        : widget.places;
     final style = TextStyle(
       fontSize: 12,
       fontWeight: FontWeight.w700,
@@ -91,7 +204,7 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
         final size = constraints.biggest;
         final insets = widget.reservedInsets;
         final layouts = layoutPlaceMarkers(
-          places: widget.places,
+          places: places,
           center: camera.center,
           zoom: camera.zoom,
           size: size,
@@ -135,6 +248,7 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
         );
         return Stack(
           children: [
+            Positioned(top: 12, left: 12, child: _personalControls(context)),
             for (final item in layouts.where((item) => !item.occluded))
               Positioned(
                 key: ValueKey('symbol-${item.stableKey}'),
@@ -183,9 +297,102 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
     );
   }
 
+  Widget _personalControls(BuildContext context) => Card(
+    margin: EdgeInsets.zero,
+    child: PopupMenuButton<String>(
+      tooltip: 'Camada Meus lugares',
+      icon: Icon(_personalVisible ? Icons.layers : Icons.layers_clear),
+      onSelected: (value) {
+        if (value == 'visibility') {
+          setState(() {
+            _personalVisible = !_personalVisible;
+            _personalKey = '';
+            if (!_personalVisible) {
+              _layerLoadGeneration++;
+              _personal = {};
+            }
+          });
+        }
+        if (value == 'only') setState(() => _onlyPersonal = !_onlyPersonal);
+        if (value.startsWith('list:')) {
+          setState(() {
+            _personalListId = int.tryParse(value.substring(5));
+            _personalKey = '';
+          });
+        }
+        if (value == 'all') {
+          setState(() {
+            _personalListId = null;
+            _personalKey = '';
+          });
+        }
+        if (value == 'legend') _showLegend(context);
+      },
+      itemBuilder: (_) => [
+        CheckedPopupMenuItem(
+          value: 'visibility',
+          checked: _personalVisible,
+          child: const Text('Mostrar meus lugares'),
+        ),
+        CheckedPopupMenuItem(
+          value: 'only',
+          checked: _onlyPersonal,
+          child: const Text('Somente meus lugares'),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem(value: 'all', child: Text('Todas as listas')),
+        ..._lists.map(
+          (list) =>
+              PopupMenuItem(value: 'list:${list.id}', child: Text(list.name)),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem(value: 'legend', child: Text('Legenda da camada')),
+      ],
+    ),
+  );
+
+  void _showLegend(BuildContext context) => showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Legenda — Meus lugares'),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: Icon(Icons.flag),
+            title: Text('Quero visitar'),
+            contentPadding: EdgeInsets.zero,
+          ),
+          ListTile(
+            leading: Icon(Icons.check_circle),
+            title: Text('Já visitei'),
+            contentPadding: EdgeInsets.zero,
+          ),
+          Text('A presença no mapa é pessoal e não comprova acessibilidade.'),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Fechar'),
+        ),
+      ],
+    ),
+  );
+
   Widget _button(BuildContext context, PlaceMarkerLayout item) {
     final colors = AppColors.of(context);
     final selected = item.containsSelection(widget.selectedId);
+    final personal = item.isCluster ? null : _personal[item.place.internalId];
+    final personalIcon = personal == null
+        ? null
+        : personalListIcon(personal.icon ?? 'place');
+    final visitLabel = personal?.status == PersonalVisitStatus.want
+        ? 'Quero visitar'
+        : personal?.status == PersonalVisitStatus.visited
+        ? 'Já visitei'
+        : null;
     final label = item.isCluster
         ? context.mapText(
                 '${item.members.length} locais. Abrir agrupamento.',
@@ -195,6 +402,8 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
                   ? ' ${context.mapText('Inclui o local selecionado', 'Includes selected place')}: ${context.placeName(item.place)}.'
                   : '')
         : '${context.placeName(item.place)}. ${context.placeCategory(item.place)}. ${item.place.sourceLabel}. '
+              '${personal?.lists.isNotEmpty == true ? 'Listas: ${personal!.lists.join(', ')}. ' : ''}'
+              '${visitLabel == null ? '' : '$visitLabel. '}'
               '${context.mapText('Abrir local', 'Open place')}';
     return MergeSemantics(
       child: Semantics(
@@ -246,9 +455,30 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
                         fontWeight: FontWeight.w800,
                       ),
                     )
-                  : Icon(
-                      categoryVisual(item.place.category).icon,
-                      size: selected ? 28 : 24,
+                  : Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Icon(
+                          personalIcon ??
+                              categoryVisual(item.place.category).icon,
+                          color: personal?.color == null
+                              ? null
+                              : personalListColor(context, personal!.color!),
+                          size: selected ? 28 : 24,
+                        ),
+                        if (visitLabel != null)
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Icon(
+                              personal!.status == PersonalVisitStatus.visited
+                                  ? Icons.check_circle
+                                  : Icons.flag,
+                              size: 13,
+                              color: colors.text,
+                            ),
+                          ),
+                      ],
                     ),
             ),
           ),

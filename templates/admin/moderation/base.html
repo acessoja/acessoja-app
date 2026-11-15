@@ -1,0 +1,40 @@
+{% load static %}<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Central de Moderação{% endblock %} · AcessoJá</title>
+<link rel="stylesheet" href="{% static 'evidencias/moderation.css' %}">
+</head>
+<body>
+<a class="mod-skip" href="#conteudo">Pular para o conteúdo</a>
+<div class="mod-shell">
+  <aside class="mod-sidebar">
+    <a class="mod-brand" href="{% url 'admin:index' %}">AcessoJá <small>Acessibilidade e inclusão</small></a>
+    <nav aria-label="Moderação e conteúdo">
+      <a href="{% url 'admin:index' %}" {% if not moderation_section %}aria-current="page"{% endif %}>Visão geral</a>
+      {% if moderation_section or can_moderate or request.user.is_superuser %}
+      <a href="{% url 'admin:evidencias_contentreport_changelist' %}" {% if moderation_section == 'reports' %}aria-current="page"{% endif %}>Denúncias</a>
+      <a href="{% url 'admin:midia_reviewphoto_changelist' %}" {% if moderation_section == 'photos' %}aria-current="page"{% endif %}>Fotografias</a>
+      <a href="{% url 'admin:evidencias_moderationdecision_changelist' %}" {% if moderation_section == 'history' %}aria-current="page"{% endif %}>Histórico de denúncias</a>
+      <a href="{% url 'admin:midia_imagedecision_changelist' %}" {% if moderation_section == 'image_history' %}aria-current="page"{% endif %}>Histórico de fotos</a>
+      {% endif %}
+    </nav>
+  </aside>
+  <div class="mod-body">
+    <header class="mod-top">
+      <span>Moderação e conteúdo</span>
+      <div class="mod-account">
+        <a href="{% url 'admin:password_change' %}">Alterar senha</a>
+        <span>{{ request.user.get_username }}</span>
+        <form method="post" action="{% url 'admin:logout' %}">{% csrf_token %}<button type="submit">Sair</button></form>
+      </div>
+    </header>
+    <main id="conteudo" class="mod-main">
+      {% if messages %}{% for message in messages %}<p class="mod-notice" role="status">{{ message }}</p>{% endfor %}{% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+</body>
+</html>

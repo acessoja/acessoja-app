@@ -1,14 +1,13 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import '../l10n/strings.dart';
 import '../models/map_place.dart';
-import '../services/app_http.dart';
 import '../services/favorites_controller.dart';
-import 'accessibility_host.dart';
 import 'external_place_registration.dart';
 import 'favorites_scope.dart';
+import 'personal_save_dialog.dart';
+
+export 'favorite_removal.dart' show showFavoriteRemoval;
 
 String favoriteFeedback(BuildContext context, FavoriteOutcome outcome) =>
     switch (outcome) {
@@ -17,70 +16,6 @@ String favoriteFeedback(BuildContext context, FavoriteOutcome outcome) =>
       FavoriteOutcome.uncertain => context.l10n.favoriteUncertain,
       FavoriteOutcome.sessionChanged => context.l10n.favoriteSignIn,
     };
-
-void showFavoriteRemoval(
-  BuildContext context,
-  FavoritesController controller,
-  int local,
-  String name,
-) {
-  final ticket = controller.removeWithUndo(local);
-  final messenger = ScaffoldMessenger.of(context);
-  final l10n = context.l10n;
-  final bar = messenger.showSnackBar(
-    SnackBar(
-      duration: const Duration(seconds: 6),
-      content: AccessibilityBottomBoundary(
-        child: FutureBuilder<FavoriteOutcome>(
-          future: ticket.removal,
-          builder: (_, result) => Text(
-            result.hasData
-                ? result.data == FavoriteOutcome.confirmed
-                      ? l10n.favoriteRemoved(name)
-                      : result.data == FavoriteOutcome.uncertain
-                      ? l10n.favoriteUncertain
-                      : l10n.favoriteFailed
-                : l10n.favoriteRemoving(name),
-          ),
-        ),
-      ),
-      action: SnackBarAction(
-        label: l10n.favoriteUndo,
-        onPressed: () async {
-          final result = await controller.undo(ticket);
-          if (messenger.mounted &&
-              ticket.session == AppHttp.sessionRevision.value) {
-            messenger.showSnackBar(
-              SnackBar(
-                content: AccessibilityBottomBoundary(
-                  child: Text(
-                    result == FavoriteOutcome.confirmed
-                        ? l10n.favoriteRestored(name)
-                        : result == FavoriteOutcome.uncertain
-                        ? l10n.favoriteUncertain
-                        : l10n.favoriteUndoFailed,
-                  ),
-                ),
-              ),
-            );
-          }
-        },
-      ),
-    ),
-  );
-  void sessionChanged() {
-    if (messenger.mounted && ticket.session != AppHttp.sessionRevision.value) {
-      messenger.clearSnackBars();
-    }
-  }
-
-  AppHttp.sessionRevision.addListener(sessionChanged);
-  unawaited(
-    bar.closed.then(
-      (_) => AppHttp.sessionRevision.removeListener(sessionChanged),
-    ),
-  );
-}
 
 class FavoriteButton extends StatefulWidget {
   const FavoriteButton({
@@ -109,6 +44,7 @@ class _FavoriteButtonState extends State<FavoriteButton> {
       : MapPlace.internal(widget.place);
   int? _id(FavoritesController controller) =>
       model.internalId ?? controller.resolvedExternal(model.id);
+
   Future<void> _press(FavoritesController controller) async {
     final revision = controller.session;
     var id = model.catalogId != null && !controller.authenticated
@@ -128,55 +64,35 @@ class _FavoriteButtonState extends State<FavoriteButton> {
           forFavorite: true,
         ),
       );
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       setState(() => _registering = false);
-      if (revision == controller.session &&
-          local != null &&
-          MapPlace.internal(local).internalId != null) {
+      if (revision == controller.session && local != null) {
         widget.onResolved?.call(local);
       }
-      if (local?['_catalog_favorite_completed'] == true) {
-        return;
-      }
-      if (revision != controller.session || local == null) {
-        return;
-      }
+      if (revision != controller.session || local == null) return;
       id = MapPlace.internal(local).internalId;
-      if (id == null) {
-        return;
-      }
+      if (id == null) return;
       controller.rememberExternal(model.id, id, revision);
-    } else if (controller.saved(id) == null ||
-        controller.lookupFailed(id) ||
-        controller.uncertain(id)) {
-      controller.ensureKnown(id, force: true);
+    }
+    if (revision != controller.session || !mounted) return;
+    if (!controller.authenticated) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.favoriteSignIn)));
       return;
     }
-    if (controller.saved(id) == true) {
-      widget.onRemoving?.call();
-      showFavoriteRemoval(context, controller, id, model.name);
-    } else {
-      final result = await controller.setSaved(id, true);
-      if (mounted && revision == controller.session) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: AccessibilityBottomBoundary(
-              child: Text(favoriteFeedback(context, result)),
-            ),
-          ),
-        );
-      }
-    }
+    await showPersonalSaveDialog(
+      context,
+      id,
+      placeName: model.name,
+      onRemoving: widget.onRemoving,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final controller = FavoritesScope.maybeOf(context);
-    if (controller == null) {
-      return const SizedBox.shrink();
-    }
+    if (controller == null) return const SizedBox.shrink();
     final id = _id(controller);
     if (id != null) {
       final key = '${controller.session}:$id';
@@ -199,11 +115,12 @@ class _FavoriteButtonState extends State<FavoriteButton> {
         ? context.l10n.favoriteCheck
         : id == null
         ? context.l10n.favoriteRegister
-        : saved == null
-        ? context.l10n.favoriteLoading
-        : saved
-        ? context.l10n.favoriteRemove
-        : context.l10n.favoriteSave;
+        : 'Salvar em…';
+    final disabled =
+        pending ||
+        (!controller.authenticated && model.catalogId == null) ||
+        (saved == null && !failed && id != null) ||
+        id != null && !controller.exists(id);
     return Semantics(
       label: model.name,
       toggled: saved,
@@ -211,43 +128,27 @@ class _FavoriteButtonState extends State<FavoriteButton> {
           ? IconButton(
               key: ValueKey('favorite-${model.id}'),
               tooltip: '$label: ${model.name}',
-              onPressed:
-                  pending ||
-                      (!controller.authenticated && model.catalogId == null) ||
-                      (saved == null && !failed && id != null) ||
-                      id != null && !controller.exists(id)
-                  ? null
-                  : () => _press(controller),
+              onPressed: disabled ? null : () => _press(controller),
               icon: Icon(
                 pending
                     ? Icons.sync
                     : failed
                     ? Icons.help_outline
                     : saved == true
-                    ? Icons.bookmark
-                    : Icons.bookmark_border,
+                    ? Icons.bookmark_added
+                    : Icons.playlist_add,
               ),
             )
           : OutlinedButton.icon(
               key: ValueKey('favorite-${model.id}'),
               style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
-              onPressed:
-                  pending ||
-                      (!controller.authenticated && model.catalogId == null) ||
-                      (saved == null && !failed && id != null) ||
-                      id != null && !controller.exists(id)
-                  ? null
-                  : () => _press(controller),
-              icon: ExcludeSemantics(
-                child: Icon(
-                  pending
-                      ? Icons.sync
-                      : failed
-                      ? Icons.help_outline
-                      : saved == true
-                      ? Icons.bookmark
-                      : Icons.bookmark_border,
-                ),
+              onPressed: disabled ? null : () => _press(controller),
+              icon: Icon(
+                pending
+                    ? Icons.sync
+                    : failed
+                    ? Icons.help_outline
+                    : Icons.playlist_add,
               ),
               label: Text(label),
             ),
