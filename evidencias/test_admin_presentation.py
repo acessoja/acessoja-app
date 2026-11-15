@@ -92,7 +92,6 @@ class ModerationPresentationTests(TestCase):
         ).status_code, 403)
         self.assertEqual(ModerationDecision.objects.count(), 0)
 
-
     def test_decision_forms_keep_existing_services_and_history(self):
         self.client.force_login(self.moderator)
         self.report.state = "pending"

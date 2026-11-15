@@ -37,15 +37,29 @@ def test_same_local_can_be_in_multiple_lists_and_state_does_not_create_visit():
     user, api = make_user("lists")
     local = Local.objects.create(nome="Teatro", endereco="Rua 2", distancia=0)
     first = api.post("/api/favoritos/listas/", {"nome": "Passeios", "icone": "flag", "cor": "teal"}, format="json")
-    second = api.post("/api/favoritos/listas/", {"nome": "Fim de semana", "icone": "star", "cor": "purple"}, format="json")
+    second = api.post(
+        "/api/favoritos/listas/",
+        {"nome": "Fim de semana", "icone": "star", "cor": "purple"},
+        format="json",
+    )
     assert first.status_code == second.status_code == 201
     for response in (first, second):
-        assert api.post(f"/api/favoritos/listas/{response.json()['id']}/itens/", {"local": local.pk}, format="json").status_code == 200
-    state = api.post("/api/favoritos/estados/", {"local": local.pk, "status": "want", "nota": "Confirmar acesso"}, format="json")
+        assert api.post(
+            f"/api/favoritos/listas/{response.json()['id']}/itens/",
+            {"local": local.pk},
+            format="json",
+        ).status_code == 200
+    state = api.post(
+        "/api/favoritos/estados/",
+        {"local": local.pk, "status": "want", "nota": "Confirmar acesso"},
+        format="json",
+    )
     assert state.status_code == 201
     assert EstadoPessoalLocal.objects.get(user=user, local=local).nota == "Confirmar acesso"
     assert not VisitaRecente.objects.exists()
-    assert api.post("/api/favoritos/estados/", {"local": local.pk, "status": "visited"}, format="json").status_code == 200
+    assert api.post(
+        "/api/favoritos/estados/", {"local": local.pk, "status": "visited"}, format="json",
+    ).status_code == 200
     assert EstadoPessoalLocal.objects.get(user=user, local=local).nota == "Confirmar acesso"
     assert ItemLista.objects.filter(lista_id=first.json()["id"], local=local).exists()
 
@@ -105,7 +119,11 @@ def test_map_layer_returns_one_deterministic_marker_per_local():
     first = api.post("/api/favoritos/listas/", {"nome": "Principal", "icone": "flag", "cor": "teal"}, format="json")
     second = api.post("/api/favoritos/listas/", {"nome": "Depois", "icone": "star", "cor": "purple"}, format="json")
     for response in (first, second):
-        assert api.post(f"/api/favoritos/listas/{response.json()['id']}/itens/", {"local": local.pk}, format="json").status_code == 200
+        assert api.post(
+            f"/api/favoritos/listas/{response.json()['id']}/itens/",
+            {"local": local.pk},
+            format="json",
+        ).status_code == 200
     response = api.get(f"/api/favoritos/listas/camada/?locais={local.pk}")
     assert response.status_code == 200
     assert response.json()["results"] == [{
@@ -222,4 +240,6 @@ def test_atomic_save_rejects_stale_snapshot_without_partial_changes():
         "esperado": {"listas": [], "status": "unknown", "nota": ""},
     }, format="json")
     assert response.status_code == 409
-    assert list(ItemLista.objects.filter(lista__user=user, local=local).values_list("lista_id", flat=True)) == [custom.pk]
+    assert list(ItemLista.objects.filter(
+        lista__user=user, local=local,
+    ).values_list("lista_id", flat=True)) == [custom.pk]

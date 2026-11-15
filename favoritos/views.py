@@ -383,7 +383,9 @@ class ListaPessoalViewSet(viewsets.ModelViewSet):
         if query_keys - {"locais", "lista"}:
             raise ValidationError("Use somente locais; a conta vem da sessão.")
         raw = request.query_params.get("locais", "").split(",")
-        if not 1 <= len(raw) <= 100 or any(not value.isascii() or not value.isdigit() or int(value) < 1 for value in raw):
+        if not 1 <= len(raw) <= 100 or any(
+            not value.isascii() or not value.isdigit() or int(value) < 1 for value in raw
+        ):
             raise ValidationError({"locais": "Informe de 1 a 100 IDs internos positivos."})
         ids = list(dict.fromkeys(int(value) for value in raw))
         list_id = request.query_params.get("lista")
@@ -398,7 +400,9 @@ class ListaPessoalViewSet(viewsets.ModelViewSet):
         for item in items.select_related("lista").order_by("lista__ordem", "lista__id", "id"):
             rows.setdefault(item.local_id, {"icone": item.lista.icone, "cor": item.lista.cor, "listas": []})
             rows[item.local_id]["listas"].append(item.lista.nome)
-        states = dict(EstadoPessoalLocal.objects.filter(user=request.user, local_id__in=ids).values_list("local_id", "status"))
+        states = dict(EstadoPessoalLocal.objects.filter(
+            user=request.user, local_id__in=ids,
+        ).values_list("local_id", "status"))
         return Response({"results": [
             {"local": local_id, **rows.get(local_id, {"icone": None, "cor": None, "listas": []}),
              "status": states.get(local_id, "unknown")}
@@ -407,8 +411,13 @@ class ListaPessoalViewSet(viewsets.ModelViewSet):
 
 
 @extend_schema(tags=["Listas pessoais"])
-class EstadoPessoalViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.UpdateModelMixin,
-                            mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class EstadoPessoalViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
     permission_classes = [IsAuthenticated]
     serializer_class = PersonalStateSerializer
     lookup_field = "local_id"

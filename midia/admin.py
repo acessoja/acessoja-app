@@ -110,7 +110,10 @@ class PhotoAdmin(RestrictedImageAdmin):
     def decision_view(self, request, photo_id):
         if not allowed(request.user):
             raise PermissionDenied()
-        photo = get_object_or_404(ReviewPhoto.objects.select_related("current_revision__asset", "review__local"), pk=photo_id)
+        photo = get_object_or_404(
+            ReviewPhoto.objects.select_related("current_revision__asset", "review__local"),
+            pk=photo_id,
+        )
         revision = photo.current_revision
         form = PhotoDecisionForm(
             request.POST or None,
