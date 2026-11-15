@@ -4,6 +4,7 @@ import '../models/favorite.dart';
 import '../models/map_place.dart';
 import 'app_http.dart';
 import 'favorites_service.dart';
+import 'personal_lists_service.dart';
 import 'review_changes.dart';
 
 class FavoriteListing {
@@ -40,6 +41,7 @@ class FavoritesController extends ChangeNotifier {
   final _desired = <int, bool>{};
   final _serial = <int, int>{};
   final _tails = <int, Future<FavoriteOutcome>>{};
+  final _personalTails = <int, Future<void>>{};
   final _pending = <int, int>{};
   final _uncertain = <int>{},
       _lookup = <int>{},
@@ -69,6 +71,7 @@ class FavoritesController extends ChangeNotifier {
     _desired.clear();
     _serial.clear();
     _tails.clear();
+    _personalTails.clear();
     _pending.clear();
     _lookup.clear();
     _looking.clear();
@@ -92,6 +95,37 @@ class FavoritesController extends ChangeNotifier {
   bool uncertain(int local) => _uncertain.contains(local);
   bool lookupFailed(int local) => _lookupErrors.contains(local);
   bool exists(int local) => _confirmed[local]?.exists != false;
+
+  /// Reconcile the legacy Favorites projection after an atomic personal-list save.
+  void acceptPersonalSave(
+    int local,
+    PersonalSaveResult result, {
+    required bool previousFavorite,
+  }) {
+    if (_disposed || result.localId != local || !_current(session)) return;
+    final known = _confirmed[local];
+    _confirmed[local] = FavoriteState(
+      previousFavorite ? known?.id ?? result.favoriteId ?? 1 : null,
+      known?.exists ?? true,
+    );
+    final row = _records[local];
+    if (result.favorite && row != null && result.favoriteId != null) {
+      _records[local] = Favorite(
+        result.favoriteId!,
+        row.localId,
+        row.createdAt,
+        row.place,
+      );
+    }
+    _accept(local, FavoriteState(result.favoriteId, true));
+    _desired.remove(local);
+    _epoch++;
+    _notify();
+    if (_pending.isEmpty && _queries.isNotEmpty) {
+      unawaited(load(query: activeQuery, force: true));
+    }
+  }
+
   int? resolvedExternal(String id) => _externalIds[id];
   void rememberExternal(String id, int local, int revision) {
     if (_current(revision)) {
@@ -100,18 +134,19 @@ class FavoritesController extends ChangeNotifier {
     }
   }
 
-  int get total => ((_total ?? 0) +
-          _desired.entries.fold<int>(
-              0,
-              (sum, e) =>
-                  sum +
-                  (_confirmed.containsKey(e.key)
-                      ? (e.value ? 1 : 0) -
-                          (_confirmed[e.key]!.id != null ? 1 : 0)
-                      : 0)))
-      .clamp(0, 1 << 30);
-  List<Favorite> rows(String query) => listing(query)
-      .rows
+  int get total =>
+      ((_total ?? 0) +
+              _desired.entries.fold<int>(
+                0,
+                (sum, e) =>
+                    sum +
+                    (_confirmed.containsKey(e.key)
+                        ? (e.value ? 1 : 0) -
+                              (_confirmed[e.key]!.id != null ? 1 : 0)
+                        : 0),
+              ))
+          .clamp(0, 1 << 30);
+  List<Favorite> rows(String query) => listing(query).rows
       .where((row) => saved(row.localId) != false)
       .map((row) => _records[row.localId] ?? row)
       .toList();
@@ -193,8 +228,11 @@ class FavoritesController extends ChangeNotifier {
     }
   }
 
-  Future<void> load(
-      {String query = '', bool more = false, bool force = false}) {
+  Future<void> load({
+    String query = '',
+    bool more = false,
+    bool force = false,
+  }) {
     final key = queryKey(query), state = listing(query);
     activeQuery = key;
     if (!authenticated || _pending.isNotEmpty) {
@@ -219,8 +257,14 @@ class FavoritesController extends ChangeNotifier {
     return future;
   }
 
-  Future<void> _load(String key, FavoriteListing state, bool more,
-      int generation, int revision, int epoch) async {
+  Future<void> _load(
+    String key,
+    FavoriteListing state,
+    bool more,
+    int generation,
+    int revision,
+    int epoch,
+  ) async {
     try {
       final pages = more ? 1 : state.pages.clamp(1, 100000);
       final collected = <Favorite>[];
@@ -312,7 +356,8 @@ class FavoritesController extends ChangeNotifier {
     _pending[local] = (_pending[local] ?? 0) + 1;
     _epoch++;
     final previous = _tails[local];
-    final future = _write(local, value, revision, serial, previous);
+    final personal = _personalTails[local];
+    final future = _write(local, value, revision, serial, previous, personal);
     _tails[local] = future;
     _notify();
     return future;
@@ -328,10 +373,17 @@ class FavoritesController extends ChangeNotifier {
     return setSaved(ticket.localId, true);
   }
 
-  Future<FavoriteOutcome> _write(int local, bool desired, int revision,
-      int serial, Future<FavoriteOutcome>? previous) async {
+  Future<FavoriteOutcome> _write(
+    int local,
+    bool desired,
+    int revision,
+    int serial,
+    Future<FavoriteOutcome>? previous,
+    Future<void>? personal,
+  ) async {
     // Always yield once: setSaved must publish the tail before the operation runs.
     await (previous ?? Future.value(FavoriteOutcome.confirmed));
+    await (personal ?? Future.value());
     if (!_current(revision)) {
       return FavoriteOutcome.sessionChanged;
     }
@@ -416,6 +468,53 @@ class FavoritesController extends ChangeNotifier {
     return outcome;
   }
 
+  /// Serializes a personal-list transaction with legacy favorite mutations.
+  Future<T> runPersonalSave<T>(
+    int local, {
+    required Future<T> Function() operation,
+    required void Function(T) onConfirmed,
+  }) async {
+    if (!authenticated) throw const FavoriteException(401);
+    final revision = session;
+    final previousBatch = _personalTails[local];
+    final previousFavoriteWrite = _tails[local];
+    final release = Completer<void>();
+    final gate = (previousBatch ?? Future<void>.value()).then(
+      (_) => release.future,
+    );
+    _personalTails[local] = gate;
+    _pending[local] = (_pending[local] ?? 0) + 1;
+    _epoch++;
+    _notify();
+    try {
+      await (previousBatch ?? Future<void>.value());
+      if (previousFavoriteWrite != null) await previousFavoriteWrite;
+      if (!_current(revision)) throw const FavoriteException(401);
+      final result = await operation();
+      if (!_current(revision)) throw const FavoriteException(401);
+      onConfirmed(result);
+      return result;
+    } finally {
+      if (!release.isCompleted) release.complete();
+      if (_current(revision)) {
+        final remaining = (_pending[local] ?? 1) - 1;
+        if (remaining <= 0) {
+          _pending.remove(local);
+        } else {
+          _pending[local] = remaining;
+        }
+        if (identical(_personalTails[local], gate)) {
+          _personalTails.remove(local);
+        }
+        _epoch++;
+        _notify();
+        if (_pending.isEmpty && _queries.isNotEmpty) {
+          unawaited(load(query: activeQuery, force: true));
+        }
+      }
+    }
+  }
+
   void _accept(int local, FavoriteState state) {
     final before = _confirmed[local]?.id != null, after = state.id != null;
     if (before != after) {
@@ -429,6 +528,9 @@ class FavoritesController extends ChangeNotifier {
           entry.value.count = (entry.value.count + delta).clamp(0, 1 << 30);
         }
       }
+      // The personal map layer includes the legacy Favorites list. Invalidate
+      // its metadata only after the server state has been reconciled.
+      invalidatePersonalLists();
     }
     _confirmed[local] = state;
     _uncertain.remove(local);

@@ -99,6 +99,29 @@ http.Response fixtureResponse(http.Request request) {
       200,
     );
   }
+  if (request.method == 'GET' && request.url.path == '/api/favoritos/listas/') {
+    return http.Response(
+      jsonEncode([
+        {
+          'id': 7,
+          'nome': 'Favoritos',
+          'descricao': '',
+          'icone': 'favorite',
+          'cor': 'red',
+          'sistema': true,
+          'visivel_mapa': true,
+          'ordem': 0,
+          'quantidade': 0,
+          'itens': [],
+        },
+      ]),
+      200,
+    );
+  }
+  if (request.method == 'GET' &&
+      RegExp(r'^/api/favoritos/estados/\d+/$').hasMatch(request.url.path)) {
+    return http.Response('', 404);
+  }
   if (request.url.path.contains('perfil')) {
     return http.Response.bytes(utf8.encode(jsonEncode(profile)), 200);
   }
@@ -140,7 +163,9 @@ http.Response fixtureResponse(http.Request request) {
       request.method == 'POST'
           ? jsonEncode({
               'id': 9,
-              'local': request.body.isEmpty ? 1 : jsonDecode(request.body)['local'],
+              'local': request.body.isEmpty
+                  ? 1
+                  : jsonDecode(request.body)['local'],
               'can_edit': true,
               'content_revision': '10000000-0000-4000-8000-000000000002',
               ...jsonDecode(request.body) as Map<String, dynamic>,
@@ -176,7 +201,6 @@ Widget harness(
     ),
   );
 }
-
 
 // O editor mantém o botão da publicação sob o modal; selecione apenas o botão
 // que está dentro da janela antiga de acessibilidade.
@@ -349,7 +373,8 @@ void main() {
     (tester) async {
       var reviewSaves = 0;
       AppHttp.client = MockClient((request) async {
-        if (request.method == 'POST' && request.url.path.contains('modal-avaliacoes')) {
+        if (request.method == 'POST' &&
+            request.url.path.contains('modal-avaliacoes')) {
           reviewSaves++;
         }
         return fixtureResponse(request);

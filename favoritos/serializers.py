@@ -6,7 +6,7 @@ from locais.models import Local
 from locais.serializers import LocalSerializer
 from locais.services.accessibility import populate_accessibility_context
 from modal_avaliacao.models import ModalAvaliacao
-from .models import Favorito
+from .models import EstadoPessoalLocal, Favorito, ItemLista, ListaPessoal
 
 
 class StrictPositiveId(serializers.IntegerField):
@@ -109,3 +109,53 @@ class FavoriteStateSerializer(serializers.Serializer):
 
 class FavoriteStatesSerializer(serializers.Serializer):
     results = FavoriteStateSerializer(many=True)
+
+
+class PersonalStateSerializer(serializers.ModelSerializer):
+    local = serializers.PrimaryKeyRelatedField(queryset=Local.objects.all())
+
+    class Meta:
+        model = EstadoPessoalLocal
+        fields = ["local", "status", "nota", "atualizado_em"]
+        read_only_fields = ["atualizado_em"]
+
+    def validate_status(self, value):
+        if value not in {key for key, _ in EstadoPessoalLocal.STATUS}:
+            raise serializers.ValidationError("Estado pessoal inválido.")
+        return value
+
+
+class ListItemSerializer(serializers.ModelSerializer):
+    local_detalhes = FavoriteLocalSerializer(source="local", read_only=True)
+
+    class Meta:
+        model = ItemLista
+        fields = ["id", "local", "criado_em", "local_detalhes"]
+        read_only_fields = fields
+
+
+class PersonalListSerializer(serializers.ModelSerializer):
+    itens = ListItemSerializer(many=True, read_only=True)
+    quantidade = serializers.IntegerField(source="itens.count", read_only=True)
+
+    class Meta:
+        model = ListaPessoal
+        fields = ["id", "nome", "descricao", "icone", "cor", "sistema", "visivel_mapa", "ordem",
+                  "criado_em", "atualizado_em", "quantidade", "itens"]
+        read_only_fields = ["id", "sistema", "criado_em", "atualizado_em", "quantidade", "itens"]
+
+    def validate_nome(self, value):
+        value = " ".join(value.split()).strip()
+        if not value or len(value) > 80:
+            raise serializers.ValidationError("Informe um nome entre 1 e 80 caracteres.")
+        return value
+
+    def validate_icone(self, value):
+        if value not in dict(ListaPessoal.ICONS):
+            raise serializers.ValidationError("Ícone não permitido.")
+        return value
+
+    def validate_cor(self, value):
+        if value not in dict(ListaPessoal.COLORS):
+            raise serializers.ValidationError("Cor não permitida.")
+        return value
