@@ -72,6 +72,9 @@ class ItemLista(models.Model):
         ordering = ["-criado_em", "-id"]
         constraints = [models.UniqueConstraint(fields=["lista", "local"], name="item_lista_unique")]
 
+    def __str__(self):
+        return f"Item de lista {self.pk}"
+
 
 class EstadoPessoalLocal(models.Model):
     STATUS = [("unknown", "Não informado"), ("want", "Quero visitar"), ("visited", "Já visitei")]
@@ -84,3 +87,6 @@ class EstadoPessoalLocal(models.Model):
     class Meta:
         constraints = [models.UniqueConstraint(fields=["user", "local"], name="estado_pessoal_owner_local_unique")]
         indexes = [models.Index(fields=["user", "status"], name="estado_pessoal_owner_status")]
+
+    def __str__(self):
+        return f"Estado pessoal do local {self.pk}"
