@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 
 import 'card127_performance_sink_stub.dart'
-    if (dart.library.html) 'card127_performance_sink_web.dart'
+    if (dart.library.js_interop) 'card127_performance_sink_web.dart'
     as sink;
 
 /// Opt-in, process-local timing markers for the Card 127 diagnostic build.

@@ -18,6 +18,7 @@ import '../app_theme.dart';
 import '../config.dart';
 import 'place_detail_screen.dart';
 import '../navigation.dart';
+import '../services/card127_performance_probe.dart';
 
 class SugestoesScreen extends StatefulWidget {
   final String userName;
@@ -47,10 +48,15 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
   @override
   void initState() {
     super.initState();
+    Card127PerformanceProbe.mark(
+      'suggestions_screen_enter',
+      fields: {'authenticated': AppHttp.authenticated},
+    );
     _loadData();
   }
 
   Future<void> _loadData() async {
+    Card127PerformanceProbe.mark('suggestions_load_start');
     setState(() {
       _isLoading = true;
       _loadFailed = false;
@@ -59,34 +65,114 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
       final localesPage = await const PlacesService().fetchDiscoveryPage(
         query: DiscoveryQuery(ordering: 'rating'),
       );
+      Card127PerformanceProbe.mark(
+        'suggestions_discovery_ready',
+        fields: {'result_count': localesPage.places.length},
+      );
       List visitsData = [];
       if (AppHttp.authenticated) {
+        final visitsClock = Stopwatch()..start();
+        Card127PerformanceProbe.mark('visits_request_start');
         final visitsResponse = await AppHttp.get(
           Uri.parse('${Config.baseUrl}/api/visitas/'),
         );
-        if (visitsResponse.statusCode != 200) throw StateError('visits_load_failed');
+        Card127PerformanceProbe.duration(
+          'visits_response_end',
+          visitsClock,
+          fields: {
+            'status_code': visitsResponse.statusCode,
+            'response_bytes': visitsResponse.bodyBytes.length,
+            'outcome': visitsResponse.statusCode == 200
+                ? 'success'
+                : 'http_error',
+          },
+        );
+        if (visitsResponse.statusCode != 200) {
+          throw StateError('visits_load_failed');
+        }
+        final visitsTransformClock = Stopwatch()..start();
         final decoded = json.decode(utf8.decode(visitsResponse.bodyBytes));
-        visitsData = decoded is List ? decoded : (decoded['results'] as List? ?? []);
+        visitsData = decoded is List
+            ? decoded
+            : (decoded['results'] as List? ?? []);
+        Card127PerformanceProbe.duration(
+          'visits_transform_end',
+          visitsTransformClock,
+          fields: {'result_count': visitsData.length, 'outcome': 'success'},
+        );
+        Card127PerformanceProbe.mark(
+          'visits_profile',
+          fields: {
+            'visit_count': visitsData.length,
+            'outcome': visitsData.isEmpty ? 'no_visits' : 'has_visits',
+          },
+        );
+      } else {
+        Card127PerformanceProbe.mark(
+          'visits_skipped',
+          fields: {'reason': 'visitor'},
+        );
       }
       Set<String> preferences = {};
       if (AppHttp.authenticated) {
+        Card127PerformanceProbe.mark(
+          'preferences_local_load',
+          fields: {'outcome': 'not_cached_by_service'},
+        );
+        final preferencesClock = Stopwatch()..start();
+        Card127PerformanceProbe.mark('preferences_request_start');
         try {
           final loaded = await const AccessibilityPreferencesService().load();
           preferences = loaded.resources;
-        } catch (_) {
+          Card127PerformanceProbe.duration(
+            'preferences_request_end',
+            preferencesClock,
+            fields: {
+              'result_count': preferences.length,
+              'outcome': preferences.isEmpty ? 'no_preferences' : 'success',
+            },
+          );
+        } on Object catch (error) {
+          Card127PerformanceProbe.duration(
+            'preferences_request_end',
+            preferencesClock,
+            fields: {
+              'outcome': 'http_or_parse_error',
+              'error_type': error.runtimeType.toString(),
+            },
+          );
           // Suggestions remain usable as general recommendations if preferences fail.
         }
+      } else {
+        Card127PerformanceProbe.mark(
+          'preferences_skipped',
+          fields: {'reason': 'visitor'},
+        );
       }
       if (!mounted) return;
+      Card127PerformanceProbe.mark(
+        'suggestions_data_ready',
+        fields: {
+          'local_count': localesPage.places.length,
+          'visit_count': visitsData.length,
+          'preference_count': preferences.length,
+        },
+      );
       setState(() {
         _recentVisits = visitsData;
-        _allLocales = localesPage.places.map((p) => p.toMap()).toList(growable: false);
+        _allLocales = localesPage.places
+            .map((p) => p.toMap())
+            .toList(growable: false);
         _preferences = preferences;
         _isLoading = false;
       });
     } catch (e) {
       if (!mounted) return;
       _loadFailed = true;
+      Card127PerformanceProbe.mark(
+        'suggestions_load_failed',
+        fields: {'error_type': e.runtimeType.toString()},
+      );
       debugPrint('Request failed');
       setState(() {
         _isLoading = false;
@@ -121,15 +207,54 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
   // Suggest other places having those features, ordered by average rating.
   // If no visits, suggest top rated.
   List<dynamic> get recommendedPlaces {
-    if (!widget.allowSuggestions || _allLocales.isEmpty) return [];
+    if (!widget.allowSuggestions || _allLocales.isEmpty) {
+      Card127PerformanceProbe.mark(
+        'ranking_empty',
+        fields: {
+          'candidate_count': _allLocales.length,
+          'suggestions_allowed': widget.allowSuggestions,
+          'outcome': _allLocales.isEmpty
+              ? 'no_candidates'
+              : 'suggestions_disabled',
+        },
+      );
+      return [];
+    }
+    final rankingClock = Stopwatch()..start();
+    Card127PerformanceProbe.mark(
+      'ranking_start',
+      fields: {
+        'candidate_count': _allLocales.length,
+        'visit_count': _recentVisits.length,
+        'preference_count': _preferences.length,
+      },
+    );
     final ranked = const RecommendationEngine().rank(
-      _allLocales.map((value) => MapPlace.internal(Map<String, dynamic>.from(value))),
+      _allLocales.map(
+        (value) => MapPlace.internal(Map<String, dynamic>.from(value)),
+      ),
       preferences: _preferences,
     );
-    return ranked.take(3).map((item) => {
-      ...item.place.toMap(),
-      '_recommendation_reasons': const RecommendationEngine().reasons(item),
-    }).toList(growable: false);
+    final recommendations = ranked
+        .take(3)
+        .map(
+          (item) => {
+            ...item.place.toMap(),
+            '_recommendation_reasons': const RecommendationEngine().reasons(
+              item,
+            ),
+          },
+        )
+        .toList(growable: false);
+    Card127PerformanceProbe.duration(
+      'ranking_end',
+      rankingClock,
+      fields: {
+        'recommendation_count': recommendations.length,
+        'outcome': recommendations.isEmpty ? 'empty' : 'success',
+      },
+    );
+    return recommendations;
   }
 
   String getLocalDisplayName(String name) {
@@ -383,49 +508,56 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
     required String semanticsLabel,
     required VoidCallback onPressed,
     bool primary = true,
+    bool benchmarkFirstRouteAction = false,
   }) {
     final colors = AppColors.of(context);
 
-    return Expanded(
-      child: Semantics(
-        button: true,
-        label: semanticsLabel,
-        child: SizedBox(
-          height: 40,
-          child: ElevatedButton.icon(
-            onPressed: onPressed,
-            icon: Icon(icon, size: 17),
-            label: Text(
-              label,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primary ? colors.primary : colors.primarySoft,
-              foregroundColor: primary ? colors.onPrimary : colors.primaryDark,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: primary
-                    ? BorderSide.none
-                    : BorderSide(color: colors.border),
-              ),
-            ),
+    Widget action = SizedBox(
+      height: 40,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 17),
+        label: Text(
+          label,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primary ? colors.primary : colors.primarySoft,
+          foregroundColor: primary ? colors.onPrimary : colors.primaryDark,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: primary ? BorderSide.none : BorderSide(color: colors.border),
           ),
         ),
       ),
     );
+    if (benchmarkFirstRouteAction) {
+      action = _Card127VisibleProbe(
+        event: 'first_route_action_enabled',
+        enabled: true,
+        child: action,
+      );
+    }
+
+    return Expanded(
+      child: Semantics(button: true, label: semanticsLabel, child: action),
+    );
   }
 
-  Widget _buildRecommendationCard(dynamic place) {
+  Widget _buildRecommendationCard(
+    dynamic place, {
+    bool benchmarkFirst = false,
+  }) {
     final colors = AppColors.of(context);
 
     final name = (place['nome'] ?? '').toString();
     final displayName = getLocalDisplayName(name);
     final address = (place['endereco'] ?? '').toString();
 
-    return Container(
+    final card = Container(
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -485,17 +617,19 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
                     if (place['_recommendation_reasons'] is List)
                       ...((place['_recommendation_reasons'] as List)
                           .whereType<String>()
-                          .map((reason) => Padding(
-                                padding: const EdgeInsets.only(top: 5),
-                                child: Text(
-                                  reason,
-                                  style: TextStyle(
-                                    color: colors.muted,
-                                    fontSize: 11,
-                                    height: context.readingHeight(1.25),
-                                  ),
+                          .map(
+                            (reason) => Padding(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Text(
+                                reason,
+                                style: TextStyle(
+                                  color: colors.muted,
+                                  fontSize: 11,
+                                  height: context.readingHeight(1.25),
                                 ),
-                              ))),
+                              ),
+                            ),
+                          )),
                     const SizedBox(height: 7),
                     ReportedPlaceRating(
                       rating: place['media_estrelas'],
@@ -514,6 +648,7 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
                 icon: Icons.directions_rounded,
                 label: context.l10n.route,
                 semanticsLabel: context.l10n.routeTo(displayName),
+                benchmarkFirstRouteAction: benchmarkFirst,
                 onPressed: () {
                   if (widget.onRouteRequested == null) {
                     Navigator.pop(context, place);
@@ -558,6 +693,13 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
         ],
       ),
     );
+    return benchmarkFirst
+        ? _Card127VisibleProbe(
+            event: 'first_recommendation_card_visible',
+            enabled: true,
+            child: card,
+          )
+        : card;
   }
 
   Widget _buildRecommendationsSection(List<dynamic> recommended) {
@@ -572,38 +714,47 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
           iconColor: Colors.amber,
         ),
         if (recommended.isEmpty)
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: colors.border),
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.lightbulb_outline_rounded,
-                  color: colors.muted,
-                  size: 30,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  widget.allowSuggestions
-                      ? context.l10n.noRecommendations
-                      : context.l10n.suggestionsDisabled,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
+          _Card127VisibleProbe(
+            event: 'suggestions_empty_state_visible',
+            enabled: !_isLoading && !_loadFailed,
+            child: Container(
+              margin: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              decoration: BoxDecoration(
+                color: colors.surface,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: colors.border),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.lightbulb_outline_rounded,
                     color: colors.muted,
-                    fontSize: 13,
-                    height: context.readingHeight(1.4),
+                    size: 30,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  Text(
+                    widget.allowSuggestions
+                        ? context.l10n.noRecommendations
+                        : context.l10n.suggestionsDisabled,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: colors.muted,
+                      fontSize: 13,
+                      height: context.readingHeight(1.4),
+                    ),
+                  ),
+                ],
+              ),
             ),
           )
         else
-          ...recommended.map(_buildRecommendationCard),
+          ...recommended.asMap().entries.map(
+            (entry) => _buildRecommendationCard(
+              entry.value,
+              benchmarkFirst: entry.key == 0,
+            ),
+          ),
       ],
     );
   }
@@ -706,4 +857,62 @@ class _SugestoesScreenState extends SafeState<SugestoesScreen> {
       ),
     );
   }
+}
+
+class _Card127VisibleProbe extends StatefulWidget {
+  const _Card127VisibleProbe({
+    required this.event,
+    required this.enabled,
+    required this.child,
+  });
+
+  final String event;
+  final bool enabled;
+  final Widget child;
+
+  @override
+  State<_Card127VisibleProbe> createState() => _Card127VisibleProbeState();
+}
+
+class _Card127VisibleProbeState extends State<_Card127VisibleProbe> {
+  bool _recorded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleVisibilityCheck();
+  }
+
+  void _scheduleVisibilityCheck() {
+    if (!Card127PerformanceProbe.enabled || !widget.enabled || _recorded) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _recorded) return;
+      final renderObject = context.findRenderObject();
+      if (renderObject is! RenderBox || !renderObject.hasSize) return;
+      final origin = renderObject.localToGlobal(Offset.zero);
+      final bounds = origin & renderObject.size;
+      final viewport = Offset.zero & MediaQuery.sizeOf(context);
+      if (!bounds.overlaps(viewport)) return;
+      _recorded = true;
+      Card127PerformanceProbe.mark(
+        widget.event,
+        fields: {
+          'enabled': widget.enabled,
+          'visible_width': bounds.intersect(viewport).width,
+          'visible_height': bounds.intersect(viewport).height,
+        },
+      );
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _Card127VisibleProbe oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.enabled != widget.enabled) _scheduleVisibilityCheck();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

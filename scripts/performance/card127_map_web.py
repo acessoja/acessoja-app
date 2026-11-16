@@ -41,8 +41,10 @@ def main() -> int:
         "viewport": {"width": 1000, "height": 740, "device_scale_factor": 1},
         "rounds_requested": args.rounds,
         "rounds": [],
-        "limitations": ["Measures marker layout and RAF intervals, not opening/filtering the production map flow.",
-                        "RAF intervals in headless Chrome are not physical GPU raster timing or Android evidence."],
+        "limitations": [
+            "Measures marker layout and RAF intervals, not opening/filtering the production map flow.",
+            "RAF intervals in headless Chrome are not physical GPU raster timing or Android evidence.",
+        ],
     }
 
     class Quiet(SimpleHTTPRequestHandler):
@@ -52,13 +54,16 @@ def main() -> int:
     from playwright.sync_api import sync_playwright
 
     with ExitStack() as stack:
-        server = ThreadingHTTPServer(("127.0.0.1", 0), lambda *values, **kwargs: Quiet(*values, directory=str(build), **kwargs))
+        server = ThreadingHTTPServer(
+            ("127.0.0.1", 0), lambda *values, **kwargs: Quiet(*values, directory=str(build), **kwargs)
+        )
         stack.callback(server.server_close)
         stack.callback(server.shutdown)
         Thread(target=server.serve_forever, daemon=True).start()
         playwright = stack.enter_context(sync_playwright())
-        browser = playwright.chromium.launch(executable_path=str(args.chrome), headless=True,
-                                             args=["--no-sandbox", "--disable-dev-shm-usage"])
+        browser = playwright.chromium.launch(
+            executable_path=str(args.chrome), headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"]
+        )
         stack.callback(browser.close)
         result["browser_version"] = browser.version
         for number in range(1, args.rounds + 1):
@@ -83,31 +88,76 @@ def main() -> int:
             page.wait_for_function('typeof window.__mapBenchResult === "string"', timeout=90000)
             sample = json.loads(page.evaluate("window.__mapBenchResult"))
             if api or external or errors:
-                raise RuntimeError(f"API/terceiros/erros detectados: api={len(api)}, terceiros={external}, erros={errors}")
+                raise RuntimeError(
+                    f"API/terceiros/erros detectados: api={len(api)}, terceiros={external}, erros={errors}"
+                )
             # The Dart fixture contains its original SDK pin; the collector records
             # the SDK that actually built this artifact at the top level.
             sample["sdk"] = result["sdk"]
-            sample.update({"round": number, "api_requests": len(api), "third_party_attempts": len(external), "page_errors": errors})
+            sample.update(
+                {
+                    "round": number,
+                    "api_requests": len(api),
+                    "third_party_attempts": len(external),
+                    "page_errors": errors,
+                }
+            )
             result["rounds"].append(sample)
             (report_dir / "mapa.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
             print(f"Rodada {number}/{args.rounds}: benchmark de marcadores concluído", flush=True)
 
-    fields = ["run_id", "sha", "fase", "cenario", "rota_ou_marco", "cache", "repeticao", "amostras", "sucessos",
-              "erros", "timeouts", "p50_ms", "p95_ms", "vazao", "vazao_unidade", "concorrencia_observada",
-              "payload_bytes_medio", "limite_ms", "status", "evidencia"]
+    fields = [
+        "run_id",
+        "sha",
+        "fase",
+        "cenario",
+        "rota_ou_marco",
+        "cache",
+        "repeticao",
+        "amostras",
+        "sucessos",
+        "erros",
+        "timeouts",
+        "p50_ms",
+        "p95_ms",
+        "vazao",
+        "vazao_unidade",
+        "concorrencia_observada",
+        "payload_bytes_medio",
+        "limite_ms",
+        "status",
+        "evidencia",
+    ]
     run_id = report_dir.name
     with (report_dir / "mapa.csv").open("w", newline="", encoding="utf-8-sig") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
         for round_data in result["rounds"]:
             for row in round_data["samples"]:
-                writer.writerow({"run_id": run_id, "sha": result["sha"], "fase": "baseline",
-                    "cenario": "map_marker_layout", "rota_ou_marco": f"AdaptivePlaceLayer_{row['places']}_places",
-                    "cache": "warmup_excluded", "repeticao": round_data["round"], "amostras": row["layout_repetitions"],
-                    "sucessos": row["layout_repetitions"], "erros": 0, "timeouts": 0,
-                    "p50_ms": row["layout_median_us"] / 1000, "p95_ms": row["layout_p95_us"] / 1000,
-                    "vazao": None, "vazao_unidade": None, "concorrencia_observada": 1, "payload_bytes_medio": None,
-                    "limite_ms": None, "status": "EXPLORATORIO", "evidencia": "mapa.json#rounds"})
+                writer.writerow(
+                    {
+                        "run_id": run_id,
+                        "sha": result["sha"],
+                        "fase": "baseline",
+                        "cenario": "map_marker_layout",
+                        "rota_ou_marco": f"AdaptivePlaceLayer_{row['places']}_places",
+                        "cache": "warmup_excluded",
+                        "repeticao": round_data["round"],
+                        "amostras": row["layout_repetitions"],
+                        "sucessos": row["layout_repetitions"],
+                        "erros": 0,
+                        "timeouts": 0,
+                        "p50_ms": row["layout_median_us"] / 1000,
+                        "p95_ms": row["layout_p95_us"] / 1000,
+                        "vazao": None,
+                        "vazao_unidade": None,
+                        "concorrencia_observada": 1,
+                        "payload_bytes_medio": None,
+                        "limite_ms": None,
+                        "status": "EXPLORATORIO",
+                        "evidencia": "mapa.json#rounds",
+                    }
+                )
     result["finished_at"] = datetime.now(timezone.utc).isoformat()
     result["status"] = "executed"
     (report_dir / "mapa.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
