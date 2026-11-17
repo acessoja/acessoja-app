@@ -6,6 +6,7 @@ import '../config.dart';
 import 'app_http.dart';
 import '../models/map_place.dart';
 import '../models/discovery_query.dart';
+import 'card127_performance_probe.dart';
 
 class PlacesException implements Exception {
   final String message;
@@ -137,55 +138,101 @@ class PlacesService {
     if (page != null && (int.tryParse(page) == null || int.parse(page) <= 0)) {
       throw const FormatException('Invalid discovery page');
     }
-    final response = await AppHttp.get(uri);
+    final requestClock = Stopwatch()..start();
+    Card127PerformanceProbe.mark('discovery_request_start');
+    late final http.Response response;
+    try {
+      response = await AppHttp.get(uri);
+      Card127PerformanceProbe.duration(
+        'discovery_response_end',
+        requestClock,
+        fields: {
+          'status_code': response.statusCode,
+          'response_bytes': response.bodyBytes.length,
+          'outcome': 'complete_body',
+        },
+      );
+    } on Object catch (error) {
+      Card127PerformanceProbe.duration(
+        'discovery_response_end',
+        requestClock,
+        fields: {
+          'outcome': 'transport_error',
+          'error_type': error.runtimeType.toString(),
+        },
+      );
+      rethrow;
+    }
     if (response.statusCode != 200) {
       throw PlacesException.fromResponse(response);
     }
-    final data = jsonDecode(utf8.decode(response.bodyBytes));
-    final rows = data is List
-        ? data
-        : data is Map
-        ? data['results']
-        : null;
-    if (rows is! List) {
-      throw const FormatException('Invalid discovery response');
+    final transformClock = Stopwatch()..start();
+    Card127PerformanceProbe.mark('discovery_transform_start');
+    try {
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+      final rows = data is List
+          ? data
+          : data is Map
+          ? data['results']
+          : null;
+      if (rows is! List) {
+        throw const FormatException('Invalid discovery response');
+      }
+      final nextPage = data is Map ? data['next'] : null;
+      final count = data is Map ? data['count'] : rows.length;
+      if ((nextPage != null && (nextPage is! String || nextPage.isEmpty)) ||
+          count is! int ||
+          count < 0) {
+        throw const FormatException('Invalid discovery metadata');
+      }
+      final receivedVersion = data is Map ? data['catalog_version'] : null;
+      if (catalog &&
+          (receivedVersion is! String ||
+              receivedVersion.isEmpty ||
+              (version != null &&
+                  next != null &&
+                  receivedVersion != version))) {
+        throw const FormatException('Invalid catalog version');
+      }
+      final result = DiscoveryPage(
+        rows
+            .whereType<Map>()
+            .map(
+              (p) => catalog
+                  ? MapPlace.external(Map<String, dynamic>.from(p))
+                  : MapPlace.internal(Map<String, dynamic>.from(p)),
+            )
+            .where(
+              (p) => catalog
+                  ? p.catalogId != null &&
+                        p.externalId != null &&
+                        p.hasCoordinates
+                  : p.internalId != null,
+            )
+            .toList(),
+        nextPage as String?,
+        count,
+        catalogVersion: catalog ? receivedVersion as String : null,
+        complete: !catalog || data is Map && data['coverage_complete'] == true,
+        available: !catalog || data is Map && data['available'] == true,
+      );
+      Card127PerformanceProbe.duration(
+        'discovery_transform_end',
+        transformClock,
+        fields: {'result_count': result.places.length, 'outcome': 'success'},
+      );
+      return result;
+    } on Object catch (error) {
+      Card127PerformanceProbe.duration(
+        'discovery_transform_end',
+        transformClock,
+        fields: {
+          'outcome': 'invalid_response',
+          'error_type': error.runtimeType.toString(),
+        },
+      );
+      rethrow;
     }
-    final nextPage = data is Map ? data['next'] : null;
-    final count = data is Map ? data['count'] : rows.length;
-    if ((nextPage != null && (nextPage is! String || nextPage.isEmpty)) ||
-        count is! int ||
-        count < 0) {
-      throw const FormatException('Invalid discovery metadata');
-    }
-    final receivedVersion = data is Map ? data['catalog_version'] : null;
-    if (catalog &&
-        (receivedVersion is! String ||
-            receivedVersion.isEmpty ||
-            (version != null && next != null && receivedVersion != version))) {
-      throw const FormatException('Invalid catalog version');
-    }
-    return DiscoveryPage(
-      rows
-          .whereType<Map>()
-          .map(
-            (p) => catalog
-                ? MapPlace.external(Map<String, dynamic>.from(p))
-                : MapPlace.internal(Map<String, dynamic>.from(p)),
-          )
-          .where(
-            (p) => catalog
-                ? p.catalogId != null &&
-                      p.externalId != null &&
-                      p.hasCoordinates
-                : p.internalId != null,
-          )
-          .toList(),
-      nextPage as String?,
-      count,
-      catalogVersion: catalog ? receivedVersion as String : null,
-      complete: !catalog || data is Map && data['coverage_complete'] == true,
-      available: !catalog || data is Map && data['available'] == true,
-    );
   }
 
   Future<DiscoveryPage> _fetchUnified(
@@ -194,39 +241,62 @@ class PlacesService {
   ) async {
     final endpoint = Uri.parse('${Config.baseUrl}/api/locais/descoberta/');
     final session = AppHttp.sessionRevision.value;
+    final requestClock = Stopwatch()..start();
+    Card127PerformanceProbe.mark('discovery_request_start');
     late http.Response response;
-    if (query.personal) {
-      if (!AppHttp.authenticated) {
-        throw const PlacesException('session_required', 401);
+    try {
+      if (query.personal) {
+        if (!AppHttp.authenticated) {
+          throw const PlacesException('session_required', 401);
+        }
+        if (next != null &&
+            (next.length > 3000 ||
+                !RegExp(r'^[A-Za-z0-9_.:\-]+$').hasMatch(next))) {
+          throw const FormatException('Unsafe private continuation');
+        }
+        response = await AppHttp.post(
+          endpoint,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            ...query.privateBody!,
+            if (next != null) 'cursor': next,
+          }),
+        );
+      } else {
+        final uri = next == null
+            ? endpoint.replace(queryParameters: query.parameters)
+            : endpoint.resolve(next);
+        final parameters = {...uri.queryParameters}..remove('cursor');
+        if (uri.origin != endpoint.origin ||
+            uri.path != endpoint.path ||
+            uri.userInfo.isNotEmpty ||
+            uri.fragment.isNotEmpty ||
+            uri.queryParametersAll.values.any((v) => v.length != 1) ||
+            parameters.length != query.parameters.length ||
+            query.parameters.entries.any((e) => parameters[e.key] != e.value)) {
+          throw const FormatException('Unsafe discovery continuation');
+        }
+        response = await AppHttp.get(uri);
       }
-      if (next != null &&
-          (next.length > 3000 ||
-              !RegExp(r'^[A-Za-z0-9_.:\-]+$').hasMatch(next))) {
-        throw const FormatException('Unsafe private continuation');
-      }
-      response = await AppHttp.post(
-        endpoint,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          ...query.privateBody!,
-          if (next != null) 'cursor': next,
-        }),
+      Card127PerformanceProbe.duration(
+        'discovery_response_end',
+        requestClock,
+        fields: {
+          'status_code': response.statusCode,
+          'response_bytes': response.bodyBytes.length,
+          'outcome': 'complete_body',
+        },
       );
-    } else {
-      final uri = next == null
-          ? endpoint.replace(queryParameters: query.parameters)
-          : endpoint.resolve(next);
-      final parameters = {...uri.queryParameters}..remove('cursor');
-      if (uri.origin != endpoint.origin ||
-          uri.path != endpoint.path ||
-          uri.userInfo.isNotEmpty ||
-          uri.fragment.isNotEmpty ||
-          uri.queryParametersAll.values.any((v) => v.length != 1) ||
-          parameters.length != query.parameters.length ||
-          query.parameters.entries.any((e) => parameters[e.key] != e.value)) {
-        throw const FormatException('Unsafe discovery continuation');
-      }
-      response = await AppHttp.get(uri);
+    } on Object catch (error) {
+      Card127PerformanceProbe.duration(
+        'discovery_response_end',
+        requestClock,
+        fields: {
+          'outcome': 'transport_error',
+          'error_type': error.runtimeType.toString(),
+        },
+      );
+      rethrow;
     }
     if (session != AppHttp.sessionRevision.value) {
       throw const PlacesException('session_changed', 0);
@@ -237,37 +307,57 @@ class PlacesService {
       }
       throw PlacesException.fromResponse(response);
     }
-    final body = jsonDecode(utf8.decode(response.bodyBytes));
-    if (body is! Map ||
-        body['results'] is! List ||
-        body['count'] is! int ||
-        body['count'] < 0 ||
-        body['scope'] is! Map ||
-        body['version'] is! String ||
-        (body['next'] != null && body['next'] is! String)) {
-      throw const FormatException('Invalid consolidated discovery');
+    final transformClock = Stopwatch()..start();
+    Card127PerformanceProbe.mark('discovery_transform_start');
+    try {
+      final body = jsonDecode(utf8.decode(response.bodyBytes));
+      if (body is! Map ||
+          body['results'] is! List ||
+          body['count'] is! int ||
+          body['count'] < 0 ||
+          body['scope'] is! Map ||
+          body['version'] is! String ||
+          (body['next'] != null && body['next'] is! String)) {
+        throw const FormatException('Invalid consolidated discovery');
+      }
+      final places = (body['results'] as List).map((raw) {
+        if (raw is! Map || raw['canonical_id'] is! String) {
+          throw const FormatException('Invalid canonical place');
+        }
+        final value = Map<String, dynamic>.from(raw);
+        final place = value['id_local'] != null
+            ? MapPlace.internal(value)
+            : MapPlace.external(value);
+        if (place.id != value['canonical_id']) {
+          throw const FormatException('Canonical identity mismatch');
+        }
+        return place;
+      }).toList();
+      final result = DiscoveryPage(
+        places,
+        body['next'] as String?,
+        body['count'] as int,
+        catalogVersion: body['version'] as String,
+        scope: Map<String, dynamic>.from(body['scope'] as Map),
+        complete: body['scope']['coverage_complete'] == true,
+      );
+      Card127PerformanceProbe.duration(
+        'discovery_transform_end',
+        transformClock,
+        fields: {'result_count': result.places.length, 'outcome': 'success'},
+      );
+      return result;
+    } on Object catch (error) {
+      Card127PerformanceProbe.duration(
+        'discovery_transform_end',
+        transformClock,
+        fields: {
+          'outcome': 'invalid_response',
+          'error_type': error.runtimeType.toString(),
+        },
+      );
+      rethrow;
     }
-    final places = (body['results'] as List).map((raw) {
-      if (raw is! Map || raw['canonical_id'] is! String) {
-        throw const FormatException('Invalid canonical place');
-      }
-      final value = Map<String, dynamic>.from(raw);
-      final place = value['id_local'] != null
-          ? MapPlace.internal(value)
-          : MapPlace.external(value);
-      if (place.id != value['canonical_id']) {
-        throw const FormatException('Canonical identity mismatch');
-      }
-      return place;
-    }).toList();
-    return DiscoveryPage(
-      places,
-      body['next'] as String?,
-      body['count'] as int,
-      catalogVersion: body['version'] as String,
-      scope: Map<String, dynamic>.from(body['scope'] as Map),
-      complete: body['scope']['coverage_complete'] == true,
-    );
   }
 
   Future<Map<String, dynamic>> fetchCatalogPlace(int id) async {
