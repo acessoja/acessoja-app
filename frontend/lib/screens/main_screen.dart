@@ -43,6 +43,7 @@ import 'package:geolocator/geolocator.dart';
 
 import '../services/app_http.dart';
 import '../services/review_changes.dart';
+import '../services/card127_performance_probe.dart';
 import '../services/places_service.dart';
 import '../models/map_place.dart';
 import '../services/location_service.dart';
@@ -944,6 +945,7 @@ class _MainScreenState extends SafeState<MainScreen>
   @override
   void initState() {
     super.initState();
+    Card127PerformanceProbe.mark('main_screen_enter', once: true);
     WidgetsBinding.instance.addObserver(this);
     _externalDiscovery.addListener(_externalChanged);
     _catalog.addListener(_externalChanged);
@@ -2822,6 +2824,10 @@ class _MainScreenState extends SafeState<MainScreen>
                                             ),
                                         onMapReady: () {
                                           _mapReady = true;
+                                          Card127PerformanceProbe.mark(
+                                            'map_ready',
+                                            once: true,
+                                          );
                                           WidgetsBinding.instance
                                               .addPostFrameCallback((_) {
                                                 if (!mounted) {

@@ -17,11 +17,18 @@ import 'screens/place_detail_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/password_recovery_screen.dart';
 import 'services/account_service.dart';
+import 'services/card127_performance_probe.dart';
 
 Future<void> main() async {
+  Card127PerformanceProbe.mark('app_bootstrap_start', once: true);
   WidgetsFlutterBinding.ensureInitialized();
 
+  final preferencesStarted = Stopwatch()..start();
   final preferences = AppPreferences(await SharedPreferences.getInstance());
+  Card127PerformanceProbe.duration(
+    'app_preferences_restore_end',
+    preferencesStarted,
+  );
   runApp(
     MyApp(preferences: preferences, sessionBootstrap: AppHttp.restoreSession()),
   );
@@ -51,6 +58,9 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Card127PerformanceProbe.mark('flutter_first_frame', once: true);
+    });
     _themeController = AppThemeController(
       initialMode: widget.preferences.themeMode,
       onChanged: widget.preferences.setThemeMode,
