@@ -161,17 +161,25 @@ Future<void> routeFrame(WidgetTester tester) async {
   }
 }
 
-Future<void> tapVisible(WidgetTester tester, Finder target) async {
-  if (target.evaluate().isEmpty &&
-      find.byKey(const ValueKey('route-more')).evaluate().isNotEmpty) {
-    await tester.ensureVisible(find.byKey(const ValueKey('route-more')));
+Future<void> scrollToRouteAction(WidgetTester tester, Finder target) async {
+  // A atualização da rota pode aumentar o conteúdo do painel após a
+  // primeira rolagem. Aguarda o layout e confere que o centro é clicável.
+  for (var attempt = 0; attempt < 3; attempt++) {
+    await tester.ensureVisible(target);
     await routeFrame(tester);
-    await tester.tap(find.byKey(const ValueKey('route-more')));
+    if (target.hitTestable().evaluate().isNotEmpty) return;
+  }
+  expect(target.hitTestable(), findsOneWidget);
+}
+
+Future<void> tapVisible(WidgetTester tester, Finder target) async {
+  final more = find.byKey(const ValueKey('route-more'));
+  if (target.evaluate().isEmpty && more.evaluate().isNotEmpty) {
+    await scrollToRouteAction(tester, more);
+    await tester.tap(more);
     await routeFrame(tester);
   }
-  await tester.ensureVisible(target);
-  await routeFrame(tester);
-  expect(target.hitTestable(), findsOneWidget);
+  await scrollToRouteAction(tester, target);
   await tester.tap(target);
   await routeFrame(tester);
 }
@@ -209,12 +217,14 @@ Future<void> selectRoute(WidgetTester tester, String name) async {
   await tester.enterText(searchField, name);
   await tester.pump(const Duration(milliseconds: 350));
   await tester.pumpAndSettle();
-  await tester.tap(
-    find.descendant(
-      of: find.byType(MapSearchSheet),
-      matching: find.widgetWithText(ListTile, name),
-    ),
+  final result = find.descendant(
+    of: find.byType(MapSearchSheet),
+    matching: find.widgetWithText(ListTile, name),
   );
+  await tester.ensureVisible(result);
+  await tester.pumpAndSettle();
+  expect(result.hitTestable(), findsOneWidget);
+  await tester.tap(result);
   await tester.pumpAndSettle();
   await tapVisible(tester, find.byKey(const ValueKey('preview-route')));
 }

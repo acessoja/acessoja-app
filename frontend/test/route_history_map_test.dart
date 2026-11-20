@@ -252,12 +252,12 @@ void main() {
         expect(find.byType(SettingsScreen), findsOneWidget);
         await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('map-open-search')));
+        await tester.pumpAndSettle();
         expect(
           find.byKey(const ValueKey('active-filter-resource-piso_tatil')),
           findsOneWidget,
         );
-        await tester.tap(find.byKey(const ValueKey('map-open-search')));
-        await tester.pumpAndSettle();
         expect(
           tester
               .widget<TextField>(find.byKey(const ValueKey('map-place-search')))

@@ -135,6 +135,7 @@ class _MainScreenState extends SafeState<MainScreen>
   Rect? _panelRect;
   List<Rect> _controlRects = [];
   AccessibilityControlsHandle? _accessibilityControls;
+  Animation<double>? _mapRouteAnimation;
   bool _panelActionBusy = false, _measureScheduled = false;
   MapPlace? _lastPreviewRecord;
   PlacePanelContext? _routePanelReturn;
@@ -972,6 +973,12 @@ class _MainScreenState extends SafeState<MainScreen>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _accessibilityControls ??= AccessibilityControlsHandle.of(context);
+    final routeAnimation = ModalRoute.of(context)?.animation;
+    if (_mapRouteAnimation != routeAnimation) {
+      _mapRouteAnimation?.removeStatusListener(_onMapRouteAnimationStatus);
+      _mapRouteAnimation = routeAnimation;
+      _mapRouteAnimation?.addStatusListener(_onMapRouteAnimationStatus);
+    }
     final position = PositionScope.maybeOf(context);
     if (!identical(position, _sharedPosition)) {
       _sharedPosition?.removeListener(_sharedPositionChanged);
@@ -994,6 +1001,7 @@ class _MainScreenState extends SafeState<MainScreen>
 
   @override
   void dispose() {
+    _mapRouteAnimation?.removeStatusListener(_onMapRouteAnimationStatus);
     _accessibilityControls?.dispose();
     _externalDiscovery.removeListener(_externalChanged);
     _externalDiscovery.dispose();
@@ -1098,6 +1106,11 @@ class _MainScreenState extends SafeState<MainScreen>
     });
   }
 
+  void _onMapRouteAnimationStatus(AnimationStatus status) {
+    // A transição muda as coordenadas globais sem reconstruir o mapa.
+    if (status == AnimationStatus.completed) _measureMapAreas();
+  }
+
   void _measureMapAreas() {
     if (_measureScheduled) {
       return;
@@ -1142,6 +1155,120 @@ class _MainScreenState extends SafeState<MainScreen>
         for (final rect in protected) rect.shift(origin),
       ]);
     });
+  }
+
+  Widget _buildMapResultsBadge(BuildContext context, {required bool compact}) {
+    final colors = AppColors.of(context);
+    Widget content(Widget icon, String label, Color color, double fontSize) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          icon,
+          if (!compact) ...[
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: color,
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ],
+      );
+    }
+
+    final count = context.l10n.placeCount(_visiblePlaceCount);
+    final resultsLabel = context.mapText(
+      'Lista dos resultados do mapa',
+      'Map results list',
+    );
+    final retry = context.l10n.retry;
+    final loading = context.l10n.loadingPlaces;
+    return Semantics(
+      key: _countAreaKey,
+      liveRegion: true,
+      child: Container(
+        constraints: compact
+            ? const BoxConstraints.tightFor(width: 48, height: 48)
+            : const BoxConstraints(maxWidth: 170),
+        padding: compact
+            ? EdgeInsets.zero
+            : const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: colors.border),
+          boxShadow: [
+            BoxShadow(
+              color: colors.shadow,
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: _isLoadingLocals
+            ? content(
+                SizedBox.square(
+                  dimension: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: colors.primary,
+                    semanticsLabel: compact ? loading : null,
+                  ),
+                ),
+                loading,
+                colors.text,
+                11,
+              )
+            : _localsLoadFailed
+            ? Tooltip(
+                message: retry,
+                child: InkWell(
+                  key: const ValueKey('map-retry-places'),
+                  onTap: _fetchEstablishments,
+                  child: content(
+                    Icon(Icons.refresh_rounded, color: colors.danger, size: 18),
+                    retry,
+                    colors.danger,
+                    12,
+                  ),
+                ),
+              )
+            : Semantics(
+                button: true,
+                label: resultsLabel,
+                value: count,
+                excludeSemantics: true,
+                onTap: _openVisiblePlaceList,
+                child: Tooltip(
+                  message: resultsLabel,
+                  excludeFromSemantics: true,
+                  child: InkWell(
+                    key: const ValueKey('map-results'),
+                    focusNode: _mapResultsFocus,
+                    onTap: _openVisiblePlaceList,
+                    child: content(
+                      Icon(
+                        Icons.place_outlined,
+                        color: colors.primaryDark,
+                        size: 17,
+                      ),
+                      count,
+                      colors.text,
+                      11,
+                    ),
+                  ),
+                ),
+              ),
+      ),
+    );
   }
 
   /// Aberta ao tocar no selo com a contagem de locais.
@@ -1881,27 +2008,31 @@ class _MainScreenState extends SafeState<MainScreen>
                           const SizedBox(height: AppSpacing.sm),
                           _activeFilters(),
                           if (_internalBounds != null)
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.crop_free,
-                                  size: 18,
-                                  color: colors.muted,
-                                ),
-                                const SizedBox(width: AppSpacing.sm),
-                                Expanded(
-                                  child: Text(
-                                    context.mapText(
-                                      'Mostrando a área visível do mapa',
-                                      'Showing the visible map area',
-                                    ),
-                                    style: TextStyle(
-                                      fontSize: AppTypography.caption,
+                            LayoutBuilder(
+                              builder: (context, bounds) {
+                                final label = Row(
+                                  children: [
+                                    Icon(
+                                      Icons.crop_free,
+                                      size: 18,
                                       color: colors.muted,
                                     ),
-                                  ),
-                                ),
-                                TextButton(
+                                    const SizedBox(width: AppSpacing.sm),
+                                    Expanded(
+                                      child: Text(
+                                        context.mapText(
+                                          'Mostrando a área visível do mapa',
+                                          'Showing the visible map area',
+                                        ),
+                                        style: TextStyle(
+                                          fontSize: AppTypography.caption,
+                                          color: colors.muted,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                                final wholeCity = TextButton(
                                   key: const ValueKey('remove-search-area'),
                                   onPressed: _removeSearchArea,
                                   child: Text(
@@ -1910,8 +2041,24 @@ class _MainScreenState extends SafeState<MainScreen>
                                       'Search the whole city',
                                     ),
                                   ),
-                                ),
-                              ],
+                                );
+                                final scale =
+                                    MediaQuery.textScalerOf(context).scale(16) /
+                                    16;
+                                if (bounds.maxWidth < 380 * scale) {
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [label, wholeCity],
+                                  );
+                                }
+                                return Row(
+                                  children: [
+                                    Expanded(child: label),
+                                    wholeCity,
+                                  ],
+                                );
+                              },
                             ),
                           const SizedBox(height: AppSpacing.sm),
                           if (_isLoadingLocals)
@@ -2002,6 +2149,16 @@ class _MainScreenState extends SafeState<MainScreen>
                                             (local['endereco'] ?? '')
                                                 .toString()
                                                 .trim();
+                                        final distance = _hasLocation
+                                            ? _distanceLabelForLocal(local)
+                                            : null;
+                                        final inlineDistance =
+                                            MediaQuery.sizeOf(context).width <
+                                                480 ||
+                                            MediaQuery.textScalerOf(
+                                                  context,
+                                                ).scale(AppTypography.caption) >
+                                                AppTypography.caption * 1.3;
                                         return Material(
                                           color: Colors.transparent,
                                           child: ListTile(
@@ -2024,16 +2181,22 @@ class _MainScreenState extends SafeState<MainScreen>
                                             ),
                                             subtitle: Text(
                                               [
-                                                context.placeCategory(place),
-                                                if (address.isNotEmpty)
-                                                  address,
-                                              ].join(' · ') +
+                                                    context.placeCategory(
+                                                      place,
+                                                    ),
+                                                    if (address.isNotEmpty)
+                                                      address,
+                                                  ].join(' · ') +
                                                   (external
                                                       ? '\n${context.mapText('Fonte: OpenStreetMap', 'Source: OpenStreetMap')}'
                                                       : '') +
                                                   (missing.isNotEmpty
                                                       ? '\n${context.accessibilityText('Informações incompletas: ', 'Incomplete information: ')}'
                                                             '${missing.map(context.featureLabel).join(', ')}'
+                                                      : '') +
+                                                  (inlineDistance &&
+                                                          distance != null
+                                                      ? '\n$distance'
                                                       : ''),
                                               style: TextStyle(
                                                 fontSize: AppTypography.caption,
@@ -2042,14 +2205,14 @@ class _MainScreenState extends SafeState<MainScreen>
                                             ),
                                             // Sem localização não há distância
                                             // a mostrar; evita "Distância..." cortado.
-                                            trailing: _hasLocation
+                                            trailing:
+                                                !inlineDistance &&
+                                                    distance != null
                                                 ? Text(
-                                                    _distanceLabelForLocal(
-                                                      local,
-                                                    ),
+                                                    distance,
                                                     style: TextStyle(
-                                                      fontSize: AppTypography
-                                                          .caption,
+                                                      fontSize:
+                                                          AppTypography.caption,
                                                       fontWeight:
                                                           FontWeight.w600,
                                                       color: colors.text,
@@ -3255,159 +3418,17 @@ class _MainScreenState extends SafeState<MainScreen>
                                     ),
                                   ),
                                   if (!_isRouting && !_preview.visible)
-                                    if (MediaQuery.sizeOf(context).height >=
-                                            480 &&
-                                        !compactMapControls)
-                                      Positioned(
-                                        top:
-                                            MediaQuery.of(context).padding.top +
-                                            16,
-                                        right: 16,
-                                        child: Semantics(
-                                          key: _countAreaKey,
-                                          liveRegion: true,
-                                          child: Container(
-                                            constraints: const BoxConstraints(
-                                              maxWidth: 170,
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 8,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: colors.surface,
-                                              borderRadius:
-                                                  BorderRadius.circular(14),
-                                              border: Border.all(
-                                                color: colors.border,
-                                              ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: colors.shadow,
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0, 3),
-                                                ),
-                                              ],
-                                            ),
-                                            child: _isLoadingLocals
-                                                ? Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      SizedBox(
-                                                        width: 16,
-                                                        height: 16,
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                              strokeWidth: 2,
-                                                              color: colors
-                                                                  .primary,
-                                                            ),
-                                                      ),
-                                                      const SizedBox(width: 8),
-                                                      Flexible(
-                                                        child: Text(
-                                                          context
-                                                              .l10n
-                                                              .loadingPlaces,
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          style: TextStyle(
-                                                            color: colors.text,
-                                                            fontSize: 11,
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  )
-                                                : _localsLoadFailed
-                                                ? InkWell(
-                                                    key: const ValueKey(
-                                                      'map-retry-places',
-                                                    ),
-                                                    onTap: _fetchEstablishments,
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        Icon(
-                                                          Icons.refresh_rounded,
-                                                          color: colors.danger,
-                                                          size: 18,
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 6,
-                                                        ),
-                                                        Flexible(
-                                                          child: Text(
-                                                            context.l10n.retry,
-                                                            maxLines: 2,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            style: TextStyle(
-                                                              color:
-                                                                  colors.danger,
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w800,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  )
-                                                : Semantics(
-                                                    button: true,
-                                                    label: context.mapText(
-                                                      'Lista dos resultados do mapa',
-                                                      'Map results list',
-                                                    ),
-                                                    value: context.l10n.placeCount(
-                                                      _visiblePlaceCount,
-                                                    ),
-                                                    excludeSemantics: true,
-                                                    child: InkWell(
-                                                    key: const ValueKey('map-results'),
-                                                    onTap: _openVisiblePlaceList,
-                                                    child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      Icon(
-                                                        Icons.place_outlined,
-                                                        color:
-                                                            colors.primaryDark,
-                                                        size: 17,
-                                                      ),
-                                                      const SizedBox(width: 6),
-                                                      Flexible(
-                                                        child: Text(
-                                                          context.l10n.placeCount(
-                                                            _visiblePlaceCount,
-                                                          ),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          style: TextStyle(
-                                                            color: colors.text,
-                                                            fontSize: 11,
-                                                            fontWeight:
-                                                                FontWeight.w800,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  ),
-                                                  ),
-                                          ),
-                                        ),
+                                    Positioned(
+                                      top:
+                                          MediaQuery.of(context).padding.top +
+                                          16,
+                                      left: compactMapControls ? 80 : null,
+                                      right: compactMapControls ? null : 16,
+                                      child: _buildMapResultsBadge(
+                                        context,
+                                        compact: compactMapControls,
                                       ),
+                                    ),
                                   Positioned(
                                     top:
                                         MediaQuery.of(context).padding.top + 16,
@@ -3505,48 +3526,48 @@ class _MainScreenState extends SafeState<MainScreen>
                                     child: KeyedSubtree(
                                       key: _recenterAreaKey,
                                       child: FloatingActionButton(
-                                      key: const ValueKey(
-                                        'map-location-refresh',
-                                      ),
-                                      mini: false,
-                                      backgroundColor: colors.surface,
-                                      foregroundColor: colors.primary,
-                                      tooltip: context.l10n.centerLocation,
-                                      elevation: 3,
-                                      onPressed: () async {
-                                        if (_freshLocation) {
-                                          if (_navigation.phase ==
-                                              NavigationPhase.running) {
-                                            _navigation.setFollow(true);
+                                        key: const ValueKey(
+                                          'map-location-refresh',
+                                        ),
+                                        mini: false,
+                                        backgroundColor: colors.surface,
+                                        foregroundColor: colors.primary,
+                                        tooltip: context.l10n.centerLocation,
+                                        elevation: 3,
+                                        onPressed: () async {
+                                          if (_freshLocation) {
+                                            if (_navigation.phase ==
+                                                NavigationPhase.running) {
+                                              _navigation.setFollow(true);
+                                            }
+                                            _mapController.move(
+                                              _currentLocation,
+                                              14.5,
+                                            );
+                                            return;
                                           }
-                                          _mapController.move(
-                                            _currentLocation,
-                                            14.5,
-                                          );
-                                          return;
-                                        }
-                                        if (widget.trackLocation) {
-                                          await _initLocationTracking();
-                                        }
-                                        if (!context.mounted) {
-                                          return;
-                                        }
-                                        if (_freshLocation) {
-                                          if (_navigation.phase ==
-                                              NavigationPhase.running) {
-                                            _navigation.setFollow(true);
+                                          if (widget.trackLocation) {
+                                            await _initLocationTracking();
                                           }
-                                          _mapController.move(
-                                            _currentLocation,
-                                            14.5,
-                                          );
-                                        } else if (_locationMessage == null) {
-                                          _showErrorSnackBar(
-                                            context.l10n.locationUnavailable,
-                                          );
-                                        }
-                                      },
-                                      child: const Icon(Icons.my_location),
+                                          if (!context.mounted) {
+                                            return;
+                                          }
+                                          if (_freshLocation) {
+                                            if (_navigation.phase ==
+                                                NavigationPhase.running) {
+                                              _navigation.setFollow(true);
+                                            }
+                                            _mapController.move(
+                                              _currentLocation,
+                                              14.5,
+                                            );
+                                          } else if (_locationMessage == null) {
+                                            _showErrorSnackBar(
+                                              context.l10n.locationUnavailable,
+                                            );
+                                          }
+                                        },
+                                        child: const Icon(Icons.my_location),
                                       ),
                                     ),
                                   ),

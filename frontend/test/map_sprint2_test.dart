@@ -584,6 +584,7 @@ void main() {
   testWidgets('falha interna não é anunciada como vazio real', (tester) async {
     mockApi(internalError: true, externals: []);
     await pumpMap(tester);
+    await openDiscoveryDetails(tester);
     expect(
       find.textContaining(
         'Nenhum local corresponde aos dados e filtros atuais',
@@ -594,7 +595,10 @@ void main() {
       find.textContaining('Não foi possível atualizar os locais do AcessoJá'),
       findsOneWidget,
     );
-    expect(find.text('Limpar filtros'), findsOneWidget);
+    expect(
+      find.widgetWithText(OutlinedButton, 'Tentar novamente'),
+      findsOneWidget,
+    );
   });
 
   for (final failure in [
@@ -608,12 +612,11 @@ void main() {
       mockApi();
       await pumpMap(tester, location: FakeLocation(failure: failure));
       final message = switch (failure) {
-        'Permissão negada' =>
-          'Permissão de localização negada. Você pode continuar consultando o mapa.',
-        'Localização bloqueada' =>
-          'A localização está bloqueada nas permissões. Revise as configurações.',
+        'Permissão negada' => 'Permissão de localização negada. Você pode continuar consultando o mapa.',
+        'Localização bloqueada' => 'A localização está bloqueada nas permissões. Revise as configurações.',
         _ => 'A localização demorou para responder. Tente novamente.',
       };
+      await openDiscoveryDetails(tester);
       expect(find.text(message), findsOneWidget);
       expect(
         find.byKey(const ValueKey('map-place-acessoja:7')),
@@ -625,6 +628,7 @@ void main() {
   testWidgets('localização de baixa precisão é informada', (tester) async {
     mockApi();
     await pumpMap(tester, location: const FakeLocation(accuracy: 200));
+    await openDiscoveryDetails(tester);
     expect(
       find.textContaining('A localização está pouco precisa'),
       findsOneWidget,
