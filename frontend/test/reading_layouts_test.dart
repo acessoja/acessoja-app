@@ -587,22 +587,17 @@ void main() {
                 'Initial position $buttonRect must leave $id $target reachable',
           );
         }
-        if (size.height < 480) {
-          await tester.tap(find.byKey(const ValueKey('map-status-open')));
-          await tester.pumpAndSettle();
-          expect(find.text('Fontes: AcessoJá e OpenStreetMap'), findsOneWidget);
-          await tester.binding.handlePopRoute();
-          await tester.pumpAndSettle();
-        } else {
-          await tester.tap(find.byKey(const ValueKey('map-status-toggle')));
-          await tester.pumpAndSettle();
-          expect(
-            find.byKey(const ValueKey('discovery-status-scroll')),
-            findsNothing,
-          );
-          await tester.tap(find.byKey(const ValueKey('map-status-toggle')));
-          await tester.pumpAndSettle();
-        }
+        // Os detalhes da descoberta ficam na folha de busca, recolhidos.
+        await tester.tap(find.byKey(const ValueKey('map-open-search')));
+        await tester.pumpAndSettle();
+        final details = find.byKey(const ValueKey('discovery-details'));
+        await tester.ensureVisible(details);
+        await tester.pumpAndSettle();
+        await tester.tap(details);
+        await tester.pumpAndSettle();
+        expect(find.text('Fontes: AcessoJá e OpenStreetMap'), findsOneWidget);
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('map-open-search')));
         await tester.pumpAndSettle();
         expect(find.byKey(const ValueKey('map-place-search')), findsOneWidget);

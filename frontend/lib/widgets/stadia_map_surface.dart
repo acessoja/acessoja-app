@@ -312,16 +312,27 @@ class _StadiaMapSurfaceState extends State<StadiaMapSurface> {
       children: [
         Expanded(
           flex: failed ? 3 : 1,
+          // Os créditos exigidos pela licença (ODbL e termos do Stadia) entram
+          // como camada do mapa: ficam visíveis sobre os tiles, mas abaixo da
+          // busca e dos painéis desenhados pela tela.
           child: widget.builder(
             context,
-            failed
-                ? const SizedBox.shrink()
-                : _StadiaTiles(
+            Stack(
+              fit: StackFit.expand,
+              children: [
+                if (!failed)
+                  _StadiaTiles(
                     key: ValueKey(_attempt),
                     provider: widget.tileProvider,
                     configuration: widget.configuration,
                     onError: (error) => _report(error, attempt),
                   ),
+                const Align(
+                  alignment: Alignment.bottomRight,
+                  child: StadiaAttribution(),
+                ),
+              ],
+            ),
           ),
         ),
         if (failed)
@@ -379,7 +390,6 @@ class _StadiaMapSurfaceState extends State<StadiaMapSurface> {
               ),
             ),
           ),
-        const StadiaAttribution(),
       ],
     );
   }
@@ -387,30 +397,77 @@ class _StadiaMapSurfaceState extends State<StadiaMapSurface> {
 
 class StadiaAttribution extends StatelessWidget {
   const StadiaAttribution({super.key});
+
+  static const credits = [
+    ('© Stadia Maps', 'https://stadiamaps.com/attribution/'),
+    ('© OpenMapTiles', 'https://openmaptiles.org/'),
+    ('© OpenStreetMap contributors', 'https://www.openstreetmap.org/copyright'),
+  ];
+
+  void _openCredits(BuildContext context) => showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    builder: (sheetContext) => Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.mapText('Créditos do mapa', 'Map credits'),
+            style: Theme.of(sheetContext).textTheme.titleMedium,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          for (final credit in credits)
+            AppLink(
+              label: credit.$1,
+              icon: Icons.open_in_new,
+              onPressed: () => launchUrl(Uri.parse(credit.$2)),
+            ),
+        ],
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    return Material(
-      color: colors.surface,
-      child: SizedBox(
-        width: double.infinity,
-        child: Wrap(
-          alignment: WrapAlignment.center,
-          children: [
-            for (final credit in const [
-              ('© Stadia Maps', 'https://stadiamaps.com/attribution/'),
-              ('© OpenMapTiles', 'https://openmaptiles.org/'),
-              (
-                '© OpenStreetMap contributors',
-                'https://www.openstreetmap.org/copyright',
+    final style = TextStyle(fontSize: 10, height: 1.2, color: colors.text);
+    // Linha mínima: o texto completo com links e tamanho normal fica na folha
+    // de créditos, aberta ao tocar.
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.3,
+      child: Semantics(
+        button: true,
+        label: context.mapText(
+          'Créditos do mapa: Stadia Maps, OpenMapTiles e OpenStreetMap',
+          'Map credits: Stadia Maps, OpenMapTiles and OpenStreetMap',
+        ),
+        excludeSemantics: true,
+        child: Material(
+          color: colors.surface.withValues(alpha: .8),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(AppSpacing.sm),
+          ),
+          child: InkWell(
+            key: const ValueKey('map-credits'),
+            onTap: () => _openCredits(context),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: 2,
               ),
-            ])
-              AppLink(
-                label: credit.$1,
-                onPressed: () => launchUrl(Uri.parse(credit.$2)),
-                style: TextStyle(fontSize: 11, color: colors.text),
+              child: Wrap(
+                alignment: WrapAlignment.end,
+                children: [
+                  for (final (index, credit) in credits.indexed) ...[
+                    if (index > 0) Text(' · ', style: style),
+                    Text(credit.$1, style: style),
+                  ],
+                ],
               ),
-          ],
+            ),
+          ),
         ),
       ),
     );

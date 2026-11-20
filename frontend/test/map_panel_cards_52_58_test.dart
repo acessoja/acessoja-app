@@ -19,7 +19,6 @@ import 'package:flutter_application_1/services/place_preview_controller.dart';
 import 'package:flutter_application_1/services/places_service.dart';
 import 'package:flutter_application_1/widgets/persistent_place_panel.dart';
 import 'package:flutter_application_1/widgets/resource_information_list.dart';
-import 'package:flutter_application_1/widgets/map_cluster_sheet.dart';
 import 'map_cards_04_06_test.dart' as fixture;
 
 class ControlledPlaces extends PlacesService {
@@ -496,11 +495,14 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('preview-details')), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('map-results')));
+      // Com o painel aberto, o selo de contagem (que abre a lista) fica oculto;
+      // a folha de busca é a rota sobreposta usada para verificar o Escape.
+      await tester.tap(find.byKey(const ValueKey('map-open-search')));
       await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('map-place-search')), findsOneWidget);
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
-      expect(find.byType(MapClusterSheet), findsNothing);
+      expect(find.byKey(const ValueKey('map-place-search')), findsNothing);
       expect(find.byKey(const ValueKey('preview-close')), findsOneWidget);
       map.move(const LatLng(-16.3, -48.9), zoom);
       await tester.pumpAndSettle();

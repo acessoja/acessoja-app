@@ -61,7 +61,7 @@ def configure_security(config, env):
         SESSION_COOKIE_AGE=43200, SESSION_SAVE_EVERY_REQUEST=False,
         CORS_ALLOW_CREDENTIALS=True, CORS_ALLOW_HEADERS=[*default_headers, "x-session-user"],
         SESSION_COOKIE_SAMESITE="Lax", CSRF_COOKIE_SAMESITE="Lax",
-        CSRF_TRUSTED_ORIGINS=env.list("CSRF_TRUSTED_ORIGINS", default=[]),
+        CSRF_TRUSTED_ORIGINS=env.list("CSRF_TRUSTED_ORIGINS", default=[] if strict else [origin]),
         STATIC_ROOT=Path(env("STATIC_ROOT", default=str(config["BASE_DIR"] / "staticfiles"))),
         MEDIA_ROOT=Path(env("MEDIA_ROOT", default=str(config["BASE_DIR"] / "private-media"))),
         MEDIA_URL="/private-media/", DATA_UPLOAD_MAX_MEMORY_SIZE=3 * 1024 * 1024,

@@ -21,8 +21,10 @@ class AppPreferences extends ChangeNotifier {
   static const readingKey = 'reading_preferences_v1';
   static const buttonVisibleKey = 'accessibility_button_visible_v1';
   static const buttonPositionKey = 'accessibility_button_position_v1';
-  // Leave the rightmost map control column free even at a 320 px viewport.
-  static const defaultButtonPosition = Offset(.75, .25);
+  // Canto inferior direito, acima da navegação/rodapé informados por
+  // AccessibilityBottomBoundary. A posição antiga (.75, .25) ficava no meio do
+  // conteúdo e cobria logo, campos de formulário e o cartão de dados do mapa.
+  static const defaultButtonPosition = Offset(1, 1);
   ReadingPreferences _reading;
   bool _showAccessibilityButton;
   Offset _buttonPosition;
@@ -34,12 +36,19 @@ class AppPreferences extends ChangeNotifier {
   Offset get buttonPosition => _buttonPosition;
   bool get readingSaveFailed => _saveFailed;
 
+  /// Padrão anterior. Qualquer ajuste de leitura gravava a posição junto,
+  /// então esse valor salvo não indica escolha da pessoa e é migrado.
+  static const legacyDefaultButtonPosition = Offset(.75, .25);
+
   static Offset _readPosition(Object? raw) {
     final data = ReadingPreferences.decode(raw);
-    return Offset(
+    final position = Offset(
       ReadingPreferences.number(data['x'], defaultButtonPosition.dx, 0, 1),
       ReadingPreferences.number(data['y'], defaultButtonPosition.dy, 0, 1),
     );
+    return position == legacyDefaultButtonPosition
+        ? defaultButtonPosition
+        : position;
   }
 
   /// Changes take effect in memory immediately. Serial writes never race.

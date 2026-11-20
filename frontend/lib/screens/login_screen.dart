@@ -411,9 +411,11 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                                       Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute<void>(
-                                          builder: (_) => MainScreen(
+                                          builder: (routeContext) => MainScreen(
+                                            // O contexto do login é descartado
+                                            // pelo pushReplacement; usar o da rota.
                                             userName: accountText(
-                                              context,
+                                              routeContext,
                                               'Visitante',
                                               'Visitor',
                                             ),
