@@ -160,3 +160,21 @@ def test_i04_readiness_db_cache_and_mail_failure_are_neutral_and_recover(setting
     assert client.get('/health/ready/').status_code == 503
     job.delete()
     assert client.get('/health/ready/').status_code == 200
+
+
+def test_local_trusts_frontend_origin_for_csrf_by_default(tmp_path):
+    config = configuration(tmp_path)
+    config['DEBUG'] = True
+    env_vars = {'APP_ENV': 'local', 'FRONTEND_PUBLIC_ORIGIN': 'http://localhost:7357'}
+    with patch.dict(os.environ, env_vars, clear=True):
+        configure_security(config, environ.Env())
+    assert config['CSRF_TRUSTED_ORIGINS'] == ['http://localhost:7357']
+
+
+def test_local_csrf_origins_follow_explicit_environment(tmp_path):
+    config = configuration(tmp_path)
+    config['DEBUG'] = True
+    env_vars = {'APP_ENV': 'local', 'CSRF_TRUSTED_ORIGINS': 'http://localhost:7357,http://127.0.0.1:7357'}
+    with patch.dict(os.environ, env_vars, clear=True):
+        configure_security(config, environ.Env())
+    assert config['CSRF_TRUSTED_ORIGINS'] == ['http://localhost:7357', 'http://127.0.0.1:7357']

@@ -363,15 +363,14 @@ void main() {
         return map.jsonResponse([]);
       });
       await map.pumpMap(tester);
-      expect(
-        find.text('4 locais carregados nesta visualização'),
-        findsOneWidget,
-      );
+      // Selo de contagem no topo do mapa (abre a lista ao tocar).
+      expect(find.text('4 locais'), findsOneWidget);
       expect(
         find.text('4'),
         findsOneWidget,
       ); // Cluster cardinality, not a single establishment.
-      await map.openSearch(tester);
+      // As contagens ficam nos detalhes recolhidos da folha de busca.
+      await map.openDiscoveryDetails(tester);
       expect(find.textContaining('Carregados: 8 / 8'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.text('Café 8'),
@@ -417,9 +416,8 @@ void main() {
       await tester.drag(find.byType(FlutterMap), const Offset(100, 0));
       await tester.pump(const Duration(milliseconds: 450));
       await tester.pumpAndSettle();
-      final searchArea = find.byKey(const ValueKey('map-search-area'));
-      await tester.ensureVisible(searchArea);
-      await tester.tap(searchArea);
+      // A área visível é recarregada sozinha depois que o mapa para.
+      await tester.pump(const Duration(milliseconds: 850));
       await tester.pumpAndSettle();
       await map.openSearch(tester);
       await tester.enterText(

@@ -191,6 +191,8 @@ class _AccessibilityHostState extends State<AccessibilityHost> {
     value.dy.clamp(area.top, area.bottom).toDouble(),
   );
 
+  static double _cost(Offset delta) => delta.dx.abs() * 4 + delta.dy.abs();
+
   Offset? _unobscured(Offset requested, Rect area, List<Rect> controls) {
     bool free(Offset point) => !controls.any(
       (rect) =>
@@ -208,9 +210,9 @@ class _AccessibilityHostState extends State<AccessibilityHost> {
           for (final x in xs)
             for (final y in ys) _clamp(Offset(x, y), area),
         }.where(free).toList()..sort(
-          (a, b) => (a - requested).distanceSquared.compareTo(
-            (b - requested).distanceSquared,
-          ),
+          // Prefere subir/descer na mesma coluna: no canto direito o botão
+          // fica empilhado acima dos controles do mapa, não ao lado deles.
+          (a, b) => _cost(a - requested).compareTo(_cost(b - requested)),
         );
     return candidates.isEmpty ? null : candidates.first;
   }

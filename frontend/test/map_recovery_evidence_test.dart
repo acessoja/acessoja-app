@@ -127,6 +127,14 @@ void main() {
       controller.move(const LatLng(-16.3267, -48.9528), 17);
       await tester.pump(const Duration(milliseconds: 150));
       await tester.pumpAndSettle();
+      // Fontes, fonte externa e consulta regional ficam nos detalhes da folha
+      // de busca; a folha permanece aberta durante a verificação.
+      await map.openSearch(tester);
+      final details = find.byKey(const ValueKey('discovery-details'));
+      await tester.ensureVisible(details);
+      await tester.pumpAndSettle();
+      await tester.tap(details);
+      await tester.pumpAndSettle();
       Future<void> expectRegionalMarker() async {
         final toggle = find.byKey(const ValueKey('toggle-regional-scope'));
         await tester.ensureVisible(toggle);
@@ -186,7 +194,6 @@ void main() {
       expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsNothing);
       expect(find.text('4'), findsOneWidget);
       expect(externalCalls, 3);
-      await map.openSearch(tester);
       expect(find.textContaining('Carregados: 8 / 8'), findsOneWidget);
       await capture('03_oito_locais_na_lista');
       await tester.pumpWidget(const SizedBox());

@@ -204,6 +204,17 @@ Future<void> openSearch(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// Os detalhes da descoberta (fontes, fonte externa, consulta regional) ficam
+/// recolhidos dentro da folha de busca.
+Future<void> openDiscoveryDetails(WidgetTester tester) async {
+  await openSearch(tester);
+  final details = find.byKey(const ValueKey('discovery-details'));
+  await tester.ensureVisible(details);
+  await tester.pumpAndSettle();
+  await tester.tap(details);
+  await tester.pumpAndSettle();
+}
+
 Future<void> tapPreview(WidgetTester tester, Finder target) async {
   await tester.ensureVisible(target);
   await tester.pumpAndSettle();
@@ -413,6 +424,7 @@ void main() {
     mockApi(externalError: true);
     await pumpMap(tester);
     expect(find.byKey(const ValueKey('map-place-acessoja:7')), findsOneWidget);
+    await openDiscoveryDetails(tester);
     expect(
       find.textContaining('Locais externos indisponíveis'),
       findsOneWidget,
@@ -572,6 +584,7 @@ void main() {
   testWidgets('falha interna não é anunciada como vazio real', (tester) async {
     mockApi(internalError: true, externals: []);
     await pumpMap(tester);
+    await openDiscoveryDetails(tester);
     expect(
       find.textContaining(
         'Nenhum local corresponde aos dados e filtros atuais',
@@ -582,7 +595,10 @@ void main() {
       find.textContaining('Não foi possível atualizar os locais do AcessoJá'),
       findsOneWidget,
     );
-    expect(find.text('Limpar filtros'), findsOneWidget);
+    expect(
+      find.widgetWithText(OutlinedButton, 'Tentar novamente'),
+      findsOneWidget,
+    );
   });
 
   for (final failure in [
@@ -596,12 +612,11 @@ void main() {
       mockApi();
       await pumpMap(tester, location: FakeLocation(failure: failure));
       final message = switch (failure) {
-        'Permissão negada' =>
-          'Permissão de localização negada. Você pode continuar consultando o mapa.',
-        'Localização bloqueada' =>
-          'A localização está bloqueada nas permissões. Revise as configurações.',
+        'Permissão negada' => 'Permissão de localização negada. Você pode continuar consultando o mapa.',
+        'Localização bloqueada' => 'A localização está bloqueada nas permissões. Revise as configurações.',
         _ => 'A localização demorou para responder. Tente novamente.',
       };
+      await openDiscoveryDetails(tester);
       expect(find.text(message), findsOneWidget);
       expect(
         find.byKey(const ValueKey('map-place-acessoja:7')),
@@ -613,6 +628,7 @@ void main() {
   testWidgets('localização de baixa precisão é informada', (tester) async {
     mockApi();
     await pumpMap(tester, location: const FakeLocation(accuracy: 200));
+    await openDiscoveryDetails(tester);
     expect(
       find.textContaining('A localização está pouco precisa'),
       findsOneWidget,
@@ -782,11 +798,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 450));
       await tester.pumpAndSettle();
       final requestedCenter = map.mapController!.camera.center;
-      final searchArea = find.byKey(const ValueKey('map-search-area'));
-      await tester.ensureVisible(searchArea);
-      await tester.pump();
-      expect(searchArea.hitTestable(), findsOneWidget);
-      await tester.tap(searchArea);
+      // A área visível é recarregada sozinha depois que o mapa para.
+      expect(find.byKey(const ValueKey('map-search-area')), findsNothing);
+      await tester.pump(const Duration(milliseconds: 850));
       await tester.pump();
       expect(
         calls,
@@ -814,11 +828,11 @@ void main() {
         isNot(areaRequests.first.url.queryParameters['longitude']),
       );
       expect(int.parse(query['raio']!), inInclusiveRange(100, 3000));
+      await openDiscoveryDetails(tester);
       final regional = find.byKey(const ValueKey('toggle-regional-scope'));
       await tester.ensureVisible(regional);
       await tester.tap(regional);
       await tester.pumpAndSettle();
-      await openSearch(tester);
       expect(searchResult('Café Externo'), findsNothing);
       latest.complete(
         jsonResponse({
