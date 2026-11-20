@@ -241,10 +241,12 @@ class ActiveDiscoveryFilters extends StatelessWidget {
               spacing: 8,
               runSpacing: 4,
               children: [
-                OutlinedButton(
+                // Mesmo peso visual das outras ações desta linha.
+                TextButton.icon(
                   key: const ValueKey('use-accessibility-preferences'),
                   onPressed: loading ? null : onUsePreferences,
-                  child: Text(
+                  icon: const Icon(Icons.accessibility_new, size: 20),
+                  label: Text(
                     loading
                         ? context.accessibilityText(
                             'Consultando preferências…',
@@ -283,10 +285,11 @@ class ActiveDiscoveryFilters extends StatelessWidget {
                       ),
                     ),
                   ),
-                TextButton(
+                TextButton.icon(
                   key: const ValueKey('configure-accessibility-preferences'),
                   onPressed: onConfigure,
-                  child: Text(
+                  icon: const Icon(Icons.settings_outlined, size: 20),
+                  label: Text(
                     context.accessibilityText(
                       'Configurar preferências',
                       'Configure preferences',

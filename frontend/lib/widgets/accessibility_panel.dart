@@ -43,11 +43,13 @@ Future<void> showAccessibilityPanel(
   }
 }
 
+/// Atalho para o painel nas configurações. Só aparece quando a pessoa
+/// escondeu o botão flutuante; com ele visível, o atalho seria repetido.
 class ReadingSettingsEntry extends StatelessWidget {
   const ReadingSettingsEntry({super.key});
   @override
   Widget build(BuildContext context) =>
-      PreferencesScope.maybeOf(context) == null
+      PreferencesScope.maybeOf(context)?.showAccessibilityButton != false
       ? const SizedBox.shrink()
       : ListTile(
           key: const ValueKey('reading-settings-entry'),

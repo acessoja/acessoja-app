@@ -328,6 +328,9 @@ void main() {
       map.move(center, 19);
       await tester.pump(const Duration(milliseconds: 150));
       await tester.pumpAndSettle();
+      // Os filtros ativos ficam na folha de busca (não há mais cartão no mapa).
+      await tester.tap(find.byKey(const ValueKey('map-open-search')));
+      await tester.pumpAndSettle();
       final activeFilters = tester.widget<ActiveDiscoveryFilters>(
         find.byType(ActiveDiscoveryFilters),
       );
@@ -338,7 +341,7 @@ void main() {
       final filters = tester
           .widget<ActiveDiscoveryFilters>(find.byType(ActiveDiscoveryFilters))
           .state;
-      await tester.tap(find.byKey(const ValueKey('map-status-toggle')));
+      Navigator.of(tester.element(find.byType(ActiveDiscoveryFilters))).pop();
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('map-place-acessoja:1')));
       await tester.pumpAndSettle();
@@ -370,9 +373,8 @@ void main() {
             .selectedId,
         selected,
       );
-      // Collapsed content is deliberately unmounted. Reopen it to observe the
-      // existing filter state rather than looking for an invisible widget.
-      await tester.tap(find.byKey(const ValueKey('map-status-toggle')));
+      // A folha fechada não fica montada; reabrir para observar o estado.
+      await tester.tap(find.byKey(const ValueKey('map-open-search')));
       await tester.pumpAndSettle();
       expect(
         tester
@@ -386,9 +388,8 @@ void main() {
         calls,
         reason: 'theme must not trigger geographic searches or place reloads',
       );
-      final credit = tester.getRect(find.text('© Stadia Maps'));
-      final panelRect = tester.getRect(find.byType(PersistentPlacePanel));
-      expect(credit.top, greaterThanOrEqualTo(panelRect.bottom));
+      // Créditos ficam como camada do mapa, abaixo de painéis e da busca.
+      expect(find.byType(StadiaAttribution), findsOneWidget);
       expect(tiles.urls.last, contains('/alidade_smooth_dark/'));
       expect(tester.takeException(), isNull);
     },

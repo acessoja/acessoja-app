@@ -387,222 +387,436 @@ class NavigationPanel extends StatelessWidget {
       final location = locationIssue == null
           ? null
           : context.locationIssue(locationIssue!);
+      final notices = <String>[
+        if (error != null) error,
+        if (location != null &&
+            location != error &&
+            locationIssue != LocationIssue.notRequested)
+          location,
+        if ((controller.route?.originDisplacement ?? 0) > 25 ||
+            (controller.route?.destinationDisplacement ?? 0) > 25)
+          context.routeText(
+                'O motor ajustou o percurso à rede viária: origem ',
+                'The engine snapped the route to the road network: origin ',
+              ) +
+              _distance(context, controller.route?.originDisplacement ?? 0) +
+              context.routeText(', destino ', ', destination ') +
+              _distance(
+                context,
+                controller.route?.destinationDisplacement ?? 0,
+              ) +
+              context.routeText(
+                '. O ponto selecionado foi preservado.',
+                '. The selected point was preserved.',
+              ),
+      ];
+      final destinationName = destination.trim().isEmpty
+          ? context.routeText('Estabelecimento sem nome', 'Unnamed establishment')
+          : destination;
       return Material(
         elevation: 6,
         color: colors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppGeometry.cardRadius),
         child: ConstrainedBox(
           constraints: BoxConstraints(
             maxHeight: maxHeight ?? MediaQuery.sizeOf(context).height * .42,
           ),
           child: SingleChildScrollView(
             key: const ValueKey('route-panel-scroll'),
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.directions_car_rounded),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        context.routeText('Percurso de carro', 'Driving route'),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.lg,
+            ),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.only(end: AppSpacing.sm),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Cabeçalho: tipo de percurso, estado atual e fechar.
+                  Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: colors.primarySoft,
+                          borderRadius: BorderRadius.circular(
+                            AppGeometry.controlRadius,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.directions_car_rounded,
+                          color: colors.primary,
                         ),
                       ),
-                    ),
-                    IconButton(
-                      key: const ValueKey('route-cancel'),
-                      visualDensity: VisualDensity.standard,
-                      onPressed: onRequestClose ?? onEnd,
-                      tooltip: endLabel,
-                      constraints: const BoxConstraints(
-                        minWidth: 48,
-                        minHeight: 48,
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              context.routeText(
+                                'Percurso de carro',
+                                'Driving route',
+                              ),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: AppTypography.cardTitle,
+                                color: colors.text,
+                              ),
+                            ),
+                            Semantics(
+                              liveRegion: true,
+                              container: true,
+                              child: Text(
+                                context.routePhase(
+                                  controller.phase,
+                                  recalculating: controller.recalculating,
+                                ),
+                                style: TextStyle(
+                                  fontSize: AppTypography.caption,
+                                  fontWeight: FontWeight.w600,
+                                  color: colors.primary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      icon: const Icon(Icons.close),
+                      IconButton(
+                        key: const ValueKey('route-cancel'),
+                        visualDensity: VisualDensity.standard,
+                        onPressed: onRequestClose ?? onEnd,
+                        tooltip: endLabel,
+                        constraints: const BoxConstraints(
+                          minWidth: 48,
+                          minHeight: 48,
+                        ),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                  if (controller.route != null) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    // Resumo: o número que a pessoa procura primeiro.
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text:
+                                '${(controller.remainingDuration / 60).ceil()} min',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: colors.text,
+                            ),
+                          ),
+                          TextSpan(
+                            text: '  ·  $distanceLabel',
+                            style: TextStyle(
+                              fontSize: AppTypography.sectionTitle,
+                              fontWeight: FontWeight.w600,
+                              color: colors.muted,
+                            ),
+                          ),
+                        ],
+                      ),
+                      semanticsLabel:
+                          '${context.routeText('Estimativa: ', 'Estimate: ')}'
+                          '${(controller.remainingDuration / 60).ceil()} min, '
+                          '$distanceLabel',
+                    ),
+                    Text(
+                      context.routeText(
+                        'Sem trânsito em tempo real.',
+                        'No live traffic information.',
+                      ),
+                      style: TextStyle(
+                        fontSize: AppTypography.caption,
+                        color: colors.muted,
+                      ),
                     ),
                   ],
-                ),
-                Text(
-                  context.routeText('Origem (O)', 'Origin (O)'),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(originLabel),
-                if (origin != null)
-                  Text(
-                    '${origin.latitude.toStringAsFixed(5)}, ${origin.longitude.toStringAsFixed(5)}',
+                  const SizedBox(height: AppSpacing.md),
+                  // Origem e destino ligados por uma linha, como nos apps de
+                  // mapa; os rótulos O e D batem com os marcadores do mapa.
+                  _RouteStop(
+                    icon: Icons.trip_origin,
+                    iconColor: colors.primary,
+                    label: context.routeText('Origem (O)', 'Origin (O)'),
+                    value: originLabel,
+                    highlight: origin == null,
+                    connector: true,
                   ),
-                const SizedBox(height: 8),
-                Text(
-                  context.routeText('Destino (D)', 'Destination (D)'),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  destination.trim().isEmpty
-                      ? context.routeText(
-                          'Estabelecimento sem nome',
-                          'Unnamed establishment',
-                        )
-                      : destination,
-                ),
-                Text(
-                  destinationAddress.trim().isEmpty
-                      ? context.routeText(
-                          'Endereço não informado',
-                          'Address not reported',
-                        )
-                      : destinationAddress,
-                ),
-                const SizedBox(height: 8),
-                Semantics(
-                  liveRegion: true,
-                  container: true,
-                  child: Text(
-                    context.routePhase(
-                      controller.phase,
-                      recalculating: controller.recalculating,
-                    ),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: colors.primary,
-                    ),
+                  _RouteStop(
+                    icon: Icons.place,
+                    iconColor: colors.danger,
+                    label: context.routeText('Destino (D)', 'Destination (D)'),
+                    value: destinationName,
+                    detail: destinationAddress.trim().isEmpty
+                        ? null
+                        : destinationAddress,
                   ),
-                ),
-                if (controller.route != null)
-                  Text(
-                    '${context.routeText('Estimativa: ', 'Estimate: ')}${(controller.remainingDuration / 60).ceil()} min · $distanceLabel',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                if (controller.route != null)
-                  Text(
-                    context.routeText(
-                      'Distância do trajeto; sem informação de trânsito em tempo real.',
-                      'Route distance; no live traffic information.',
-                    ),
-                    style: TextStyle(color: colors.muted),
-                  ),
-                if ((controller.route?.originDisplacement ?? 0) > 25 ||
-                    (controller.route?.destinationDisplacement ?? 0) > 25)
-                  Text(
-                    context.routeText(
-                          'O motor ajustou o percurso à rede viária: origem ',
-                          'The engine snapped the route to the road network: origin ',
-                        ) +
-                        _distance(
-                          context,
-                          controller.route?.originDisplacement ?? 0,
-                        ) +
-                        context.routeText(', destino ', ', destination ') +
-                        _distance(
-                          context,
-                          controller.route?.destinationDisplacement ?? 0,
-                        ) +
-                        context.routeText(
-                          '. O ponto selecionado foi preservado.',
-                          '. The selected point was preserved.',
-                        ),
-                  ),
-                if (running)
-                  Semantics(
-                    liveRegion: true,
-                    container: true,
-                    child: Text(instruction(context, controller.nextStep)),
-                  ),
-                if (running) Text(_distance(context, controller.nextDistance)),
-                if (error != null)
-                  Semantics(
-                    liveRegion: true,
-                    container: true,
-                    child: Text(error),
-                  ),
-                if (location != null &&
-                    location != error &&
-                    locationIssue != LocationIssue.notRequested)
-                  Semantics(
-                    liveRegion: true,
-                    container: true,
-                    child: Text(location),
-                  ),
-                const SizedBox(height: 8),
-                Text(
-                  context.routeText(
-                    'A acessibilidade deste trajeto não foi verificada.',
-                    'The accessibility of this route has not been verified.',
-                  ),
-                  key: const ValueKey('map-route-accessibility-notice'),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => showDialog<void>(
-                    context: context,
-                    builder: (dialogContext) => AlertDialog(
-                      title: Text(
-                        context.routeText(
-                          'Sobre o percurso',
-                          'About the route',
+                  if (running) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: colors.primarySoft,
+                        borderRadius: BorderRadius.circular(
+                          AppGeometry.controlRadius,
                         ),
                       ),
-                      content: SingleChildScrollView(
+                      child: Row(
+                        children: [
+                          Icon(Icons.turn_right, color: colors.primary),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Semantics(
+                              liveRegion: true,
+                              container: true,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    instruction(context, controller.nextStep),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: colors.text,
+                                    ),
+                                  ),
+                                  Text(
+                                    _distance(context, controller.nextDistance),
+                                    style: TextStyle(color: colors.muted),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (notices.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Container(
+                      key: const ValueKey('route-notices'),
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: colors.warningSoft,
+                        borderRadius: BorderRadius.circular(
+                          AppGeometry.controlRadius,
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.info_outline, color: colors.warning),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Semantics(
+                              liveRegion: true,
+                              container: true,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  for (final notice in notices)
+                                    Text(
+                                      notice,
+                                      style: TextStyle(color: colors.text),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: AppSpacing.sm),
+                  // Aviso obrigatório, em uma linha, com explicação sob demanda.
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.accessible_forward,
+                        size: 20,
+                        color: colors.muted,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
                         child: Text(
                           context.routeText(
-                            'O percurso usa a rede viária para carros. Não há verificação de calçadas, travessias, inclinação ou barreiras. A acessibilidade do estabelecimento não comprova a do caminho até ele.',
-                            'This route uses the driving road network. Sidewalks, crossings, slopes and barriers have not been verified. Place accessibility does not establish route accessibility.',
+                            'A acessibilidade deste trajeto não foi verificada.',
+                            'The accessibility of this route has not been verified.',
+                          ),
+                          key: const ValueKey('map-route-accessibility-notice'),
+                          style: TextStyle(
+                            fontSize: AppTypography.caption,
+                            fontWeight: FontWeight.w600,
+                            color: colors.text,
                           ),
                         ),
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(dialogContext),
-                          child: Text(context.routeText('Fechar', 'Close')),
+                    ],
+                  ),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton(
+                      onPressed: () => showDialog<void>(
+                        context: context,
+                        builder: (dialogContext) => AlertDialog(
+                          title: Text(
+                            context.routeText(
+                              'Sobre o percurso',
+                              'About the route',
+                            ),
+                          ),
+                          content: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  context.routeText(
+                                    'O percurso usa a rede viária para carros. Não há verificação de calçadas, travessias, inclinação ou barreiras. A acessibilidade do estabelecimento não comprova a do caminho até ele.',
+                                    'This route uses the driving road network. Sidewalks, crossings, slopes and barriers have not been verified. Place accessibility does not establish route accessibility.',
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                                Text(
+                                  context.routeText(
+                                    'Os aplicativos externos podem escolher outro percurso. Ao navegar, usam a localização atual; o Waze não preserva a origem manual.',
+                                    'External apps may choose another route. Navigation uses your current location; Waze does not preserve a manual origin.',
+                                  ),
+                                ),
+                                if (kIsWeb) ...[
+                                  const SizedBox(height: AppSpacing.md),
+                                  Text(
+                                    context.routeText(
+                                      'No navegador, mantenha esta aba aberta. Ao sair, o acompanhamento é interrompido. Revise as permissões de localização nas configurações do site.',
+                                      'Keep this browser tab open. Following is interrupted when you leave. Review location permission in the site settings.',
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(dialogContext),
+                              child: Text(
+                                context.routeText('Fechar', 'Close'),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
+                      child: Text(
+                        context.routeText(
+                          'Entenda a limitação',
+                          'Understand the limitation',
+                        ),
+                      ),
                     ),
                   ),
-                  child: Text(
-                    context.routeText(
-                      'Entenda a limitação',
-                      'Understand the limitation',
-                    ),
+                  const SizedBox(height: AppSpacing.xs),
+                  _actions(
+                    context,
+                    choosing: choosing,
+                    running: running,
+                    arrived: arrived,
+                    started: started,
+                    endLabel: endLabel,
                   ),
-                ),
-                _actions(
-                  context,
-                  choosing: choosing,
-                  running: running,
-                  arrived: arrived,
-                  started: started,
-                  endLabel: endLabel,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  context.routeText(
-                    'Os aplicativos externos podem escolher outro percurso. Ao navegar, usam a localização atual; o Waze não preserva a origem manual.',
-                    'External apps may choose another route. Navigation uses your current location; Waze does not preserve a manual origin.',
-                  ),
-                ),
-                if (kIsWeb)
-                  Text(
-                    context.routeText(
-                      'No navegador, mantenha esta aba aberta. Ao sair, o acompanhamento é interrompido. Revise as permissões de localização nas configurações do site.',
-                      'Keep this browser tab open. Following is interrupted when you leave. Review location permission in the site settings.',
-                    ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       );
     },
   );
+}
+
+/// Uma parada do percurso (origem ou destino) com ícone e linha de ligação.
+class _RouteStop extends StatelessWidget {
+  const _RouteStop({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+    this.detail,
+    this.highlight = false,
+    this.connector = false,
+  });
+  final IconData icon;
+  final Color iconColor;
+  final String label, value;
+  final String? detail;
+  final bool highlight, connector;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: 28,
+            child: Column(
+              children: [
+                const SizedBox(height: 2),
+                Icon(icon, size: 20, color: iconColor),
+                if (connector)
+                  Expanded(
+                    child: Container(
+                      width: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 2),
+                      color: colors.border,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: AppTypography.caption,
+                      color: colors.muted,
+                    ),
+                  ),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: highlight ? colors.warning : colors.text,
+                    ),
+                  ),
+                  if (detail != null)
+                    Text(
+                      detail!,
+                      style: TextStyle(
+                        fontSize: AppTypography.caption,
+                        color: colors.muted,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -411,7 +411,9 @@ class _SettingsScreenState extends SafeState<SettingsScreen> {
       backgroundColor: colors.pageBackground,
       appBar: AppBar(
         actions: [
-          if (PreferencesScope.maybeOf(context) != null)
+          // Com o botão flutuante visível, este atalho seria repetido.
+          if (PreferencesScope.maybeOf(context)?.showAccessibilityButton ==
+              false)
             IconButton(
               key: const ValueKey('settings-reading-open'),
               tooltip: context.l10n.readingOpen,

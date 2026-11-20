@@ -98,9 +98,8 @@ class _RoutePlanningScreenState extends State<RoutePlanningScreen> {
             return Scaffold(
               appBar: AppBar(
                 automaticallyImplyLeading: false,
-                title: Text(
-                  context.routeText('Percurso de carro', 'Driving route'),
-                ),
+                // O painel abaixo já se chama "Percurso de carro".
+                title: Text(context.routeText('Rota', 'Route')),
                 leading: IconButton(
                   tooltip: context.routeText('Voltar', 'Back'),
                   onPressed: widget.onRequestClose,

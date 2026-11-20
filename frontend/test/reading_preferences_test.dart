@@ -115,6 +115,15 @@ void main() {
         isFalse);
     expect(p.buttonPosition, const Offset(0, 1));
   });
+  test('legacy default button position migrates to the new corner', () {
+    final legacy = MemoryReadingStore()
+      ..data[AppPreferences.buttonPositionKey] = '{"x":0.75,"y":0.25}';
+    expect(AppPreferences(legacy).buttonPosition,
+        AppPreferences.defaultButtonPosition);
+    final chosen = MemoryReadingStore()
+      ..data[AppPreferences.buttonPositionKey] = '{"x":0.4,"y":0.6}';
+    expect(AppPreferences(chosen).buttonPosition, const Offset(.4, .6));
+  });
   test('write failure remains explicit and retry persists the current state',
       () async {
     final storage = MemoryReadingStore()..fail = true;
