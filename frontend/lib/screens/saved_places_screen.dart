@@ -8,12 +8,17 @@ import '../models/favorite.dart';
 import '../models/map_place.dart';
 import '../navigation.dart';
 import '../services/app_http.dart';
+import '../services/auth_session_controller.dart';
 import '../services/favorites_controller.dart';
+import '../services/personal_lists_service.dart';
 import '../widgets/app_empty.dart';
 import '../widgets/load_error.dart';
 import '../widgets/favorites_scope.dart';
 import '../widgets/local_card.dart';
+import '../widgets/guest_access.dart';
 import 'place_detail_screen.dart';
+import 'login_screen.dart';
+import 'main_screen.dart';
 import 'review_editor_screen.dart';
 import 'personal_lists_screen.dart';
 
@@ -37,6 +42,12 @@ class SavedPlacesScreen extends StatefulWidget {
 }
 
 class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
+  final _listsService = const PersonalListsService();
+  List<Favorite> _listItems = const [];
+  int? _savedTotal;
+  Object? _listsError;
+  bool _listsLoaded = false;
+  int _listsRequest = 0;
   final _search = TextEditingController();
   final _refreshFocus = FocusNode();
   Timer? _debounce;
@@ -58,11 +69,60 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
     }
     _lastSession = _controller!.session;
     _controller!.addListener(_changed);
+    personalListsRevision.addListener(_listsChanged);
     scheduleMicrotask(() {
       if (mounted) {
-        controller.load(force: true);
+        _refresh();
       }
     });
+  }
+
+  void _listsChanged() {
+    if (mounted && controller.authenticated) {
+      unawaited(_loadLists());
+    }
+  }
+
+  Future<void> _loadLists() async {
+    if (!controller.authenticated) return;
+    final request = ++_listsRequest;
+    final session = controller.session;
+    try {
+      final lists = await _listsService.lists(session: session);
+      int? savedTotal;
+      try {
+        savedTotal = await _listsService.savedTotal(session: session);
+      } catch (_) {
+        // Older API deployments still allow the list itself to be shown.
+      }
+      if (!mounted ||
+          request != _listsRequest ||
+          session != controller.session) {
+        return;
+      }
+      final unique = <int, Favorite>{};
+      for (final list in lists) {
+        for (final item in list.items) {
+          unique[item.localId] = item;
+        }
+      }
+      setState(() {
+        _listItems = unique.values.toList();
+        _savedTotal = savedTotal;
+        _listsLoaded = true;
+        _listsError = null;
+      });
+    } catch (error) {
+      if (!mounted ||
+          request != _listsRequest ||
+          session != controller.session) {
+        return;
+      }
+      setState(() {
+        _listsLoaded = true;
+        _listsError = error;
+      });
+    }
   }
 
   void _changed() {
@@ -74,12 +134,17 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
       _debounce?.cancel();
       _search.clear();
       _query = '';
+      _listItems = const [];
+      _savedTotal = null;
+      _listsLoaded = false;
+      _listsError = null;
+      _listsRequest++;
       final revision = controller.session;
       scheduleMicrotask(() {
         if (mounted &&
             controller.authenticated &&
             revision == controller.session) {
-          controller.load(force: true);
+          _refresh();
         }
       });
     }
@@ -102,6 +167,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
 
   @override
   void dispose() {
+    personalListsRevision.removeListener(_listsChanged);
     _debounce?.cancel();
     _search.dispose();
     _refreshFocus.dispose();
@@ -112,7 +178,35 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
     super.dispose();
   }
 
-  Future<void> _refresh() => controller.load(query: _query, force: true);
+  Future<void> _refresh() async {
+    if (!controller.authenticated) return;
+    final lists = _loadLists();
+    await controller.load(query: _query, force: true);
+    await lists;
+  }
+
+  void _openGuestLogin({bool register = false}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => LoginScreen(
+          openRegister: register,
+          onLoginSuccess: (loginContext, user) {
+            Navigator.of(loginContext).pushAndRemoveUntil(
+              MaterialPageRoute<void>(
+                builder: (_) => MainScreen(
+                  userName: user['nome'] as String? ?? AppHttp.userName ?? '',
+                  openSavedOnStart: true,
+                ),
+              ),
+              (_) => false,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   Future<void> _open(Favorite row) async {
     final revision = AppHttp.sessionRevision.value;
     final result = await Navigator.push(
@@ -172,9 +266,40 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
     child: Builder(builder: _build),
   );
   Widget _build(BuildContext context) {
+    if (!controller.authenticated) {
+      final expired = AppHttp.session.status == AuthStatus.expired;
+      return Scaffold(
+        appBar: AppBar(title: Text(context.l10n.savedPlaces)),
+        body: GuestAccess(
+          icon: Icons.bookmark_outline,
+          title: expired
+              ? 'Sua sessão expirou'
+              : 'Seus lugares favoritos, em um só lugar',
+          description: expired
+              ? 'Entre novamente para acessar seus locais salvos.'
+              : 'Entre na sua conta para salvar estabelecimentos, organizar suas listas e encontrar seus lugares favoritos sempre que precisar.',
+          onLogin: () => _openGuestLogin(),
+          onRegister: () => _openGuestLogin(register: true),
+          onExplore: () => Navigator.maybePop(context),
+        ),
+      );
+    }
     final colors = AppColors.of(context),
         state = controller.listing(_query),
-        rows = controller.rows(_query);
+        direct = controller.rows(_query);
+    final unique = <int, Favorite>{for (final row in direct) row.localId: row};
+    for (final row in _listItems) {
+      if (controller
+          .queryKey('${row.place['nome']} ${row.place['endereco']}')
+          .contains(_query)) {
+        unique.putIfAbsent(row.localId, () => row);
+      }
+    }
+    final rows = unique.values.toList();
+    final directIds = controller.rows('').map((row) => row.localId).toSet();
+    final fallbackTotal =
+        controller.total +
+        _listItems.where((row) => !directIds.contains(row.localId)).length;
     final initialLoading = !state.loaded && state.error == null;
     return Scaffold(
       backgroundColor: colors.pageBackground,
@@ -220,16 +345,14 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                         Semantics(
                           liveRegion: true,
                           child: Text(
-                            context.l10n.favoritesTotal(controller.total),
+                            context.l10n.favoritesTotal(
+                              _savedTotal ?? fallbackTotal,
+                            ),
                             style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
                         ),
                       if (_query.isNotEmpty && state.loaded)
-                        Text(
-                          context.l10n.favoritesResults(
-                            controller.count(_query),
-                          ),
-                        ),
+                        Text(context.l10n.favoritesResults(rows.length)),
                       const SizedBox(height: 12),
                       TextField(
                         controller: _search,
@@ -249,6 +372,22 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                       ),
                       if (state.loading && state.loaded)
                         const LinearProgressIndicator(),
+                      if (!_listsLoaded && state.loaded)
+                        const LinearProgressIndicator(),
+                      if (_listsError != null && state.loaded)
+                        Row(
+                          children: [
+                            const Expanded(
+                              child: Text(
+                                'Algumas listas não puderam ser carregadas.',
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _loadLists,
+                              child: Text(context.l10n.retry),
+                            ),
+                          ],
+                        ),
                       if (state.error != null && state.loaded)
                         Column(
                           children: [
@@ -268,16 +407,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                   ),
                 ),
               ),
-              if (!controller.authenticated)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: AppEmpty(
-                    icon: Icons.lock_outline,
-                    title: context.l10n.favoriteSignIn,
-                    description: context.l10n.favoritesEmptyHelp,
-                  ),
-                )
-              else if (initialLoading)
+              if (initialLoading)
                 const SliverFillRemaining(
                   hasScrollBody: false,
                   child: Center(child: CircularProgressIndicator()),

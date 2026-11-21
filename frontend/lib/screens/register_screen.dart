@@ -15,7 +15,9 @@ import '../widgets/safe_state.dart';
 enum _FieldState { untouched, editing, verifying, valid, invalid, network }
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  const RegisterScreen({super.key, this.onRegistered});
+
+  final void Function(String name, String password)? onRegistered;
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
@@ -307,10 +309,13 @@ class _RegisterScreenState extends SafeState<RegisterScreen> {
       );
       if (!context.mounted) return;
       if (response.statusCode == 201) {
+        final name = _nameController.text.trim();
+        final password = _passwordController.text;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(context.l10n.accountCreated)));
         Navigator.pop(context);
+        widget.onRegistered?.call(name, password);
       } else {
         _mapApiErrors(response);
       }

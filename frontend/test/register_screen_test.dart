@@ -32,7 +32,10 @@ void main() {
     AppHttp.client = originalClient;
     client.close();
   });
-  Future<void> open(WidgetTester tester) async {
+  Future<void> open(
+    WidgetTester tester, {
+    void Function(String, String)? onRegistered,
+  }) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
@@ -40,7 +43,9 @@ void main() {
             body: TextButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                MaterialPageRoute(
+                  builder: (_) => RegisterScreen(onRegistered: onRegistered),
+                ),
               ),
               child: const Text('Tela de entrada'),
             ),
@@ -192,4 +197,29 @@ void main() {
       hasLength(2),
     );
   });
+
+  testWidgets(
+    'successful registration returns credentials for automatic login',
+    (tester) async {
+      String? name;
+      String? password;
+      handler = (request) async =>
+          request.url.path.endsWith('username-availability/')
+          ? http.Response('{"available":true,"suggestions":[]}', 200)
+          : http.Response('{}', 201);
+      await open(
+        tester,
+        onRegistered: (n, p) {
+          name = n;
+          password = p;
+        },
+      );
+      await fill(tester);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(name, 'keyboard');
+      expect(password, 'password123');
+      expect(find.byType(RegisterScreen), findsNothing);
+    },
+  );
 }

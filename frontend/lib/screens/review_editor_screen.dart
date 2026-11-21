@@ -5,6 +5,7 @@ import '../models/accessibility_survey.dart';
 import '../models/review_draft_controller.dart';
 import '../l10n/contribution_strings.dart';
 import '../services/app_http.dart';
+import '../services/auth_session_controller.dart';
 import '../services/contribution_service.dart';
 import '../services/evidence_service.dart';
 import '../media/image_selection_service.dart';
@@ -16,6 +17,8 @@ import '../media/photo_submission_queue.dart';
 import '../widgets/resource_answer_fields.dart';
 import '../widgets/evaluation_survey_dialog.dart';
 import '../widgets/survey_answers_view.dart';
+import '../widgets/guest_access.dart';
+import 'login_screen.dart';
 import 'evidence_actions.dart' show requireEvidenceAccount;
 
 class ReviewEditorScreen extends StatefulWidget {
@@ -114,6 +117,9 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
   }
 
   Future<void> _load() async {
+    if (!AppHttp.authenticated) {
+      return;
+    }
     if (_draft.localId < 1 || widget.place['source'] == 'openstreetmap') {
       _draft.loading = false;
       _draft.error = const ContributionException(400, 'external_place');
@@ -187,15 +193,24 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
   /// apenas respostas do questionário; fotos, nota, comentário e demais
   /// relatos permanecem no ReviewDraftController, sem escrita no backend.
   Future<void> _openOriginalSurvey() async {
-    if (widget.independent || _draft.locked || !_draft.loaded || _draft.hasConfirmed) {
+    if (widget.independent ||
+        _draft.locked ||
+        !_draft.loaded ||
+        _draft.hasConfirmed) {
       return;
     }
     if (_draft.stars < 1 || _draft.stars > 5) {
       _move(0);
       _rating.requestFocus();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(text('Escolha de 1 a 5 estrelas antes de continuar.',
-            'Choose 1 to 5 stars before continuing.'))),
+        SnackBar(
+          content: Text(
+            text(
+              'Escolha de 1 a 5 estrelas antes de continuar.',
+              'Choose 1 to 5 stars before continuing.',
+            ),
+          ),
+        ),
       );
       return;
     }
@@ -219,16 +234,21 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
         allowPartial: true,
         onSubmit: (answers) async {
           // Recebe somente o rascunho; a gravação ocorre na revisão final.
-          if (!mounted || generation != _generation ||
-              session != AppHttp.sessionRevision.value || !_draft.current) {
+          if (!mounted ||
+              generation != _generation ||
+              session != AppHttp.sessionRevision.value ||
+              !_draft.current) {
             throw const ContributionException(409, 'session_changed');
           }
           confirmed = Map<String, dynamic>.from(answers);
         },
       ),
     );
-    if (!mounted || generation != _generation ||
-        session != AppHttp.sessionRevision.value || !_draft.current || result != true) {
+    if (!mounted ||
+        generation != _generation ||
+        session != AppHttp.sessionRevision.value ||
+        !_draft.current ||
+        result != true) {
       return;
     }
     // 'Responder depois' entrega {}, preservando respostas anteriores.
@@ -372,13 +392,23 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(text('Concluir sem fotografia?', 'Finish without photo?')),
-        content: Text(text(
-          'Sua avaliação permanece salva. Fotografias ainda não enviadas não ficam armazenadas e precisarão ser selecionadas novamente.',
-          'Your review stays saved. Unsent photos are not stored and must be selected again.',
-        )),
+        content: Text(
+          text(
+            'Sua avaliação permanece salva. Fotografias ainda não enviadas não ficam armazenadas e precisarão ser selecionadas novamente.',
+            'Your review stays saved. Unsent photos are not stored and must be selected again.',
+          ),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(text('Voltar', 'Back'))),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(text('Concluir sem fotografia', 'Finish without photo'))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(text('Voltar', 'Back')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              text('Concluir sem fotografia', 'Finish without photo'),
+            ),
+          ),
         ],
       ),
     );
@@ -391,50 +421,164 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
     final colors = Theme.of(context).colorScheme;
     final received = _draft.photos.confirmed;
     final pending = _draft.photos.remaining;
-    final confirmedStatements = _draft.statements.where((s) => s.state == 'committed').length;
+    final confirmedStatements = _draft.statements
+        .where((s) => s.state == 'committed')
+        .length;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
-      child: Center(child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 680),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Icon(Icons.check_circle, size: 72, color: colors.primary),
-          const SizedBox(height: 12),
-          Semantics(header: true, child: Text(text('Obrigado por contribuir!', 'Thank you for contributing!'), textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineMedium)),
-          const SizedBox(height: 12),
-          Text(widget.independent
-              ? text('Seus relatos de acessibilidade foram registrados.', 'Your accessibility statements were saved.')
-              : _draft.mutation?.operation == 'updated'
-                  ? text('Sua avaliação foi atualizada.', 'Your review was updated.')
-                  : text('Sua avaliação foi registrada com sucesso.', 'Your review was saved successfully.'), textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text((widget.place['nome'] ?? '').toString(), style: Theme.of(context).textTheme.titleLarge),
-            if (!widget.independent) Text(text('Nota: ${_draft.stars} de 5', 'Rating: ${_draft.stars} of 5')),
-            Text(text('${_draft.surveyCount + confirmedStatements} respostas ou relatos informados', '${_draft.surveyCount + confirmedStatements} answers or statements provided')),
-            Text(text('$received fotografias recebidas', '$received photos received')),
-            if (received > 0) Text(text('Fotografias recebidas aguardam moderação.', 'Received photos await moderation.')),
-            if (pending > 0) Text(text('$pending fotografias ainda não confirmadas.', '$pending photos not yet confirmed.')),
-          ]))),
-          if (_draft.mutation != null) Card(child: Padding(padding: const EdgeInsets.all(16), child: Text(context.contributionFeedback(_draft.mutation!)))),
-          if (widget.independent) Card(child: Padding(padding: const EdgeInsets.all(16), child: Text(text('Relatos individuais não geram bônus de avaliação.', 'Individual statements do not earn review points.')))),
-          const SizedBox(height: 16),
-          if (!widget.independent) FilledButton.icon(
-            onPressed: () => showDialog<void>(context: context, builder: (context) => AlertDialog(
-              title: Text(text('Minha avaliação', 'My review')),
-              content: SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                Text((widget.place['nome'] ?? '').toString()),
-                Text(text('Nota: ${_draft.review?['estrelas'] ?? _draft.stars} de 5', 'Rating: ${_draft.review?['estrelas'] ?? _draft.stars} of 5')),
-                if ((_draft.review?['comentario'] ?? '').toString().isNotEmpty) Text(_draft.review!['comentario'].toString()),
-                for (final entry in _draft.answers.entries)
-                  Text('${AccessibilityCatalog.find(entry.key)?.name(context) ?? entry.key}: ${SurveyContract.answer(context, entry.value)}'),
-              ])),
-              actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(text('Fechar', 'Close')))],
-            )),
-            icon: const Icon(Icons.rate_review_outlined), label: Text(text('Ver minha avaliação', 'View my review')),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Icon(Icons.check_circle, size: 72, color: colors.primary),
+              const SizedBox(height: 12),
+              Semantics(
+                header: true,
+                child: Text(
+                  text(
+                    'Obrigado por contribuir!',
+                    'Thank you for contributing!',
+                  ),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                widget.independent
+                    ? text(
+                        'Seus relatos de acessibilidade foram registrados.',
+                        'Your accessibility statements were saved.',
+                      )
+                    : _draft.mutation?.operation == 'updated'
+                    ? text(
+                        'Sua avaliação foi atualizada.',
+                        'Your review was updated.',
+                      )
+                    : text(
+                        'Sua avaliação foi registrada com sucesso.',
+                        'Your review was saved successfully.',
+                      ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        (widget.place['nome'] ?? '').toString(),
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      if (!widget.independent)
+                        Text(
+                          text(
+                            'Nota: ${_draft.stars} de 5',
+                            'Rating: ${_draft.stars} of 5',
+                          ),
+                        ),
+                      Text(
+                        text(
+                          '${_draft.surveyCount + confirmedStatements} respostas ou relatos informados',
+                          '${_draft.surveyCount + confirmedStatements} answers or statements provided',
+                        ),
+                      ),
+                      Text(
+                        text(
+                          '$received fotografias recebidas',
+                          '$received photos received',
+                        ),
+                      ),
+                      if (received > 0)
+                        Text(
+                          text(
+                            'Fotografias recebidas aguardam moderação.',
+                            'Received photos await moderation.',
+                          ),
+                        ),
+                      if (pending > 0)
+                        Text(
+                          text(
+                            '$pending fotografias ainda não confirmadas.',
+                            '$pending photos not yet confirmed.',
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              if (_draft.mutation != null)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(context.contributionFeedback(_draft.mutation!)),
+                  ),
+                ),
+              if (widget.independent)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      text(
+                        'Relatos individuais não geram bônus de avaliação.',
+                        'Individual statements do not earn review points.',
+                      ),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 16),
+              if (!widget.independent)
+                FilledButton.icon(
+                  onPressed: () => showDialog<void>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text(text('Minha avaliação', 'My review')),
+                      content: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text((widget.place['nome'] ?? '').toString()),
+                            Text(
+                              text(
+                                'Nota: ${_draft.review?['estrelas'] ?? _draft.stars} de 5',
+                                'Rating: ${_draft.review?['estrelas'] ?? _draft.stars} of 5',
+                              ),
+                            ),
+                            if ((_draft.review?['comentario'] ?? '')
+                                .toString()
+                                .isNotEmpty)
+                              Text(_draft.review!['comentario'].toString()),
+                            for (final entry in _draft.answers.entries)
+                              Text(
+                                '${AccessibilityCatalog.find(entry.key)?.name(context) ?? entry.key}: ${SurveyContract.answer(context, entry.value)}',
+                              ),
+                          ],
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(text('Fechar', 'Close')),
+                        ),
+                      ],
+                    ),
+                  ),
+                  icon: const Icon(Icons.rate_review_outlined),
+                  label: Text(text('Ver minha avaliação', 'View my review')),
+                ),
+              OutlinedButton(
+                onPressed: _finish,
+                child: Text(text('Voltar ao estabelecimento', 'Back to place')),
+              ),
+            ],
           ),
-          OutlinedButton(onPressed: _finish, child: Text(text('Voltar ao estabelecimento', 'Back to place'))),
-        ]),
-      )),
+        ),
+      ),
     );
   }
 
@@ -664,13 +808,26 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
       'Resultado não confirmado. Consulte a operação.',
       'Unconfirmed result. Check the operation.',
     ),
-    'failed' => draft.error == '413'
-        ? text('A fotografia excede o limite de tamanho.', 'The photo exceeds the size limit.')
-        : draft.error == '401'
-        ? text('Sessão expirada. Entre novamente.', 'Session expired. Sign in again.')
-        : draft.error == '422'
-        ? text('Arquivo inválido ou não suportado. Escolha outra foto.', 'Invalid or unsupported file. Choose another photo.')
-        : text('Envio não confirmado. Corrija ou tente novamente.', 'Upload not confirmed. Correct or try again.'),
+    'failed' =>
+      draft.error == '413'
+          ? text(
+              'A fotografia excede o limite de tamanho.',
+              'The photo exceeds the size limit.',
+            )
+          : draft.error == '401'
+          ? text(
+              'Sessão expirada. Entre novamente.',
+              'Session expired. Sign in again.',
+            )
+          : draft.error == '422'
+          ? text(
+              'Arquivo inválido ou não suportado. Escolha outra foto.',
+              'Invalid or unsupported file. Choose another photo.',
+            )
+          : text(
+              'Envio não confirmado. Corrija ou tente novamente.',
+              'Upload not confirmed. Correct or try again.',
+            ),
     _ => text(
       'Seleção local. Ainda não enviada.',
       'Local selection. Not uploaded yet.',
@@ -757,9 +914,14 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
                 Semantics(liveRegion: true, child: Text(_photoStatus(draft))),
                 if (draft.uncertain && _draft.review?['id'] is num)
                   TextButton(
-                    onPressed: _draft.busy ? null : () async {
-                      await _draft.photos.reconcile(draft, 'review:${_draft.review!['id']}');
-                    },
+                    onPressed: _draft.busy
+                        ? null
+                        : () async {
+                            await _draft.photos.reconcile(
+                              draft,
+                              'review:${_draft.review!['id']}',
+                            );
+                          },
                     child: Text(text('Verificar envio', 'Check upload')),
                   ),
                 if (!draft.confirmed && !draft.uncertain)
@@ -806,79 +968,125 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _title('Revisar e publicar', 'Review and publish'),
-        if (!widget.independent) Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(text('Sua avaliação', 'Your review'), style: Theme.of(context).textTheme.titleMedium),
-          Text('${text('Nota geral', 'General rating')}: ${_draft.stars} / 5'),
-          Text(
-            _draft.comment.trim().isEmpty
-                ? text('Comentário: não informado', 'Comment: not provided')
-                : _draft.comment,
-          ),
-          _edit(0, text('nota e comentário', 'rating and comment')),
-        ]))),
-        Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text(
-          text(
-            'Informações de acessibilidade (opcionais)',
-            'Accessibility information (optional)',
-          ),
-        ),
-        if (!widget.independent && !_draft.legacy)
-          Text(
-            text(
-              '${_draft.surveyCount} de 8 perguntas v2 respondidas',
-              '${_draft.surveyCount} of 8 v2 questions answered',
-            ),
-          ),
-        if (widget.independent || _draft.legacy)
-          Text(
-            text(
-              'Relatos individuais não completam o questionário.',
-              'Individual statements do not complete the questionnaire.',
-            ),
-          ),
-        if (_draft.legacy) SurveyAnswersView(review: _draft.review!),
-        for (final entry in _draft.answers.entries)
-          Text(
-            '${AccessibilityCatalog.find(entry.key)!.name(context)}: ${SurveyContract.answer(context, entry.value)} (${_changeLabel(_draft.answerChange(entry.key))})',
-          ),
-        for (final id in _draft.originalAnswers.keys.where(
-          (id) => !_draft.answers.containsKey(id),
-        ))
-          Text(
-            '${AccessibilityCatalog.find(id)!.name(context)}: ${text('remoção explícita', 'explicit removal')}',
-          ),
-        if (missing.isNotEmpty)
-          TextButton(
-            onPressed: () => setState(() => _expanded = !_expanded),
-            child: Text(
-              text(
-                '${missing.length} recursos sem resposta',
-                '${missing.length} unanswered features',
+        if (!widget.independent)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    text('Sua avaliação', 'Your review'),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Text(
+                    '${text('Nota geral', 'General rating')}: ${_draft.stars} / 5',
+                  ),
+                  Text(
+                    _draft.comment.trim().isEmpty
+                        ? text(
+                            'Comentário: não informado',
+                            'Comment: not provided',
+                          )
+                        : _draft.comment,
+                  ),
+                  _edit(0, text('nota e comentário', 'rating and comment')),
+                ],
               ),
             ),
           ),
-        if (_expanded)
-          for (final resource in missing) Text(resource.name(context)),
-        _edit(1, text('recursos', 'features')),
-        ]))),
-        if (!widget.independent) Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(text('Fotografias', 'Photos'), style: Theme.of(context).textTheme.titleMedium),
-          Text(
-            text(
-              'Fotos: ${_draft.existingPhotos.length} existentes; ${_draft.photos.drafts.length} seleções neste fluxo.',
-              'Photos: ${_draft.existingPhotos.length} existing; ${_draft.photos.drafts.length} selections in this flow.',
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  text(
+                    'Informações de acessibilidade (opcionais)',
+                    'Accessibility information (optional)',
+                  ),
+                ),
+                if (!widget.independent && !_draft.legacy)
+                  Text(
+                    text(
+                      '${_draft.surveyCount} de 8 perguntas v2 respondidas',
+                      '${_draft.surveyCount} of 8 v2 questions answered',
+                    ),
+                  ),
+                if (widget.independent || _draft.legacy)
+                  Text(
+                    text(
+                      'Relatos individuais não completam o questionário.',
+                      'Individual statements do not complete the questionnaire.',
+                    ),
+                  ),
+                if (_draft.legacy) SurveyAnswersView(review: _draft.review!),
+                for (final entry in _draft.answers.entries)
+                  Text(
+                    '${AccessibilityCatalog.find(entry.key)!.name(context)}: ${SurveyContract.answer(context, entry.value)} (${_changeLabel(_draft.answerChange(entry.key))})',
+                  ),
+                for (final id in _draft.originalAnswers.keys.where(
+                  (id) => !_draft.answers.containsKey(id),
+                ))
+                  Text(
+                    '${AccessibilityCatalog.find(id)!.name(context)}: ${text('remoção explícita', 'explicit removal')}',
+                  ),
+                if (missing.isNotEmpty)
+                  TextButton(
+                    onPressed: () => setState(() => _expanded = !_expanded),
+                    child: Text(
+                      text(
+                        '${missing.length} recursos sem resposta',
+                        '${missing.length} unanswered features',
+                      ),
+                    ),
+                  ),
+                if (_expanded)
+                  for (final resource in missing) Text(resource.name(context)),
+                _edit(1, text('recursos', 'features')),
+              ],
             ),
           ),
-          for (final photo in _draft.existingPhotos)
-            Text('${photo.description}: ${photoState(context, photo.state)}'),
-          for (final draft in _draft.photos.drafts)
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              if (draft.file != null) SizedBox(height: 120, child: SelectedImagePreview(file: draft.file!)),
-              Text('${draft.description}: ${_photoStatus(draft)}'),
-            ]),
-          _edit(2, text('fotos', 'photos')),
-        ]))),
+        ),
+        if (!widget.independent)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    text('Fotografias', 'Photos'),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Text(
+                    text(
+                      'Fotos: ${_draft.existingPhotos.length} existentes; ${_draft.photos.drafts.length} seleções neste fluxo.',
+                      'Photos: ${_draft.existingPhotos.length} existing; ${_draft.photos.drafts.length} selections in this flow.',
+                    ),
+                  ),
+                  for (final photo in _draft.existingPhotos)
+                    Text(
+                      '${photo.description}: ${photoState(context, photo.state)}',
+                    ),
+                  for (final draft in _draft.photos.drafts)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (draft.file != null)
+                          SizedBox(
+                            height: 120,
+                            child: SelectedImagePreview(file: draft.file!),
+                          ),
+                        Text('${draft.description}: ${_photoStatus(draft)}'),
+                      ],
+                    ),
+                  _edit(2, text('fotos', 'photos')),
+                ],
+              ),
+            ),
+          ),
         if (_draft.hasConfirmed || _draft.complete)
           Semantics(
             liveRegion: true,
@@ -903,11 +1111,34 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
           ),
         if (_draft.mutation != null)
           Text(context.contributionFeedback(_draft.mutation!)),
-        if (!widget.independent && _draft.review != null && _draft.photos.remaining > 0) ...[
-          Text(text('Sua avaliação foi registrada, mas algumas fotografias não foram enviadas.', 'Your review was saved, but some photos were not uploaded.')),
-          OutlinedButton(key: const ValueKey('retry-photos'), onPressed: _draft.locked ? null : _publish, child: Text(text('Tentar novamente', 'Try again'))),
-          OutlinedButton(key: const ValueKey('correct-photo'), onPressed: _draft.busy ? null : () => _move(2), child: Text(text('Corrigir fotografia', 'Correct photo'))),
-          TextButton(key: const ValueKey('finish-without-photo'), onPressed: _draft.busy || _draft.reviewUncertain ? null : _finishWithoutPhotos, child: Text(text('Concluir sem fotografia', 'Finish without photo'))),
+        if (!widget.independent &&
+            _draft.review != null &&
+            _draft.photos.remaining > 0) ...[
+          Text(
+            text(
+              'Sua avaliação foi registrada, mas algumas fotografias não foram enviadas.',
+              'Your review was saved, but some photos were not uploaded.',
+            ),
+          ),
+          OutlinedButton(
+            key: const ValueKey('retry-photos'),
+            onPressed: _draft.locked ? null : _publish,
+            child: Text(text('Tentar novamente', 'Try again')),
+          ),
+          OutlinedButton(
+            key: const ValueKey('correct-photo'),
+            onPressed: _draft.busy ? null : () => _move(2),
+            child: Text(text('Corrigir fotografia', 'Correct photo')),
+          ),
+          TextButton(
+            key: const ValueKey('finish-without-photo'),
+            onPressed: _draft.busy || _draft.reviewUncertain
+                ? null
+                : _finishWithoutPhotos,
+            child: Text(
+              text('Concluir sem fotografia', 'Finish without photo'),
+            ),
+          ),
         ],
         if (!_draft.complete)
           FilledButton(
@@ -953,239 +1184,283 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
   };
 
   @override
-  Widget build(BuildContext context) => PopScope(
-    canPop: _allowExit || _expired,
-    onPopInvokedWithResult: (didPop, result) {
-      if (!didPop) {
-        _exit();
-      }
-    },
-    child: Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 56 * MediaQuery.textScalerOf(context).scale(1),
-        leading: IconButton(
-          tooltip: text('Voltar', 'Back'),
-          onPressed: _exit,
-          icon: const Icon(Icons.arrow_back),
-        ),
-        actions: [
-          IconButton(
-            tooltip: text('Sair do preenchimento', 'Leave draft'),
-            onPressed: () => _exit(leave: true),
-            icon: const Icon(Icons.close),
-          ),
-        ],
-        title: Text(
-          widget.independent
-              ? text('Informar acessibilidade', 'Report accessibility')
+  Widget build(BuildContext context) {
+    if (!AppHttp.authenticated) {
+      final expired = AppHttp.session.status == AuthStatus.expired;
+      return Scaffold(
+        appBar: AppBar(title: Text(text('Avaliar', 'Review'))),
+        body: GuestAccess(
+          icon: Icons.rate_review_outlined,
+          title: expired
+              ? text('Sua sessão expirou', 'Your session expired')
+              : text('Compartilhe sua experiência', 'Share your experience'),
+          description: expired
+              ? text(
+                  'Entre novamente para continuar sua avaliação.',
+                  'Sign in again to continue your review.',
+                )
               : text(
-                  _draft.review == null
-                      ? 'Avaliar estabelecimento'
-                      : 'Editar avaliação',
-                  _draft.review == null ? 'Review place' : 'Edit review',
+                  'Entre na sua conta para avaliar a acessibilidade dos estabelecimentos e ajudar outras pessoas a encontrar lugares mais inclusivos.',
+                  'Sign in to review accessibility and help others find inclusive places.',
                 ),
+          onLogin: () => _openGuestAuth(),
+          onRegister: () => _openGuestAuth(register: true),
+          onExplore: () => Navigator.maybePop(context),
         ),
-      ),
-      body: _showConfirmation && !_expired ? _confirmation() : _expired
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    text(
-                      'Sessão alterada. O rascunho privado foi descartado. Entre novamente.',
-                      'Session changed. The private draft was discarded. Sign in again.',
-                    ),
+      );
+    }
+    return PopScope(
+      canPop: _allowExit || _expired,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _exit();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          toolbarHeight: 56 * MediaQuery.textScalerOf(context).scale(1),
+          leading: IconButton(
+            tooltip: text('Voltar', 'Back'),
+            onPressed: _exit,
+            icon: const Icon(Icons.arrow_back),
+          ),
+          actions: [
+            IconButton(
+              tooltip: text('Sair do preenchimento', 'Leave draft'),
+              onPressed: () => _exit(leave: true),
+              icon: const Icon(Icons.close),
+            ),
+          ],
+          title: Text(
+            widget.independent
+                ? text('Informar acessibilidade', 'Report accessibility')
+                : text(
+                    _draft.review == null
+                        ? 'Avaliar estabelecimento'
+                        : 'Editar avaliação',
+                    _draft.review == null ? 'Review place' : 'Edit review',
                   ),
-                  FilledButton(
-                    onPressed: _login,
-                    child: Text(text('Entrar novamente', 'Sign in again')),
-                  ),
-                ],
-              ),
-            )
-          : _draft.loading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              controller: _scroll,
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Focus(
-                    focusNode: _heading,
-                    child: Semantics(
-                      header: true,
-                      child: Text(
-                        (widget.place['nome'] ?? '').toString(),
-                        style: Theme.of(context).textTheme.headlineSmall,
+          ),
+        ),
+        body: _showConfirmation && !_expired
+            ? _confirmation()
+            : _expired
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      text(
+                        'Sessão alterada. O rascunho privado foi descartado. Entre novamente.',
+                        'Session changed. The private draft was discarded. Sign in again.',
                       ),
                     ),
-                  ),
-                  Text((widget.place['endereco'] ?? '').toString()),
-                  if (!_draft.loaded) ...[
-                    if (_draft.error != null) Text(_failure(_draft.error!)),
-                    if (_loginNeeded)
-                      FilledButton(
-                        onPressed: _login,
-                        child: Text(text('Entrar novamente', 'Sign in again')),
-                      ),
-                    TextButton(
-                      onPressed: _load,
-                      child: Text(text('Tentar novamente', 'Try again')),
+                    FilledButton(
+                      onPressed: _login,
+                      child: Text(text('Entrar novamente', 'Sign in again')),
                     ),
-                  ] else ...[
-                    Semantics(
-                      liveRegion: true,
-                      child: Text(
-                        widget.independent
-                            ? text(
-                                'Sem nota geral; nenhum bônus novo por relato individual.',
-                                'No general rating; no new bonus for individual statements.',
-                              )
-                            : text(
-                                'Etapa ${_draft.step + 1} de 4',
-                                'Step ${_draft.step + 1} of 4',
-                              ),
-                      ),
-                    ),
-                    if (_draft.busy) const LinearProgressIndicator(),
-                    if (_draft.busy)
-                      TextButton(
-                        onPressed: () {
-                          _draft.requestStop();
-                        },
+                  ],
+                ),
+              )
+            : _draft.loading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                controller: _scroll,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Focus(
+                      focusNode: _heading,
+                      child: Semantics(
+                        header: true,
                         child: Text(
-                          text(
-                            'Parar próximos envios; o atual pode concluir',
-                            'Stop next uploads; the current request may finish',
-                          ),
+                          (widget.place['nome'] ?? '').toString(),
+                          style: Theme.of(context).textTheme.headlineSmall,
                         ),
                       ),
-                    if ((widget.independent && _draft.step == 0) ||
-                        _draft.step == 1) ...[
-                      _title(
-                        'Informar recursos de acessibilidade',
-                        'Report accessibility features',
+                    ),
+                    Text((widget.place['endereco'] ?? '').toString()),
+                    if (!_draft.loaded) ...[
+                      if (_draft.error != null) Text(_failure(_draft.error!)),
+                      if (_loginNeeded)
+                        FilledButton(
+                          onPressed: _login,
+                          child: Text(
+                            text('Entrar novamente', 'Sign in again'),
+                          ),
+                        ),
+                      TextButton(
+                        onPressed: _load,
+                        child: Text(text('Tentar novamente', 'Try again')),
                       ),
-                      ResourceAnswerFields(
-                        questionnaireEnabled:
-                            !widget.independent && !_draft.legacy,
-                        answers: _draft.answers,
-                        selected: _draft.selected,
-                        details: _draft.details,
-                        enabled: !_draft.locked && !_draft.hasConfirmed,
-                        onChanged: _changed,
+                    ] else ...[
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          widget.independent
+                              ? text(
+                                  'Sem nota geral; nenhum bônus novo por relato individual.',
+                                  'No general rating; no new bonus for individual statements.',
+                                )
+                              : text(
+                                  'Etapa ${_draft.step + 1} de 4',
+                                  'Step ${_draft.step + 1} of 4',
+                                ),
+                        ),
                       ),
-                      FilledButton(
-                        onPressed: _draft.locked ? null : () => _move(3),
-                        child: Text(text('Revisar', 'Review')),
-                      ),
-                      if (!widget.independent)
+                      if (_draft.busy) const LinearProgressIndicator(),
+                      if (_draft.busy)
                         TextButton(
-                          onPressed: _draft.locked ? null : () => _move(2),
+                          onPressed: () {
+                            _draft.requestStop();
+                          },
                           child: Text(
                             text(
-                              'Continuar para fotos (opcional)',
-                              'Continue to photos (optional)',
+                              'Parar próximos envios; o atual pode concluir',
+                              'Stop next uploads; the current request may finish',
                             ),
                           ),
                         ),
-                    ] else if (_draft.step == 0)
-                      _ratingFields()
-                    else if (_draft.step == 2)
-                      _photos()
-                    else
-                      _summary(),
-                    if (_draft.error != null)
-                      Semantics(
-                        liveRegion: true,
-                        child: Text(_failure(_draft.error!)),
-                      ),
-                    if (_selectionError != null)
-                      Semantics(
-                        liveRegion: true,
-                        child: Text(_selectionError!),
-                      ),
-                    if (_loginNeeded)
-                      FilledButton(
-                        onPressed: _login,
-                        child: Text(text('Entrar novamente', 'Sign in again')),
-                      ),
-                    if (_draft.retryUntil != null && _draft.throttled)
-                      Text(
-                        text(
-                          'Tente novamente após ${_draft.retryUntil!.toLocal()}.',
-                          'Retry after ${_draft.retryUntil!.toLocal()}.',
+                      if ((widget.independent && _draft.step == 0) ||
+                          _draft.step == 1) ...[
+                        _title(
+                          'Informar recursos de acessibilidade',
+                          'Report accessibility features',
                         ),
-                      ),
-                    if (_draft.statementConflict != null) ...[
-                      Text(
-                        text(
-                          'Relato atual no servidor: ${_draft.statementConflict!['state'] ?? '—'}; ${_draft.statementConflict!['note'] ?? ''}',
-                          'Current server statement: ${_draft.statementConflict!['state'] ?? '—'}; ${_draft.statementConflict!['note'] ?? ''}',
+                        ResourceAnswerFields(
+                          questionnaireEnabled:
+                              !widget.independent && !_draft.legacy,
+                          answers: _draft.answers,
+                          selected: _draft.selected,
+                          details: _draft.details,
+                          enabled: !_draft.locked && !_draft.hasConfirmed,
+                          onChanged: _changed,
                         ),
-                      ),
-                      TextButton(
-                        onPressed: _draft.resolveStatementConflict,
-                        child: Text(
-                          text(
-                            'Manter minha alteração e revisar contra este relato',
-                            'Keep my change and review against this statement',
+                        FilledButton(
+                          onPressed: _draft.locked ? null : () => _move(3),
+                          child: Text(text('Revisar', 'Review')),
+                        ),
+                        if (!widget.independent)
+                          TextButton(
+                            onPressed: _draft.locked ? null : () => _move(2),
+                            child: Text(
+                              text(
+                                'Continuar para fotos (opcional)',
+                                'Continue to photos (optional)',
+                              ),
+                            ),
                           ),
+                      ] else if (_draft.step == 0)
+                        _ratingFields()
+                      else if (_draft.step == 2)
+                        _photos()
+                      else
+                        _summary(),
+                      if (_draft.error != null)
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(_failure(_draft.error!)),
+                        ),
+                      if (_selectionError != null)
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(_selectionError!),
+                        ),
+                      if (_loginNeeded)
+                        FilledButton(
+                          onPressed: _login,
+                          child: Text(
+                            text('Entrar novamente', 'Sign in again'),
+                          ),
+                        ),
+                      if (_draft.retryUntil != null && _draft.throttled)
+                        Text(
+                          text(
+                            'Tente novamente após ${_draft.retryUntil!.toLocal()}.',
+                            'Retry after ${_draft.retryUntil!.toLocal()}.',
+                          ),
+                        ),
+                      if (_draft.statementConflict != null) ...[
+                        Text(
+                          text(
+                            'Relato atual no servidor: ${_draft.statementConflict!['state'] ?? '—'}; ${_draft.statementConflict!['note'] ?? ''}',
+                            'Current server statement: ${_draft.statementConflict!['state'] ?? '—'}; ${_draft.statementConflict!['note'] ?? ''}',
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _draft.resolveStatementConflict,
+                          child: Text(
+                            text(
+                              'Manter minha alteração e revisar contra este relato',
+                              'Keep my change and review against this statement',
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (_draft.conflict != null) ...[
+                        Text(
+                          text(
+                            'Versão no servidor: ${_draft.conflict!['estrelas'] ?? '—'} / 5; ${_draft.conflict!['comentario'] ?? ''}',
+                            'Server version: ${_draft.conflict!['estrelas'] ?? '—'} / 5; ${_draft.conflict!['comentario'] ?? ''}',
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            await _draft.resolveConflict(keepDraft: true);
+                            _comment.text = _draft.comment;
+                          },
+                          child: Text(
+                            text(
+                              'Manter meu rascunho e revisar sobre a versão atual',
+                              'Keep my draft and review against the current version',
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            await _draft.resolveConflict(keepDraft: false);
+                            _comment.text = _draft.comment;
+                          },
+                          child: Text(
+                            text(
+                              'Carregar versão atual e descartar alterações textuais',
+                              'Load current version and discard text changes',
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (_draft.step > 0 && !_draft.complete)
+                        OutlinedButton(
+                          key: const ValueKey('survey-back'),
+                          onPressed: _draft.busy
+                              ? null
+                              : () => _move(_draft.step - 1),
+                          child: Text(text('Voltar', 'Back')),
+                        ),
+                      Text(
+                        text(
+                          'Pontos reconhecem participação, sem certificar acessibilidade. Fotos recebidas aguardam moderação; aprovação não é certificação do local.',
+                          'Points recognize participation without certifying accessibility. Received photos await moderation; approval does not certify the place.',
                         ),
                       ),
                     ],
-                    if (_draft.conflict != null) ...[
-                      Text(
-                        text(
-                          'Versão no servidor: ${_draft.conflict!['estrelas'] ?? '—'} / 5; ${_draft.conflict!['comentario'] ?? ''}',
-                          'Server version: ${_draft.conflict!['estrelas'] ?? '—'} / 5; ${_draft.conflict!['comentario'] ?? ''}',
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          await _draft.resolveConflict(keepDraft: true);
-                          _comment.text = _draft.comment;
-                        },
-                        child: Text(
-                          text(
-                            'Manter meu rascunho e revisar sobre a versão atual',
-                            'Keep my draft and review against the current version',
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          await _draft.resolveConflict(keepDraft: false);
-                          _comment.text = _draft.comment;
-                        },
-                        child: Text(
-                          text(
-                            'Carregar versão atual e descartar alterações textuais',
-                            'Load current version and discard text changes',
-                          ),
-                        ),
-                      ),
-                    ],
-                    if (_draft.step > 0 && !_draft.complete)
-                      OutlinedButton(
-                        key: const ValueKey('survey-back'),
-                        onPressed: _draft.busy
-                            ? null
-                            : () => _move(_draft.step - 1),
-                        child: Text(text('Voltar', 'Back')),
-                      ),
-                    Text(
-                      text(
-                        'Pontos reconhecem participação, sem certificar acessibilidade. Fotos recebidas aguardam moderação; aprovação não é certificação do local.',
-                        'Points recognize participation without certifying accessibility. Received photos await moderation; approval does not certify the place.',
-                      ),
-                    ),
                   ],
-                ],
+                ),
               ),
-            ),
-    ),
-  );
+      ),
+    );
+  }
+
+  void _openGuestAuth({bool register = false}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => LoginScreen(
+          openRegister: register,
+          onLoginSuccess: (loginContext, _) => Navigator.pop(loginContext),
+        ),
+      ),
+    );
+  }
 }

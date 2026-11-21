@@ -468,6 +468,46 @@ void main() {
     expect(find.byType(SettingsScreen), findsNothing);
   });
 
+  testWidgets('guest exit returns to welcome without a remote logout', (
+    tester,
+  ) async {
+    AppHttp.clearSession();
+    var requests = 0;
+    AppHttp.client = MockClient((_) async {
+      requests++;
+      return http.Response('{}', 503);
+    });
+    await tester.pumpWidget(
+      MaterialApp(
+        routes: {
+          '/': (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (context) => Scaffold(
+                    body: TextButton(
+                      onPressed: () => logOut(context),
+                      child: const Text('Sair visitante'),
+                    ),
+                  ),
+                ),
+              ),
+              child: const Text('Boas vindas'),
+            ),
+          ),
+        },
+      ),
+    );
+    await tester.tap(find.text('Boas vindas'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sair visitante'));
+    await tester.pumpAndSettle();
+    expect(find.text('Boas vindas'), findsOneWidget);
+    expect(requests, 0);
+    expect(AppHttp.session.warning, isNot('remote_logout_unconfirmed'));
+  });
+
   testWidgets('leaving a loading screen does not update disposed state', (
     tester,
   ) async {

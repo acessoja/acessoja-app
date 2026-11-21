@@ -20,11 +20,6 @@ class FavoritesService {
   }
 
   dynamic _decode(http.Response response, int revision) {
-    if (response.statusCode == 401 || response.statusCode == 403) {
-      if (revision == AppHttp.sessionRevision.value) {
-        AppHttp.clearSession();
-      }
-    }
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw FavoriteException(response.statusCode);
     }
@@ -48,8 +43,9 @@ class FavoritesService {
         link.userInfo.isNotEmpty ||
         link.fragment.isNotEmpty ||
         link.queryParameters['q'] != (query.isEmpty ? null : query) ||
-        link.queryParameters.keys
-            .any((key) => !['q', 'page', 'page_size'].contains(key)) ||
+        link.queryParameters.keys.any(
+          (key) => !['q', 'page', 'page_size'].contains(key),
+        ) ||
         int.tryParse(link.queryParameters['page'] ?? '') == null ||
         int.parse(link.queryParameters['page']!) < 1) {
       throw const FormatException('Unsafe pagination');
@@ -57,8 +53,11 @@ class FavoritesService {
     return link;
   }
 
-  Future<FavoritePage> page(
-      {required int session, String query = '', Uri? next}) async {
+  Future<FavoritePage> page({
+    required int session,
+    String query = '',
+    Uri? next,
+  }) async {
     _session(session);
     final uri = next == null
         ? endpoint.replace(queryParameters: {if (query.isNotEmpty) 'q': query})
@@ -80,8 +79,9 @@ class FavoritesService {
           items.map((f) => f.id).toSet().length != items.length) {
         throw const FormatException();
       }
-      final link =
-          value['next'] == null ? null : _pageLink(value['next'], query);
+      final link = value['next'] == null
+          ? null
+          : _pageLink(value['next'], query);
       if (link == uri) {
         throw const FormatException('Pagination cycle');
       }
@@ -95,10 +95,13 @@ class FavoritesService {
     _session(session);
     favoriteId(localId);
     final value = _decode(
-        await AppHttp.post(endpoint,
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'local': localId})),
-        session);
+      await AppHttp.post(
+        endpoint,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'local': localId}),
+      ),
+      session,
+    );
     try {
       final result = Favorite.fromJson(value);
       if (result.localId != localId) {
@@ -134,8 +137,10 @@ class FavoritesService {
     }
   }
 
-  Future<Map<int, FavoriteState>> states(Iterable<int> localIds,
-      {required int session}) async {
+  Future<Map<int, FavoriteState>> states(
+    Iterable<int> localIds, {
+    required int session,
+  }) async {
     _session(session);
     final ids = localIds.toSet();
     if (ids.isEmpty || ids.length > 100) {
@@ -145,10 +150,13 @@ class FavoritesService {
       favoriteId(id);
     }
     final value = _decode(
-        await AppHttp.get(endpoint
+      await AppHttp.get(
+        endpoint
             .resolve('estado/')
-            .replace(queryParameters: {'locais': ids.join(',')})),
-        session);
+            .replace(queryParameters: {'locais': ids.join(',')}),
+      ),
+      session,
+    );
     try {
       if (value is! Map || value['results'] is! List) {
         throw const FormatException();
