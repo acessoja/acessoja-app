@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -10,7 +12,6 @@ import '../models/place_category.dart';
 import '../models/personal_list.dart';
 import '../services/app_http.dart';
 import '../services/personal_lists_service.dart';
-import 'personal_list_presentation.dart';
 
 class AdaptivePlaceLayer extends StatefulWidget {
   final List<MapPlace> places;
@@ -203,6 +204,7 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
       builder: (context, constraints) {
         final size = constraints.biggest;
         final insets = widget.reservedInsets;
+        final controlOffset = _personalControlOffset(size, insets);
         final layouts = layoutPlaceMarkers(
           places: places,
           center: camera.center,
@@ -215,6 +217,7 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
           },
           reserved: [
             ...widget.reservedRects,
+            Rect.fromLTWH(controlOffset.dx, controlOffset.dy, 56, 56),
             if (insets.left > 0) Rect.fromLTWH(0, 0, insets.left, size.height),
             if (insets.top > 0) Rect.fromLTWH(0, 0, size.width, insets.top),
             if (insets.bottom > 0)
@@ -237,18 +240,14 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
             style,
             context,
           ),
-          measureCluster: (count) {
-            final text = _measure(
-              '$count',
-              const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-              context,
-            );
-            return Size(text.width + 20, text.height + 18);
-          },
         );
         return Stack(
           children: [
-            Positioned(top: 12, left: 12, child: _personalControls(context)),
+            Positioned(
+              top: controlOffset.dy,
+              left: controlOffset.dx,
+              child: _personalControls(context),
+            ),
             for (final item in layouts.where((item) => !item.occluded))
               Positioned(
                 key: ValueKey('symbol-${item.stableKey}'),
@@ -297,7 +296,34 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
     );
   }
 
+  Offset _personalControlOffset(Size size, EdgeInsets insets) {
+    const extent = 56.0, step = 64.0, edge = 12.0;
+    final top =
+        math.max(MediaQuery.paddingOf(context).top, insets.top).toDouble() +
+        edge;
+    for (
+      var y = top;
+      y + extent <= size.height - insets.bottom - edge;
+      y += step
+    ) {
+      for (
+        var x = math.max(edge, insets.left + edge).toDouble();
+        x + extent <= size.width - insets.right - edge;
+        x += step
+      ) {
+        final bounds = Rect.fromLTWH(x, y, extent, extent);
+        if (!widget.reservedRects.any(
+          (reserved) => reserved.overlaps(bounds),
+        )) {
+          return Offset(x, y);
+        }
+      }
+    }
+    return Offset(edge, top);
+  }
+
   Widget _personalControls(BuildContext context) => Card(
+    key: const ValueKey('map-personal-layers'),
     margin: EdgeInsets.zero,
     child: PopupMenuButton<String>(
       tooltip: 'Camada Meus lugares',
@@ -385,9 +411,9 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
     final colors = AppColors.of(context);
     final selected = item.containsSelection(widget.selectedId);
     final personal = item.isCluster ? null : _personal[item.place.internalId];
-    final personalIcon = personal == null
-        ? null
-        : personalListIcon(personal.icon ?? 'place');
+    final recognized = !item.isCluster && item.place.hasCommunityRecognition;
+    final highlight = !item.isCluster && item.place.hasCommunityHighlight;
+    final visual = categoryVisual(item.place.category);
     final visitLabel = personal?.status == PersonalVisitStatus.want
         ? 'Quero visitar'
         : personal?.status == PersonalVisitStatus.visited
@@ -395,15 +421,18 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
         : null;
     final label = item.isCluster
         ? context.mapText(
-                '${item.members.length} locais. Abrir agrupamento.',
-                '${item.members.length} places. Open group.',
+                '${item.members.length} locais na mesma coordenada. Abrir lista.',
+                '${item.members.length} places at the same coordinate. Open list.',
               ) +
               (selected
                   ? ' ${context.mapText('Inclui o local selecionado', 'Includes selected place')}: ${context.placeName(item.place)}.'
                   : '')
         : '${context.placeName(item.place)}. ${context.placeCategory(item.place)}. ${item.place.sourceLabel}. '
+              '${recognized ? context.mapText('Reconhecimento comunitário de acessibilidade. ', 'Community accessibility recognition. ') : ''}'
+              '${highlight ? context.mapText('Destaque superior da comunidade. ', 'Community highlight. ') : ''}'
               '${personal?.lists.isNotEmpty == true ? 'Listas: ${personal!.lists.join(', ')}. ' : ''}'
               '${visitLabel == null ? '' : '$visitLabel. '}'
+              '${selected ? context.mapText('Selecionado. O realce azul não altera a classificação de acessibilidade. ', 'Selected. The blue highlight does not change the accessibility classification. ') : ''}'
               '${context.mapText('Abrir local', 'Open place')}';
     return MergeSemantics(
       child: Semantics(
@@ -422,64 +451,116 @@ class _AdaptivePlaceLayerState extends State<AdaptivePlaceLayer> {
             style: ButtonStyle(
               padding: const WidgetStatePropertyAll(EdgeInsets.zero),
               minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
-              backgroundColor: WidgetStatePropertyAll(colors.surface),
+              backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
               foregroundColor: WidgetStatePropertyAll(colors.primaryDark),
-              shape: WidgetStatePropertyAll(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    selected
-                        ? 4
-                        : item.isCluster
-                        ? 12
-                        : 24,
-                  ),
-                ),
-              ),
-              side: WidgetStateProperty.resolveWith(
-                (states) => BorderSide(
-                  color: states.contains(WidgetState.focused)
-                      ? colors.text
-                      : colors.primaryDark,
-                  width: selected || states.contains(WidgetState.focused)
-                      ? 3
-                      : 1.5,
-                ),
-              ),
+              shape: const WidgetStatePropertyAll(CircleBorder()),
+              side: const WidgetStatePropertyAll(BorderSide.none),
             ),
             child: ExcludeSemantics(
-              child: item.isCluster
-                  ? Text(
-                      '${item.members.length}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    )
-                  : Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Icon(
-                          personalIcon ??
-                              categoryVisual(item.place.category).icon,
-                          color: personal?.color == null
-                              ? null
-                              : personalListColor(context, personal!.color!),
-                          size: selected ? 28 : 24,
+              child: SizedBox.expand(
+                child: Stack(
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.none,
+                  children: [
+                    if (highlight)
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFFD4A017),
+                            width: 2,
+                          ),
                         ),
-                        if (visitLabel != null)
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: Icon(
-                              personal!.status == PersonalVisitStatus.visited
-                                  ? Icons.check_circle
-                                  : Icons.flag,
-                              size: 13,
-                              color: colors.text,
+                      ),
+                    if (selected)
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colors.primarySoft.withValues(alpha: .45),
+                          border: Border.all(color: colors.primary, width: 2.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colors.primary.withValues(alpha: .22),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (!selected && !highlight)
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colors.surface,
+                          border: Border.all(color: visual.color, width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colors.shadow.withValues(alpha: .35),
+                              blurRadius: 3,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Container(
+                      width: selected ? 32 : 28,
+                      height: selected ? 32 : 28,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: selected ? colors.primary : colors.surface,
+                        border: highlight
+                            ? Border.all(
+                                color: const Color(0xFFD4A017),
+                                width: 1.5,
+                              )
+                            : null,
+                      ),
+                      child: Icon(
+                        item.isCluster ? Icons.layers_outlined : visual.icon,
+                        color: selected ? colors.onPrimary : visual.color,
+                        size: selected ? 21 : 20,
+                      ),
+                    ),
+                    if (recognized)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: colors.success,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: colors.surface,
+                              width: 1.5,
                             ),
                           ),
-                      ],
-                    ),
+                          child: Icon(
+                            Icons.accessible_forward,
+                            size: 14,
+                            color: colors.onPrimary,
+                          ),
+                        ),
+                      ),
+                    if (visitLabel != null)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Icon(
+                          personal!.status == PersonalVisitStatus.visited
+                              ? Icons.check_circle
+                              : Icons.flag,
+                          size: 13,
+                          color: colors.text,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

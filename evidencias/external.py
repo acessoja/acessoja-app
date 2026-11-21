@@ -5,7 +5,7 @@ from django.db.models import Q
 
 from .capture import capture_batch, catalog_specs, sync_remote_places
 from .models import ResourceEvidence
-from .projection import confirmation_stats, public_evidence, resource_summary
+from .projection import community_classification, confirmation_stats, public_evidence, resource_summary
 
 
 def external_summaries(identities):
@@ -19,17 +19,22 @@ def external_summaries(identities):
         .filter(Q(withdrawn=True) | Q(superseded=True) | Q(current_revision__is_valid=False))
         .values_list("external_id", flat=True)
     )
-    return {identity: resource_summary(grouped[identity], statistics=stats) for identity in identities}, blocked
+    return (
+        {identity: resource_summary(grouped[identity], statistics=stats) for identity in identities},
+        {identity: community_classification(grouped[identity], statistics=stats) for identity in identities},
+        blocked,
+    )
 
 
 def project_remote_places(places):
     sync_remote_places(places)
     identities = [place["external_id"] for place in places if place.get("external_id")]
-    summaries, blocked = external_summaries(identities)
+    summaries, classifications, blocked = external_summaries(identities)
     for place in places:
         identity = place.get("external_id")
         if identity in summaries:
             place["accessibility"] = summaries[identity]
+            place["accessibility_classification"] = classifications[identity]
         if identity in blocked:
             place["accessibility_data"] = {
                 key: value for key, value in place.get("accessibility_data", {}).items() if key != "toilets:wheelchair"
@@ -50,6 +55,9 @@ def project_catalog_places(entries, documents):
                 if records
                 else resolve_information(external=osm_information(entry.tags))
             )
+            document["accessibility_classification"] = community_classification(
+                valid, statistics=statistics
+            )
             if any(not row.current_revision.is_valid or row.withdrawn or row.superseded for row in records):
                 document["accessibility_data"] = {
                     key: value for key, value in entry.tags.items() if key != "toilets:wheelchair"
@@ -58,9 +66,10 @@ def project_catalog_places(entries, documents):
     # Detail endpoints can repair a trusted catalog assertion created outside the importer.
     capture_batch(catalog_specs(entries), create_only=True)
     identities = [entry.poi.external_id for entry in entries]
-    summaries, blocked = external_summaries(identities)
+    summaries, classifications, blocked = external_summaries(identities)
     for entry, document in zip(entries, documents):
         document["accessibility"] = summaries[entry.poi.external_id]
+        document["accessibility_classification"] = classifications[entry.poi.external_id]
         if entry.poi.external_id in blocked:
             document["accessibility_data"] = {
                 key: value for key, value in document["accessibility_data"].items() if key != "toilets:wheelchair"
