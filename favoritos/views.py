@@ -1,6 +1,7 @@
 import unicodedata
 
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_headers
@@ -96,6 +97,15 @@ class FavoritoViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         if getattr(self, "swagger_fake_view", False):
             return Favorito.objects.none()
         return Favorito.objects.filter(user=self.request.user).select_related("local").order_by("-criado_em", "-id")
+
+    @extend_schema(summary="Contar locais salvos diretamente ou em listas pessoais")
+    @action(detail=False, methods=["get"], url_path="salvos-total", pagination_class=None)
+    def salvos_total(self, request):
+        self._query(set())
+        total = Local.objects.filter(
+            Q(favoritos__user=request.user) | Q(itens_listas__lista__user=request.user)
+        ).distinct().count()
+        return Response({"total": total})
 
     def _query(self, allowed):
         if set(self.request.query_params) - set(allowed):

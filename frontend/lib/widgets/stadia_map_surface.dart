@@ -308,10 +308,9 @@ class _StadiaMapSurfaceState extends State<StadiaMapSurface> {
     final colors = AppColors.of(context);
     final failed = !_configured || _failure != null;
     final attempt = _attempt;
-    return Column(
+    return Stack(
       children: [
-        Expanded(
-          flex: failed ? 3 : 1,
+        Positioned.fill(
           // Os créditos exigidos pela licença (ODbL e termos do Stadia) entram
           // como camada do mapa: ficam visíveis sobre os tiles, mas abaixo da
           // busca e dos painéis desenhados pela tela.
@@ -336,54 +335,59 @@ class _StadiaMapSurfaceState extends State<StadiaMapSurface> {
           ),
         ),
         if (failed)
-          Flexible(
-            flex: 2,
-            child: SingleChildScrollView(
-              child: Material(
-                color: colors.surfaceElevated,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  child: Semantics(
-                    liveRegion: true,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(Icons.map_outlined, color: colors.warning),
-                            const SizedBox(width: 8),
-                            Expanded(
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: 84,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 104),
+              child: SingleChildScrollView(
+                child: Material(
+                  color: colors.surfaceElevated,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.map_outlined, color: colors.warning),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _message(context),
+                                  style: TextStyle(color: colors.text),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (_configured)
+                            TextButton(
+                              key: const ValueKey('stadia-retry'),
+                              onPressed: _cooldown != null
+                                  ? null
+                                  : () {
+                                      final provider = widget.tileProvider;
+                                      if (provider is StadiaTileProvider) {
+                                        provider.resetFailure();
+                                      }
+                                      setState(() {
+                                        _failure = null;
+                                        _attempt++;
+                                      });
+                                    },
                               child: Text(
-                                _message(context),
-                                style: TextStyle(color: colors.text),
+                                context.mapText('Tentar novamente', 'Retry'),
                               ),
                             ),
-                          ],
-                        ),
-                        if (_configured)
-                          TextButton(
-                            key: const ValueKey('stadia-retry'),
-                            onPressed: _cooldown != null
-                                ? null
-                                : () {
-                                    final provider = widget.tileProvider;
-                                    if (provider is StadiaTileProvider) {
-                                      provider.resetFailure();
-                                    }
-                                    setState(() {
-                                      _failure = null;
-                                      _attempt++;
-                                    });
-                                  },
-                            child: Text(
-                              context.mapText('Tentar novamente', 'Retry'),
-                            ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

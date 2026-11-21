@@ -29,6 +29,7 @@ class LoginScreen extends StatefulWidget {
   final ApiService? apiService;
   final VoidCallback? onGuest;
   final DateTime Function()? clock;
+  final bool openRegister;
 
   /// Permite controlar, em testes, o que acontece após um login
   /// bem-sucedido, evitando navegar para a [MainScreen] real.
@@ -40,6 +41,7 @@ class LoginScreen extends StatefulWidget {
     this.apiService,
     this.onGuest,
     this.clock,
+    this.openRegister = false,
     this.onLoginSuccess,
   });
 
@@ -61,6 +63,31 @@ class _LoginScreenState extends SafeState<LoginScreen> {
           86400,
         );
   late final ApiService _apiService = widget.apiService ?? HttpApiService();
+
+  void _registered(String name, String password) {
+    _userController.text = name;
+    _passwordController.text = password;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _login(context);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.openRegister) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => RegisterScreen(onRegistered: _registered),
+            ),
+          );
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -468,8 +495,9 @@ class _LoginScreenState extends SafeState<LoginScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          const RegisterScreen(),
+                                      builder: (context) => RegisterScreen(
+                                        onRegistered: _registered,
+                                      ),
                                     ),
                                   );
                                 },
