@@ -75,6 +75,17 @@ void invalidatePersonalLists() => personalListsRevision.value++;
 class PersonalListsService {
   const PersonalListsService();
   Uri get endpoint => Uri.parse('${Config.baseUrl}/api/favoritos/listas/');
+  Uri get savedTotalEndpoint =>
+      Uri.parse('${Config.baseUrl}/api/favoritos/salvos-total/');
+
+  Future<int> savedTotal({required int session}) async {
+    final value = await _read(savedTotalEndpoint, session);
+    if (value is! Map || value['total'] is! int || value['total'] < 0) {
+      throw const FavoriteException(502);
+    }
+    return value['total'] as int;
+  }
+
   Uri stateEndpoint(int local) =>
       Uri.parse('${Config.baseUrl}/api/favoritos/estados/$local/');
 
@@ -87,9 +98,6 @@ class PersonalListsService {
   Future<dynamic> _read(Uri uri, int session) async {
     _check(session);
     final response = await AppHttp.get(uri);
-    if (response.statusCode == 401 || response.statusCode == 403) {
-      AppHttp.clearSession();
-    }
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw FavoriteException(response.statusCode);
     }
@@ -122,10 +130,6 @@ class PersonalListsService {
             headers: {'Content-Type': 'application/json'},
             body: encoded,
           );
-    if ((response.statusCode == 401 || response.statusCode == 403) &&
-        session == AppHttp.sessionRevision.value) {
-      AppHttp.clearSession();
-    }
     if (session != AppHttp.sessionRevision.value || !AppHttp.authenticated) {
       throw const FavoriteException(401);
     }
@@ -205,10 +209,6 @@ class PersonalListsService {
   Future<void> deleteList(int listId, {required int session}) async {
     _check(session);
     final response = await AppHttp.delete(endpoint.resolve('$listId/'));
-    if ((response.statusCode == 401 || response.statusCode == 403) &&
-        session == AppHttp.sessionRevision.value) {
-      AppHttp.clearSession();
-    }
     if (session != AppHttp.sessionRevision.value || !AppHttp.authenticated) {
       throw const FavoriteException(401);
     }
@@ -362,7 +362,10 @@ class PersonalListsService {
   }
 
   bool _matchesListData(PersonalList list, Map<String, Object> data) {
-    final name = (data['nome'] as String).trim().replaceAll(RegExp(r'\s+'), ' ');
+    final name = (data['nome'] as String).trim().replaceAll(
+      RegExp(r'\s+'),
+      ' ',
+    );
     return list.name == name &&
         list.description == data['descricao'] &&
         list.icon == data['icone'] &&

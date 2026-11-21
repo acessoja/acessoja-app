@@ -1,0 +1,5 @@
+# Somente o exemplo e estas regras podem ser versionados.
+# dev.local.json contem chave de cliente e configuracao especifica da maquina.
+*
+!.gitignore
+!dev.example.json

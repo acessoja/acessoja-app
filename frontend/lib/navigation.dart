@@ -24,7 +24,9 @@ Map<String, dynamic>? routePlace(Object? result) {
 }
 
 void logOut(BuildContext context) {
-  unawaited(AppHttp.logout().catchError((_) {}));
+  if (AppHttp.authenticated) {
+    unawaited(AppHttp.logout().catchError((_) {}));
+  }
   AppHttp.clearSession();
   Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
 }

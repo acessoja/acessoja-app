@@ -33,6 +33,24 @@ def test_lists_are_private_and_legacy_favorite_is_mirrored():
     assert other_api.post(f"/api/favoritos/listas/{default.pk}/itens/", {"local": local.pk}).status_code == 404
 
 
+def test_saved_total_unions_favorites_and_lists_without_cross_account_rows():
+    owner, api = make_user("saved-total-owner")
+    _, other_api = make_user("saved-total-other")
+    first = Local.objects.create(nome="Primeiro", endereco="Rua 1", distancia=0)
+    second = Local.objects.create(nome="Segundo", endereco="Rua 2", distancia=0)
+    custom = api.post("/api/favoritos/listas/", {"nome": "Passeios"}, format="json").json()["id"]
+    api.post(f"/api/favoritos/listas/{custom}/itens/", {"local": first.pk}, format="json")
+    api.post(f"/api/favoritos/listas/{custom}/itens/", {"local": second.pk}, format="json")
+    api.post("/api/favoritos/", {"local": first.pk}, format="json")
+    assert api.get("/api/favoritos/salvos-total/").json() == {"total": 2}
+    assert other_api.get("/api/favoritos/salvos-total/").json() == {"total": 0}
+    assert APIClient().get("/api/favoritos/salvos-total/").status_code == 401
+    api.post(f"/api/favoritos/listas/{custom}/itens/", {"local": first.pk, "salvo": False}, format="json")
+    assert api.get("/api/favoritos/salvos-total/").json() == {"total": 2}
+    api.delete(f"/api/favoritos/listas/{custom}/")
+    assert api.get("/api/favoritos/salvos-total/").json() == {"total": 1}
+
+
 def test_same_local_can_be_in_multiple_lists_and_state_does_not_create_visit():
     user, api = make_user("lists")
     local = Local.objects.create(nome="Teatro", endereco="Rua 2", distancia=0)
