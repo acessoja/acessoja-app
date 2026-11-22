@@ -465,6 +465,24 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('botão fechar encerra busca e painel de filtros', (tester) async {
+    mockApi();
+    await pumpMap(tester);
+    await openSearch(tester);
+    await tester.tap(find.byKey(const ValueKey('map-search-close')));
+    await tester.pumpAndSettle();
+    expect(find.byType(MapSearchSheet), findsNothing);
+
+    await openSearch(tester);
+    await tester.tap(find.text('Filtros'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('map-search-close')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('map-search-close')));
+    await tester.pumpAndSettle();
+    expect(find.byType(MapSearchSheet), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'controlador vive até a desmontagem da busca, inclusive ao fechar com debounce pendente',
     (tester) async {
@@ -612,8 +630,10 @@ void main() {
       mockApi();
       await pumpMap(tester, location: FakeLocation(failure: failure));
       final message = switch (failure) {
-        'Permissão negada' => 'Permissão de localização negada. Você pode continuar consultando o mapa.',
-        'Localização bloqueada' => 'A localização está bloqueada nas permissões. Revise as configurações.',
+        'Permissão negada' =>
+          'Permissão de localização negada. Você pode continuar consultando o mapa.',
+        'Localização bloqueada' =>
+          'A localização está bloqueada nas permissões. Revise as configurações.',
         _ => 'A localização demorou para responder. Tente novamente.',
       };
       await openDiscoveryDetails(tester);

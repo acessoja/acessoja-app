@@ -1915,6 +1915,11 @@ class _MainScreenState extends SafeState<MainScreen>
             valueListenable: _placesRevision,
             builder: (context, revision, child) => StatefulBuilder(
               builder: (context, sheetSetState) {
+                void closeSearchSheet() {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  Navigator.of(context).pop();
+                }
+
                 if (sheetView == 'route') {
                   // 1. TELA DE ROTA
                   return SingleChildScrollView(
@@ -1939,7 +1944,34 @@ class _MainScreenState extends SafeState<MainScreen>
                               ),
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Semantics(
+                                  header: true,
+                                  child: Text(
+                                    context.mapText(
+                                      'Pesquisar locais',
+                                      'Search places',
+                                    ),
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleLarge,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                key: const ValueKey('map-search-close'),
+                                tooltip: context.mapText(
+                                  'Fechar pesquisa e voltar ao mapa',
+                                  'Close search and return to map',
+                                ),
+                                onPressed: closeSearchSheet,
+                                icon: const Icon(Icons.close),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
                           // Origem: só informa de onde a rota parte.
                           Row(
                             key: const ValueKey('search-origin'),
@@ -2421,16 +2453,52 @@ class _MainScreenState extends SafeState<MainScreen>
                     ),
                   );
                 } else {
-                  return AccessibilityFilterPanel(
-                    key: ValueKey(
-                      'filter-draft-${AppHttp.sessionRevision.value}-$_activeUserName',
-                    ),
-                    initial: _filterState.filters,
-                    onCancel: () => sheetSetState(() => sheetView = 'route'),
-                    onApply: (filters, touched) {
-                      _manualFilters(filters, touched);
-                      sheetSetState(() => sheetView = 'route');
-                    },
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 16,
+                          top: 8,
+                          right: 8,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Semantics(
+                                header: true,
+                                child: Text(
+                                  context.l10n.filters,
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              key: const ValueKey('map-search-close'),
+                              tooltip: context.mapText(
+                                'Fechar pesquisa e voltar ao mapa',
+                                'Close search and return to map',
+                              ),
+                              onPressed: closeSearchSheet,
+                              icon: const Icon(Icons.close),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: AccessibilityFilterPanel(
+                          key: ValueKey(
+                            'filter-draft-${AppHttp.sessionRevision.value}-$_activeUserName',
+                          ),
+                          initial: _filterState.filters,
+                          onCancel: () =>
+                              sheetSetState(() => sheetView = 'route'),
+                          onApply: (filters, touched) {
+                            _manualFilters(filters, touched);
+                            sheetSetState(() => sheetView = 'route');
+                          },
+                        ),
+                      ),
+                    ],
                   );
                 }
               },

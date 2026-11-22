@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/evidence.dart';
 import 'resource_information_list.dart';
@@ -98,7 +99,12 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
         return;
       }
       setState(() => _results = data);
-    } catch (_) {
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint(
+          'AccessibilityResultsCard load failed: ${error.runtimeType}: $error',
+        );
+      }
       if (mounted && generation == _generation) {
         setState(() => _failed = true);
       }
@@ -142,8 +148,8 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
               Text(
                 surveyText(
                   context,
-                  'Não foi possível carregar os resultados. Isso não indica ausência de avaliações.',
-                  'Unable to load results. This does not mean there are no reviews.',
+                  'Não foi possível carregar os relatos agora. Os dados disponíveis no cadastro continuam identificados separadamente.',
+                  'Community reports could not be loaded. Available registration data remains identified separately.',
                 ),
               ),
               OutlinedButton(
@@ -157,6 +163,7 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
             ResourceInformationList(
               preferred: widget.preferredResources,
               dimensionFilter: widget.dimensionFilter,
+              hybrid: true,
               information: {...evidenceMap(raw), ..._overrides},
               results: _results?.resources ?? const [],
               localId: widget.localId,

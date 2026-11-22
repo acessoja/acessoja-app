@@ -489,6 +489,46 @@ void main() {
     });
   }
   testWidgets(
+    'T085 híbrido prioriza recursos relatados e recolhe desconhecidos',
+    (tester) async {
+      await tester.pumpWidget(
+        f.harness(
+          const MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: ResourceInformationList(
+                  hybrid: true,
+                  information: {
+                    'piso_tatil': {
+                      'state': 'presence_reported',
+                      'respondents': 2,
+                    },
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(
+        find.byKey(const ValueKey('resource-card-piso_tatil')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('unknown-resource-group-all')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('resource-card-rampa_acesso')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('resource-state-piso_tatil')),
+        findsOneWidget,
+      );
+    },
+  );
+  testWidgets(
     'T081 T083 actual expanded internal panel passes only applied personal selection',
     (tester) async {
       AppHttp.client = MockClient((_) async => f.response({}, 503));
@@ -496,7 +536,10 @@ void main() {
         f.harness(
           Scaffold(
             body: MapPlacePreview(
-              place: f.record(1, {'piso_tatil': 'presence_reported'}),
+              place: f.record(1, {
+                'piso_tatil': 'presence_reported',
+                'sinalizacao_visual': 'presence_reported',
+              }),
               distanceLabel: '',
               onDetailsPressed: () {},
               onRoutePressed: null,

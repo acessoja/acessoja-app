@@ -176,12 +176,12 @@ class _PlaceReviewsSectionState extends State<PlaceReviewsSection> {
             'No reviews on AcessoJá',
           ),
         ),
-      for (final row in (_reviews ?? <Map<String, dynamic>>[]).take(3))
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text('${row['estrelas']} / 5'),
-          subtitle: Text((row['comentario'] ?? '').toString()),
-        ),
+      for (
+        var index = 0;
+        index < (_reviews ?? <Map<String, dynamic>>[]).take(3).length;
+        index++
+      )
+        _reviewCard(context, _reviews![index], index),
       if (widget.onViewReviews != null)
         TextButton(
           key: const ValueKey('preview-reviews'),
@@ -218,18 +218,31 @@ class _PlaceReviewsSectionState extends State<PlaceReviewsSection> {
             'No public photographs available.',
           ),
         ),
-      for (final photo in (_photos ?? <ReviewImage>[]).take(3)) ...[
+      if ((_photos ?? const <ReviewImage>[]).isNotEmpty)
         SizedBox(
-          height: 140,
-          child: PrivateImage(
-            path: photo.thumbUrl,
-            revision: photo.revision,
-            description: photo.description,
-            service: widget.media,
+          height: 108,
+          child: ListView.separated(
+            key: const ValueKey('public-review-photo-strip'),
+            scrollDirection: Axis.horizontal,
+            itemCount: _photos!.take(8).length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final photo = _photos![index];
+              return SizedBox(
+                width: 128,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: PrivateImage(
+                    path: photo.thumbUrl,
+                    revision: photo.revision,
+                    description: photo.description,
+                    service: widget.media,
+                  ),
+                ),
+              );
+            },
           ),
         ),
-        Text(photo.description),
-      ],
       if (widget.place.internalId != null)
         OutlinedButton(
           onPressed: () => Navigator.push(
@@ -245,4 +258,96 @@ class _PlaceReviewsSectionState extends State<PlaceReviewsSection> {
         ),
     ],
   );
+
+  Widget _reviewCard(
+    BuildContext context,
+    Map<String, dynamic> row,
+    int index,
+  ) {
+    final colors = Theme.of(context).colorScheme;
+    final stars = (row['estrelas'] as num?)?.toInt().clamp(0, 5) ?? 0;
+    final comment = (row['comentario'] ?? '').toString().trim();
+    final author = (row['nome_usuario'] ?? '').toString().trim();
+    final initials = author.isEmpty
+        ? context.mapText('A', 'R')
+        : author
+              .split(RegExp(r'\s+'))
+              .where((part) => part.isNotEmpty)
+              .take(2)
+              .map((part) => part.characters.first.toUpperCase())
+              .join();
+    return Card(
+      key: ValueKey('public-review-card-$index'),
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor: colors.primaryContainer,
+                  foregroundColor: colors.primary,
+                  child: Text(initials),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    author.isEmpty
+                        ? context.mapText('Pessoa avaliadora', 'Reviewer')
+                        : author,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Semantics(
+                  label: context.mapText(
+                    '$stars de 5 estrelas',
+                    '$stars out of 5 stars',
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (var star = 1; star <= 5; star++)
+                        Icon(
+                          star <= stars ? Icons.star : Icons.star_border,
+                          size: 18,
+                          color: star <= stars
+                              ? colors.tertiary
+                              : colors.outline,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (comment.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(left: 54, top: 8),
+                child: Text(
+                  comment,
+                  key: ValueKey('public-review-comment-$index'),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.only(left: 54, top: 8),
+                child: Text(
+                  context.mapText(
+                    'Sem comentário escrito.',
+                    'No written comment.',
+                  ),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }

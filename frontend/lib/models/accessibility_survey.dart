@@ -341,10 +341,6 @@ class ResourceResult {
       throw const FormatException('invalid_resource');
     }
     final counts = {for (final code in surveyCodes) code: number(raw[code])};
-    final yes = counts['yes']!,
-        no = counts['no']!,
-        unknown = counts['unknown']!,
-        na = counts['not_applicable']!;
     final state = json['state'];
     const states = {
       'divergent',
@@ -357,24 +353,8 @@ class ResourceResult {
       'not_evaluated',
     };
     final respondents = number(json['respondents']);
-    final variable = SurveyV3Contract.questions
-        .firstWhere((question) => question.id == json['id'])
-        .variable;
-    final expectedState = yes > 0 && no > 0
-        ? 'divergent'
-        : yes > 0
-        ? 'presence_reported'
-        : no > 0
-        ? 'absence_reported'
-        : unknown > 0
-        ? 'unknown'
-        : na > 0
-        ? 'not_applicable'
-        : 'not_evaluated';
-    if (!states.contains(state) ||
-        !variable && state != expectedState &&
-            !(expectedState == 'unknown' && state == 'unconfirmed') ||
-        respondents < counts.values.fold<int>(0, (a, b) => a + b)) {
+    final totalAnswers = counts.values.fold<int>(0, (a, b) => a + b);
+    if (!states.contains(state) || respondents < totalAnswers) {
       throw const FormatException('invalid_summary');
     }
     final date = json['latest_at'];
@@ -414,12 +394,10 @@ class AccessibilityResults {
         (data['legacy_not_comparable'] as int) < 0) {
       throw const FormatException('invalid_results');
     }
-    final rows = (data['features'] as List)
-        .map(
-          (row) =>
-              ResourceResult.fromJson(Map<String, dynamic>.from(row as Map)),
-        )
-        .toList();
+    final rows = (data['features'] as List).map((row) {
+      if (row is! Map) throw const FormatException('invalid_resource');
+      return ResourceResult.fromJson(Map<String, dynamic>.from(row));
+    }).toList();
     if (rows.length != SurveyV3Contract.questions.length ||
         rows.map((r) => r.id).toSet().length != rows.length) {
       throw const FormatException('incomplete_results');

@@ -148,16 +148,26 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                ExcludeSemantics(
-                  child: Icon(
-                    categoryVisual(p.category).icon,
-                    color: categoryVisual(p.category).color,
-                    size: 28,
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: categoryVisual(
+                      p.category,
+                    ).color.withValues(alpha: .12),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ExcludeSemantics(
+                    child: Icon(
+                      categoryVisual(p.category).icon,
+                      color: categoryVisual(p.category).color,
+                      size: 26,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Focus(
                     autofocus: widget.coordinator != null,
@@ -167,7 +177,11 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                       expanded: expanded,
                       child: Text(
                         context.placeName(p),
-                        style: Theme.of(context).textTheme.titleLarge,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
@@ -192,16 +206,44 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                   ),
               ],
             ),
-            Text('${context.placeCategory(p)} · ${p.sourceLabel}'),
-            Text(
-              context.placeSubtype(p),
-              key: const ValueKey('preview-subcategory'),
+            Padding(
+              padding: const EdgeInsets.only(left: 60, right: 40, top: 2),
+              child: Text(
+                [
+                  context.placeCategory(p),
+                  context.placeSubtype(p),
+                ].where((value) => value.trim().isNotEmpty).toSet().join(' · '),
+                key: const ValueKey('preview-subcategory'),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: colors.muted),
+              ),
             ),
-            Text(context.placeAddress(p)),
-            if (expanded && widget.coordinator?.unavailable != true)
-              PlaceMapsLink(
-                place: p.toMap(),
-                external: widget.externalNavigation,
+            if (p.address.trim().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 10, bottom: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.location_on_outlined,
+                      color: colors.primary,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(p.address)),
+                  ],
+                ),
+              )
+            else if (p.hasCoordinates)
+              Text(
+                context.mapText(
+                  'Endereço não informado',
+                  'Address not provided',
+                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: colors.muted),
               ),
             if (widget.outsideResults)
               Semantics(
@@ -251,8 +293,11 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                   child: Text(context.mapText('Tentar novamente', 'Try again')),
                 ),
               ],
-              Text(reviews, key: const ValueKey('preview-rating')),
-              if (widget.distanceLabel.isNotEmpty) Text(widget.distanceLabel),
+              if (widget.distanceLabel.isNotEmpty)
+                Text(
+                  widget.distanceLabel,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               if ((widget.matchResources.isNotEmpty ||
                   widget.preferredResources.isNotEmpty))
                 Semantics(
@@ -266,30 +311,70 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                   ),
                 ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  FilledButton.icon(
-                    key: const ValueKey('preview-route'),
-                    onPressed: widget.onRoutePressed,
-                    icon: const Icon(Icons.directions_outlined),
-                    label: Text(context.l10n.route),
-                  ),
-                  OutlinedButton.icon(
-                    key: const ValueKey('preview-evaluate'),
-                    onPressed: widget.onEvaluatePressed,
-                    icon: const Icon(Icons.rate_review_outlined),
-                    label: Text(context.mapText('Avaliar', 'Review')),
-                  ),
-                  OutlinedButton.icon(
-                    key: const ValueKey('preview-share'),
-                    onPressed: widget.onSharePressed,
-                    icon: const Icon(Icons.share_outlined),
-                    label: Text(context.l10n.share),
-                  ),
-                ],
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final columns = expanded && constraints.maxWidth >= 620
+                      ? 4
+                      : 2;
+                  const gap = 8.0;
+                  final width =
+                      (constraints.maxWidth - gap * (columns - 1)) / columns;
+                  final actions = <Widget>[
+                    FilledButton.icon(
+                      key: const ValueKey('preview-route'),
+                      onPressed: widget.onRoutePressed,
+                      icon: const Icon(Icons.directions_outlined),
+                      label: Text(context.l10n.route),
+                    ),
+                    OutlinedButton.icon(
+                      key: const ValueKey('preview-evaluate'),
+                      onPressed: widget.onEvaluatePressed,
+                      icon: const Icon(Icons.rate_review_outlined),
+                      label: Text(context.mapText('Avaliar', 'Review')),
+                    ),
+                    OutlinedButton.icon(
+                      key: const ValueKey('preview-share'),
+                      onPressed: widget.onSharePressed,
+                      icon: const Icon(Icons.share_outlined),
+                      label: Text(context.l10n.share),
+                    ),
+                  ];
+                  if (expanded && widget.coordinator?.unavailable != true) {
+                    actions.add(
+                      PlaceMapsLink(
+                        place: p.toMap(),
+                        external: widget.externalNavigation,
+                      ),
+                    );
+                  }
+                  return Wrap(
+                    spacing: gap,
+                    runSpacing: gap,
+                    children: [
+                      for (var i = 0; i < actions.length; i++)
+                        SizedBox(width: width, child: actions[i]),
+                    ],
+                  );
+                },
               ),
+              if (p.reviewCount != null)
+                TextButton(
+                  key: const ValueKey('preview-rating'),
+                  style: TextButton.styleFrom(
+                    alignment: AlignmentDirectional.centerStart,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: const Size(48, 48),
+                  ),
+                  onPressed: () => show(PlacePanelSection.reviews),
+                  child: Row(
+                    children: [
+                      Icon(Icons.star_outline, size: 18, color: colors.muted),
+                      const SizedBox(width: 6),
+                      Expanded(child: Text(reviews)),
+                      Icon(Icons.chevron_right, color: colors.muted),
+                    ],
+                  ),
+                ),
               _communityAccessibilitySummary(context, p, colors),
               if (widget.onRoutePressed == null)
                 Text(
@@ -328,11 +413,9 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                 ),
               ],
               if (expanded) ...[
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final entry in [
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final entries = [
                       (
                         PlacePanelSection.accessibility,
                         'Acessibilidade',
@@ -348,29 +431,57 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                         'Informações',
                         'Information',
                       ),
-                    ])
-                      ChoiceChip(
-                        key: ValueKey('panel-section-${entry.$1.name}'),
-                        selected: section == entry.$1,
-                        label: Text(context.mapText(entry.$2, entry.$3)),
-                        onSelected: (_) => show(entry.$1),
-                      ),
-                    if (!widget.detailed)
-                      TextButton(
-                        key: const ValueKey('preview-collapse'),
-                        onPressed: () {
-                          if (widget.coordinator != null) {
-                            widget.coordinator!.collapse();
-                          } else {
-                            setState(() => _expanded = false);
-                          }
-                        },
-                        child: Text(
-                          context.mapText('Recolher painel', 'Collapse panel'),
-                        ),
-                      ),
-                  ],
+                    ];
+                    const gap = 8.0;
+                    final width = (constraints.maxWidth - gap * 2) / 3;
+                    return Wrap(
+                      spacing: gap,
+                      runSpacing: gap,
+                      children: [
+                        for (final entry in entries)
+                          SizedBox(
+                            width: width,
+                            child: Semantics(
+                              button: true,
+                              selected: section == entry.$1,
+                              child: ChoiceChip(
+                                key: ValueKey('panel-section-${entry.$1.name}'),
+                                selected: section == entry.$1,
+                                avatar: Icon(switch (entry.$1) {
+                                  PlacePanelSection.accessibility =>
+                                    Icons.accessible_forward,
+                                  PlacePanelSection.reviews =>
+                                    Icons.rate_review_outlined,
+                                  PlacePanelSection.information =>
+                                    Icons.info_outline,
+                                }, size: 18),
+                                label: Text(
+                                  context.mapText(entry.$2, entry.$3),
+                                  maxLines: 2,
+                                  textAlign: TextAlign.center,
+                                ),
+                                onSelected: (_) => show(entry.$1),
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
+                if (!widget.detailed)
+                  TextButton(
+                    key: const ValueKey('preview-collapse'),
+                    onPressed: () {
+                      if (widget.coordinator != null) {
+                        widget.coordinator!.collapse();
+                      } else {
+                        setState(() => _expanded = false);
+                      }
+                    },
+                    child: Text(
+                      context.mapText('Recolher painel', 'Collapse panel'),
+                    ),
+                  ),
                 if (section == PlacePanelSection.accessibility)
                   _dimensionOverview(context, p),
                 // Retain visited section states across tab changes and resizing. A section is
@@ -390,6 +501,7 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                                 externalId: p.externalId,
                                 preferred: widget.preferredResources,
                                 dimensionFilter: _accessibilityDimension,
+                                hybrid: true,
                                 onChanged: widget.onRetryDetails,
                               )
                             : AccessibilityResultsCard(
@@ -482,9 +594,6 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
     final barriers = summary['resources_with_barriers'] is num
         ? (summary['resources_with_barriers'] as num).toInt()
         : 0;
-    final unknown = summary['resources_unknown'] is num
-        ? (summary['resources_unknown'] as num).toInt()
-        : 0;
     final divergent = summary['divergent_resources'] is List
         ? (summary['divergent_resources'] as List).length
         : 0;
@@ -532,10 +641,6 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
         'There is not enough information to classify. Unknown information does not mean absence.',
       ),
     };
-    final report = context.mapText(
-      '$assessors avaliadores independentes · $positive recursos com presença relatada · $barriers com barreiras · $unknown sem relato comunitário${divergent > 0 ? ' · $divergent divergentes' : ''}',
-      '$assessors independent contributors · $positive features with reported presence · $barriers with barriers · $unknown without community reports${divergent > 0 ? ' · $divergent conflicting' : ''}',
-    );
     return Container(
       key: const ValueKey('community-accessibility-classification'),
       margin: const EdgeInsets.only(top: 8),
@@ -568,14 +673,77 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
               if (highlight) Icon(Icons.star, color: colors.warning, size: 18),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(description),
-          const SizedBox(height: 4),
-          Text(report, style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 2),
+          Text(description, maxLines: 2, overflow: TextOverflow.ellipsis),
+          if (assessors > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                context.mapText(
+                  '$assessors avaliadores independentes',
+                  '$assessors independent contributors',
+                ),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          if (positive > 0 || barriers > 0 || divergent > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 4,
+                children: [
+                  if (positive > 0)
+                    _summaryMetric(
+                      context,
+                      colors.success,
+                      Icons.check_circle,
+                      context.mapText(
+                        '$positive com presença',
+                        '$positive reported present',
+                      ),
+                    ),
+                  if (barriers > 0)
+                    _summaryMetric(
+                      context,
+                      colors.warning,
+                      Icons.warning_amber,
+                      context.mapText(
+                        '$barriers com limitações',
+                        '$barriers with limitations',
+                      ),
+                    ),
+                  if (divergent > 0)
+                    _summaryMetric(
+                      context,
+                      colors.muted,
+                      Icons.compare_arrows,
+                      context.mapText(
+                        '$divergent divergentes',
+                        '$divergent conflicting',
+                      ),
+                    ),
+                ],
+              ),
+            ),
         ],
       ),
     );
   }
+
+  Widget _summaryMetric(
+    BuildContext context,
+    Color color,
+    IconData icon,
+    String label,
+  ) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(icon, size: 16, color: color),
+      const SizedBox(width: 4),
+      Text(label, style: Theme.of(context).textTheme.bodySmall),
+    ],
+  );
 
   Widget _information(BuildContext context, MapPlace p) {
     final snapshot = evidenceDate(p.catalogSource['source_snapshot_at']);
@@ -660,9 +828,9 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
       'physical': Icons.accessible_forward,
       'visual': Icons.visibility_outlined,
       'hearing': Icons.hearing_outlined,
-      'sensory': Icons.graphic_eq,
-      'cognitive': Icons.signpost_outlined,
-      'communication': Icons.forum_outlined,
+      'sensory': Icons.pan_tool_alt_outlined,
+      'cognitive': Icons.psychology_outlined,
+      'communication': Icons.chat_bubble_outline,
     };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -677,45 +845,77 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
             ),
           ),
         ),
-        Text(context.mapText(
-          'Uma dimensão pode reunir presenças relatadas, barreiras e informações desconhecidas.',
-          'A dimension can include reported features, barriers and unknown information.',
-        )),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
+        Text(
+          context.mapText(
+            'Uma dimensão pode reunir presenças relatadas, barreiras e informações desconhecidas.',
+            'A dimension can include reported features, barriers and unknown information.',
+          ),
+        ),
+        Column(
           children: [
-            for (final dimension in SurveyV3Contract.dimensions.keys.cast<String>())
-              Builder(builder: (context) {
-                final resources = AccessibilityCatalog.resources
-                    .where((resource) => resource.dimension == dimension);
-                var present = 0, barriers = 0, unknown = 0, divergent = 0, notApplicable = 0;
-                for (final resource in resources) {
-                  switch (place.accessibility(resource.id)) {
-                    case AccessibilityValue.available:
-                      present++;
-                    case AccessibilityValue.unavailable:
-                    case AccessibilityValue.limited:
-                      barriers++;
-                    case AccessibilityValue.divergent:
-                      divergent++;
-                    case AccessibilityValue.notApplicable:
-                      notApplicable++;
-                    case AccessibilityValue.unknown:
-                      unknown++;
-                  }
-                }
-                return ChoiceChip(
-                  key: ValueKey('panel-dimension-$dimension'),
-                  selected: _accessibilityDimension == dimension,
-                  avatar: Icon(icons[dimension], size: 18),
-                  label: Text(
-                    '${AccessibilityCatalog.dimensionLabel(context, dimension)}\n'
-                    '${context.mapText('$present com presença · $barriers barreiras · $unknown desconhecidos · $divergent divergentes · $notApplicable N/A', '$present reported · $barriers barriers · $unknown unknown · $divergent conflicting · $notApplicable N/A')}',
-                  ),
-                  onSelected: (_) => setState(() => _accessibilityDimension = dimension),
-                );
-              }),
+            for (final dimension
+                in SurveyV3Contract.dimensions.keys.cast<String>())
+              Builder(
+                builder: (context) {
+                  final selected = _accessibilityDimension == dimension;
+                  final label = AccessibilityCatalog.dimensionLabel(
+                    context,
+                    dimension,
+                  );
+                  final scheme = Theme.of(context).colorScheme;
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Semantics(
+                      button: true,
+                      selected: selected,
+                      label: label,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          key: ValueKey('panel-dimension-$dimension'),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(48, 58),
+                            alignment: AlignmentDirectional.centerStart,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            backgroundColor: selected
+                                ? scheme.primaryContainer
+                                : null,
+                            side: BorderSide(
+                              color: selected
+                                  ? scheme.primary
+                                  : scheme.outlineVariant,
+                              width: selected ? 2 : 1,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          onPressed: () => setState(
+                            () => _accessibilityDimension = dimension,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                icons[dimension],
+                                color: selected ? scheme.primary : null,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(child: Text(label, softWrap: true)),
+                              if (selected)
+                                Icon(Icons.check_circle, color: scheme.primary)
+                              else
+                                const Icon(Icons.chevron_right),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
           ],
         ),
       ],
