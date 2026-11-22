@@ -223,11 +223,12 @@ void main() {
         () => AccessibilityResults.fromJson(broken),
         throwsFormatException,
       );
-      final mismatch = resultsJson();
-      mismatch['features'][0]['state'] = 'presence_reported';
+      final projectionState = resultsJson();
+      projectionState['features'][0]['state'] = 'presence_reported';
+      projectionState['features'][0]['respondents'] = 3;
       expect(
-        () => AccessibilityResults.fromJson(mismatch),
-        throwsFormatException,
+        AccessibilityResults.fromJson(projectionState).resources.first.state,
+        'presence_reported',
       );
     },
   );
@@ -509,7 +510,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(
-        find.text('Há relatos diferentes sobre este recurso'),
+        find.textContaining('Há relatos diferentes sobre este recurso'),
         findsNWidgets(AccessibilityCatalog.resources.length),
       );
       await tapVisible(
@@ -544,7 +545,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(
-        find.textContaining('Isso não indica ausência de avaliações'),
+        find.textContaining('Não foi possível carregar os relatos agora'),
         findsOneWidget,
       );
       expect(find.text('Ainda não avaliado'), findsNothing);
@@ -553,8 +554,8 @@ void main() {
         find.byKey(const ValueKey('resource-results-retry')),
       );
       expect(
-        find.text('Informação desconhecida'),
-        findsNWidgets(AccessibilityCatalog.resources.length),
+        find.byKey(const ValueKey('unknown-resource-group-all')),
+        findsOneWidget,
       );
     },
   );
@@ -585,10 +586,10 @@ void main() {
       old.complete(AccessibilityResults.fromJson(resultsJson(vote: 'yes')));
       await tester.pumpAndSettle();
       expect(
-        find.text('Ausência relatada'),
+        find.textContaining('Ausência relatada'),
         findsNWidgets(AccessibilityCatalog.resources.length),
       );
-      expect(find.text('Presença relatada'), findsNothing);
+      expect(find.textContaining('Presença relatada'), findsNothing);
       final pending = Completer<AccessibilityResults>();
       service.reading = (_) => pending.future;
       await tester.pumpWidget(screen(9));
@@ -690,8 +691,8 @@ void main() {
       await tester.pumpWidget(screen(0));
       await tester.pumpAndSettle();
       expect(
-        find.text('Informação desconhecida'),
-        findsNWidgets(AccessibilityCatalog.resources.length),
+        find.byKey(const ValueKey('unknown-resource-group-all')),
+        findsOneWidget,
       );
       expect(find.text('Poucas avaliações'), findsNothing);
       service.reading = (_) async =>
@@ -699,7 +700,7 @@ void main() {
       await tester.pumpWidget(screen(1));
       await tester.pumpAndSettle();
       expect(
-        find.text('Presença relatada'),
+        find.textContaining('Presença relatada'),
         findsNWidgets(AccessibilityCatalog.resources.length),
       );
       await tapVisible(

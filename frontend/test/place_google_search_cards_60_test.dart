@@ -207,7 +207,7 @@ void main() {
         expect(find.textContaining('platform-secret'), findsNothing);
         expect(
           tester
-              .widget<TextButton>(
+              .widget<ButtonStyleButton>(
                 find.byKey(const ValueKey('place-google-search')),
               )
               .onPressed,

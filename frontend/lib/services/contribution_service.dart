@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 import '../config.dart';
 import 'app_http.dart';
@@ -151,7 +152,10 @@ class ContributionService {
           _decode(response.statusCode, response.bodyBytes) as Map,
         ),
       );
-    } on FormatException {
+    } on FormatException catch (error) {
+      if (kDebugMode) {
+        debugPrint('Accessibility results V3 parse rejected: ${error.message}');
+      }
       throw const ContributionException(502, 'Resultados inválidos.');
     }
   }
