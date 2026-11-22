@@ -1,298 +1,32 @@
+// Generated from acessoja/accessibility_catalog.py. Do not edit by hand.
 import 'dart:convert';
 import 'package:flutter/material.dart';
 
-// Generated snapshot of acessoja/accessibility_catalog.py; never use labels as IDs.
-const resourceCatalogVersion = 1;
-const resourceCatalogJson = r'''{
-  "version": 1,
-  "resources": [
-    {
-      "id": "rampa_acesso",
-      "group": "entrada",
-      "name": {
-        "pt": "Rampa na entrada",
-        "en": "Entrance ramp"
-      },
-      "description": {
-        "pt": "Rampa na entrada utilizada; não comprova dimensões ou inclinação conforme normas.",
-        "en": "Ramp at the entrance used; does not certify dimensions or slope."
-      },
-      "states": [
-        "presence_reported",
-        "absence_reported",
-        "unknown",
-        "divergent",
-        "not_applicable",
-        "limited"
-      ],
-      "legacy_field": "rampa_acesso",
-      "questionnaire": {
-        "version": 2,
-        "question": "rampa_acesso"
-      },
-      "osm_tag": null
-    },
-    {
-      "id": "vagas_reservadas",
-      "group": "entrada",
-      "name": {
-        "pt": "Vagas reservadas",
-        "en": "Reserved parking spaces"
-      },
-      "description": {
-        "pt": "Vagas reservadas no estacionamento próprio, sem deduzir condições do entorno.",
-        "en": "Reserved spaces in on-site parking, without inferring nearby conditions."
-      },
-      "states": [
-        "presence_reported",
-        "absence_reported",
-        "unknown",
-        "divergent",
-        "not_applicable",
-        "limited"
-      ],
-      "legacy_field": null,
-      "questionnaire": {
-        "version": 2,
-        "question": "vagas_reservadas"
-      },
-      "osm_tag": null
-    },
-    {
-      "id": "banheiro_acessivel",
-      "group": "espaco",
-      "name": {
-        "pt": "Banheiro com recursos de adaptação",
-        "en": "Restroom adaptation features"
-      },
-      "description": {
-        "pt": "Banheiro com recursos informados de adaptação; não é certificação técnica.",
-        "en": "Restroom with reported adaptation features; not technical certification."
-      },
-      "states": [
-        "presence_reported",
-        "absence_reported",
-        "unknown",
-        "divergent",
-        "not_applicable",
-        "limited"
-      ],
-      "legacy_field": "banheiro_acessivel",
-      "questionnaire": {
-        "version": 2,
-        "question": "banheiro_acessivel"
-      },
-      "osm_tag": "toilets:wheelchair"
-    },
-    {
-      "id": "mesa_acessivel",
-      "group": "espaco",
-      "name": {
-        "pt": "Espaço sob mesas",
-        "en": "Knee space below tables"
-      },
-      "description": {
-        "pt": "Espaço inferior para aproximação de cadeira de rodas; não significa estacionamento reservado.",
-        "en": "Knee space for wheelchair approach; does not mean reserved parking."
-      },
-      "states": [
-        "presence_reported",
-        "absence_reported",
-        "unknown",
-        "divergent",
-        "not_applicable",
-        "limited"
-      ],
-      "legacy_field": "mesa_acessivel",
-      "questionnaire": {
-        "version": 2,
-        "question": "mesa_acessivel"
-      },
-      "osm_tag": null
-    },
-    {
-      "id": "cardapio_braille",
-      "group": "comunicacao",
-      "name": {
-        "pt": "Cardápio em Braille",
-        "en": "Braille menu"
-      },
-      "description": {
-        "pt": "Oferta de cardápio em Braille; não deduz outros formatos de comunicação.",
-        "en": "Availability of a Braille menu; no inference about other communication formats."
-      },
-      "states": [
-        "presence_reported",
-        "absence_reported",
-        "unknown",
-        "divergent",
-        "not_applicable",
-        "limited"
-      ],
-      "legacy_field": "cardapio_braille",
-      "questionnaire": {
-        "version": 2,
-        "question": "cardapio_braille"
-      },
-      "osm_tag": null
-    },
-    {
-      "id": "atendimento_libras",
-      "group": "comunicacao",
-      "name": {
-        "pt": "Atendimento em Libras",
-        "en": "Service in Libras"
-      },
-      "description": {
-        "pt": "Atendimento informado em Libras. Consulte o local sobre horários e disponibilidade; não é garantia permanente.",
-        "en": "Reported service in Brazilian Sign Language. Ask about hours and availability; not a permanent guarantee."
-      },
-      "states": [
-        "presence_reported",
-        "absence_reported",
-        "unknown",
-        "divergent",
-        "not_applicable",
-        "limited"
-      ],
-      "legacy_field": null,
-      "questionnaire": {
-        "version": 2,
-        "question": "atendimento_libras"
-      },
-      "osm_tag": null
-    },
-    {
-      "id": "sinalizacao_tatil",
-      "group": "orientacao",
-      "name": {
-        "pt": "Sinalização tátil",
-        "en": "Tactile signage"
-      },
-      "description": {
-        "pt": "Sinais em relevo ou Braille para orientação; não equivale a piso tátil contínuo.",
-        "en": "Raised or Braille signs for orientation; not equivalent to continuous tactile paving."
-      },
-      "states": [
-        "presence_reported",
-        "absence_reported",
-        "unknown",
-        "divergent",
-        "not_applicable",
-        "limited"
-      ],
-      "legacy_field": null,
-      "questionnaire": {
-        "version": 2,
-        "question": "sinalizacao_tatil"
-      },
-      "osm_tag": null
-    },
-    {
-      "id": "cao_guia",
-      "group": "orientacao",
-      "name": {
-        "pt": "Acolhimento de pessoas com cão-guia",
-        "en": "Service for people with guide dogs"
-      },
-      "description": {
-        "pt": "Acolhimento informado pelo atendimento; não significa ausência de obstáculos.",
-        "en": "Reported welcome by the service; does not mean an obstacle-free environment."
-      },
-      "states": [
-        "presence_reported",
-        "absence_reported",
-        "unknown",
-        "divergent",
-        "not_applicable",
-        "limited"
-      ],
-      "legacy_field": "cao_guia",
-      "questionnaire": {
-        "version": 2,
-        "question": "cao_guia"
-      },
-      "osm_tag": null
-    },
-    {
-      "id": "piso_tatil",
-      "group": "orientacao",
-      "name": {
-        "pt": "Piso tátil",
-        "en": "Tactile paving"
-      },
-      "description": {
-        "pt": "Faixas de piso com relevo para orientação ou alerta no local. Não comprova continuidade ou conformidade.",
-        "en": "Textured paving for orientation or warning at the place. Does not certify continuity or compliance."
-      },
-      "states": [
-        "presence_reported",
-        "absence_reported",
-        "unknown",
-        "divergent",
-        "not_applicable",
-        "limited"
-      ],
-      "legacy_field": null,
-      "questionnaire": null,
-      "osm_tag": null
-    },
-    {
-      "id": "sinalizacao_visual",
-      "group": "orientacao",
-      "name": {
-        "pt": "Sinalização visual legível",
-        "en": "Legible visual signage"
-      },
-      "description": {
-        "pt": "Sinais de orientação visual com texto ou pictogramas legíveis. Não representa acessibilidade para todos.",
-        "en": "Visual orientation signs with legible text or pictograms. Does not represent accessibility for everyone."
-      },
-      "states": [
-        "presence_reported",
-        "absence_reported",
-        "unknown",
-        "divergent",
-        "not_applicable",
-        "limited"
-      ],
-      "legacy_field": null,
-      "questionnaire": null,
-      "osm_tag": null
-    }
-  ],
-  "states": [
-    "presence_reported",
-    "absence_reported",
-    "unknown",
-    "divergent",
-    "not_applicable",
-    "limited"
-  ]
-}''';
+const resourceCatalogVersion = 3;
+const resourceCatalogJson = r'''{"version":3,"resources":[{"id":"rampa_acesso","group":"entrada","name":{"pt":"Rampa na entrada","en":"Entrance ramp"},"description":{"pt":"Rampa na entrada utilizada; não comprova dimensões ou inclinação conforme normas.","en":"Ramp at the entrance used; does not certify dimensions or slope."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":"rampa_acesso","questionnaire":{"version":3,"question":"rampa_acesso"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Existe rampa na entrada utilizada?","en":"Is there a ramp at the entrance used?"}},{"id":"vagas_reservadas","group":"entrada","name":{"pt":"Vagas reservadas","en":"Reserved parking spaces"},"description":{"pt":"Vagas reservadas no estacionamento próprio, sem deduzir condições do entorno.","en":"Reserved spaces in on-site parking, without inferring nearby conditions."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"vagas_reservadas"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":"parking","variable":false,"primary":false,"filterable":true,"text":{"pt":"Há vagas reservadas no estacionamento próprio?","en":"Are there reserved spaces in the on-site parking?"}},{"id":"banheiro_acessivel","group":"espaco","name":{"pt":"Banheiro com recursos de adaptação","en":"Restroom adaptation features"},"description":{"pt":"Banheiro com recursos informados de adaptação; não é certificação técnica.","en":"Restroom with reported adaptation features; not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":"banheiro_acessivel","questionnaire":{"version":3,"question":"banheiro_acessivel"},"osm_tag":"toilets:wheelchair","dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":"restroom","variable":false,"primary":false,"filterable":true,"text":{"pt":"Há banheiro com recursos de adaptação?","en":"Does the restroom have adaptation features?"}},{"id":"mesa_acessivel","group":"espaco","name":{"pt":"Espaço sob mesas","en":"Knee space below tables"},"description":{"pt":"Espaço inferior para aproximação de cadeira de rodas; não significa estacionamento reservado.","en":"Knee space for wheelchair approach; does not mean reserved parking."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":"mesa_acessivel","questionnaire":{"version":3,"question":"mesa_acessivel"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":["restaurante","lanchonete","cafeteria","educacao","escola","universidade","biblioteca","shopping"],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há espaço sob mesas para aproximação de cadeira de rodas?","en":"Is there knee space for wheelchair approach?"}},{"id":"cardapio_braille","group":"comunicacao","name":{"pt":"Cardápio em Braille","en":"Braille menu"},"description":{"pt":"Oferta de cardápio em Braille; não deduz outros formatos de comunicação.","en":"Availability of a Braille menu; no inference about other communication formats."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":"cardapio_braille","questionnaire":{"version":3,"question":"cardapio_braille"},"osm_tag":null,"dimension":"visual","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":["restaurante","lanchonete","cafeteria"],"condition":"menu","variable":false,"primary":false,"filterable":true,"text":{"pt":"Existe cardápio em Braille?","en":"Is there a Braille menu?"}},{"id":"atendimento_libras","group":"comunicacao","name":{"pt":"Atendimento em Libras","en":"Service in Libras"},"description":{"pt":"Atendimento informado em Libras. Consulte o local sobre horários e disponibilidade; não é garantia permanente.","en":"Reported service in Brazilian Sign Language. Ask about hours and availability; not a permanent guarantee."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"atendimento_libras"},"osm_tag":null,"dimension":"hearing","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há atendimento em Libras? Informe disponibilidade se souber.","en":"Is service in Brazilian Sign Language available? Add availability if known."}},{"id":"sinalizacao_tatil","group":"orientacao","name":{"pt":"Sinalização tátil","en":"Tactile signage"},"description":{"pt":"Sinais em relevo ou Braille para orientação; não equivale a piso tátil contínuo.","en":"Raised or Braille signs for orientation; not equivalent to continuous tactile paving."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"sinalizacao_tatil"},"osm_tag":null,"dimension":"visual","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há sinais em relevo ou Braille para orientação?","en":"Are there raised or Braille orientation signs?"}},{"id":"cao_guia","group":"orientacao","name":{"pt":"Acolhimento de pessoas com cão-guia","en":"Service for people with guide dogs"},"description":{"pt":"Acolhimento informado pelo atendimento; não significa ausência de obstáculos.","en":"Reported welcome by the service; does not mean an obstacle-free environment."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":"cao_guia","questionnaire":{"version":3,"question":"cao_guia"},"osm_tag":null,"dimension":"communication","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"O atendimento acolhe pessoas acompanhadas de cão-guia?","en":"Does the service welcome people accompanied by guide dogs?"}},{"id":"piso_tatil","group":"orientacao","name":{"pt":"Piso tátil","en":"Tactile paving"},"description":{"pt":"Faixas de piso com relevo para orientação ou alerta no local. Não comprova continuidade ou conformidade.","en":"Textured paving for orientation or warning at the place. Does not certify continuity or compliance."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"piso_tatil"},"osm_tag":null,"dimension":"visual","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há piso tátil para orientação ou alerta?","en":"Is there tactile paving for orientation or warning?"}},{"id":"sinalizacao_visual","group":"orientacao","name":{"pt":"Sinalização visual legível","en":"Legible visual signage"},"description":{"pt":"Sinais de orientação visual com texto ou pictogramas legíveis. Não representa acessibilidade para todos.","en":"Visual orientation signs with legible text or pictograms. Does not represent accessibility for everyone."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"sinalizacao_visual"},"osm_tag":null,"dimension":"visual","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":true,"filterable":true,"text":{"pt":"Os sinais têm texto legível e contraste adequado?","en":"Do signs have legible text and adequate contrast?"}},{"id":"entrada_sem_degraus","group":"physical","name":{"pt":"Entrada sem degraus","en":"Step-free entrance"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"entrada_sem_degraus"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":true,"filterable":true,"text":{"pt":"Existe entrada sem degraus disponível aos visitantes?","en":"Is a step-free entrance available to visitors?"}},{"id":"circulacao_sem_obstaculos","group":"physical","name":{"pt":"Circulação sem obstáculos","en":"Clear circulation"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"circulacao_sem_obstaculos"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":true,"filterable":true,"text":{"pt":"Os caminhos internos estão livres de obstáculos?","en":"Are indoor paths free of obstacles?"}},{"id":"elevador_acessivel","group":"physical","name":{"pt":"Elevador acessível","en":"Accessible lift"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"elevador_acessivel"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":"levels","variable":false,"primary":false,"filterable":true,"text":{"pt":"O elevador permite acesso e uso por pessoa em cadeira de rodas?","en":"Can a wheelchair user access and use the lift?"}},{"id":"conteudo_leitor_tela","group":"visual","name":{"pt":"Conteúdo para leitor de tela","en":"Screen reader content"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"conteudo_leitor_tela"},"osm_tag":null,"dimension":"visual","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"As informações digitais funcionam com leitor de tela?","en":"Does digital information work with a screen reader?"}},{"id":"informacao_sonora","group":"visual","name":{"pt":"Informação sonora","en":"Audio information"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"informacao_sonora"},"osm_tag":null,"dimension":"visual","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"As informações de orientação também estão disponíveis em áudio?","en":"Is orientation information also available as audio?"}},{"id":"atendimento_texto","group":"hearing","name":{"pt":"Atendimento por texto","en":"Text assistance"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"atendimento_texto"},"osm_tag":null,"dimension":"hearing","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":true,"filterable":true,"text":{"pt":"É possível receber atendimento por escrito?","en":"Is written assistance available?"}},{"id":"chamadas_visuais","group":"hearing","name":{"pt":"Chamadas visuais","en":"Visual calls"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"chamadas_visuais"},"osm_tag":null,"dimension":"hearing","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":"calls","variable":false,"primary":false,"filterable":true,"text":{"pt":"As chamadas ou senhas são exibidas visualmente?","en":"Are calls or tickets displayed visually?"}},{"id":"legendas","group":"hearing","name":{"pt":"Legendas","en":"Captions"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"legendas"},"osm_tag":null,"dimension":"hearing","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":["cultura","cinema","teatro","educacao","escola","universidade","biblioteca"],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"O conteúdo audiovisual oferece legendas?","en":"Does audiovisual content offer captions?"}},{"id":"alertas_visuais","group":"hearing","name":{"pt":"Alertas visuais","en":"Visual alerts"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"alertas_visuais"},"osm_tag":null,"dimension":"hearing","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há alertas visuais complementando avisos sonoros?","en":"Are audio alerts complemented by visual alerts?"}},{"id":"espaco_tranquilo","group":"sensory","name":{"pt":"Espaço tranquilo","en":"Quiet space"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"espaco_tranquilo"},"osm_tag":null,"dimension":"sensory","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":true,"filterable":true,"text":{"pt":"Existe uma área alternativa com menor nível de ruído?","en":"Is there an alternative area with less noise?"}},{"id":"ruido_ambiente","group":"sensory","name":{"pt":"Ruído observado","en":"Observed noise"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"ruido_ambiente"},"osm_tag":null,"dimension":"sensory","answer_type":"intensity","answers":["low","moderate","high","unknown","not_applicable"],"categories":[],"condition":null,"variable":true,"primary":true,"filterable":false,"text":{"pt":"Como estava o barulho durante sua visita?","en":"How noisy was it during your visit?"}},{"id":"iluminacao_intensa","group":"sensory","name":{"pt":"Intensidade da iluminação","en":"Lighting intensity"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"iluminacao_intensa"},"osm_tag":null,"dimension":"sensory","answer_type":"intensity","answers":["low","moderate","high","unknown","not_applicable"],"categories":[],"condition":null,"variable":true,"primary":false,"filterable":false,"text":{"pt":"Como estava a intensidade da luz? Relate luzes piscantes na observação.","en":"How intense was the lighting? Describe flashing lights in the note."}},{"id":"aglomeracao_observada","group":"sensory","name":{"pt":"Aglomeração observada","en":"Observed crowding"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"aglomeracao_observada"},"osm_tag":null,"dimension":"sensory","answer_type":"intensity","answers":["low","moderate","high","unknown","not_applicable"],"categories":[],"condition":null,"variable":true,"primary":false,"filterable":false,"text":{"pt":"Como estava a quantidade de pessoas no ambiente?","en":"How crowded was the environment?"}},{"id":"horarios_menor_estimulo","group":"sensory","name":{"pt":"Horários de menor estímulo","en":"Lower-stimulation hours"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"horarios_menor_estimulo"},"osm_tag":null,"dimension":"sensory","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"O local informa períodos com menor estímulo sensorial?","en":"Does the place offer information about lower-stimulation hours?"}},{"id":"espera_tranquila","group":"sensory","name":{"pt":"Espera tranquila","en":"Quiet waiting"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"espera_tranquila"},"osm_tag":null,"dimension":"sensory","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":"waiting","variable":false,"primary":false,"filterable":true,"text":{"pt":"É possível aguardar em um ambiente mais tranquilo?","en":"Can visitors wait in a quieter environment?"}},{"id":"linguagem_simples","group":"cognitive","name":{"pt":"Linguagem simples","en":"Plain language"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"linguagem_simples"},"osm_tag":null,"dimension":"cognitive","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":true,"filterable":true,"text":{"pt":"As instruções usam linguagem clara e simples?","en":"Do instructions use clear, plain language?"}},{"id":"pictogramas_orientacao","group":"cognitive","name":{"pt":"Pictogramas","en":"Pictograms"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"pictogramas_orientacao"},"osm_tag":null,"dimension":"cognitive","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há pictogramas para ajudar na orientação?","en":"Are pictograms available to help with orientation?"}},{"id":"sinalizacao_intuitiva","group":"cognitive","name":{"pt":"Setores identificáveis","en":"Identifiable areas"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"sinalizacao_intuitiva"},"osm_tag":null,"dimension":"cognitive","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"É fácil identificar os setores e caminhos pela sinalização?","en":"Do signs make areas and paths easy to identify?"}},{"id":"informacoes_antecipadas","group":"cognitive","name":{"pt":"Informações antecipadas","en":"Advance information"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"informacoes_antecipadas"},"osm_tag":null,"dimension":"cognitive","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"É possível conhecer o atendimento e o ambiente antes da visita?","en":"Can visitors learn about the service and environment before visiting?"}},{"id":"orientacao_assistida","group":"cognitive","name":{"pt":"Orientação assistida","en":"Assisted orientation"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"orientacao_assistida"},"osm_tag":null,"dimension":"cognitive","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"É possível solicitar ajuda para se orientar?","en":"Can visitors request help with orientation?"}},{"id":"atendimento_adaptavel","group":"communication","name":{"pt":"Atendimento adaptável","en":"Adaptable assistance"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"atendimento_adaptavel"},"osm_tag":null,"dimension":"communication","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"O atendimento permite ajustar ritmo ou forma de comunicação?","en":"Can the pace or form of communication be adjusted?"}},{"id":"comunicacao_alternativa","group":"communication","name":{"pt":"Comunicação alternativa","en":"Alternative communication"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"comunicacao_alternativa"},"osm_tag":null,"dimension":"communication","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":true,"filterable":true,"text":{"pt":"É possível usar imagens, escrita ou outros meios para se comunicar?","en":"Can visitors communicate using pictures, writing or other means?"}},{"id":"apoio_solicitavel","group":"communication","name":{"pt":"Apoio mediante solicitação","en":"Assistance on request"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"apoio_solicitavel"},"osm_tag":null,"dimension":"communication","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"É possível solicitar apoio durante o atendimento?","en":"Can visitors request assistance during service?"}},{"id":"atendimento_assistido","group":"communication","name":{"pt":"Atendimento assistido","en":"Assisted service"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"atendimento_assistido"},"osm_tag":null,"dimension":"communication","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há alguém disponível para auxiliar no uso do serviço?","en":"Is someone available to help visitors use the service?"}},{"id":"informacoes_acessiveis","group":"communication","name":{"pt":"Informações em outros formatos","en":"Information in alternative formats"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"informacoes_acessiveis"},"osm_tag":null,"dimension":"communication","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"O atendimento oferece informações em formatos alternativos?","en":"Does the service offer information in alternative formats?"}},{"id":"cardapio_digital_acessivel","group":"visual","name":{"pt":"Cardápio digital acessível","en":"Accessible digital menu"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"cardapio_digital_acessivel"},"osm_tag":null,"dimension":"visual","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":["restaurante","lanchonete","cafeteria"],"condition":"menu","variable":false,"primary":false,"filterable":true,"text":{"pt":"O cardápio digital funciona com leitor de tela?","en":"Does the digital menu work with a screen reader?"}},{"id":"balcao_acessivel","group":"physical","name":{"pt":"Balcão acessível","en":"Accessible counter"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"balcao_acessivel"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há trecho de balcão que permita aproximação e atendimento sentado?","en":"Is part of the counter usable from a seated position?"}},{"id":"caminhos_parque_acessiveis","group":"physical","name":{"pt":"Caminhos transitáveis","en":"Usable park paths"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"caminhos_parque_acessiveis"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":["parque","praca"],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Os caminhos têm piso firme e passagem sem obstáculos?","en":"Do paths have a firm surface and clear passage?"}},{"id":"descanso_parque_acessivel","group":"physical","name":{"pt":"Áreas de descanso","en":"Rest areas"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"descanso_parque_acessivel"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":["parque","praca"],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Existem áreas de descanso alcançáveis pelos caminhos?","en":"Are rest areas reachable from the paths?"}},{"id":"lazer_adaptado","group":"physical","name":{"pt":"Lazer adaptado","en":"Adapted leisure"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"lazer_adaptado"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":["parque","praca","academia","esporte"],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há equipamentos ou atividades de lazer adaptados?","en":"Are adapted leisure facilities or activities available?"}},{"id":"quarto_adaptado","group":"physical","name":{"pt":"Quarto adaptado","en":"Adapted room"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"quarto_adaptado"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":["hotel","pousada","hospedagem"],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há quarto com espaço de circulação e recursos de adaptação?","en":"Is there a room with circulation space and adaptation features?"}},{"id":"banheiro_quarto_adaptado","group":"physical","name":{"pt":"Banheiro do quarto adaptado","en":"Adapted room bathroom"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"banheiro_quarto_adaptado"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":["hotel","pousada","hospedagem"],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"O quarto adaptado tem banheiro com recursos de adaptação?","en":"Does the adapted room have a bathroom with adaptation features?"}},{"id":"chamadas_sonoras","group":"visual","name":{"pt":"Chamadas sonoras","en":"Audio calls"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"chamadas_sonoras"},"osm_tag":null,"dimension":"visual","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":"calls","variable":false,"primary":false,"filterable":true,"text":{"pt":"As chamadas ou senhas também são anunciadas por áudio?","en":"Are calls or tickets also announced by audio?"}},{"id":"assentos_acessiveis","group":"physical","name":{"pt":"Assentos e espaços acessíveis","en":"Accessible seating and spaces"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"assentos_acessiveis"},"osm_tag":null,"dimension":"physical","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":["cultura","cinema","teatro","saude","hospital","clinica","consultorio","educacao","escola","universidade","biblioteca"],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há assentos e espaços reservados com acesso sem barreiras?","en":"Are there reserved seats and spaces with barrier-free access?"}},{"id":"audiodescricao","group":"visual","name":{"pt":"Audiodescrição","en":"Audio description"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"audiodescricao"},"osm_tag":null,"dimension":"visual","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":["cultura","cinema","teatro"],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há sessões ou conteúdos com audiodescrição?","en":"Are sessions or content with audio description available?"}},{"id":"autoatendimento_acessivel","group":"communication","name":{"pt":"Autoatendimento acessível","en":"Accessible self-service"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"autoatendimento_acessivel"},"osm_tag":null,"dimension":"communication","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":[],"condition":"self_service","variable":false,"primary":false,"filterable":true,"text":{"pt":"O autoatendimento oferece recursos acessíveis e alternativa assistida?","en":"Does self-service offer accessible features and an assisted alternative?"}},{"id":"materiais_formatos_acessiveis","group":"visual","name":{"pt":"Materiais acessíveis","en":"Accessible materials"},"description":{"pt":"Relate apenas o que observou. Não é certificação técnica.","en":"Report only what you observed. This is not technical certification."},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"],"legacy_field":null,"questionnaire":{"version":3,"question":"materiais_formatos_acessiveis"},"osm_tag":null,"dimension":"visual","answer_type":"presence","answers":["yes","no","unknown","not_applicable"],"categories":["educacao","escola","universidade","biblioteca"],"condition":null,"variable":false,"primary":false,"filterable":true,"text":{"pt":"Há materiais em formatos como áudio, Braille ou texto digital acessível?","en":"Are materials available as audio, Braille or accessible digital text?"}}],"dimensions":{"physical":{"pt":"Mobilidade física","en":"Physical mobility"},"visual":{"pt":"Acessibilidade visual","en":"Visual accessibility"},"hearing":{"pt":"Acessibilidade auditiva","en":"Hearing accessibility"},"sensory":{"pt":"Ambiente sensorial","en":"Sensory environment"},"cognitive":{"pt":"Orientação e compreensão","en":"Orientation and understanding"},"communication":{"pt":"Comunicação e atendimento","en":"Communication and assistance"}},"states":["presence_reported","absence_reported","unknown","divergent","not_applicable","limited"]}''';
 
 class AccessibilityResource {
-  final String id, group;
-  final Map<String, dynamic> labels, descriptions;
-  final String? questionId;
-  AccessibilityResource(Map<String, dynamic> data)
-      : id = data['id'] as String, group = data['group'] as String,
-        labels = Map<String, dynamic>.from(data['name'] as Map),
-        descriptions = Map<String, dynamic>.from(data['description'] as Map),
-        questionId = (data['questionnaire'] as Map?)?['question'] as String?;
+  final Map<String, dynamic> data;
+  const AccessibilityResource(this.data);
+  String get id => data['id'] as String;
+  String get group => data['group'] as String;
+  String get dimension => data['dimension'] as String? ?? group;
+  Map<String, dynamic> get labels => Map<String, dynamic>.from(data['name'] as Map);
+  Map<String, dynamic> get descriptions => Map<String, dynamic>.from(data['description'] as Map);
+  String? get questionId => (data['questionnaire'] as Map?)?['question'] as String?;
   String name(BuildContext context) => labels[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt'] as String;
   String description(BuildContext context) => descriptions[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt'] as String;
 }
 
 class AccessibilityCatalog {
-  static final resources = List<AccessibilityResource>.unmodifiable(
-      (jsonDecode(resourceCatalogJson)['resources'] as List).map(
-          (item) => AccessibilityResource(Map<String, dynamic>.from(item as Map))));
+  static final Map<String, dynamic> data = jsonDecode(resourceCatalogJson) as Map<String, dynamic>;
+  static final Map<String, dynamic> dimensions = Map<String, dynamic>.from(data['dimensions'] as Map);
+  static final resources = List<AccessibilityResource>.unmodifiable((data['resources'] as List).map((item) => AccessibilityResource(Map<String, dynamic>.from(item as Map))));
   static final ids = Set<String>.unmodifiable(resources.map((item) => item.id));
-  static AccessibilityResource? find(String id) {
-    for (final resource in resources) {
-      if (resource.id == id) { return resource; }
-    }
-    return null;
+  static AccessibilityResource? find(String id) { for (final resource in resources) { if (resource.id == id) return resource; } return null; }
+  static String dimensionLabel(BuildContext context, String id) {
+    final value = dimensions[id];
+    if (value is! Map) return id;
+    return value[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt'] as String? ?? id;
   }
 }

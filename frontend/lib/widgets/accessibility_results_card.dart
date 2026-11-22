@@ -11,6 +11,7 @@ class AccessibilityResultsCard extends StatefulWidget {
   final int localId;
   final int revision;
   final Set<String> preferredResources;
+  final String? dimensionFilter;
   final Map<String, dynamic> registeredData;
   final ContributionService service;
   final VoidCallback? onViewReviews;
@@ -20,6 +21,7 @@ class AccessibilityResultsCard extends StatefulWidget {
     required this.localId,
     this.revision = 0,
     this.preferredResources = const {},
+    this.dimensionFilter,
     this.registeredData = const {},
     this.service = const ContributionService(),
     this.onViewReviews,
@@ -139,6 +141,7 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
             ],
             ResourceInformationList(
               preferred: widget.preferredResources,
+              dimensionFilter: widget.dimensionFilter,
               information: {...evidenceMap(raw), ..._overrides},
               results: _results?.resources ?? const [],
               localId: widget.localId,

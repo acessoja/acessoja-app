@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/accessibility_catalog.dart';
 import '../models/accessibility_survey.dart';
+import '../models/accessibility_survey_v3.dart';
 import '../models/review_draft_controller.dart';
 import '../l10n/contribution_strings.dart';
 import '../services/app_http.dart';
@@ -15,7 +16,6 @@ import '../media/media_widgets.dart';
 import '../media/photo_gallery_screen.dart';
 import '../media/photo_submission_queue.dart';
 import '../widgets/resource_answer_fields.dart';
-import '../widgets/evaluation_survey_dialog.dart';
 import '../widgets/survey_answers_view.dart';
 import '../widgets/guest_access.dart';
 import 'login_screen.dart';
@@ -51,7 +51,6 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
   bool _allowExit = false,
       _expired = false,
       _selecting = false,
-      _expanded = false,
       _showConfirmation = false;
   int _generation = 0;
   String? _selectionError, _recoveryScope;
@@ -171,10 +170,6 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
   }
 
   void _move(int step) {
-    if (!widget.independent && step == 1) {
-      _openOriginalSurvey();
-      return;
-    }
     setState(() {
       _draft.step = step;
       _selectionError = null;
@@ -192,82 +187,6 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
   /// Abre o MESMO modal usado antes dos Cards 47-51. O resultado altera
   /// apenas respostas do questionário; fotos, nota, comentário e demais
   /// relatos permanecem no ReviewDraftController, sem escrita no backend.
-  Future<void> _openOriginalSurvey() async {
-    if (widget.independent ||
-        _draft.locked ||
-        !_draft.loaded ||
-        _draft.hasConfirmed) {
-      return;
-    }
-    if (_draft.stars < 1 || _draft.stars > 5) {
-      _move(0);
-      _rating.requestFocus();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            text(
-              'Escolha de 1 a 5 estrelas antes de continuar.',
-              'Choose 1 to 5 stars before continuing.',
-            ),
-          ),
-        ),
-      );
-      return;
-    }
-    final generation = _generation;
-    final session = AppHttp.sessionRevision.value;
-    final questionIds = SurveyContract.questions.map((q) => q.id).toSet();
-    final currentAnswers = {
-      for (final entry in _draft.answers.entries)
-        if (questionIds.contains(entry.key)) entry.key: entry.value,
-    };
-    Map<String, dynamic>? confirmed;
-    final result = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => EvaluationSurveyDialog(
-        placeName: (widget.place['nome'] ?? '').toString(),
-        stars: _draft.stars,
-        comment: _draft.comment,
-        initialAnswers: currentAnswers,
-        legacy: _draft.legacy,
-        allowPartial: true,
-        onSubmit: (answers) async {
-          // Recebe somente o rascunho; a gravação ocorre na revisão final.
-          if (!mounted ||
-              generation != _generation ||
-              session != AppHttp.sessionRevision.value ||
-              !_draft.current) {
-            throw const ContributionException(409, 'session_changed');
-          }
-          confirmed = Map<String, dynamic>.from(answers);
-        },
-      ),
-    );
-    if (!mounted ||
-        generation != _generation ||
-        session != AppHttp.sessionRevision.value ||
-        !_draft.current ||
-        result != true) {
-      return;
-    }
-    // 'Responder depois' entrega {}, preservando respostas anteriores.
-    // Confirmar respostas permite acrescentar, alterar ou limpar cada uma.
-    if (confirmed?.containsKey('answers') == true) {
-      final updated = Map<String, String>.from(confirmed!['answers'] as Map);
-      for (final id in questionIds) {
-        if (!updated.containsKey(id)) {
-          _draft.answers.remove(id);
-          _draft.details.remove(id);
-          _draft.selected.remove(id);
-        }
-      }
-      _draft.answers.addAll(updated);
-      _draft.selected.addAll(updated.keys);
-    }
-    _move(3); // Mantém revisão/fotos/publicação dos Cards 42-51.
-  }
-
   Future<void> _pick({bool recover = false}) async {
     if (_draft.locked || _selecting) {
       return;
@@ -555,7 +474,7 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
                               Text(_draft.review!['comentario'].toString()),
                             for (final entry in _draft.answers.entries)
                               Text(
-                                '${AccessibilityCatalog.find(entry.key)?.name(context) ?? entry.key}: ${SurveyContract.answer(context, entry.value)}',
+                                '${AccessibilityCatalog.find(entry.key)?.name(context) ?? entry.key}: ${_draft.questionnaireV3 ? SurveyV3Contract.answer(context, entry.value) : SurveyContract.answer(context, entry.value)}',
                               ),
                           ],
                         ),
@@ -760,8 +679,13 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
       ],
       FilledButton(
         key: const ValueKey('review-open-survey'),
-        onPressed: _draft.locked ? null : _openOriginalSurvey,
-        child: Text(text('Revisar e publicar', 'Review and publish')),
+        onPressed: _draft.locked ? null : () => _move(1),
+        child: Text(
+          text(
+            'Responder sobre acessibilidade',
+            'Answer accessibility questions',
+          ),
+        ),
       ),
       OutlinedButton(
         key: const ValueKey('review-resources'),
@@ -955,15 +879,26 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
           ),
         ),
       FilledButton(
-        onPressed: _draft.locked ? null : _openOriginalSurvey,
-        child: Text(text('Revisar e publicar', 'Review and publish')),
+        key: const ValueKey('photos-return-to-survey'),
+        onPressed: _draft.locked ? null : () => _move(1),
+        child: Text(
+          text(
+            'Voltar às perguntas de acessibilidade',
+            'Return to accessibility questions',
+          ),
+        ),
       ),
     ],
   );
   Widget _summary() {
-    final missing = AccessibilityCatalog.resources.where(
-      (r) => !_draft.answers.containsKey(r.id),
-    );
+    final answeredDimensions = SurveyV3Contract.questions
+        .where((question) => _draft.answers.containsKey(question.id))
+        .map((question) => question.dimension)
+        .toSet()
+        .length;
+    final answeredResources = widget.independent
+        ? _draft.answers.length
+        : _draft.surveyCount;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1010,8 +945,12 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
                 if (!widget.independent && !_draft.legacy)
                   Text(
                     text(
-                      '${_draft.surveyCount} de 8 perguntas v2 respondidas',
-                      '${_draft.surveyCount} of 8 v2 questions answered',
+                      _draft.questionnaireV3
+                          ? '${_draft.surveyCount} perguntas respondidas'
+                          : '${_draft.surveyCount} de 8 perguntas v2 respondidas',
+                      _draft.questionnaireV3
+                          ? '${_draft.surveyCount} questions answered'
+                          : '${_draft.surveyCount} of 8 v2 questions answered',
                     ),
                   ),
                 if (widget.independent || _draft.legacy)
@@ -1024,7 +963,7 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
                 if (_draft.legacy) SurveyAnswersView(review: _draft.review!),
                 for (final entry in _draft.answers.entries)
                   Text(
-                    '${AccessibilityCatalog.find(entry.key)!.name(context)}: ${SurveyContract.answer(context, entry.value)} (${_changeLabel(_draft.answerChange(entry.key))})',
+                    '${AccessibilityCatalog.find(entry.key)!.name(context)}: ${_draft.questionnaireV3 ? SurveyV3Contract.answer(context, entry.value) : SurveyContract.answer(context, entry.value)} (${_changeLabel(_draft.answerChange(entry.key))})',
                   ),
                 for (final id in _draft.originalAnswers.keys.where(
                   (id) => !_draft.answers.containsKey(id),
@@ -1032,18 +971,25 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
                   Text(
                     '${AccessibilityCatalog.find(id)!.name(context)}: ${text('remoção explícita', 'explicit removal')}',
                   ),
-                if (missing.isNotEmpty)
-                  TextButton(
-                    onPressed: () => setState(() => _expanded = !_expanded),
-                    child: Text(
-                      text(
-                        '${missing.length} recursos sem resposta',
-                        '${missing.length} unanswered features',
-                      ),
-                    ),
+                Text(
+                  text(
+                    '$answeredResources perguntas respondidas · $answeredDimensions dimensões com informação.',
+                    '$answeredResources questions answered · $answeredDimensions dimensions with information.',
                   ),
-                if (_expanded)
-                  for (final resource in missing) Text(resource.name(context)),
+                ),
+                Text(
+                  text(
+                    'Responder outras perguntas é opcional; o que não foi informado permanece desconhecido.',
+                    'Answering other questions is optional; anything not reported remains unknown.',
+                  ),
+                ),
+                TextButton(
+                  key: const ValueKey('review-complement-survey'),
+                  onPressed: () => _move(1),
+                  child: Text(
+                    text('Complementar respostas', 'Add more answers'),
+                  ),
+                ),
                 _edit(1, text('recursos', 'features')),
               ],
             ),
@@ -1331,6 +1277,16 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
                         ResourceAnswerFields(
                           questionnaireEnabled:
                               !widget.independent && !_draft.legacy,
+                          questionnaireVersion: _draft.questionnaireVersion,
+                          category:
+                              (widget.place['categoria'] ??
+                                      widget.place['category'])
+                                  ?.toString(),
+                          subcategory:
+                              (widget.place['subcategoria'] ??
+                                      widget.place['subcategory'])
+                                  ?.toString(),
+                          characteristics: _draft.characteristics,
                           answers: _draft.answers,
                           selected: _draft.selected,
                           details: _draft.details,
@@ -1338,6 +1294,7 @@ class _ReviewEditorScreenState extends State<ReviewEditorScreen> {
                           onChanged: _changed,
                         ),
                         FilledButton(
+                          key: const ValueKey('survey-v3-review'),
                           onPressed: _draft.locked ? null : () => _move(3),
                           child: Text(text('Revisar', 'Review')),
                         ),

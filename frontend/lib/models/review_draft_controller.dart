@@ -9,6 +9,7 @@ import '../services/contribution_service.dart';
 import '../services/evidence_service.dart';
 import '../services/review_changes.dart';
 import 'accessibility_survey.dart';
+import 'accessibility_survey_v3.dart';
 import 'evidence.dart';
 import 'contribution_mutation.dart';
 
@@ -51,6 +52,7 @@ class ReviewDraftController extends ChangeNotifier {
   final PhotoSubmissionQueue photos;
   final int session = AppHttp.sessionRevision.value;
   final Map<String, String> answers = {};
+  final Map<String, bool> characteristics = {};
   final Set<String> selected = {};
   final Map<String, Map<String, dynamic>> details = {};
   final Map<String, Map<String, dynamic>> _statements = {};
@@ -98,8 +100,10 @@ class ReviewDraftController extends ChangeNotifier {
   Object? error;
   PublicationPhase phase = PublicationPhase.editing;
   bool get current => _alive && session == AppHttp.sessionRevision.value;
-  bool get legacy =>
-      review != null && review!['questionnaire_version'] != surveyVersion;
+  // V1/V2 remain readable in history; every active review edit uses V3.
+  int get questionnaireVersion => independent ? surveyVersion : surveyV3Version;
+  bool get legacy => false;
+  bool get questionnaireV3 => questionnaireVersion == surveyV3Version;
   bool get locked =>
       busy ||
       reviewUncertain ||
@@ -108,6 +112,8 @@ class ReviewDraftController extends ChangeNotifier {
       throttled;
   int get surveyCount => independent || legacy
       ? 0
+      : questionnaireV3
+      ? SurveyV3Contract.ids.where(answers.containsKey).length
       : SurveyContract.questions.where((q) => answers.containsKey(q.id)).length;
   Map<String, String> get originalAnswers => Map.unmodifiable(_storedAnswers());
   String answerChange(String id) {
@@ -124,9 +130,25 @@ class ReviewDraftController extends ChangeNotifier {
   bool get complete => phase == PublicationPhase.complete;
   bool get hasConfirmed =>
       mutation != null || statements.any((s) => s.state == 'committed');
-  Map<String, String> get _original => SurveyContract.storedAnswers(review);
+  Map<String, String> get _original {
+    if (questionnaireV3) {
+      final raw = review?['answers'];
+      if (raw is! Map) return {};
+      return {
+        for (final entry in raw.entries)
+          if (SurveyV3Contract.ids.contains(entry.key) &&
+              entry.value is String &&
+              SurveyV3Contract.questions.any((q) =>
+                  q.id == entry.key && q.answers.contains(entry.value)))
+            entry.key as String: entry.value as String,
+      };
+    }
+    return SurveyContract.storedAnswers(review);
+  }
   Set<String> get _surveyIds => legacy || independent
       ? {}
+      : questionnaireV3
+      ? SurveyV3Contract.ids
       : SurveyContract.questions.map((q) => q.id).toSet();
   bool get dirty =>
       stars != (review?['estrelas'] ?? 0) ||
@@ -148,6 +170,7 @@ class ReviewDraftController extends ChangeNotifier {
     conflictResource = null;
     photos.clear();
     answers.clear();
+    characteristics.clear();
     selected.clear();
     details.clear();
     _statements.clear();
@@ -205,6 +228,7 @@ class ReviewDraftController extends ChangeNotifier {
         result[id] = {
           'note': row['note'] ?? '',
           'observed_on': row['observed_on'],
+          if (row['observation'] is Map) ...Map<String, dynamic>.from(row['observation'] as Map),
         };
       }
     }
@@ -216,13 +240,19 @@ class ReviewDraftController extends ChangeNotifier {
   ) => {
     for (final e in raw.entries)
       if ((e.value['note'] ?? '').toString().trim().isNotEmpty ||
-          (e.value['observed_on'] ?? '').toString().trim().isNotEmpty)
+          (e.value['observed_on'] ?? '').toString().trim().isNotEmpty ||
+          (e.value['period'] ?? '').toString().trim().isNotEmpty ||
+          (e.value['not_applicable_reason'] ?? '').toString().trim().isNotEmpty)
         e.key: {
           'note': (e.value['note'] ?? '').toString().trim(),
           'observed_on':
               (e.value['observed_on'] ?? '').toString().trim().isEmpty
               ? null
               : e.value['observed_on'],
+          if ((e.value['period'] ?? '').toString().isNotEmpty)
+            'period': e.value['period'],
+          if ((e.value['not_applicable_reason'] ?? '').toString().trim().isNotEmpty)
+            'not_applicable_reason': (e.value['not_applicable_reason'] as String).trim(),
         },
   };
   Map<String, Map<String, dynamic>> _normalizedDetails() =>
@@ -255,6 +285,14 @@ class ReviewDraftController extends ChangeNotifier {
       answers
         ..clear()
         ..addAll(_storedAnswers());
+      characteristics.clear();
+      for (final question in SurveyV3Contract.questions) {
+        final condition = question.condition;
+        final answer = answers[question.id];
+        if (condition != null && answer != null) {
+          characteristics[condition] = answer != 'not_applicable';
+        }
+      }
       details
         ..clear()
         ..addAll(_storedDetails());
@@ -332,9 +370,12 @@ class ReviewDraftController extends ChangeNotifier {
         'comentario': comment.trim(),
       if (review?['content_revision'] != null)
         'expected_revision': review!['content_revision'],
-      if (!legacy &&
-          (review == null || delta.isNotEmpty || detailDelta.isNotEmpty))
-        'questionnaire_version': surveyVersion,
+      if (!independent &&
+          (review == null ||
+              review?['questionnaire_version'] != surveyV3Version ||
+              delta.isNotEmpty ||
+              detailDelta.isNotEmpty))
+        'questionnaire_version': questionnaireVersion,
       if (delta.isNotEmpty) 'answers': delta,
       if (detailDelta.isNotEmpty) 'answer_details': detailDelta,
     };

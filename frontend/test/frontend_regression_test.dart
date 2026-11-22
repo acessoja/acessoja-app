@@ -28,6 +28,7 @@ import 'package:flutter_application_1/screens/place_detail_screen.dart';
 import 'package:flutter_application_1/screens/review_editor_screen.dart';
 import 'package:flutter_application_1/widgets/evaluation_survey_dialog.dart';
 import 'package:flutter_application_1/models/accessibility_survey.dart';
+import 'package:flutter_application_1/models/accessibility_catalog.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_application_1/screens/main_screen.dart';
@@ -138,11 +139,11 @@ http.Response fixtureResponse(http.Request request) {
   if (request.url.path.contains('modal-avaliacoes/recursos/')) {
     return http.Response(
       jsonEncode({
-        'version': 2,
+        'version': 3,
         'people': 0,
         'legacy_not_comparable': 0,
         'features': [
-          for (final q in SurveyContract.questions)
+          for (final q in AccessibilityCatalog.resources)
             {
               'id': q.id,
               'counts': {for (final code in surveyCodes) code: 0},
@@ -395,8 +396,8 @@ void main() {
         tester,
         find.byKey(const ValueKey('review-open-survey')),
       );
-      await tapVisible(tester, find.byKey(const ValueKey('survey-skip')));
-      await tapVisible(tester, originalModalSubmit());
+      expect(find.byType(EvaluationSurveyDialog), findsNothing);
+      await tapVisible(tester, find.text('Revisar'));
       await tapVisible(tester, find.byKey(const ValueKey('survey-submit')));
       expect(reviewSaves, 1);
       expect(find.text('Obrigado por contribuir!'), findsOneWidget);

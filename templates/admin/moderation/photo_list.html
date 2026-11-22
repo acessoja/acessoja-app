@@ -1,0 +1,12 @@
+{% extends "admin/moderation/base.html" %}
+{% load admin_list moderation_ui i18n %}
+{% block mod_subtitle %}Veja as imagens enviadas e abra a análise com o contexto da avaliação.{% endblock %}
+{% block mod_content %}
+<nav class="mod-crumb" aria-label="Caminho"><a href="{% url 'moderation-admin-index' %}">Visão geral</a><span aria-hidden="true">›</span><span>Fotografias</span></nav>
+<div class="mod-list-layout"><section class="mod-panel"><h2>Fila de fotografias <small>({{ cl.result_count }})</small></h2>
+{% if cl.result_count %}<div class="mod-photo-grid">{% for photo in cl.result_list %}<article class="mod-photo-card">
+<div class="mod-photo-preview">{% if photo.current_revision and photo.current_revision.asset.state == 'ready' and not photo.deleted_at %}<img loading="lazy" src="{% url 'protected-image' photo.current_revision.asset_id 'thumb' %}" alt="Prévia: {{ photo.current_revision.description|default:'Fotografia sem descrição' }}" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>Imagem indisponível</span>{% else %}<span>Imagem indisponível</span>{% endif %}</div>
+<div class="mod-photo-info"><h3>{{ photo.review.local.nome }}</h3><p>{{ photo.current_revision.description|default:"Sem descrição"|truncatechars:110 }}</p><p><strong>Estado:</strong> <span class="mod-badge {{ photo.current_revision.state }}">{% if photo.deleted_at %}Excluída{% elif photo.current_revision %}{{ photo.current_revision.get_state_display }}{% else %}Processando{% endif %}</span></p><p><strong>Envio:</strong> {{ photo.created_at|date:"d/m/Y H:i" }}</p><a class="mod-button" href="{% url 'admin:image-photo-decision' photo.pk %}">Analisar fotografia</a></div>
+</article>{% endfor %}</div>{% moderation_pagination cl 'fotografias' %}{% else %}<div class="mod-empty"><h3>Nenhuma fotografia encontrada</h3><p>Não há imagens para os filtros selecionados.</p><a href="{{ request.path }}">Limpar filtros</a></div>{% endif %}</section>
+{% if cl.has_filters %}<aside class="mod-panel mod-list-filters" aria-label="Filtros"><h2>Filtros</h2>{% language 'pt-br' %}{% for spec in cl.filter_specs %}<h3>{% moderation_filter_title spec %}</h3>{% moderation_filter_choices cl spec as choices %}<ul>{% for choice in choices %}<li><a {% if choice.selected %}aria-current="true" class="selected"{% endif %} href="{{ choice.query_string|iriencode }}">{{ choice.display }}</a></li>{% endfor %}</ul>{% endfor %}{% endlanguage %}</aside>{% endif %}</div>
+{% endblock %}

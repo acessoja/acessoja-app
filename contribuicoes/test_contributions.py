@@ -64,10 +64,8 @@ def payload(place, **extra):
     return {
         "local": place.pk,
         "estrelas": 4,
-        "pergunta_1": "Sim",
-        "pergunta_2": "Não",
-        "pergunta_3": "Não sei",
-        "pergunta_4": "Sim",
+        "questionnaire_version": 3,
+        "answers": {"espaco_tranquilo": "yes"},
         "comentario": "Entrada com rampa.",
         **extra,
     }
@@ -710,7 +708,7 @@ def test_discovery_filters_pagination_coordinates_and_visits(client, author, pla
     assert client.get("/api/contribuicoes/locais-para-avaliar/?raio=50000").status_code == 400
     submit(client, place)
     assert client.get("/api/contribuicoes/locais-para-avaliar/?estado=unreviewed").data["count"] == 0
-    assert client.get("/api/contribuicoes/locais-para-avaliar/?estado=incomplete").data["count"] == 1
+    assert client.get("/api/contribuicoes/locais-para-avaliar/?estado=incomplete").data["count"] == 0
     assert client.get("/api/contribuicoes/locais-para-avaliar/?search=Biblioteca&categoria=library").data["count"] == 1
     VisitaRecente.objects.create(user=author, local=place)
     assert client.get("/api/contribuicoes/locais-para-avaliar/?estado=visited").data["count"] == 0

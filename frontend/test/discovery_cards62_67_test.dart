@@ -442,7 +442,9 @@ void main() {
           .dy;
       final other = tester
           .getTopLeft(
-            find.byKey(const ValueKey('resource-information-rampa_acesso')),
+            find.byKey(
+              const ValueKey('resource-information-sinalizacao_visual'),
+            ),
           )
           .dy;
       expect(first, lessThan(other));
@@ -506,6 +508,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Recursos importantes para sua busca'), findsOneWidget);
+      await f.tap(tester, find.byKey(const ValueKey('panel-dimension-visual')));
       final personal = tester
           .getTopLeft(
             find.byKey(const ValueKey('resource-information-piso_tatil')),

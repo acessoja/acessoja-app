@@ -22,11 +22,23 @@ from .views import PrivateResponseMixin, WRITE_ERRORS
 
 
 class IndependentInput(ChangeEvidenceSerializer):
+    value = serializers.ChoiceField(choices=["yes", "no", "unknown", "not_applicable", "low", "moderate", "high"])
+    period = serializers.ChoiceField(choices=["morning", "afternoon", "night", "unspecified"], required=False)
+    not_applicable_reason = serializers.CharField(max_length=300, allow_blank=True, required=False)
     revision = None
     operation_id = serializers.UUIDField()
     expected_revision = serializers.UUIDField(required=False)
     local_id = serializers.IntegerField(min_value=1)
     resource = serializers.ChoiceField(choices=RESOURCE_IDS)
+
+    def validate(self, attrs):
+        from acessoja.questionnaire_v3 import validate_answers
+        super().validate(attrs)
+        try:
+            validate_answers({attrs["resource"]: attrs["value"]})
+        except ValueError as error:
+            raise serializers.ValidationError(str(error))
+        return attrs
 
 
 class RemoveInput(StrictSerializer):
@@ -74,6 +86,7 @@ def repeat(user, values, action, identifier=None):
 
 @transaction.atomic
 def write_observation(request, values):
+    from acessoja.questionnaire_v3 import evidence_state
     user = locked_request_user(request)
     prior, digest = repeat(user, values, "write")
     if prior:
@@ -94,13 +107,17 @@ def write_observation(request, values):
         "local_id": local.pk,
         "owner_id": user.pk,
         "resource": values["resource"],
-        "state": ANSWER_STATES[values["value"]],
+        "state": evidence_state(values["resource"], values["value"]),
+        "source_metadata": {"observation": {key: values[key] for key in
+                            ("value", "period", "not_applicable_reason") if key in values}},
         "note": values.get("note", ""),
         "observed_at": values.get("observed_at"),
         "observed_on": values.get("observed_on"),
         "received_at": timezone.now(),
     }
-    if current and not current.current_revision.is_valid and current.current_revision.fingerprint == fingerprint(spec):
+    if current and not current.current_revision.is_valid and current.current_revision.fingerprint == fingerprint(
+        {**spec, "context": spec["source_metadata"]["observation"]}
+    ):
         raise ValidationError("Revise o conteúdo invalidado antes de enviar uma nova versão.")
     # An explicit reassertion may supersede a survey. Merely saving unchanged
     # survey text never takes precedence over a newer independent statement.

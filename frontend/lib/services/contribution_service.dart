@@ -5,6 +5,7 @@ import 'app_http.dart';
 import 'review_changes.dart';
 import '../models/contribution_mutation.dart';
 import '../models/accessibility_survey.dart';
+import '../models/accessibility_survey_v3.dart';
 
 class ContributionException implements Exception {
   final int status;
@@ -181,10 +182,11 @@ class ContributionService {
               retryAfter: int.tryParse(response.headers['retry-after'] ?? ''),
             )
             as Map<String, dynamic>;
-    if (body['questionnaire_version'] == surveyVersion &&
+    if ((body['questionnaire_version'] == surveyVersion ||
+            body['questionnaire_version'] == surveyV3Version) &&
         body['answers'] is Map) {
       final confirmed = result['answers'];
-      if (result['questionnaire_version'] != surveyVersion ||
+      if (result['questionnaire_version'] != body['questionnaire_version'] ||
           confirmed is! Map ||
           result['id'] is! int ||
           (result['id'] as int) < 1) {

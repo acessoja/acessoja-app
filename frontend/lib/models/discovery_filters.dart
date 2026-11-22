@@ -144,7 +144,7 @@ class DiscoveryFilterState {
 
   DiscoveryFilterState applyPreferences(
     Iterable<String> ids, {
-    int catalogVersion = 1,
+    int catalogVersion = resourceCatalogVersion,
   }) {
     final selected = Set<String>.from(ids);
     if (catalogVersion != resourceCatalogVersion ||

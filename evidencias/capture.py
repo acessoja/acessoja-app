@@ -46,9 +46,12 @@ def stamp(value):
 
 
 def fingerprint(values):
+    fields = ("state", "note", "observed_at", "observed_on")
+    if values.get("context"):
+        fields = (*fields, "context")
     return hashlib.sha256(
         json.dumps(
-            {key: values.get(key) for key in ("state", "note", "observed_at", "observed_on")},
+            {key: values.get(key) for key in fields},
             sort_keys=True,
             default=str,
             ensure_ascii=True,
@@ -115,7 +118,7 @@ def capture_batch(specifications, *, create_only=False):
             "observed_at": stamp(spec.get("observed_at")),
             "observed_on": spec.get("observed_on"),
         }
-        signature = fingerprint(value)
+        signature = fingerprint({**value, "context": spec.get("source_metadata", {}).get("observation")})
         previous = root.current_revision
         changed = (
             previous is None
@@ -206,16 +209,21 @@ def capture_review(review):
         },
     )
     specs = []
-    if review.questionnaire_version == 2:
+    if review.questionnaire_version in (2, 3):
+        from acessoja.questionnaire_v3 import BY_ID, evidence_state
         for resource, code in (review.answers or {}).items():
-            if resource in RESOURCE_IDS and code in ANSWER_STATES:
+            if resource in RESOURCE_IDS and (code in ANSWER_STATES or
+                                            review.questionnaire_version == 3 and code in BY_ID[resource]["answers"]):
                 specs.append(
                     {
                         "key": f"review:{review.pk}:{resource}",
                         "kind": "review",
                         "source": "user",
                         "resource": resource,
-                        "state": ANSWER_STATES[code],
+                        "state": evidence_state(resource, code) if review.questionnaire_version == 3 else ANSWER_STATES[code],
+                        "source_metadata": {"observation": {
+                            "value": code, **(review.answer_details or {}).get(resource, {})
+                        }} if review.questionnaire_version == 3 else {},
                         "local_id": review.local_id,
                         "review_id": review.pk,
                         "owner_id": review.user_id,

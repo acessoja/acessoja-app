@@ -7,6 +7,8 @@ import '../l10n/strings.dart';
 import '../models/map_place.dart';
 import '../models/place_category.dart';
 import '../models/evidence.dart';
+import '../models/accessibility_catalog.dart';
+import '../models/accessibility_survey_v3.dart';
 import '../services/place_preview_controller.dart';
 import '../services/app_http.dart';
 import 'favorite_button.dart';
@@ -68,6 +70,7 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
   PlacePanelSection _section = PlacePanelSection.accessibility;
   final _visited = <PlacePanelSection>{};
   bool _expanded = false;
+  String _accessibilityDimension = 'physical';
   int _session = AppHttp.sessionRevision.value;
   @override
   void initState() {
@@ -368,6 +371,8 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                       ),
                   ],
                 ),
+                if (section == PlacePanelSection.accessibility)
+                  _dimensionOverview(context, p),
                 // Retain visited section states across tab changes and resizing. A section is
                 // fetched only on its first visit or an explicit revision invalidation.
                 for (final value in _visited)
@@ -383,10 +388,12 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                                 information: p.accessibilityInformation,
                                 externalId: p.externalId,
                                 preferred: widget.preferredResources,
+                                dimensionFilter: _accessibilityDimension,
                                 onChanged: widget.onRetryDetails,
                               )
                             : AccessibilityResultsCard(
                                 preferredResources: widget.preferredResources,
+                                dimensionFilter: _accessibilityDimension,
                                 key: ValueKey(
                                   'panel-resources-${p.id}:$_session',
                                 ),
@@ -643,6 +650,73 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                 launchUrl(Uri.parse('https://www.openstreetmap.org/copyright')),
             child: const Text('© OpenStreetMap contributors · ODbL'),
           ),
+      ],
+    );
+  }
+
+  Widget _dimensionOverview(BuildContext context, MapPlace place) {
+    const icons = {
+      'physical': Icons.accessible_forward,
+      'visual': Icons.visibility_outlined,
+      'hearing': Icons.hearing_outlined,
+      'sensory': Icons.graphic_eq,
+      'cognitive': Icons.signpost_outlined,
+      'communication': Icons.forum_outlined,
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 12, bottom: 4),
+          child: Semantics(
+            header: true,
+            child: Text(
+              context.mapText('Resumo por dimensão', 'Summary by dimension'),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+        ),
+        Text(context.mapText(
+          'Uma dimensão pode reunir presenças relatadas, barreiras e informações desconhecidas.',
+          'A dimension can include reported features, barriers and unknown information.',
+        )),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final dimension in SurveyV3Contract.dimensions.keys.cast<String>())
+              Builder(builder: (context) {
+                final resources = AccessibilityCatalog.resources
+                    .where((resource) => resource.dimension == dimension);
+                var present = 0, barriers = 0, unknown = 0, divergent = 0, notApplicable = 0;
+                for (final resource in resources) {
+                  switch (place.accessibility(resource.id)) {
+                    case AccessibilityValue.available:
+                      present++;
+                    case AccessibilityValue.unavailable:
+                    case AccessibilityValue.limited:
+                      barriers++;
+                    case AccessibilityValue.divergent:
+                      divergent++;
+                    case AccessibilityValue.notApplicable:
+                      notApplicable++;
+                    case AccessibilityValue.unknown:
+                      unknown++;
+                  }
+                }
+                return ChoiceChip(
+                  key: ValueKey('panel-dimension-$dimension'),
+                  selected: _accessibilityDimension == dimension,
+                  avatar: Icon(icons[dimension], size: 18),
+                  label: Text(
+                    '${AccessibilityCatalog.dimensionLabel(context, dimension)}\n'
+                    '${context.mapText('$present com presença · $barriers barreiras · $unknown desconhecidos · $divergent divergentes · $notApplicable N/A', '$present reported · $barriers barriers · $unknown unknown · $divergent conflicting · $notApplicable N/A')}',
+                  ),
+                  onSelected: (_) => setState(() => _accessibilityDimension = dimension),
+                );
+              }),
+          ],
+        ),
       ],
     );
   }

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/widgets/evaluation_survey_dialog.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -213,11 +212,6 @@ Future<void> openEditor(
 
 // O editor mantém o botão da publicação sob o modal; selecione apenas o botão
 // que está dentro da janela antiga de acessibilidade.
-Finder originalModalSubmit() => find.descendant(
-  of: find.byType(EvaluationSurveyDialog),
-  matching: find.byKey(const ValueKey('survey-submit')),
-);
-
 Future<void> publishWithoutSurvey(
   WidgetTester tester, {
   bool settle = true,
@@ -227,15 +221,10 @@ Future<void> publishWithoutSurvey(
   await tester.pumpAndSettle();
   await tester.tap(submit);
   await tester.pumpAndSettle();
-  final skip = find.byKey(const ValueKey('survey-skip'));
-  await tester.ensureVisible(skip);
+  final review = find.byKey(const ValueKey('survey-v3-review'));
+  await tester.ensureVisible(review);
   await tester.pumpAndSettle();
-  await tester.tap(skip);
-  await tester.pumpAndSettle();
-  final modalConfirm = originalModalSubmit();
-  await tester.ensureVisible(modalConfirm);
-  await tester.pumpAndSettle();
-  await tester.tap(modalConfirm);
+  await tester.tap(review);
   await tester.pumpAndSettle();
   final confirm = find.byKey(const ValueKey('survey-submit'));
   await tester.ensureVisible(confirm);

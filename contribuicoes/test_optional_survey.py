@@ -20,7 +20,7 @@ def test_stars_only_earn_ten_and_completing_survey_earns_five_once():
     assert response.data["points_delta"] == 10
     assert not response.data["survey_completed"]
     review = ModalAvaliacao.objects.get()
-    body = {f"pergunta_{i}": "Não sei" for i in range(1, 5)}
+    body = {"questionnaire_version": 3, "answers": {"espaco_tranquilo": "unknown"}}
     response = client.patch(f"{url}{review.pk}/", body, format="json")
     assert response.status_code == 200 and response.data["points_delta"] == 5
     assert response.data["survey_completed"]

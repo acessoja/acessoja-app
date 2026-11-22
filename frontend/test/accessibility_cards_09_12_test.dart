@@ -65,7 +65,7 @@ class FakePreferences extends AccessibilityPreferencesService {
   Future<AccessibilityPreferences> load() async {
     loads++;
     return loadHandler == null
-        ? AccessibilityPreferences(1, stored, const [])
+        ? AccessibilityPreferences(resourceCatalogVersion, stored, const [])
         : await loadHandler!();
   }
 
@@ -77,7 +77,7 @@ class FakePreferences extends AccessibilityPreferencesService {
       return saveHandler!(selected);
     }
     stored = selected;
-    return AccessibilityPreferences(1, stored, const []);
+    return AccessibilityPreferences(resourceCatalogVersion, stored, const []);
   }
 }
 
@@ -187,23 +187,20 @@ void main() {
   });
 
   group('resource contract and consolidated evidence', () {
-    test(
-      'catalog aligns eight existing questions and two new observed resources',
-      () {
-        expect(AccessibilityCatalog.ids, hasLength(10));
-        expect(
-          SurveyContract.questions
-              .map((q) => q.id)
-              .every(AccessibilityCatalog.ids.contains),
-          isTrue,
-        );
-        expect(AccessibilityCatalog.find('piso_tatil')!.questionId, isNull);
-        expect(
-          AccessibilityCatalog.find('sinalizacao_tatil')!.questionId,
-          'sinalizacao_tatil',
-        );
-      },
-    );
+    test('catalog aligns all V3 questions and accessibility resources', () {
+      expect(AccessibilityCatalog.ids, hasLength(47));
+      expect(
+        SurveyContract.questions
+            .map((q) => q.id)
+            .every(AccessibilityCatalog.ids.contains),
+        isTrue,
+      );
+      expect(AccessibilityCatalog.find('piso_tatil')!.questionId, 'piso_tatil');
+      expect(
+        AccessibilityCatalog.find('sinalizacao_tatil')!.questionId,
+        'sinalizacao_tatil',
+      );
+    });
     test('both historical boolean values stay unknown', () {
       for (final flag in [true, false]) {
         final old = MapPlace.internal({
@@ -493,7 +490,7 @@ void main() {
         AppHttp.client = MockClient((request) async {
           requests.add(request);
           return response({
-            'catalog_version': 1,
+            'catalog_version': resourceCatalogVersion,
             'resources': ['piso_tatil'],
             'unavailable_resources': [],
           });
@@ -517,7 +514,7 @@ void main() {
     test('invalid confirmation never pretends a save succeeded', () async {
       AppHttp.client = MockClient(
         (_) async => response({
-          'catalog_version': 1,
+          'catalog_version': resourceCatalogVersion,
           'resources': [],
           'unavailable_resources': [],
         }),
@@ -551,7 +548,7 @@ void main() {
       AppHttp.userId = 2;
       pending.complete(
         response({
-          'catalog_version': 1,
+          'catalog_version': resourceCatalogVersion,
           'resources': ['piso_tatil'],
           'unavailable_resources': [],
         }),
@@ -756,7 +753,11 @@ void main() {
       );
       await tester.pump();
       AppHttp.clearSession();
-      pending.complete(AccessibilityPreferences(1, ['piso_tatil'], const []));
+      pending.complete(
+        AccessibilityPreferences(resourceCatalogVersion, [
+          'piso_tatil',
+        ], const []),
+      );
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('preference-piso_tatil')), findsNothing);
       expect(find.textContaining('Sessão expirada'), findsOneWidget);
@@ -780,7 +781,11 @@ void main() {
       await tester.pump();
       expect(service.saves, 1);
       expect(find.textContaining('Preferências salvas.'), findsNothing);
-      pending.complete(AccessibilityPreferences(1, ['rampa_acesso'], const []));
+      pending.complete(
+        AccessibilityPreferences(resourceCatalogVersion, [
+          'rampa_acesso',
+        ], const []),
+      );
       await tester.pumpAndSettle();
       expect(find.textContaining('Preferências salvas.'), findsOneWidget);
     },
@@ -924,7 +929,11 @@ void main() {
         find.byKey(const ValueKey('filter-resource-piso_tatil')),
       );
       await tap(tester, find.byKey(const ValueKey('map-apply-filters')));
-      pending.complete(AccessibilityPreferences(1, ['rampa_acesso'], const []));
+      pending.complete(
+        AccessibilityPreferences(resourceCatalogVersion, [
+          'rampa_acesso',
+        ], const []),
+      );
       await tester.pumpAndSettle();
       expect(inSearch('active-filter-resource-piso_tatil'), findsOneWidget);
       expect(inSearch('active-filter-resource-rampa_acesso'), findsNothing);

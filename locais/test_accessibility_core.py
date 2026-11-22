@@ -18,9 +18,9 @@ def review(user, answers, **extra):
 
 
 class AccessibilityCoreTests(unittest.TestCase):
-    def test_catalog_has_ten_unique_observable_resources(self):
-        self.assertEqual(len(RESOURCE_IDS), 10)
-        self.assertEqual(len(set(RESOURCE_IDS)), 10)
+    def test_catalog_has_47_unique_observable_resources(self):
+        self.assertEqual(len(RESOURCE_IDS), 47)
+        self.assertEqual(len(set(RESOURCE_IDS)), 47)
         expected = {"piso_tatil", "sinalizacao_visual", "sinalizacao_tatil", "atendimento_libras"}
         self.assertTrue(expected <= set(RESOURCE_IDS))
         for item in catalog()["resources"]:
@@ -32,7 +32,7 @@ class AccessibilityCoreTests(unittest.TestCase):
         for question in questionnaire_catalog()["questions"]:
             self.assertEqual(entries[question["id"]]["name"], question["name"])
             self.assertEqual(entries[question["id"]]["questionnaire"]["question"], question["id"])
-        self.assertIsNone(entries["piso_tatil"]["questionnaire"])
+        self.assertEqual(entries["piso_tatil"]["questionnaire"], {"version": 3, "question": "piso_tatil"})
 
     def test_flutter_catalog_snapshot_matches(self):
         root = Path(__file__).resolve().parents[1]
