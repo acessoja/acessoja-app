@@ -9,7 +9,8 @@ from rest_framework.test import APIClient
 from contribuicoes.services import impact
 from locais.models import Local
 from modal_avaliacao.models import ModalAvaliacao
-from modal_avaliacao.questionnaire import QUESTION_IDS
+from acessoja.accessibility_catalog import RESOURCE_IDS
+from acessoja.questionnaire_v3 import SCALE_IDS
 
 URL = "/api/avaliacoes/modal-avaliacoes/"
 pytestmark = pytest.mark.django_db
@@ -30,18 +31,19 @@ def payload(local, **kwargs):
     return {
         "local": local.pk,
         "estrelas": 4,
-        "questionnaire_version": 2,
-        "answers": dict.fromkeys(QUESTION_IDS, "unknown"),
+        "questionnaire_version": 3,
+        "answers": dict.fromkeys(RESOURCE_IDS, "unknown"),
         **kwargs,
     }
 
 
-def test_catalog_and_four_codes_roundtrip(records):
+def test_v3_catalog_and_four_codes_roundtrip(records):
     user, local, client = records
     response = client.get(URL + "questionario/")
-    assert response.status_code == 200 and len(response.data["questions"]) == 8
+    assert response.status_code == 200 and response.data["version"] == 3
+    assert client.get(URL + "questionario/", {"version": 2}).status_code == 400
     body = payload(local)
-    for key, value in zip(QUESTION_IDS[:4], ["yes", "no", "unknown", "not_applicable"]):
+    for key, value in zip(RESOURCE_IDS[:4], ["yes", "no", "unknown", "not_applicable"]):
         body["answers"][key] = value
     response = client.post(URL, body, format="json")
     assert response.status_code == 201 and response.data["answers"] == body["answers"]
@@ -92,10 +94,10 @@ def test_partial_update_clear_and_no_duplicate_points(records):
     updated = client.patch(detail, {"answers": {"mesa_acessivel": "yes"}}, format="json")
     assert updated.data["answers"]["rampa_acesso"] == "unknown" and updated.data["points_delta"] == 0
     cleared = client.patch(detail, {"answers": {"mesa_acessivel": None}}, format="json")
-    assert "mesa_acessivel" not in cleared.data["answers"] and not cleared.data["survey_completed"]
-    assert cleared.data["points_delta"] == -5
+    assert "mesa_acessivel" not in cleared.data["answers"] and cleared.data["survey_completed"]
+    assert cleared.data["points_delta"] == 0
     restored = client.patch(detail, {"answers": {"mesa_acessivel": "not_applicable"}}, format="json")
-    assert restored.data["points_delta"] == 5
+    assert restored.data["points_delta"] == 0
     replay = client.patch(detail, {"answers": {"mesa_acessivel": "not_applicable"}}, format="json")
     assert replay.data["points_delta"] == 0
     assert impact(user)["points"] == 15
@@ -130,20 +132,27 @@ def test_full_update_and_author_permissions(records):
     assert client.post(URL, body, format="json").status_code == 401
 
 
-def test_legacy_comment_edit_preserves_raw_answers_without_reinterpreting(records):
-    _, local, client = records
-    body = {"local": local.pk, "estrelas": 4, **{f"pergunta_{i}": "Sim" for i in range(1, 5)}}
-    created = client.post(URL, body, format="json").data
-    detail = f"{URL}{created['id']}/"
-    assert created["questionnaire_version"] == 1 and created["answers"] == {}
-    updated = client.patch(detail, {"comentario": "Só texto"}, format="json").data
-    assert updated["questionnaire_version"] == 1
-    assert all(updated[f"pergunta_{i}"] == "Sim" for i in range(1, 5))
-    assert client.patch(detail, {"questionnaire_version": 2}, format="json").status_code == 400
-    upgraded = client.patch(detail, payload(local), format="json")
-    assert upgraded.status_code == 200 and upgraded.data["questionnaire_version"] == 2
-    assert upgraded.data["pergunta_3"] == "Sim"
-    assert upgraded.data["data_resposta"] == created["data_resposta"]
+def test_legacy_reviews_require_explicit_v3_migration_for_edits(records):
+    user, local, client = records
+    legacy_payload = {"local": local.pk, "estrelas": 4, **{f"pergunta_{i}": "Sim" for i in range(1, 5)}}
+    assert client.post(URL, legacy_payload, format="json").status_code == 400
+    review = ModalAvaliacao.objects.create(
+        user=user,
+        local=local,
+        estrelas=4,
+        questionnaire_version=1,
+        **{f"pergunta_{i}": "Sim" for i in range(1, 5)},
+    )
+    detail = f"{URL}{review.pk}/"
+    assert client.patch(detail, {"comentario": "historical edit"}, format="json").status_code == 400
+    upgraded = client.patch(
+        detail,
+        {"questionnaire_version": 3, "answers": {"espaco_tranquilo": "yes"}},
+        format="json",
+    )
+    assert upgraded.status_code == 200 and upgraded.data["questionnaire_version"] == 3
+    assert upgraded.data["answers"] == {"espaco_tranquilo": "yes"}
+    assert all(upgraded.data[f"pergunta_{i}"] == "Sim" for i in range(1, 5))
     assert upgraded.data["points_delta"] == 0
 
 
@@ -153,27 +162,39 @@ def test_unconfirmed_legacy_defaults_cannot_earn_survey_points_by_comment_edit(r
         user=user,
         local=local,
         estrelas=4,
+        questionnaire_version=1,
         verified_author=True,
         survey_completed=False,
         **{f"pergunta_{i}": "Não sei" for i in range(1, 5)},
     )
     before = impact(user)["points"]
     result = client.patch(f"{URL}{review.pk}/", {"comentario": "Só o comentário"}, format="json")
-    assert result.status_code == 200 and result.data["points_delta"] == 0
-    assert result.data["survey_completed"] is False
+    assert result.status_code == 400
+    review.refresh_from_db()
+    assert review.comentario == ""
     assert impact(user)["points"] == before == 10
 
 
 def test_aggregate_privacy_divergence_dates_and_history(records):
     user, local, client = records
-    created = client.post(URL, payload(local, answers=dict.fromkeys(QUESTION_IDS, "yes")), format="json").data
+    yes_answers = {resource: ("low" if resource in SCALE_IDS else "yes") for resource in RESOURCE_IDS}
+    no_answers = {resource: ("high" if resource in SCALE_IDS else "no") for resource in RESOURCE_IDS}
+    created = client.post(URL, payload(local, answers=yes_answers), format="json").data
     other = get_user_model().objects.create_user(nome="votes-v2", email="votes@test.com", password="securepass")
     other_client = APIClient()
     other_client.force_authenticate(other)
-    other_client.post(URL, payload(local, answers=dict.fromkeys(QUESTION_IDS, "no")), format="json")
+    other_client.post(URL, payload(local, answers=no_answers), format="json")
     result = client.get(URL + "recursos/", {"local_id": local.pk}).data
     assert result["people"] == 2
-    assert all(f["state"] == "divergent" and f["counts"]["yes"] == f["counts"]["no"] == 1 for f in result["features"])
+    assert all(
+        feature["state"] == ("limited" if feature["id"] in SCALE_IDS else "divergent")
+        for feature in result["features"]
+    )
+    assert all(
+        feature["counts"]["yes"] == feature["counts"]["no"] == 1
+        for feature in result["features"]
+        if feature["id"] not in SCALE_IDS
+    )
     other.mostrar_avaliacoes = False
     other.save()
     result = client.get(URL + "recursos/", {"local_id": local.pk}).data
@@ -198,7 +219,8 @@ def test_summary_and_review_list_queries_do_not_scale_per_feature_or_row(records
     for i in range(8):
         user = get_user_model().objects.create_user(nome=f"bulk-{i}", email=f"bulk-{i}@test.com", password="securepass")
         ModalAvaliacao.objects.create(
-            user=user, local=local, estrelas=4, questionnaire_version=2, answers=dict.fromkeys(QUESTION_IDS, "yes")
+            user=user, local=local, estrelas=4, questionnaire_version=3,
+            answers={resource: ("low" if resource in SCALE_IDS else "yes") for resource in RESOURCE_IDS}
         )
     with CaptureQueriesContext(connection) as queries:
         response = client.get(URL + "recursos/", {"local_id": local.pk})

@@ -1,7 +1,7 @@
 """Shared resource vocabulary; questionnaire v2 retains its eight questions."""
 from copy import deepcopy
 
-CATALOG_VERSION = 1
+CATALOG_VERSION = 3
 RESOURCE_STATES = ("presence_reported", "absence_reported", "unknown", "divergent", "not_applicable", "limited")
 WRITE_STATES = RESOURCE_STATES[:3]
 LEGACY_FLAGS = ("cao_guia", "mesa_acessivel", "banheiro_acessivel", "rampa_acesso", "cardapio_braille")
@@ -53,12 +53,27 @@ RESOURCES = [
              "Visual orientation signs with legible text or pictograms. "
              "Does not represent accessibility for everyone."),
 ]
+from .questionnaire_v3 import QUESTIONS, DIMENSIONS  # noqa: E402
+
+_existing = {item["id"]: item for item in RESOURCES}
+for _question in QUESTIONS:
+    _item = _existing.get(_question["id"])
+    if _item is None:
+        _item = resource(_question["id"], _question["dimension"],
+                         _question["name"]["pt"], _question["name"]["en"],
+                         _question["description"]["pt"], _question["description"]["en"])
+        RESOURCES.append(_item)
+    _item.update({key: deepcopy(_question[key]) for key in (
+        "dimension", "answer_type", "answers", "categories", "condition", "variable", "primary", "filterable", "text"
+    )})
+    _item["questionnaire"] = {"version": 3, "question": _item["id"]}
 RESOURCE_IDS = tuple(item["id"] for item in RESOURCES)
 RESOURCE_NAMES = {item["id"]: item["name"] for item in RESOURCES}
 
 
 def catalog():
-    return deepcopy({"version": CATALOG_VERSION, "resources": RESOURCES, "states": list(RESOURCE_STATES)})
+    return deepcopy({"version": CATALOG_VERSION, "resources": RESOURCES,
+                     "dimensions": DIMENSIONS, "states": list(RESOURCE_STATES)})
 
 
 def validate_preferences(value):

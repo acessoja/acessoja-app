@@ -322,14 +322,14 @@ def test_projection_uses_constant_query_count():
     assert response.data["count"] == 30
 
 
-def test_catalog_contract_has_ten_resources_and_generated_flutter_children():
-    assert len(RESOURCE_IDS) == 10
+def test_catalog_contract_has_v3_resources_and_generated_flutter_children():
+    assert len(RESOURCE_IDS) == 47
     text = (Path(__file__).parents[1] / "frontend/lib/models/place_subcategories.dart").read_text(encoding="utf-8")
     entries = re.findall(r"'([^']+)':\s*\{\s*'parent': '([^']+)',\s*'pt': '([^']+)',\s*'en': '([^']+)',?\s*\}", text)
     assert {key: {"parent": parent, "pt": pt, "en": en} for key, parent, pt, en in entries} == {
         key: {field: value[field] for field in ["parent", "pt", "en"]} for key, value in SUBCATEGORIES.items()
     }
-    assert api().get("/api/locais/categorias/").data["version"] == 1
+    assert api().get("/api/locais/categorias/").data["version"] == 2
 
 
 def test_legacy_catalog_new_modes_and_subcategories_use_authorized_projection():
@@ -470,7 +470,7 @@ def test_generated_category_catalog_command_checks_real_contract(monkeypatch, ca
 
     monkeypatch.setattr("sys.argv", ["generate_place_categories.py"])
     main()
-    assert "11 parents, 22 children" in capsys.readouterr().out
+    assert "11 parents, 24 children" in capsys.readouterr().out
 
 
 def test_legacy_manual_receipt_retry_survives_additive_child_field():

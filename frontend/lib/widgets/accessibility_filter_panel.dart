@@ -309,17 +309,12 @@ class _AccessibilityFilterPanelState extends State<AccessibilityFilterPanel> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
-          for (final group in [
-            'entrada',
-            'espaco',
-            'comunicacao',
-            'orientacao',
-          ])
+          for (final group in AccessibilityCatalog.dimensions.keys.cast<String>())
             SettingsSection(
-              title: context.resourceGroup(group),
+              title: AccessibilityCatalog.dimensionLabel(context, group),
               children: [
                 for (final resource in AccessibilityCatalog.resources.where(
-                  (item) => item.group == group,
+                  (item) => item.dimension == group,
                 ))
                   CheckboxListTile(
                     key: ValueKey('filter-resource-${resource.id}'),

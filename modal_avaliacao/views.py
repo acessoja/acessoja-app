@@ -12,7 +12,7 @@ from locais.models import Local
 from locais.serializers import LocalSerializer
 from .models import ModalAvaliacao
 from .serializers import ContributionFeedbackSerializer, ModalAvaliacaoSerializer
-from .questionnaire import QUESTION_IDS, catalog
+
 from .result_serializers import QuestionnaireCatalogSerializer, AccessibilitySummarySerializer
 from .operations import ReviewOperationRead, begin, document, record
 
@@ -27,21 +27,7 @@ class DuplicateReview(APIException):
 
 
 @extend_schema_view(
-    create=extend_schema(
-        examples=[
-            OpenApiExample(
-                "Questionário de recursos v2",
-                request_only=True,
-                value={
-                    "local": 7,
-                    "estrelas": 4,
-                    "comentario": "",
-                    "questionnaire_version": 2,
-                    "answers": dict.fromkeys(QUESTION_IDS, "unknown"),
-                },
-            )
-        ]
-    ),
+    create=extend_schema(),
     partial_update=extend_schema(
         examples=[
             OpenApiExample(
@@ -153,10 +139,37 @@ class ModalAvaliacaoViewSet(viewsets.ModelViewSet):
         Usuario.objects.select_for_update().get(pk=instance.user_id)
         instance.delete()
 
-    @extend_schema(responses=QuestionnaireCatalogSerializer)
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("version", int, description="Somente a V3 está ativa; padrão 3."),
+            OpenApiParameter("category", str),
+            OpenApiParameter("subcategory", str),
+            *[OpenApiParameter(name, str, description="true/false; omissão mantém a característica desconhecida.")
+              for name in ("parking", "restroom", "levels", "menu", "waiting", "calls", "self_service")],
+        ],
+        responses=QuestionnaireCatalogSerializer,
+    )
     @action(detail=False, methods=["get"], url_path="questionario")
     def questionnaire(self, request):
-        return Response(catalog())
+        version = request.query_params.get("version", "3")
+        if version != "3":
+            raise ValidationError({"version": "Somente o questionário V3 está disponível para novas operações."})
+        from acessoja.questionnaire_v3 import catalog as catalog_v3
+
+        characteristics = {}
+        for name in ("parking", "restroom", "levels", "menu", "waiting", "calls", "self_service"):
+            value = request.query_params.get(name)
+            if value is not None:
+                if value.lower() not in {"true", "false"}:
+                    raise ValidationError({name: "Informe true ou false; use omissão para desconhecido."})
+                characteristics[name] = value.lower() == "true"
+        return Response(
+            catalog_v3(
+                request.query_params.get("category"),
+                request.query_params.get("subcategory"),
+                characteristics,
+            )
+        )
 
     @extend_schema(
         parameters=[OpenApiParameter("local_id", int, required=True)],

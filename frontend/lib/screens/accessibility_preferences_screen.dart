@@ -104,10 +104,10 @@ class _AccessibilityPreferencesScreenState extends State<AccessibilityPreference
               tooltip: context.accessibilityText('Remover $id', 'Remove $id'),
               onPressed: _saving ? null : () => _select(id, false), icon: const Icon(Icons.close))),
           ],
-          for (final group in ['entrada', 'espaco', 'comunicacao', 'orientacao'])
-            SettingsSection(title: context.resourceGroup(group), children: [
+          for (final group in AccessibilityCatalog.dimensions.keys.cast<String>())
+            SettingsSection(title: AccessibilityCatalog.dimensionLabel(context, group), children: [
               for (final resource in AccessibilityCatalog.resources.where((item) =>
-                  item.group == group && !_unavailable.contains(item.id)))
+                  item.dimension == group && !_unavailable.contains(item.id)))
                 CheckboxListTile(key: ValueKey('preference-${resource.id}'), value: _draft.contains(resource.id),
                   title: Text(resource.name(context)), subtitle: Text(resource.description(context)),
                   controlAffinity: ListTileControlAffinity.leading,

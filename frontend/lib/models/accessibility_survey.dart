@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'accessibility_survey_v3.dart';
 
 // Generated snapshot of modal_avaliacao/questionnaire.py, version 2.
 // Values are stable codes; labels never identify a stored answer.
@@ -312,6 +313,7 @@ class ResourceResult {
   final String state;
   final int unanswered;
   final int legacy;
+  final int respondentCount;
   final DateTime? latest;
   const ResourceResult({
     required this.id,
@@ -319,9 +321,10 @@ class ResourceResult {
     required this.state,
     required this.unanswered,
     required this.legacy,
+    required this.respondentCount,
     this.latest,
   });
-  int get respondents => counts.values.fold(0, (sum, value) => sum + value);
+  int get respondents => respondentCount;
   bool get few => respondents > 0 && respondents < 3;
   factory ResourceResult.fromJson(Map<String, dynamic> json) {
     int number(dynamic value) {
@@ -334,7 +337,7 @@ class ResourceResult {
     final raw = json['counts'];
     if (raw is! Map ||
         json['id'] is! String ||
-        !SurveyContract.questions.any((q) => q.id == json['id'])) {
+        !SurveyV3Contract.ids.contains(json['id'])) {
       throw const FormatException('invalid_resource');
     }
     final counts = {for (final code in surveyCodes) code: number(raw[code])};
@@ -342,20 +345,36 @@ class ResourceResult {
         no = counts['no']!,
         unknown = counts['unknown']!,
         na = counts['not_applicable']!;
-    final state = yes > 0 && no > 0
+    final state = json['state'];
+    const states = {
+      'divergent',
+      'presence_reported',
+      'absence_reported',
+      'limited',
+      'unknown',
+      'unconfirmed',
+      'not_applicable',
+      'not_evaluated',
+    };
+    final respondents = number(json['respondents']);
+    final variable = SurveyV3Contract.questions
+        .firstWhere((question) => question.id == json['id'])
+        .variable;
+    final expectedState = yes > 0 && no > 0
         ? 'divergent'
         : yes > 0
         ? 'presence_reported'
         : no > 0
         ? 'absence_reported'
         : unknown > 0
-        ? 'unconfirmed'
+        ? 'unknown'
         : na > 0
         ? 'not_applicable'
         : 'not_evaluated';
-    if (json['state'] != state ||
-        number(json['respondents']) !=
-            counts.values.fold<int>(0, (a, b) => a + b)) {
+    if (!states.contains(state) ||
+        !variable && state != expectedState &&
+            !(expectedState == 'unknown' && state == 'unconfirmed') ||
+        respondents < counts.values.fold<int>(0, (a, b) => a + b)) {
       throw const FormatException('invalid_summary');
     }
     final date = json['latest_at'];
@@ -369,6 +388,7 @@ class ResourceResult {
       state: state,
       unanswered: number(json['unanswered']),
       legacy: number(json['legacy_not_comparable']),
+      respondentCount: respondents,
       latest: latest,
     );
   }
@@ -386,7 +406,7 @@ class AccessibilityResults {
     this.information = const {},
   ]);
   factory AccessibilityResults.fromJson(Map<String, dynamic> data) {
-    if (data['version'] != surveyVersion ||
+    if (data['version'] != surveyV3Version ||
         data['features'] is! List ||
         data['people'] is! int ||
         data['legacy_not_comparable'] is! int ||
@@ -400,7 +420,7 @@ class AccessibilityResults {
               ResourceResult.fromJson(Map<String, dynamic>.from(row as Map)),
         )
         .toList();
-    if (rows.length != SurveyContract.questions.length ||
+    if (rows.length != SurveyV3Contract.questions.length ||
         rows.map((r) => r.id).toSet().length != rows.length) {
       throw const FormatException('incomplete_results');
     }

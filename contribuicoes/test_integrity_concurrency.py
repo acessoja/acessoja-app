@@ -36,7 +36,10 @@ def test_postgresql_concurrent_survey_completion_awards_once():
         try:
             return client.patch(
                 f"/api/avaliacoes/modal-avaliacoes/{review.pk}/",
-                {f"pergunta_{i}": "Não sei" for i in range(1, 5)},
+                {
+                    "questionnaire_version": 3,
+                    "answers": {"rampa_acesso": "unknown"},
+                },
                 format="json",
             )
         finally:

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/accessibility_survey.dart';
+import '../models/accessibility_survey_v3.dart';
+import '../models/accessibility_catalog.dart';
 
 /// Read-only answers, explicitly separating unversioned history from resources.
 class SurveyAnswersView extends StatelessWidget {
@@ -16,14 +18,21 @@ class SurveyAnswersView extends StatelessWidget {
   }
   @override
   Widget build(BuildContext context) {
-    final current = review['questionnaire_version'] == surveyVersion && !legacyOnly;
+    final currentV2 = review['questionnaire_version'] == surveyVersion && !legacyOnly;
+    final currentV3 = review['questionnaire_version'] == surveyV3Version && !legacyOnly;
     final answers = SurveyContract.storedAnswers(review);
+    final rawV3 = review['answers'];
+    final answersV3 = currentV3 && rawV3 is Map
+        ? Map<String, String>.fromEntries(rawV3.entries.where((entry) =>
+            SurveyV3Contract.ids.contains(entry.key) && entry.value is String)
+            .map((entry) => MapEntry(entry.key as String, entry.value as String)))
+        : const <String, String>{};
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       if (review['is_current'] == false)
         Text(surveyText(context, 'Registro arquivado, fora dos indicadores.', 'Archived record, excluded from indicators.')),
       if (review['is_valid'] == false)
         Text(surveyText(context, 'Registro não elegível aos indicadores.', 'Record excluded from indicators.')),
-      if (current) ...[
+      if (currentV2) ...[
         for (final q in SurveyContract.questions)
           Padding(padding: const EdgeInsets.only(bottom: 6),
             child: Text('${q.name(context)}: ${SurveyContract.answer(context, answers[q.id])}')),
@@ -34,6 +43,10 @@ class SurveyAnswersView extends StatelessWidget {
               actions: [TextButton(onPressed: () => Navigator.pop(context),
                 child: Text(surveyText(context, 'Fechar', 'Close')))])),
             child: Text(surveyText(context, 'Ver respostas anteriores preservadas', 'View preserved earlier answers'))),
+      ] else if (currentV3) ...[
+        for (final entry in answersV3.entries)
+          Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(
+            '${AccessibilityCatalog.find(entry.key)?.name(context) ?? entry.key}: ${SurveyV3Contract.answer(context, entry.value)}')),
       ] else ...[
         Text(surveyText(context, 'Questionário anterior sem contrato versionado. O significado histórico não pode ser confirmado.',
           'Earlier questionnaire without a versioned contract. Historical meaning cannot be confirmed.')),

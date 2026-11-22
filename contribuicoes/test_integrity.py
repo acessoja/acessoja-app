@@ -32,6 +32,7 @@ def create_review(records):
         user=user,
         local=place,
         estrelas=4,
+        questionnaire_version=1,
         verified_author=True,
         survey_completed=True,
         **{f"pergunta_{i}": "Não sei" for i in range(1, 5)},
@@ -268,7 +269,11 @@ def test_create_edit_adjustment_and_opt_in_delete_return_confirmed_feedback(reco
     detail = f"{url}{created.data['id']}/"
     changed = client.patch(detail, {"estrelas": 3}, format="json")
     assert changed.data["contribution_result"]["outcome"] == "no_new_points"
-    completed = client.patch(detail, {f"pergunta_{i}": "Não sei" for i in range(1, 5)}, format="json")
+    completed = client.patch(
+        detail,
+        {"questionnaire_version": 3, "answers": {"espaco_tranquilo": "unknown"}},
+        format="json",
+    )
     assert completed.data["contribution_result"]["points_delta"] == 5
     review = ModalAvaliacao.objects.get()
     review.comment_verified = True
