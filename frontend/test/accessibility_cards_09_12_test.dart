@@ -696,7 +696,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Piso de alerta na entrada'), findsOneWidget);
       expect(
-        find.textContaining('Não foi possível carregar os resultados'),
+        find.textContaining('Não foi possível carregar os relatos agora'),
         findsOneWidget,
       );
       expect(find.textContaining('Observação informada:'), findsNothing);
