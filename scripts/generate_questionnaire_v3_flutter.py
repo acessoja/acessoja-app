@@ -6,8 +6,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from acessoja.questionnaire_v3 import QUESTIONS, catalog
-from acessoja.accessibility_catalog import catalog as resource_catalog
+
+from acessoja.accessibility_catalog import catalog as resource_catalog  # noqa: E402
+from acessoja.questionnaire_v3 import QUESTIONS, catalog  # noqa: E402
 
 
 PAYLOAD = json.dumps(
@@ -34,7 +35,9 @@ class SurveyV3Question {
   bool get primary => data['primary'] == true;
   bool get variable => data['variable'] == true;
   String? get condition => data['condition'] as String?;
-  String _localized(Map value, BuildContext context) => value[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt'] as String;
+  String _localized(Map value, BuildContext context) =>
+      value[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt']
+          as String;
   String name(BuildContext context) => _localized(data['name'] as Map, context);
   String text(BuildContext context) => _localized(data['text'] as Map, context);
   String description(BuildContext context) => _localized(data['description'] as Map, context);
@@ -43,7 +46,11 @@ class SurveyV3Question {
 class SurveyV3Contract {
   static final Map<String, dynamic> data = jsonDecode(surveyV3ContractJson) as Map<String, dynamic>;
   static final Map<String, dynamic> dimensions = Map<String, dynamic>.from(data['dimensions'] as Map);
-  static final List<SurveyV3Question> questions = List.unmodifiable((data['questions'] as List).map((q) => SurveyV3Question(Map<String, dynamic>.from(q as Map))));
+  static final List<SurveyV3Question> questions = List.unmodifiable(
+    (data['questions'] as List).map(
+      (q) => SurveyV3Question(Map<String, dynamic>.from(q as Map)),
+    ),
+  );
   static final Set<String> ids = Set.unmodifiable(questions.map((q) => q.id));
   static String dimension(BuildContext context, String id) {
     final value = dimensions[id] as Map;
@@ -89,16 +96,29 @@ class AccessibilityResource {
   Map<String, dynamic> get labels => Map<String, dynamic>.from(data['name'] as Map);
   Map<String, dynamic> get descriptions => Map<String, dynamic>.from(data['description'] as Map);
   String? get questionId => (data['questionnaire'] as Map?)?['question'] as String?;
-  String name(BuildContext context) => labels[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt'] as String;
-  String description(BuildContext context) => descriptions[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt'] as String;
+  String name(BuildContext context) =>
+      labels[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt']
+          as String;
+  String description(BuildContext context) =>
+      descriptions[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt']
+          as String;
 }
 
 class AccessibilityCatalog {
   static final Map<String, dynamic> data = jsonDecode(resourceCatalogJson) as Map<String, dynamic>;
   static final Map<String, dynamic> dimensions = Map<String, dynamic>.from(data['dimensions'] as Map);
-  static final resources = List<AccessibilityResource>.unmodifiable((data['resources'] as List).map((item) => AccessibilityResource(Map<String, dynamic>.from(item as Map))));
+  static final resources = List<AccessibilityResource>.unmodifiable(
+    (data['resources'] as List).map(
+      (item) => AccessibilityResource(Map<String, dynamic>.from(item as Map)),
+    ),
+  );
   static final ids = Set<String>.unmodifiable(resources.map((item) => item.id));
-  static AccessibilityResource? find(String id) { for (final resource in resources) { if (resource.id == id) return resource; } return null; }
+  static AccessibilityResource? find(String id) {
+    for (final resource in resources) {
+      if (resource.id == id) return resource;
+    }
+    return null;
+  }
   static String dimensionLabel(BuildContext context, String id) {
     final value = dimensions[id];
     if (value is! Map) return id;

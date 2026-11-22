@@ -5,7 +5,6 @@ from rest_framework.test import APIClient
 
 from acessoja.accessibility_catalog import RESOURCE_IDS, catalog as resource_catalog
 from acessoja.questionnaire_v3 import (
-    BY_ID,
     DIMENSIONS,
     QUESTIONS,
     applicable,

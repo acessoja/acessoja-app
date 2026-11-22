@@ -17,7 +17,11 @@ from .questionnaire import ANSWER_CODES, LEGACY_VALUES, QUESTION_IDS, complete, 
 class AnswerMapField(serializers.JSONField):
     def to_internal_value(self, data):
         try:
-            if self.parent.initial_data.get("questionnaire_version", getattr(self.parent.instance, "questionnaire_version", 3)) == 3:
+            version = self.parent.initial_data.get(
+                "questionnaire_version",
+                getattr(self.parent.instance, "questionnaire_version", 3),
+            )
+            if version == 3:
                 from acessoja.questionnaire_v3 import validate_answers as validate_v3
                 return validate_v3(data)
             return validate_answers(data)
@@ -31,7 +35,8 @@ class AnswerDetailsField(serializers.JSONField):
         from evidencias.serializers import ObservationSerializer
 
         from acessoja.questionnaire_v3 import BY_ID
-        version = self.parent.initial_data.get("questionnaire_version", getattr(self.parent.instance, "questionnaire_version", 3))
+        version = self.parent.initial_data.get("questionnaire_version", getattr(
+            self.parent.instance, "questionnaire_version", 3))
         if not isinstance(data, dict) or set(data) - set(BY_ID if version == 3 else QUESTION_IDS):
             raise serializers.ValidationError("Use IDs da versão do questionário informada.")
         result = {}
@@ -39,7 +44,8 @@ class AnswerDetailsField(serializers.JSONField):
             if details is None:
                 result[key] = None
                 continue
-            allowed = {"note", "observed_on", "period", "not_applicable_reason"} if version == 3 else {"note", "observed_on"}
+            allowed = {"note", "observed_on", "period",
+                       "not_applicable_reason"} if version == 3 else {"note", "observed_on"}
             if not isinstance(details, dict) or set(details) - allowed:
                 raise serializers.ValidationError("Detalhes fora do contrato.")
             note = serializers.CharField(max_length=1000, allow_blank=True).run_validation(details.get("note", ""))
@@ -110,7 +116,8 @@ def validate_payload(serializer, attrs):
     if version != 3:
         raise serializers.ValidationError({"questionnaire_version": "Somente a versão 3 aceita novas operações."})
     if serializer.instance and serializer.instance.questionnaire_version != 3 and "questionnaire_version" not in data:
-        raise serializers.ValidationError({"questionnaire_version": "Informe explicitamente a migração para V3 ao editar uma avaliação histórica."})
+        raise serializers.ValidationError(
+            {"questionnaire_version": "Informe explicitamente a migração para V3 ao editar uma avaliação histórica."})
     if ("answers" in attrs or "answer_details" in attrs) and version != 3:
         raise serializers.ValidationError("Respostas por recurso exigem questionnaire_version=3.")
     return attrs

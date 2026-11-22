@@ -443,7 +443,10 @@ void main() {
         find.byKey(const ValueKey('review-open-survey')),
       );
       expect(find.byType(EvaluationSurveyDialog), findsNothing);
-      await tapVisible(tester, find.byKey(const ValueKey('survey-v3-dimension-physical')));
+      await tapVisible(
+        tester,
+        find.byKey(const ValueKey('survey-v3-dimension-physical')),
+      );
       await tapVisible(
         tester,
         find.byKey(const ValueKey('survey-v3-rampa_acesso-no')),
@@ -458,22 +461,32 @@ void main() {
       expect(service.saves, 1);
     },
   );
-  testWidgets('new review uses V3 and the final summary never lists unanswered resources as blockers', (
-    tester,
-  ) async {
-    final service = FakeReviews();
-    await openEditor(tester, service);
-    await tapVisible(tester, find.byKey(const ValueKey('review-star-4')));
-    await tapVisible(tester, find.byKey(const ValueKey('review-open-survey')));
-    expect(find.byType(EvaluationSurveyDialog), findsNothing);
-    await tapVisible(tester, find.text('Revisar'));
-    expect(find.byKey(const ValueKey('review-complement-survey')), findsOneWidget);
-    expect(find.textContaining('recursos sem resposta'), findsNothing);
-    expect(find.textContaining('0 perguntas respondidas'), findsOneWidget);
-    await tapVisible(tester, find.byKey(const ValueKey('survey-submit')));
-    expect(service.sent!['questionnaire_version'], 3);
-    expect(service.sent!.containsKey('answers'), isFalse);
-  });
+  testWidgets(
+    'new review uses V3 and the final summary never lists unanswered resources as blockers',
+    (tester) async {
+      final service = FakeReviews();
+      await openEditor(tester, service);
+      await tapVisible(tester, find.byKey(const ValueKey('review-star-4')));
+      await tapVisible(
+        tester,
+        find.byKey(const ValueKey('review-open-survey')),
+      );
+      expect(find.byType(EvaluationSurveyDialog), findsNothing);
+      await tapVisible(tester, find.text('Revisar'));
+      expect(
+        find.byKey(const ValueKey('review-complement-survey')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('recursos sem resposta'), findsNothing);
+      expect(
+        find.text('0 perguntas respondidas · 0 dimensões com informação.'),
+        findsOneWidget,
+      );
+      await tapVisible(tester, find.byKey(const ValueKey('survey-submit')));
+      expect(service.sent!['questionnaire_version'], 3);
+      expect(service.sent!.containsKey('answers'), isFalse);
+    },
+  );
   testWidgets(
     'results show divergences unknown NA and small sample separately',
     (tester) async {
@@ -539,7 +552,10 @@ void main() {
         tester,
         find.byKey(const ValueKey('resource-results-retry')),
       );
-      expect(find.text('Informação desconhecida'), findsNWidgets(AccessibilityCatalog.resources.length));
+      expect(
+        find.text('Informação desconhecida'),
+        findsNWidgets(AccessibilityCatalog.resources.length),
+      );
     },
   );
   testWidgets(
@@ -568,7 +584,10 @@ void main() {
       await tester.pumpAndSettle();
       old.complete(AccessibilityResults.fromJson(resultsJson(vote: 'yes')));
       await tester.pumpAndSettle();
-      expect(find.text('Ausência relatada'), findsNWidgets(AccessibilityCatalog.resources.length));
+      expect(
+        find.text('Ausência relatada'),
+        findsNWidgets(AccessibilityCatalog.resources.length),
+      );
       expect(find.text('Presença relatada'), findsNothing);
       final pending = Completer<AccessibilityResults>();
       service.reading = (_) => pending.future;
@@ -670,13 +689,19 @@ void main() {
       );
       await tester.pumpWidget(screen(0));
       await tester.pumpAndSettle();
-      expect(find.text('Informação desconhecida'), findsNWidgets(AccessibilityCatalog.resources.length));
+      expect(
+        find.text('Informação desconhecida'),
+        findsNWidgets(AccessibilityCatalog.resources.length),
+      );
       expect(find.text('Poucas avaliações'), findsNothing);
       service.reading = (_) async =>
           AccessibilityResults.fromJson(resultsJson(vote: 'yes'));
       await tester.pumpWidget(screen(1));
       await tester.pumpAndSettle();
-      expect(find.text('Presença relatada'), findsNWidgets(AccessibilityCatalog.resources.length));
+      expect(
+        find.text('Presença relatada'),
+        findsNWidgets(AccessibilityCatalog.resources.length),
+      );
       await tapVisible(
         tester,
         find.byKey(const ValueKey('resource-information-rampa_acesso')),

@@ -213,14 +213,18 @@ def capture_review(review):
         from acessoja.questionnaire_v3 import BY_ID, evidence_state
         for resource, code in (review.answers or {}).items():
             if resource in RESOURCE_IDS and (code in ANSWER_STATES or
-                                            review.questionnaire_version == 3 and code in BY_ID[resource]["answers"]):
+                                             review.questionnaire_version == 3 and code in BY_ID[resource]["answers"]):
                 specs.append(
                     {
                         "key": f"review:{review.pk}:{resource}",
                         "kind": "review",
                         "source": "user",
                         "resource": resource,
-                        "state": evidence_state(resource, code) if review.questionnaire_version == 3 else ANSWER_STATES[code],
+                        "state": (
+                            evidence_state(resource, code)
+                            if review.questionnaire_version == 3
+                            else ANSWER_STATES[code]
+                        ),
                         "source_metadata": {"observation": {
                             "value": code, **(review.answer_details or {}).get(resource, {})
                         }} if review.questionnaire_version == 3 else {},

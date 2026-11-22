@@ -155,6 +155,7 @@ def test_legacy_reviews_require_explicit_v3_migration_for_edits(records):
     assert all(upgraded.data[f"pergunta_{i}"] == "Sim" for i in range(1, 5))
     assert upgraded.data["points_delta"] == 0
 
+
 def test_unconfirmed_legacy_defaults_cannot_earn_survey_points_by_comment_edit(records):
     user, local, client = records
     review = ModalAvaliacao.objects.create(

@@ -16,7 +16,9 @@ class SurveyV3Question {
   bool get primary => data['primary'] == true;
   bool get variable => data['variable'] == true;
   String? get condition => data['condition'] as String?;
-  String _localized(Map value, BuildContext context) => value[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt'] as String;
+  String _localized(Map value, BuildContext context) =>
+      value[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt']
+          as String;
   String name(BuildContext context) => _localized(data['name'] as Map, context);
   String text(BuildContext context) => _localized(data['text'] as Map, context);
   String description(BuildContext context) => _localized(data['description'] as Map, context);
@@ -25,7 +27,11 @@ class SurveyV3Question {
 class SurveyV3Contract {
   static final Map<String, dynamic> data = jsonDecode(surveyV3ContractJson) as Map<String, dynamic>;
   static final Map<String, dynamic> dimensions = Map<String, dynamic>.from(data['dimensions'] as Map);
-  static final List<SurveyV3Question> questions = List.unmodifiable((data['questions'] as List).map((q) => SurveyV3Question(Map<String, dynamic>.from(q as Map))));
+  static final List<SurveyV3Question> questions = List.unmodifiable(
+    (data['questions'] as List).map(
+      (q) => SurveyV3Question(Map<String, dynamic>.from(q as Map)),
+    ),
+  );
   static final Set<String> ids = Set.unmodifiable(questions.map((q) => q.id));
   static String dimension(BuildContext context, String id) {
     final value = dimensions[id] as Map;

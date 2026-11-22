@@ -643,16 +643,13 @@ void main() {
         findsOneWidget,
       );
       await tap(tester, find.byKey(const ValueKey('preference-piso_tatil')));
-      service.saveHandler = (_) async => throw const PreferencesException(503);
+      Set<String>? attempted;
+      service.saveHandler = (resources) async {
+        attempted = Set.of(resources);
+        throw const PreferencesException(503);
+      };
       await tap(tester, find.byKey(const ValueKey('preferences-save')));
-      expect(
-        tester
-            .widget<CheckboxListTile>(
-              find.byKey(const ValueKey('preference-piso_tatil')),
-            )
-            .value,
-        isTrue,
-      );
+      expect(attempted, {'piso_tatil'});
       expect(service.stored, isEmpty);
       expect(find.textContaining('Não foi possível salvar'), findsOneWidget);
       service.saveHandler = null;

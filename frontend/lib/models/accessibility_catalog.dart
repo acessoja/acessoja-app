@@ -14,16 +14,29 @@ class AccessibilityResource {
   Map<String, dynamic> get labels => Map<String, dynamic>.from(data['name'] as Map);
   Map<String, dynamic> get descriptions => Map<String, dynamic>.from(data['description'] as Map);
   String? get questionId => (data['questionnaire'] as Map?)?['question'] as String?;
-  String name(BuildContext context) => labels[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt'] as String;
-  String description(BuildContext context) => descriptions[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt'] as String;
+  String name(BuildContext context) =>
+      labels[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt']
+          as String;
+  String description(BuildContext context) =>
+      descriptions[Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'pt']
+          as String;
 }
 
 class AccessibilityCatalog {
   static final Map<String, dynamic> data = jsonDecode(resourceCatalogJson) as Map<String, dynamic>;
   static final Map<String, dynamic> dimensions = Map<String, dynamic>.from(data['dimensions'] as Map);
-  static final resources = List<AccessibilityResource>.unmodifiable((data['resources'] as List).map((item) => AccessibilityResource(Map<String, dynamic>.from(item as Map))));
+  static final resources = List<AccessibilityResource>.unmodifiable(
+    (data['resources'] as List).map(
+      (item) => AccessibilityResource(Map<String, dynamic>.from(item as Map)),
+    ),
+  );
   static final ids = Set<String>.unmodifiable(resources.map((item) => item.id));
-  static AccessibilityResource? find(String id) { for (final resource in resources) { if (resource.id == id) return resource; } return null; }
+  static AccessibilityResource? find(String id) {
+    for (final resource in resources) {
+      if (resource.id == id) return resource;
+    }
+    return null;
+  }
   static String dimensionLabel(BuildContext context, String id) {
     final value = dimensions[id];
     if (value is! Map) return id;

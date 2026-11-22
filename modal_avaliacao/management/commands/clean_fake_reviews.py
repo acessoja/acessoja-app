@@ -112,7 +112,9 @@ class Command(BaseCommand):
         return {
             "ModalAvaliacao": len(reviews),
             "ReviewPhoto (deleted with reviews)": ReviewPhoto.objects.filter(review_id__in=reviews).count(),
-            "ImageOperation (preserved, review reference cleared)": ImageOperation.objects.filter(review_id__in=reviews).count(),
+            "ImageOperation (preserved, review reference cleared)": (
+                ImageOperation.objects.filter(review_id__in=reviews).count()
+            ),
             "ReviewRevision (removed snapshot)": len(review_revisions),
             "ResourceEvidence kind=review (removed derived evidence)": len(evidence),
             "EvidenceRevision (removed with review evidence)": len(evidence_revisions),

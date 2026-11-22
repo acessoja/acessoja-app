@@ -13,7 +13,7 @@ from acessoja.accessibility_catalog import RESOURCE_IDS
 from locais.models import Local
 from usuarios.account_services import locked_request_user
 from usuarios.security_throttles import SecurityThrottle
-from .capture import ANSWER_STATES, capture_batch, fingerprint
+from .capture import capture_batch, fingerprint
 from .exceptions import RevisionConflict
 from .models import EvidenceOperation, ResourceEvidence
 from .projection import detail_document

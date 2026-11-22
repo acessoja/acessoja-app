@@ -377,6 +377,7 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                 // fetched only on its first visit or an explicit revision invalidation.
                 for (final value in _visited)
                   Offstage(
+                    key: ValueKey('place-panel-section-${value.name}'),
                     offstage: section != value,
                     child: switch (value) {
                       PlacePanelSection.accessibility =>

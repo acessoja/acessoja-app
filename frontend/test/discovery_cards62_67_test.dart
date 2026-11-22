@@ -516,7 +516,9 @@ void main() {
           .dy;
       final other = tester
           .getTopLeft(
-            find.byKey(const ValueKey('resource-information-rampa_acesso')),
+            find.byKey(
+              const ValueKey('resource-information-sinalizacao_visual'),
+            ),
           )
           .dy;
       expect(personal, lessThan(other));
