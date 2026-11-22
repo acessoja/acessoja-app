@@ -31,6 +31,7 @@ class LocalSerializer(serializers.ModelSerializer):
 
     accessibility_information = AccessibilityInformationField(required=False)
     accessibility = serializers.SerializerMethodField()
+    accessibility_classification = serializers.SerializerMethodField()
     origins = serializers.SerializerMethodField()
     missing_resources = serializers.SerializerMethodField()
     catalog_provenance = serializers.SerializerMethodField()
@@ -43,6 +44,24 @@ class LocalSerializer(serializers.ModelSerializer):
     @extend_schema_field(ConsolidatedAccessibilitySerializer)
     def get_accessibility(self, obj):
         return local_accessibility(obj, self.context)
+
+    @extend_schema_field(serializers.JSONField())
+    def get_accessibility_classification(self, obj):
+        local_accessibility(obj, self.context)
+        return self.context.get("accessibility_classifications", {}).get(
+            obj.pk,
+            {
+                "status": "not_evaluated",
+                "independent_assessors": 0,
+                "recent_independent_assessors": 0,
+                "resources_assessed": 0,
+                "resources_positive": 0,
+                "resources_with_barriers": 0,
+                "resources_unknown": 0,
+                "divergent_resources": [],
+                "is_official_certification": False,
+            },
+        )
 
     def get_origins(self, obj) -> list[str]:
         return ["acessoja", "openstreetmap"] if obj.osm_id or self.get_catalog_provenance(obj) else ["acessoja"]
@@ -60,7 +79,13 @@ class LocalSerializer(serializers.ModelSerializer):
             )
         except ValueError as exc:
             raise serializers.ValidationError({"subcategoria": str(exc)}) from None
-        if set(self.initial_data) & {"accessibility", "origins", "missing_resources", "catalog_provenance"}:
+        if set(self.initial_data) & {
+            "accessibility",
+            "accessibility_classification",
+            "origins",
+            "missing_resources",
+            "catalog_provenance",
+        }:
             raise serializers.ValidationError("Os estados consolidados são somente leitura.")
         if "latitude" in attrs or "longitude" in attrs:
             lat = attrs.get("latitude", getattr(self.instance, "latitude", None))
@@ -149,6 +174,7 @@ class LocalSerializer(serializers.ModelSerializer):
             "quantidade_avaliacoes",
             "accessibility_information",
             "accessibility",
+            "accessibility_classification",
             "origins",
             "missing_resources",
             "catalog_provenance",

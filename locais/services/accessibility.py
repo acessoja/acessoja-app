@@ -60,7 +60,13 @@ def populate_accessibility_context(locals_, context):
     provenance = context.setdefault("catalog_provenance", {})
     classifications = context.setdefault("resolved_subcategories", {})
     from .categories import canonical_subcategory
-    from evidencias.projection import public_evidence, effective, resource_summary, confirmation_stats
+    from evidencias.projection import (
+        community_classification,
+        public_evidence,
+        effective,
+        resource_summary,
+        confirmation_stats,
+    )
     from evidencias.query_projection import unpack_quality
 
     embedded = all(hasattr(local, "_quality_rows") for local in locals_)
@@ -114,6 +120,9 @@ def populate_accessibility_context(locals_, context):
         )
         legacy = sum(row["questionnaire_version"] != 2 for row in local_rows)
         states[(local.pk, own_id)] = resource_summary(records, legacy, confirmation_data)
+        context.setdefault("accessibility_classifications", {})[local.pk] = community_classification(
+            records, confirmation_data
+        )
         registered[local.pk] = {row.resource for row in effective(records) if row.kind == "registration"}
         if edition:
             provenance[local.pk] = {

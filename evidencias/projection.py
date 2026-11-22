@@ -185,6 +185,101 @@ def resource_summary(records, legacy=0, statistics=None):
     return result
 
 
+# Community badges use only current, public user evidence. Three independent
+# reporters across three resources form the minimum cross-feature quorum; a
+# higher highlight requires five reporters, half the catalog covered, and a
+# three-reporter quorum on every positively recognized resource. These gates
+# prevent a single review or repeated edits by one author from creating a seal.
+COMMUNITY_RECOGNITION_REPORTERS = 3
+COMMUNITY_RECOGNITION_RESOURCES = 3
+COMMUNITY_RESOURCE_QUORUM = 2
+COMMUNITY_HIGHLIGHT_REPORTERS = 5
+COMMUNITY_HIGHLIGHT_RESOURCE_QUORUM = 3
+
+
+def community_classification(records, statistics=None, now=None):
+    """Return an explainable community-only accessibility projection.
+
+    This is deliberately independent of general star ratings and excludes
+    invalid, withdrawn, superseded, private, and non-user assertions.
+    """
+    confirmations = statistics if statistics is not None else confirmation_stats(records) if records else {}
+    current = [
+        row for row in effective(records)
+        if row.source == "user"
+        and row.owner_id is not None
+        and row.current_revision.is_valid
+        and row.current_revision.state in {"presence_reported", "absence_reported", "limited"}
+    ]
+    fresh = [
+        row for row in current
+        if freshness(
+            row.current_revision,
+            confirmations.get(row.current_revision_id, {}).get("latest"),
+            now=now,
+        )["state"] in {"recent_confirmation", "recent_observation", "recent_record"}
+    ]
+    authors = {row.owner_id for row in current}
+    recent_authors = {row.owner_id for row in fresh}
+    by_resource = defaultdict(list)
+    for row in current:
+        by_resource[row.resource].append(row)
+    fresh_positive = defaultdict(set)
+    for row in fresh:
+        if row.current_revision.state == "presence_reported":
+            fresh_positive[row.resource].add(row.owner_id)
+
+    positive_resources = sorted(
+        resource for resource, rows in by_resource.items()
+        if any(row.current_revision.state == "presence_reported" for row in rows)
+    )
+    barrier_resources = sorted(
+        resource for resource, rows in by_resource.items()
+        if any(row.current_revision.state in {"absence_reported", "limited"} for row in rows)
+    )
+    divergent_resources = sorted(set(positive_resources).intersection(barrier_resources))
+    assessed_resources = sorted(set(positive_resources).union(barrier_resources))
+    has_positive = bool(positive_resources)
+    has_barrier = bool(barrier_resources)
+    status = "not_evaluated"
+    if has_barrier:
+        status = "partially_accessible" if has_positive else "barriers_identified"
+    else:
+        positive_quorum = [
+            resource for resource in positive_resources
+            if len(fresh_positive[resource]) >= COMMUNITY_RESOURCE_QUORUM
+        ]
+        if (
+            len(recent_authors) >= COMMUNITY_RECOGNITION_REPORTERS
+            and len(positive_quorum) >= COMMUNITY_RECOGNITION_RESOURCES
+            and len(positive_quorum) == len(positive_resources)
+        ):
+            status = "well_regarded"
+            half_catalog = (len(RESOURCE_IDS) + 1) // 2
+            highlight_quorum = [
+                resource for resource in positive_resources
+                if len(fresh_positive[resource]) >= COMMUNITY_HIGHLIGHT_RESOURCE_QUORUM
+            ]
+            if (
+                len(recent_authors) >= COMMUNITY_HIGHLIGHT_REPORTERS
+                and len(positive_resources) >= half_catalog
+                and len(highlight_quorum) == len(positive_resources)
+            ):
+                status = "community_highlight"
+
+    return {
+        "status": status,
+        "independent_assessors": len(authors),
+        "recent_independent_assessors": len(recent_authors),
+        "resources_assessed": len(assessed_resources),
+        "resources_positive": len(positive_resources),
+        "resources_with_barriers": len(barrier_resources),
+        "resources_unknown": len(RESOURCE_IDS) - len(assessed_resources),
+        "divergent_resources": divergent_resources,
+        "is_official_certification": False,
+    }
+
+
 def detail_document(row, statistics=None, user=None):
     revision = row.current_revision
     stats = (statistics or {}).get(revision.pk, {})

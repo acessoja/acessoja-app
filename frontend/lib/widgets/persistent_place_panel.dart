@@ -42,8 +42,7 @@ class _PersistentPlacePanelState extends State<PersistentPlacePanel> {
   bool? _wide;
   String? _identity;
   PlacePanelLevel? _level;
-  PlacePanelSection? _section;
-  bool _sizing = false, _geometryQueued = false;
+  bool _sizing = false, _geometryQueued = false, _dragLevelChange = false;
   @override
   void initState() {
     super.initState();
@@ -118,9 +117,7 @@ class _PersistentPlacePanelState extends State<PersistentPlacePanel> {
             !c.unavailable && (p.internalId != null || p.isExternal)
             ? () => widget.onAction('evaluate')
             : null,
-        onSharePressed: !c.unavailable
-            ? () => widget.onAction('share')
-            : null,
+        onSharePressed: !c.unavailable ? () => widget.onAction('share') : null,
         onReviewsPressed: c.reviewTarget == null
             ? null
             : () => widget.onAction('reviews'),
@@ -156,16 +153,15 @@ class _PersistentPlacePanelState extends State<PersistentPlacePanel> {
               ? .38
               : (270 / bounds.maxHeight).clamp(.38, compactCap).toDouble();
           final desired = compact ? compactExtent : maximum;
-          final changed =
-              _wide != wide ||
-              _identity != c.place!.id ||
-              _level != c.level ||
-              _section != c.section;
+          final layoutChanged = _wide != wide || _identity != c.place!.id;
+          final levelChanged = _level != c.level;
+          final dragChanged =
+              _dragLevelChange && levelChanged && !layoutChanged;
           _wide = wide;
           _identity = c.place!.id;
           _level = c.level;
-          _section = c.section;
-          if (changed && !_sizing) {
+          _dragLevelChange = false;
+          if ((layoutChanged || (levelChanged && !dragChanged)) && !_sizing) {
             _sizing = true;
             final offset = c.scrollOffset;
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -227,6 +223,7 @@ class _PersistentPlacePanelState extends State<PersistentPlacePanel> {
                 final ticket = c.capture();
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (mounted && c.visible && c.owns(ticket)) {
+                    _dragLevelChange = true;
                     if (expand) {
                       c.expand();
                     } else {

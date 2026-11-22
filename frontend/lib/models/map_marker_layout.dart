@@ -83,16 +83,14 @@ class _RectIndex {
   ).any((key) => (_cells[key] ?? []).any((other) => other.overlaps(rect)));
 }
 
-/// World cells stabilize grouping on pan; collision passes merge neighbouring
-/// cells whose actual tap bounds overlap. Every member retains its coordinate.
-/// Selection stays in a coincident cluster, which is opened through its list.
+/// Nearby places stay individual and retain their real geographic anchors.
+/// Only places at exactly the same coordinate share a selectable stack.
 List<PlaceMarkerLayout> layoutPlaceMarkers({
   required List<MapPlace> places,
   required LatLng center,
   required double zoom,
   required Size size,
   required Size Function(String) measure,
-  Size Function(int)? measureCluster,
   Offset Function(LatLng)? projectScreen,
   List<Rect> reserved = const [],
   String? selectedId,
@@ -109,6 +107,7 @@ List<PlaceMarkerLayout> layoutPlaceMarkers({
     for (final p in places)
       if (p.hasCoordinates) p.id: p,
   }.values.toList();
+  // Keep priority stable when asynchronous pages arrive in a different order.
   int priority(MapPlace place) => place.id == selectedId
       ? 0
       : !place.isExternal && place.hasCommunityReviews
@@ -122,135 +121,49 @@ List<PlaceMarkerLayout> layoutPlaceMarkers({
   }
 
   candidates.sort(compare);
-  final world = <String, Offset>{
-    for (final place in candidates)
-      place.id: projectMapPoint(
-        LatLng(place.latitude!, place.longitude!),
-        zoom,
-      ),
-  };
-  var cell = zoom <= 12
-      ? 88.0
-      : zoom < 14
-      ? 72.0
-      : zoom < 16
-      ? 64.0
-      : 52.0;
-  List<List<MapPlace>> group(double width) {
-    final groups = <String, List<MapPlace>>{};
-    for (final place in candidates) {
-      final point = world[place.id]!;
-      final key = '${(point.dx / width).floor()}:${(point.dy / width).floor()}';
-      (groups[key] ??= []).add(place);
-    }
-    return groups.values.toList();
+  final grouped = <String, List<MapPlace>>{};
+  for (final place in candidates) {
+    final key = '${place.latitude}:${place.longitude}';
+    (grouped[key] ??= []).add(place);
   }
+  final groups = grouped.values.toList()
+    ..forEach((members) => members.sort(compare))
+    ..sort((a, b) => compare(a.first, b.first));
 
   PlaceMarkerLayout position(List<MapPlace> members) {
-    var anchor = members.length == 1
-        ? LatLng(members.first.latitude!, members.first.longitude!)
-        : unprojectMapPoint(
-            members.map((p) => world[p.id]!).reduce((a, b) => a + b) /
-                members.length.toDouble(),
-            zoom,
-          );
-    if (!viewport.contains(screen(anchor))) {
-      final visible = members.where(
-        (p) => viewport.contains(screen(LatLng(p.latitude!, p.longitude!))),
-      );
-      if (visible.isNotEmpty) {
-        anchor = LatLng(visible.first.latitude!, visible.first.longitude!);
-      }
-    }
-    final measured = members.length == 1
-        ? const Size(48, 48)
-        : measureCluster?.call(members.length) ?? const Size(48, 48);
+    final anchor = LatLng(members.first.latitude!, members.first.longitude!);
+    final point = screen(anchor);
+    final selected = members.any((place) => place.id == selectedId);
+    final markerSize = selected ? const Size(56, 56) : const Size(48, 48);
+    final hitBounds = Rect.fromCenter(
+      center: point,
+      width: markerSize.width,
+      height: markerSize.height,
+    );
     return PlaceMarkerLayout(
       List.unmodifiable(members),
       anchor,
-      screen(anchor),
+      point,
       null,
-      markerSize: Size(
-        math.max(48.0, measured.width),
-        math.max(48.0, measured.height),
-      ),
-      occluded: reserved.any(
-        (r) => r.overlaps(
-          Rect.fromCenter(
-            center: screen(anchor),
-            width: math.max(48.0, measured.width),
-            height: math.max(48.0, measured.height),
-          ),
-        ),
-      ),
+      markerSize: markerSize,
+      occluded: reserved.any((rect) => rect.overlaps(hitBounds)),
     );
   }
 
-  var groups = group(cell);
-  while (groups.length > 300 && cell < 1024) {
-    cell *= 1.5;
-    groups = group(cell);
-  }
-  // Spatial hash and union-find avoid pairwise work for dense input.
-  while (groups.length > 1) {
-    final positioned = groups.map(position).toList();
-    final parents = List.generate(groups.length, (i) => i);
-    int root(int i) {
-      while (parents[i] != i) {
-        parents[i] = parents[parents[i]];
-        i = parents[i];
-      }
-      return i;
-    }
-
-    final cells = <String, List<int>>{};
-    var changed = false;
-    for (var i = 0; i < positioned.length; i++) {
-      final rect = positioned[i].hitBounds.inflate(2);
-      final neighbours = <int>{};
-      for (
-        var x = (rect.left / 64).floor();
-        x <= (rect.right / 64).floor();
-        x++
-      ) {
-        for (
-          var y = (rect.top / 64).floor();
-          y <= (rect.bottom / 64).floor();
-          y++
-        ) {
-          final key = '$x:$y';
-          neighbours.addAll(cells[key] ?? const <int>[]);
-          (cells[key] ??= []).add(i);
-        }
-      }
-      for (final j in neighbours) {
-        if (rect.overlaps(positioned[j].hitBounds.inflate(2))) {
-          final a = root(i), b = root(j);
-          if (a != b) {
-            parents[b] = a;
-            changed = true;
-          }
-        }
-      }
-    }
-    if (!changed) {
-      break;
-    }
-    final merged = <int, List<MapPlace>>{};
-    for (var i = 0; i < groups.length; i++) {
-      (merged[root(i)] ??= []).addAll(groups[i]);
-    }
-    groups = merged.values.map((members) => members..sort(compare)).toList();
-  }
-  final layouts =
-      groups
-          .map(position)
-          .where((item) => viewport.inflate(80).overlaps(item.hitBounds))
-          .toList()
-        ..sort((a, b) => compare(a.place, b.place));
   final occupied = _RectIndex();
-  for (final item in layouts) {
+  final layouts = <PlaceMarkerLayout>[];
+  for (final members in groups) {
+    final item = position(members);
+    if (item.occluded) {
+      layouts.add(item);
+      continue;
+    }
+    if (!viewport.inflate(56).overlaps(item.hitBounds) ||
+        occupied.overlaps(item.hitBounds.inflate(2))) {
+      continue;
+    }
     occupied.add(item.hitBounds.inflate(2));
+    layouts.add(item);
   }
   for (final rect in reserved) {
     occupied.add(rect);

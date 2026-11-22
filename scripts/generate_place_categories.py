@@ -27,7 +27,13 @@ def main():
     assert f"const categoryCatalogVersion = {data['version']};" in text
     parents = (root / "frontend/lib/models/place_category.dart").read_text(encoding="utf-8")
     for item in data["parents"]:
-        assert f"'{item['id']}': PlaceCategoryVisual(Icons.{item['icon']}, '{item['pt']}', '{item['en']}')" in parents
+        pattern = (
+            rf"'{re.escape(item['id'])}':\s*PlaceCategoryVisual\(\s*"
+            rf"Icons\.{re.escape(item['icon'])},\s*"
+            rf"Color\(0x[0-9A-Fa-f]{{8}}\),\s*"
+            rf"'{re.escape(item['pt'])}',\s*'{re.escape(item['en'])}',?\s*\)"
+        )
+        assert re.search(pattern, parents), f"Flutter parent category diverges: {item['id']}"
     print("Category contract matches: 11 parents, 22 children, PT/EN, version", data["version"])
 
 
