@@ -160,7 +160,7 @@ void main() {
   });
 
   testWidgets(
-    'confirmed favorite removal reactively selects the remaining list marker',
+    'confirmed favorite removal updates list labels while preserving category visual',
     (tester) async {
       final place = MapPlace.internal({
         'id_local': 1,
@@ -205,9 +205,18 @@ void main() {
       final marker = find.byKey(const ValueKey('map-place-acessoja:1'));
       expect(marker, findsOneWidget);
       expect(
-        find.descendant(of: marker, matching: find.byIcon(Icons.favorite)),
+        find.descendant(
+          of: marker,
+          matching: find.byIcon(Icons.local_cafe_outlined),
+        ),
         findsOneWidget,
       );
+      String markerDescription() => tester
+          .widget<Tooltip>(
+            find.ancestor(of: marker, matching: find.byType(Tooltip)),
+          )
+          .message!;
+      expect(markerDescription(), contains('Listas: Favoritos, Restaurantes.'));
       expect(
         find.descendant(of: marker, matching: find.byIcon(Icons.flag)),
         findsOneWidget,
@@ -233,9 +242,21 @@ void main() {
       expect(layerRequests, greaterThan(previousLayerRequests));
       expect(marker, findsOneWidget);
       expect(
-        find.descendant(of: marker, matching: find.byIcon(Icons.restaurant)),
+        find.descendant(
+          of: marker,
+          matching: find.byIcon(Icons.local_cafe_outlined),
+        ),
         findsOneWidget,
       );
+      expect(markerDescription(), contains('Listas: Restaurantes.'));
+      expect(markerDescription(), isNot(contains('Favoritos')));
+      final categoryIcon = tester.widget<Icon>(
+        find.descendant(
+          of: marker,
+          matching: find.byIcon(Icons.local_cafe_outlined),
+        ),
+      );
+      expect(categoryIcon.color, const Color(0xFF7C3AED));
       expect(
         find.descendant(of: marker, matching: find.byIcon(Icons.flag)),
         findsOneWidget,

@@ -15,67 +15,81 @@ class MapClusterSheet extends StatelessWidget {
     this.results = false,
   });
   @override
-  Widget build(BuildContext context) => SafeArea(
-    child: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
-                child: Semantics(
-                  header: true,
-                  container: true,
-                  child: Text(
-                    context.mapText(
-                      results
-                          ? '${members.length} locais nos resultados'
-                          : '${members.length} locais neste agrupamento',
-                      results
-                          ? '${members.length} places in results'
-                          : '${members.length} places in this group',
-                    ),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    return SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    container: true,
+                    child: Text(
+                      context.mapText(
+                        results
+                            ? '${members.length} locais nos resultados'
+                            : '${members.length} locais no mesmo ponto',
+                        results
+                            ? '${members.length} places in results'
+                            : '${members.length} places at this point',
+                      ),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              IconButton(
-                tooltip: context.mapText('Fechar agrupamento', 'Close group'),
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            key: const ValueKey('map-cluster-members'),
-            itemCount: members.length,
-            itemBuilder: (context, index) {
-              final place = members[index];
-              return ListTile(
-                key: ValueKey('cluster-member-${place.id}'),
-                minVerticalPadding: 16,
-                selected: place.id == selectedId,
-                leading: Icon(categoryVisual(place.category).icon),
-                title: Text(context.placeName(place)),
-                subtitle: Text(
-                  '${context.placeCategory(place)} · ${place.sourceLabel}\n${context.placeAddress(place)}',
+                IconButton(
+                  tooltip: context.mapText('Fechar agrupamento', 'Close group'),
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
                 ),
-                trailing: place.id == selectedId
-                    ? const Icon(Icons.check_circle_outline)
-                    : null,
-                onTap: () => Navigator.pop(context, place),
-              );
-            },
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+          Expanded(
+            child: ListView.builder(
+              key: const ValueKey('map-cluster-members'),
+              itemCount: members.length,
+              itemBuilder: (context, index) {
+                final place = members[index];
+                return ListTile(
+                  key: ValueKey('cluster-member-${place.id}'),
+                  minVerticalPadding: 16,
+                  selected: place.id == selectedId,
+                  leading: Icon(
+                    categoryVisual(place.category).icon,
+                    color: categoryVisual(place.category).color,
+                  ),
+                  title: Text(context.placeName(place)),
+                  subtitle: Text(
+                    '${context.placeCategory(place)} · ${place.sourceLabel}\n${context.placeAddress(place)}',
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (place.hasCommunityRecognition)
+                        Icon(Icons.accessible_forward, color: colors.success),
+                      if (place.hasCommunityHighlight)
+                        Icon(Icons.star, color: colors.warning),
+                      if (place.id == selectedId)
+                        Icon(Icons.check_circle, color: colors.primary),
+                    ],
+                  ),
+                  onTap: () => Navigator.pop(context, place),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class MapLegendSheet extends StatelessWidget {
@@ -113,7 +127,7 @@ class MapLegendSheet extends StatelessWidget {
           ),
           for (final item in placeCategoryVisuals.values)
             ListTile(
-              leading: Icon(item.icon, color: colors.primaryDark),
+              leading: Icon(item.icon, color: item.color),
               title: Text(context.mapText(item.portuguese, item.english)),
             ),
           ListTile(
@@ -129,15 +143,36 @@ class MapLegendSheet extends StatelessWidget {
             leading: const Icon(Icons.layers_outlined),
             title: Text(
               context.mapText(
-                'Número: quantidade de locais neste grupo. Abra para escolher um membro.',
-                'Number: places in this group. Open to choose a member.',
+                'Ícone em camadas: locais na mesma coordenada; toque para escolher um. Os demais permanecem individuais.',
+                'Stack icon: places at the same coordinate; tap to choose one. Other places remain individual.',
               ),
             ),
           ),
-          Text(
-            context.mapText(
-              'O local selecionado recebe contorno mais espesso e formato com cantos.',
-              'The selected place has a thicker outline and a shape with corners.',
+          ListTile(
+            leading: Icon(Icons.circle, color: colors.primary),
+            title: Text(
+              context.mapText(
+                'Azul: local selecionado',
+                'Blue: selected place',
+              ),
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.accessible_forward, color: colors.success),
+            title: Text(
+              context.mapText(
+                'Verde: reconhecimento comunitário sustentado por evidências',
+                'Green: community recognition backed by evidence',
+              ),
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.star, color: colors.warning),
+            title: Text(
+              context.mapText(
+                'Dourado: destaque comunitário superior',
+                'Gold: higher community highlight',
+              ),
             ),
           ),
           Text(

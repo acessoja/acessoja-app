@@ -365,10 +365,12 @@ void main() {
       await map.pumpMap(tester);
       // Selo de contagem no topo do mapa (abre a lista ao tocar).
       expect(find.text('4 locais'), findsOneWidget);
+      expect(find.text('4'), findsNothing);
+      expect(find.byIcon(Icons.layers_outlined), findsOneWidget);
       expect(
-        find.text('4'),
+        find.byTooltip('4 locais na mesma coordenada. Abrir lista.'),
         findsOneWidget,
-      ); // Cluster cardinality, not a single establishment.
+      ); // Cardinality stays accessible without a numeric marker.
       // As contagens ficam nos detalhes recolhidos da folha de busca.
       await map.openDiscoveryDetails(tester);
       expect(find.textContaining('Carregados: 8 / 8'), findsOneWidget);

@@ -184,6 +184,45 @@ void main() {
   tearDown(() => AppHttp.client.close());
 
   group('preview contracts', () {
+    test('recognition uses only the backend community classification', () {
+      final starsAlone = MapPlace.internal({
+        ...own(91),
+        'media_estrelas': 5,
+        'quantidade_avaliacoes': 30,
+        'accessibility': {
+          'rampa_acesso': {'state': 'presence_reported'},
+        },
+      });
+      expect(starsAlone.hasCommunityRecognition, isFalse);
+      expect(starsAlone.hasCommunityHighlight, isFalse);
+
+      final recognized = MapPlace.internal({
+        ...own(92),
+        'accessibility_classification': {
+          'status': 'well_regarded',
+          'independent_assessors': 3,
+        },
+      });
+      expect(recognized.hasCommunityRecognition, isTrue);
+      expect(recognized.hasCommunityHighlight, isFalse);
+
+      final highlighted = MapPlace.internal({
+        ...own(93),
+        'accessibility_classification': {'status': 'community_highlight'},
+      });
+      expect(highlighted.hasCommunityRecognition, isTrue);
+      expect(highlighted.hasCommunityHighlight, isTrue);
+
+      final stale = MapPlace.internal({
+        ...own(94),
+        'accessibility_classification': {'status': 'community_highlight'},
+        '_resource_overrides': {
+          'rampa_acesso': {'state': 'presence_reported'},
+        },
+      });
+      expect(stale.hasCommunityRecognition, isFalse);
+    });
+
     test(
       'legacy false is unknown and a general rating never proves a feature',
       () {
@@ -407,7 +446,7 @@ void main() {
   group('marker placement and density', () {
     for (final count in [5, 50, 500]) {
       test(
-        '$count nearby places retain every identity without overlapping tap targets',
+        '$count nearby places remain individually addressable without moved coordinates',
         () {
           final places = [
             for (var id = 1; id <= count; id++)
@@ -420,10 +459,24 @@ void main() {
             size: const Size(800, 600),
             measure: (_) => const Size(150, 32),
           );
-          expect(
-            layouts.expand((m) => m.members).map((p) => p.id).toSet().length,
-            count,
-          );
+          final members = layouts.expand((m) => m.members).toList();
+          expect(members.map((p) => p.id).toSet().length, members.length);
+          expect(members.length, lessThanOrEqualTo(count));
+          for (final place in members) {
+            expect(
+              place.latitude,
+              places
+                  .singleWhere((candidate) => candidate.id == place.id)
+                  .latitude,
+            );
+            expect(
+              place.longitude,
+              places
+                  .singleWhere((candidate) => candidate.id == place.id)
+                  .longitude,
+            );
+          }
+          expect(layouts.where((layout) => layout.isCluster), isEmpty);
           for (var i = 0; i < layouts.length; i++) {
             for (var j = i + 1; j < layouts.length; j++) {
               expect(
@@ -435,6 +488,20 @@ void main() {
         },
       );
     }
+    test('more separate places become visible as zoom increases', () {
+      final places = [at(1, const LatLng(0, 0)), at(2, const LatLng(0, .001))];
+      List<PlaceMarkerLayout> atZoom(double zoom) => layoutPlaceMarkers(
+        places: places,
+        center: const LatLng(0, 0),
+        zoom: zoom,
+        size: const Size(400, 300),
+        measure: (_) => const Size(100, 32),
+      );
+      expect(atZoom(12).length, 1);
+      // At zoom 16 these 48 px hit targets still overlap; at zoom 17 they do not.
+      expect(atZoom(16).length, 1);
+      expect(atZoom(17).length, 2);
+    });
     test(
       'identical coordinates retain a selected member and the whole group',
       () {
@@ -551,11 +618,23 @@ void main() {
       final button = find.byKey(const ValueKey('map-cluster-acessoja:1'));
       expect(button, findsOneWidget);
       expect(
-        find.bySemanticsLabel(RegExp('2 locais.*Abrir agrupamento')),
+        find.bySemanticsLabel(
+          RegExp('2 locais na mesma coordenada.*Abrir lista'),
+        ),
         findsOneWidget,
       );
-      final text = find.descendant(of: button, matching: find.text('2'));
-      Focus.of(tester.element(text)).requestFocus();
+      expect(
+        find.descendant(of: button, matching: find.text('2')),
+        findsNothing,
+      );
+      expect(
+        find.descendant(
+          of: button,
+          matching: find.byIcon(Icons.layers_outlined),
+        ),
+        findsOneWidget,
+      );
+      tester.widget<TextButton>(button).focusNode!.requestFocus();
       await tester.pump();
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pumpAndSettle();
@@ -619,7 +698,7 @@ void main() {
   );
 
   testWidgets(
-    'a dense cluster preserves enlarged text and a full touch target',
+    'a coincident-place stack stays compact with a full touch target',
     (tester) async {
       await tester.pumpWidget(
         harness(
@@ -648,7 +727,8 @@ void main() {
       final marker = find.byKey(const ValueKey('map-cluster-acessoja:1'));
       expect(tester.getSize(marker).width, greaterThanOrEqualTo(48));
       expect(tester.getSize(marker).height, greaterThanOrEqualTo(48));
-      expect(find.text('500'), findsOneWidget);
+      expect(find.text('500'), findsNothing);
+      expect(find.byIcon(Icons.layers_outlined), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

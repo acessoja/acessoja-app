@@ -156,6 +156,28 @@ class MapPlace {
   AccessibilityValue accessibility(String key) =>
       _resourceValue(accessibilityInformation[key]?['state']);
 
+  Map<String, dynamic> get accessibilityClassification {
+    final raw =
+        data['accessibility_classification'] ??
+        linkedLocal['accessibility_classification'];
+    final classification = raw is Map
+        ? Map<String, dynamic>.from(raw)
+        : const <String, dynamic>{};
+    // A just-submitted client projection may be ahead of the server summary.
+    // Drop the recognition until the authoritative discovery projection refreshes.
+    if (_community['_resource_overrides'] is Map &&
+        classification['status'] != 'not_evaluated') {
+      return {...classification, 'status': 'not_evaluated'};
+    }
+    return classification;
+  }
+
+  bool get hasCommunityRecognition =>
+      accessibilityClassification['status'] == 'well_regarded' ||
+      hasCommunityHighlight;
+  bool get hasCommunityHighlight =>
+      accessibilityClassification['status'] == 'community_highlight';
+
   List<String> get missingResources => data['missing_resources'] is List
       ? (data['missing_resources'] as List).whereType<String>().toList()
       : const [];

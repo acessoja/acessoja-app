@@ -150,7 +150,7 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                 ExcludeSemantics(
                   child: Icon(
                     categoryVisual(p.category).icon,
-                    color: colors.primaryDark,
+                    color: categoryVisual(p.category).color,
                     size: 28,
                   ),
                 ),
@@ -287,6 +287,7 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
                   ),
                 ],
               ),
+              _communityAccessibilitySummary(context, p, colors),
               if (widget.onRoutePressed == null)
                 Text(
                   context.mapText(
@@ -453,6 +454,117 @@ class _MapPlacePreviewState extends State<MapPlacePreview> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _communityAccessibilitySummary(
+    BuildContext context,
+    MapPlace place,
+    AppColors colors,
+  ) {
+    final summary = place.accessibilityClassification;
+    final status = summary['status']?.toString() ?? 'not_evaluated';
+    final assessors = summary['independent_assessors'] is num
+        ? (summary['independent_assessors'] as num).toInt()
+        : 0;
+    final positive = summary['resources_positive'] is num
+        ? (summary['resources_positive'] as num).toInt()
+        : 0;
+    final barriers = summary['resources_with_barriers'] is num
+        ? (summary['resources_with_barriers'] as num).toInt()
+        : 0;
+    final unknown = summary['resources_unknown'] is num
+        ? (summary['resources_unknown'] as num).toInt()
+        : 0;
+    final divergent = summary['divergent_resources'] is List
+        ? (summary['divergent_resources'] as List).length
+        : 0;
+    final recognized = place.hasCommunityRecognition;
+    final highlight = place.hasCommunityHighlight;
+    final color = recognized ? colors.success : colors.muted;
+    final title = switch (status) {
+      'barriers_identified' => context.mapText(
+        'Barreiras relatadas',
+        'Reported barriers',
+      ),
+      'partially_accessible' => context.mapText(
+        'Informações mistas',
+        'Mixed information',
+      ),
+      'well_regarded' => context.mapText(
+        'Bem avaliado pela comunidade',
+        'Well regarded by the community',
+      ),
+      'community_highlight' => context.mapText(
+        'Destaque da comunidade',
+        'Community highlight',
+      ),
+      _ => context.mapText('Não avaliado', 'Not evaluated'),
+    };
+    final description = switch (status) {
+      'barriers_identified' => context.mapText(
+        'Há relatos válidos de ausência ou limitação. Consulte os recursos abaixo.',
+        'Valid reports identify absence or limitations. Check the features below.',
+      ),
+      'partially_accessible' => context.mapText(
+        'Há relatos positivos e também limitações, ausências ou divergências.',
+        'Reports include positive findings as well as limitations, absences, or disagreement.',
+      ),
+      'well_regarded' => context.mapText(
+        'Evidências recentes e independentes em vários recursos; não é certificação oficial.',
+        'Recent, independent evidence across multiple features; not an official certification.',
+      ),
+      'community_highlight' => context.mapText(
+        'Reconhecimento comunitário mais abrangente; não é certificação oficial.',
+        'Broader community recognition; not an official certification.',
+      ),
+      _ => context.mapText(
+        'Dados insuficientes para classificar. Informação desconhecida não significa ausência.',
+        'There is not enough information to classify. Unknown information does not mean absence.',
+      ),
+    };
+    final report = context.mapText(
+      '$assessors avaliadores independentes · $positive recursos com presença relatada · $barriers com barreiras · $unknown sem relato comunitário${divergent > 0 ? ' · $divergent divergentes' : ''}',
+      '$assessors independent contributors · $positive features with reported presence · $barriers with barriers · $unknown without community reports${divergent > 0 ? ' · $divergent conflicting' : ''}',
+    );
+    return Container(
+      key: const ValueKey('community-accessibility-classification'),
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: highlight ? colors.warningSoft : colors.fieldBackground,
+        borderRadius: BorderRadius.circular(AppGeometry.controlRadius),
+        border: Border.all(
+          color: highlight
+              ? colors.warning
+              : recognized
+              ? colors.success
+              : colors.border,
+          width: highlight ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.accessible_forward, size: 20, color: color),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.w700, color: color),
+                ),
+              ),
+              if (highlight) Icon(Icons.star, color: colors.warning, size: 18),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(description),
+          const SizedBox(height: 4),
+          Text(report, style: Theme.of(context).textTheme.bodySmall),
+        ],
       ),
     );
   }
