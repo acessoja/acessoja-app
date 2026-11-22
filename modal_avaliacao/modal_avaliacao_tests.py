@@ -63,12 +63,10 @@ class TestModalAvaliacaoAPI:
         api_client.force_authenticate(user=usuario)
         payload = {
             "local": local.id_local,
-            "pergunta_1": "Sim",
-            "pergunta_2": "Sim",
-            "pergunta_3": "Não",
-            "pergunta_4": "Não",
+            "questionnaire_version": 3,
+            "answers": {"rampa_acesso": "yes", "espaco_tranquilo": "unknown"},
             "estrelas": 5,
-            "comentario": "Fácil acesso",
+            "comentario": "Facil acesso",
         }
         response = api_client.post("/api/avaliacoes/modal-avaliacoes/", payload, format="json")
         assert response.status_code == 201
@@ -85,7 +83,15 @@ class TestModalAvaliacaoAPI:
             "pergunta_4": "Sim",
             "estrelas": 5,
         }
-        api_client.post("/api/avaliacoes/modal-avaliacoes/", payload, format="json")
+        response = api_client.post("/api/avaliacoes/modal-avaliacoes/", payload, format="json")
+        assert response.status_code == 400
+        ModalAvaliacao.objects.create(
+            local=local,
+            user=usuario,
+            questionnaire_version=1,
+            estrelas=5,
+            **{f"pergunta_{i}": "Sim" for i in range(1, 5)},
+        )
         local.refresh_from_db()
         assert local.rampa_acesso is False
         assert local.banheiro_acessivel is False
@@ -98,13 +104,12 @@ class TestModalAvaliacaoAPI:
         api_client.force_authenticate(user=usuario)
         payload = {
             "local": local.id_local,
-            "pergunta_1": "Não",
-            "pergunta_2": "Não sei",
-            "pergunta_3": "Não",
-            "pergunta_4": "Não sei",
+            "questionnaire_version": 3,
+            "answers": {"rampa_acesso": "no", "banheiro_acessivel": "not_applicable"},
             "estrelas": 3,
         }
-        api_client.post("/api/avaliacoes/modal-avaliacoes/", payload, format="json")
+        response = api_client.post("/api/avaliacoes/modal-avaliacoes/", payload, format="json")
+        assert response.status_code == 201
         local.refresh_from_db()
         assert local.rampa_acesso is False
         assert local.banheiro_acessivel is False

@@ -19,6 +19,7 @@ import 'package:flutter_application_1/services/place_preview_controller.dart';
 import 'package:flutter_application_1/services/places_service.dart';
 import 'package:flutter_application_1/widgets/persistent_place_panel.dart';
 import 'package:flutter_application_1/widgets/resource_information_list.dart';
+import 'package:flutter_application_1/widgets/accessibility_results_card.dart';
 import 'map_cards_04_06_test.dart' as fixture;
 
 class ControlledPlaces extends PlacesService {
@@ -36,7 +37,7 @@ Map<String, dynamic> responsePlace(int id) => {
   'quantidade_avaliacoes': 0,
 };
 Map<String, dynamic> resources() => {
-  'version': 2,
+  'version': 3,
   'people': 0,
   'legacy_not_comparable': 0,
   'features': [
@@ -104,6 +105,61 @@ void main() {
   });
   tearDown(() {
     AppHttp.client.close();
+  });
+  testWidgets('CT-54 expanded panel scrolls immediately without geometry rebuilds per frame', (tester) async {
+    tester.view.physicalSize = const Size(390, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final c = PlacePreviewController(service: fixture.FakePreviewService());
+    addTearDown(c.dispose);
+    await c.select(MapPlace.internal(responsePlace(1)));
+    var geometryUpdates = 0;
+    await tester.pumpWidget(
+      fixture.harness(
+        Scaffold(
+          body: Stack(
+            children: [
+              const Positioned.fill(child: ColoredBox(color: Colors.grey)),
+              Positioned.fill(
+                child: PersistentPlacePanel(
+                  controller: c,
+                  distanceLabel: (_) => '',
+                  onAction: (_) {},
+                  onGeometry: (_) => geometryUpdates++,
+                  onClose: c.close,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await fixture.tapVisible(tester, find.byKey(const ValueKey('preview-details')));
+    expect(c.level, PlacePanelLevel.expanded);
+    await tester.pumpAndSettle();
+    for (final dimension in [
+      'physical', 'visual', 'hearing', 'sensory', 'cognitive', 'communication',
+    ]) {
+      expect(find.byKey(ValueKey('panel-dimension-$dimension')), findsOneWidget);
+    }
+    await fixture.tapVisible(
+      tester,
+      find.byKey(const ValueKey('panel-dimension-sensory')),
+    );
+    expect(
+      tester.widget<AccessibilityResultsCard>(find.byType(AccessibilityResultsCard)).dimensionFilter,
+      'sensory',
+    );
+    final geometryAfterExpansion = geometryUpdates;
+    final scroll = find.byKey(const ValueKey('map-preview-scroll'));
+    expect(tester.widget<SingleChildScrollView>(scroll).controller, isNotNull);
+    await tester.drag(scroll, const Offset(0, -360));
+    await tester.pumpAndSettle();
+    expect(c.scrollOffset, greaterThan(0));
+    expect(geometryUpdates, geometryAfterExpansion);
+    expect(tester.takeException(), isNull);
   });
   testWidgets(
     'CT-20 CT-32 real editor cancellation restores selected panel without duplicate writes',
@@ -428,7 +484,7 @@ void main() {
     },
   );
   testWidgets(
-    'CT-01 CT-02 CT-03 ten resources four groups and divergence outside top three',
+    'CT-01 CT-02 CT-03 V3 resources are grouped and divergence remains visible',
     (tester) async {
       await tester.pumpWidget(
         fixture.harness(
@@ -468,12 +524,15 @@ void main() {
           ),
         ),
       );
-      expect(find.byType(ExpansionTile), findsNWidgets(10));
+      expect(find.byType(ExpansionTile), findsNWidgets(AccessibilityCatalog.resources.length));
       expect(find.text('Presença relatada'), findsOneWidget);
       expect(find.text('Ausência relatada'), findsOneWidget);
       expect(find.text('Recurso com limitações relatadas'), findsOneWidget);
       expect(find.text('Informado como não aplicável'), findsOneWidget);
-      expect(find.text('Informação desconhecida'), findsNWidgets(5));
+      expect(
+        find.text('Informação desconhecida'),
+        findsNWidgets(AccessibilityCatalog.resources.length - 5),
+      );
     },
   );
   testWidgets(

@@ -8,6 +8,7 @@ from django.db.models import Count, Max, Q
 from django.utils import timezone
 
 from acessoja.accessibility_catalog import RESOURCE_IDS
+from acessoja.questionnaire_v3 import BY_ID, DIMENSIONS, SCALE_IDS
 from locais.accessibility import combine_states
 from .models import EvidenceConfirmation, ResourceEvidence
 
@@ -174,6 +175,16 @@ def resource_summary(records, legacy=0, statistics=None):
             "evidence": evidence,
             "community_state": combine_states(row.current_revision.state for row in rows if row.source == "user"),
             "legacy_not_comparable": legacy,
+            "dimension": BY_ID[resource]["dimension"],
+            "variable": resource in SCALE_IDS,
+            "observations": [
+                {**row.source_metadata["observation"],
+                 "observed_on": row.current_revision.observed_on,
+                 "received_at": row.current_revision.received_at,
+                 "note": row.current_revision.note}
+                for row in rows if row.source == "user" and resource in SCALE_IDS
+                and row.source_metadata.get("observation")
+            ],
             "provenance": {
                 "evidence_count": len(rows),
                 "sources": sorted(sources),
@@ -264,6 +275,7 @@ def community_classification(records, statistics=None, now=None):
                 len(recent_authors) >= COMMUNITY_HIGHLIGHT_REPORTERS
                 and len(positive_resources) >= half_catalog
                 and len(highlight_quorum) == len(positive_resources)
+                and {BY_ID[key]["dimension"] for key in highlight_quorum} == set(DIMENSIONS)
             ):
                 status = "community_highlight"
 
@@ -277,6 +289,18 @@ def community_classification(records, statistics=None, now=None):
         "resources_unknown": len(RESOURCE_IDS) - len(assessed_resources),
         "divergent_resources": divergent_resources,
         "is_official_certification": False,
+        "dimensions": {
+            dimension: {
+                "positive": [key for key in positive_resources if BY_ID[key]["dimension"] == dimension],
+                "barriers": [key for key in barrier_resources if BY_ID[key]["dimension"] == dimension],
+                "divergent": [key for key in divergent_resources if BY_ID[key]["dimension"] == dimension],
+                "state": (
+                    "barriers_identified" if any(BY_ID[key]["dimension"] == dimension for key in barrier_resources)
+                    else "positive_reports" if any(BY_ID[key]["dimension"] == dimension for key in positive_resources)
+                    else "insufficient_information"
+                ),
+            } for dimension in DIMENSIONS
+        },
     }
 
 
@@ -291,6 +315,7 @@ def detail_document(row, statistics=None, user=None):
         "state": revision.state,
         "source": row.source,
         "note": revision.note,
+        "observation": getattr(revision, "source_metadata", row.source_metadata).get("observation", {}),
         "observed_at": revision.observed_at,
         "observed_on": revision.observed_on,
         "received_at": revision.received_at,

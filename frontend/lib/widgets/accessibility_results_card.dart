@@ -11,6 +11,7 @@ class AccessibilityResultsCard extends StatefulWidget {
   final int localId;
   final int revision;
   final Set<String> preferredResources;
+  final String? dimensionFilter;
   final Map<String, dynamic> registeredData;
   final ContributionService service;
   final VoidCallback? onViewReviews;
@@ -20,6 +21,7 @@ class AccessibilityResultsCard extends StatefulWidget {
     required this.localId,
     this.revision = 0,
     this.preferredResources = const {},
+    this.dimensionFilter,
     this.registeredData = const {},
     this.service = const ContributionService(),
     this.onViewReviews,
@@ -35,6 +37,7 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
   final _overrides = <String, dynamic>{};
   bool _loading = true, _failed = false;
   int _generation = 0;
+  ({int localId, int revision, int session})? _lastRequest;
   @override
   void initState() {
     super.initState();
@@ -59,7 +62,12 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
     _generation++;
     _results = null;
     _overrides.clear();
-    _load();
+    // The map coordinator advances `revision` for this same session event and
+    // didUpdateWidget will issue the single replacement request. Standalone
+    // cards have no coordinator revision to observe, so reload them here.
+    if (widget.onResourceProjection == null) {
+      _load();
+    }
   }
 
   @override
@@ -69,7 +77,16 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
     super.dispose();
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool retry = false}) async {
+    final request = (
+      localId: widget.localId,
+      revision: widget.revision,
+      session: AppHttp.sessionRevision.value,
+    );
+    if (!retry && _lastRequest == request) {
+      return;
+    }
+    _lastRequest = request;
     final generation = ++_generation;
     setState(() {
       _loading = true;
@@ -131,7 +148,7 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
               ),
               OutlinedButton(
                 key: const ValueKey('resource-results-retry'),
-                onPressed: _load,
+                onPressed: () => _load(retry: true),
                 child: Text(
                   surveyText(context, 'Tentar novamente', 'Try again'),
                 ),
@@ -139,10 +156,11 @@ class _AccessibilityResultsCardState extends State<AccessibilityResultsCard> {
             ],
             ResourceInformationList(
               preferred: widget.preferredResources,
+              dimensionFilter: widget.dimensionFilter,
               information: {...evidenceMap(raw), ..._overrides},
               results: _results?.resources ?? const [],
               localId: widget.localId,
-              onChanged: _load,
+              onChanged: () => _load(retry: true),
               onProjection: (id, value) {
                 if (!mounted) {
                   return;

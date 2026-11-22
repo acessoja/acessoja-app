@@ -2,10 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../models/accessibility_catalog.dart';
 import '../models/accessibility_survey.dart';
+import '../models/accessibility_survey_v3.dart';
 import '../models/evidence.dart';
 import '../screens/evidence_details_screen.dart';
 import '../l10n/account_strings.dart';
 import 'feature_provenance.dart';
+
+String _periodLabel(BuildContext context, String value) => switch (value) {
+  'morning' => accountText(context, 'manhã', 'morning'),
+  'afternoon' => accountText(context, 'tarde', 'afternoon'),
+  'night' => accountText(context, 'noite', 'night'),
+  _ => accountText(context, 'período não informado', 'time not specified'),
+};
 
 /// One row per stable catalog resource, shared by map/detail/summary surfaces.
 class ResourceInformationList extends StatelessWidget {
@@ -17,6 +25,7 @@ class ResourceInformationList extends StatelessWidget {
     this.externalId,
     this.compact = false,
     this.preferred = const {},
+    this.dimensionFilter,
     this.onViewAll,
     this.onChanged,
     this.onProjection,
@@ -27,6 +36,7 @@ class ResourceInformationList extends StatelessWidget {
   final String? externalId;
   final bool compact;
   final Set<String> preferred;
+  final String? dimensionFilter;
   final VoidCallback? onViewAll, onChanged;
   final void Function(String, Map<String, dynamic>)? onProjection;
   Map<String, dynamic> info(String id) {
@@ -37,7 +47,9 @@ class ResourceInformationList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resources = [...AccessibilityCatalog.resources];
+    final resources = AccessibilityCatalog.resources
+        .where((resource) => dimensionFilter == null || resource.dimension == dimensionFilter)
+        .toList();
     resources.sort((a, b) {
       final priority = (preferred.contains(a.id) ? 0 : 1).compareTo(
         preferred.contains(b.id) ? 0 : 1,
@@ -108,20 +120,20 @@ class ResourceInformationList extends StatelessWidget {
               ),
             ),
           for (final group
-              in compact ? <String>['compact'] : SurveyContract.groups) ...[
-            if (!compact && parts[part].any((r) => r.group == group))
+              in compact ? <String>['compact'] : AccessibilityCatalog.dimensions.keys.cast<String>()) ...[
+            if (!compact && parts[part].any((r) => r.dimension == group))
               Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Semantics(
                   header: true,
                   child: Text(
-                    SurveyContract.group(context, group),
+                  AccessibilityCatalog.dimensionLabel(context, group),
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
               ),
             for (final resource in parts[part].where(
-              (r) => compact || r.group == group,
+              (r) => compact || r.dimension == group,
             ))
               _ResourceRow(
                 key: ValueKey('resource-information-${resource.id}'),
@@ -143,8 +155,8 @@ class ResourceInformationList extends StatelessWidget {
             child: Text(
               accountText(
                 context,
-                'Ver todos os recursos (10)',
-                'View all features (10)',
+                'Ver todos os recursos (${resources.length})',
+                'View all features (${resources.length})',
               ),
             ),
           ),
@@ -254,6 +266,17 @@ class _ResourceRowState extends State<_ResourceRow> {
               ],
               if (widget.information['note'] is String)
                 Text(widget.information['note'] as String),
+              if (widget.information['observations'] is List)
+                for (final observation in (widget.information['observations'] as List).whereType<Map>())
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      '${SurveyV3Contract.answer(context, observation['value']?.toString() ?? 'unknown')}'
+                      '${observation['period'] == null ? '' : ' · ${_periodLabel(context, observation['period'].toString())}'}'
+                      '${observation['observed_on'] == null ? '' : ' · ${observation['observed_on']}'}'
+                      '${(observation['note'] ?? '').toString().isEmpty ? '' : ' — ${observation['note']}'}',
+                    ),
+                  ),
               FeatureProvenance(
                 information: widget.information,
                 compact: false,

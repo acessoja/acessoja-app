@@ -42,25 +42,14 @@ class _PersistentPlacePanelState extends State<PersistentPlacePanel> {
   bool? _wide;
   String? _identity;
   PlacePanelLevel? _level;
-  bool _sizing = false, _geometryQueued = false, _dragLevelChange = false;
+  bool _sizing = false, _dragLevelChange = false;
   @override
   void initState() {
     super.initState();
-    _sheet.addListener(_sheetChanged);
-  }
-
-  void _sheetChanged() {
-    if (_geometryQueued) return;
-    _geometryQueued = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _geometryQueued = false;
-      if (mounted) setState(() {});
-    });
   }
 
   @override
   void dispose() {
-    _sheet.removeListener(_sheetChanged);
     _sheet.dispose();
     _sideScroll.dispose();
     super.dispose();
@@ -202,13 +191,12 @@ class _PersistentPlacePanelState extends State<PersistentPlacePanel> {
               ),
             );
           }
-          final fraction = _sheet.isAttached ? _sheet.size : desired;
           _report(
             Rect.fromLTWH(
               0,
-              bounds.maxHeight * (1 - fraction),
+              bounds.maxHeight * (1 - desired),
               bounds.maxWidth,
-              bounds.maxHeight * fraction,
+              bounds.maxHeight * desired,
             ),
           );
           return NotificationListener<DraggableScrollableNotification>(

@@ -118,7 +118,7 @@ def populate_accessibility_context(locals_, context):
                 ]
             }.values()
         )
-        legacy = sum(row["questionnaire_version"] != 2 for row in local_rows)
+        legacy = sum(row["questionnaire_version"] == 1 for row in local_rows)
         states[(local.pk, own_id)] = resource_summary(records, legacy, confirmation_data)
         context.setdefault("accessibility_classifications", {})[local.pk] = community_classification(
             records, confirmation_data

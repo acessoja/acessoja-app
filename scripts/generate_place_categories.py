@@ -34,7 +34,10 @@ def main():
             rf"'{re.escape(item['pt'])}',\s*'{re.escape(item['en'])}',?\s*\)"
         )
         assert re.search(pattern, parents), f"Flutter parent category diverges: {item['id']}"
-    print("Category contract matches: 11 parents, 22 children, PT/EN, version", data["version"])
+    print(
+        f"Category contract matches: {len(data['parents'])} parents, "
+        f"{len(data['children'])} children, PT/EN, version {data['version']}"
+    )
 
 
 if __name__ == "__main__":

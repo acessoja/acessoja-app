@@ -17,7 +17,7 @@ from rest_framework.test import APIClient
 from contribuicoes.models import ContributionPointEvent, PointActivity
 from locais.models import Local, RouteHistorySession, VisitaRecente
 from modal_avaliacao.models import ModalAvaliacao
-from modal_avaliacao.questionnaire import QUESTION_IDS
+from acessoja.accessibility_catalog import RESOURCE_IDS
 from usuarios.deletion_journal import journal_identity
 from usuarios.models import Usuario
 from .exceptions import RevisionConflict
@@ -62,9 +62,9 @@ def scenario(settings, tmp_path):
         verified_author=True,
         estrelas=4,
         comentario="Synthetic experience",
-        questionnaire_version=2,
-        answers={**dict.fromkeys(QUESTION_IDS, "unknown"), "rampa_acesso": "yes"},
-        answer_dates={key: timezone.now().isoformat() for key in QUESTION_IDS},
+        questionnaire_version=3,
+        answers={**dict.fromkeys(RESOURCE_IDS, "unknown"), "rampa_acesso": "yes"},
+        answer_dates={key: timezone.now().isoformat() for key in RESOURCE_IDS},
     )
     root = ResourceEvidence.objects.get(review=review, resource="rampa_acesso")
     yield a, b, mod, local, review, root

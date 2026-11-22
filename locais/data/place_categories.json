@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "conflict_policy": "multiple_candidates_unknown",
   "children": [
     {
@@ -198,6 +198,24 @@
       "en": "Community centre",
       "tags": {
         "amenity": "community_centre"
+      }
+    },
+    {
+      "id": "hotel",
+      "parent": "outros",
+      "pt": "Hotel",
+      "en": "Hotel",
+      "tags": {
+        "tourism": "hotel"
+      }
+    },
+    {
+      "id": "pousada",
+      "parent": "outros",
+      "pt": "Pousada",
+      "en": "Guest house",
+      "tags": {
+        "tourism": "guest_house"
       }
     }
   ],

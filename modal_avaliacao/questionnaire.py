@@ -93,6 +93,18 @@ def validate_answers(value):
 
 
 def complete(version, answers, legacy=()):
+    if version == 3:
+        from acessoja.questionnaire_v3 import validate_answers as validate_v3
+
+        if not isinstance(answers, dict):
+            return False
+        try:
+            validate_v3(answers)
+        except ValueError:
+            return False
+        # V3 permits partial answers; this flag means at least one valid
+        # accessibility answer was recorded, not that all 47 were answered.
+        return any(value is not None for value in answers.values())
     if version == VERSION:
         return isinstance(answers, dict) and all(answers.get(key) in ANSWER_CODES for key in QUESTION_IDS)
     return version == 1 and len(legacy) == 4 and all(value in LEGACY_VALUES for value in legacy)

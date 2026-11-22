@@ -1,0 +1,7 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/moderation.css' %}">{% endblock %}
+{% block content %}
+<h2>Outras áreas administrativas</h2>
+<div id="content-main">{% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}</div>
+{% endblock %}

@@ -48,7 +48,7 @@ def test_catalog_is_public_and_aligned():
     response = APIClient().get(URL + "recursos/")
     assert response.status_code == 200
     assert [item["id"] for item in response.data["resources"]] == list(RESOURCE_IDS)
-    assert response.data["version"] == 1
+    assert response.data["version"] == 3
 
 
 def test_historical_booleans_true_and_false_remain_unknown():

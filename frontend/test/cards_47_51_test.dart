@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/widgets/evaluation_survey_dialog.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -80,7 +79,7 @@ class Reviews extends ContributionService {
       'questionnaire_version':
           body['questionnaire_version'] ??
           stored?['questionnaire_version'] ??
-          2,
+          3,
       'answers': answers,
       'contribution_result': {
         'operation': id == null ? 'created' : 'updated',
@@ -225,14 +224,8 @@ class ManagedPhotos extends Photos {
   }
 }
 
-
 // O editor mantém o botão da publicação sob o modal; selecione apenas o botão
 // que está dentro da janela antiga de acessibilidade.
-Finder originalModalSubmit() => find.descendant(
-  of: find.byType(EvaluationSurveyDialog),
-  matching: find.byKey(const ValueKey('survey-submit')),
-);
-
 Future<void> visible(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
@@ -345,7 +338,7 @@ void main() {
       expect(r.sent!['expected_revision'], revision);
     },
   );
-  test('T09 v1 text edit preserves old questionnaire', () async {
+  test('T09 editing V1 history migrates the active view to V3', () async {
     final r = Reviews()
       ..stored = {
         'id': 9,
@@ -360,7 +353,7 @@ void main() {
     await d.load();
     d.comment = 'New';
     await d.publish();
-    expect(r.sent!.containsKey('questionnaire_version'), isFalse);
+    expect(r.sent!['questionnaire_version'], 3);
     expect(r.sent!.containsKey('answers'), isFalse);
   });
   test(
@@ -368,18 +361,17 @@ void main() {
     () async {
       final r = Reviews(),
           s = Statements()..failOnce = true,
-          d = draft(r, s, Photos());
+          d = draft(r, s, Photos(), independent: true);
       addTearDown(d.dispose);
       await d.load();
-      d.stars = 4;
       d.answers['piso_tatil'] = 'yes';
       await d.publish();
-      expect(d.review!['id'], 9);
       expect(d.phase, PublicationPhase.pending);
-      expect(r.saves, 1);
+      expect(r.saves, 0);
+      expect(s.writes, 1);
       await d.publish();
       expect(d.complete, isTrue);
-      expect(r.saves, 1);
+      expect(r.saves, 0);
       expect(s.writes, 2);
       await d.publish();
       expect(s.writes, 2);
@@ -443,7 +435,7 @@ void main() {
       'content_revision': revision2,
       'estrelas': 4,
       'comentario': '',
-      'questionnaire_version': 2,
+      'questionnaire_version': 3,
       'answers': {},
     });
     await work;
@@ -580,7 +572,7 @@ void main() {
         'content_revision': revision2,
         'estrelas': 4,
         'comentario': '',
-        'questionnaire_version': 2,
+        'questionnaire_version': 3,
         'answers': {},
       });
       await work;
@@ -652,61 +644,93 @@ void main() {
       await visible(tester, find.byKey(const ValueKey('review-star-3')));
       await tester.enterText(find.byType(TextField), 'My comment');
       await visible(tester, find.byKey(const ValueKey('review-open-survey')));
-      await visible(tester, find.byKey(const ValueKey('survey-skip')));
-      await visible(tester, originalModalSubmit());
-      expect(find.text('8 recursos sem resposta'), findsNothing);
-      expect(find.text('10 recursos sem resposta'), findsOneWidget);
+      await visible(tester, find.text('Revisar'));
+      expect(find.textContaining('recursos sem resposta'), findsNothing);
       await visible(tester, find.text('Editar: nota e comentário'));
       expect(find.text('My comment'), findsOneWidget);
       await visible(tester, find.byKey(const ValueKey('review-open-survey')));
-      await visible(tester, find.byKey(const ValueKey('survey-skip')));
-      await visible(tester, originalModalSubmit());
+      await visible(tester, find.text('Revisar'));
       await visible(tester, find.byKey(const ValueKey('survey-submit')));
       expect(find.text('Obrigado por contribuir!'), findsOneWidget);
       expect(find.text('Voltar ao estabelecimento'), findsOneWidget);
       expect(r.saves, 1);
     },
   );
-  testWidgets('Old accessibility modal is restored without affecting photos or submission', (tester) async {
-    final reviews = Reviews();
-    await tester.pumpWidget(app(ReviewEditorScreen(
-      place: place, service: reviews, evidence: Statements(), media: Photos(),
-    )));
-    await tester.pumpAndSettle();
-    await visible(tester, find.byKey(const ValueKey('review-star-4')));
-    await visible(tester, find.byKey(const ValueKey('review-open-survey')));
-    expect(find.byKey(const ValueKey('survey-progress')), findsOneWidget);
-    expect(find.byType(CheckboxListTile), findsNothing);
-    await visible(tester, find.byKey(const ValueKey('survey-rampa_acesso-yes')));
-    await visible(tester, find.byKey(const ValueKey('survey-review-partial')));
-    await visible(tester, originalModalSubmit());
-    expect(reviews.saves, 0);
-    await visible(tester, find.byKey(const ValueKey('survey-submit')));
-    expect(reviews.sent!['answers'], {'rampa_acesso': 'yes'});
-    expect(reviews.saves, 1);
-  });
-  testWidgets('Saved review with failed photo can finish without resaving review', (tester) async {
-    final reviews = Reviews(), photos = Photos()..failAt = 1;
-    await tester.pumpWidget(app(ReviewEditorScreen(
-      place: place, service: reviews, evidence: Statements(), media: photos, picker: Picker(),
-    )));
-    await tester.pumpAndSettle();
-    await visible(tester, find.byKey(const ValueKey('review-star-4')));
-    await visible(tester, find.byKey(const ValueKey('review-add-photos')));
-    await visible(tester, find.byKey(const ValueKey('editor-pick-photo')));
-    await visible(tester, find.text('Galeria ou arquivo'));
-    await tester.enterText(find.byType(TextFormField), 'Rampa na entrada principal');
-    await visible(tester, find.text('Revisar e publicar').last);
-    await visible(tester, find.byKey(const ValueKey('survey-skip')));
-    await visible(tester, originalModalSubmit());
-    await visible(tester, find.byKey(const ValueKey('survey-submit')));
-    expect(find.byKey(const ValueKey('finish-without-photo')), findsOneWidget);
-    expect(reviews.saves, 1);
-    await visible(tester, find.byKey(const ValueKey('finish-without-photo')));
-    await visible(tester, find.text('Concluir sem fotografia').last);
-    expect(find.text('Obrigado por contribuir!'), findsOneWidget);
-    expect(reviews.saves, 1);
-  });
+  testWidgets(
+    'V3 questions stay in the editor without affecting photos or submission',
+    (tester) async {
+      final reviews = Reviews();
+      await tester.pumpWidget(
+        app(
+          ReviewEditorScreen(
+            place: place,
+            service: reviews,
+            evidence: Statements(),
+            media: Photos(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await visible(tester, find.byKey(const ValueKey('review-star-4')));
+      await visible(tester, find.byKey(const ValueKey('review-open-survey')));
+      expect(find.byKey(const ValueKey('survey-v3-progress')), findsOneWidget);
+      expect(find.byType(CheckboxListTile), findsNothing);
+      await visible(
+        tester,
+        find.byKey(const ValueKey('survey-v3-dimension-physical')),
+      );
+      await visible(
+        tester,
+        find.byKey(const ValueKey('survey-v3-rampa_acesso-yes')),
+      );
+      await visible(tester, find.text('Revisar'));
+      expect(reviews.saves, 0);
+      await visible(tester, find.byKey(const ValueKey('survey-submit')));
+      expect(reviews.sent!['answers'], {'rampa_acesso': 'yes'});
+      expect(reviews.saves, 1);
+    },
+  );
+  testWidgets(
+    'Saved review with failed photo can finish without resaving review',
+    (tester) async {
+      final reviews = Reviews(), photos = Photos()..failAt = 1;
+      await tester.pumpWidget(
+        app(
+          ReviewEditorScreen(
+            place: place,
+            service: reviews,
+            evidence: Statements(),
+            media: photos,
+            picker: Picker(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await visible(tester, find.byKey(const ValueKey('review-star-4')));
+      await visible(tester, find.byKey(const ValueKey('review-add-photos')));
+      await visible(tester, find.byKey(const ValueKey('editor-pick-photo')));
+      await visible(tester, find.text('Galeria ou arquivo'));
+      await tester.enterText(
+        find.byType(TextFormField),
+        'Rampa na entrada principal',
+      );
+      await visible(
+        tester,
+        find.byKey(const ValueKey('photos-return-to-survey')),
+      );
+      await visible(tester, find.text('Revisar'));
+      await visible(tester, find.byKey(const ValueKey('survey-submit')));
+      expect(
+        find.byKey(const ValueKey('finish-without-photo')),
+        findsOneWidget,
+      );
+      expect(reviews.saves, 1);
+      await visible(tester, find.byKey(const ValueKey('finish-without-photo')));
+      await visible(tester, find.text('Concluir sem fotografia').last);
+      expect(find.text('Obrigado por contribuir!'), findsOneWidget);
+      expect(reviews.saves, 1);
+    },
+  );
   testWidgets(
     'T14 photo is selected inside editor before review exists; cancel preserves state',
     (tester) async {

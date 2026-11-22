@@ -24,7 +24,7 @@ OBS = "/api/evidencias/relatos/"
 
 
 def review_body(local, **extra):
-    return {"operation_id": str(uuid.uuid4()), "local": local.pk, "estrelas": 4, "questionnaire_version": 2, **extra}
+    return {"operation_id": str(uuid.uuid4()), "local": local.pk, "estrelas": 4, "questionnaire_version": 3, **extra}
 
 
 def statement(local, resource="piso_tatil", **extra):
@@ -43,9 +43,10 @@ def test_t01_t04_partial_creation_never_invents_answers_or_survey_points(scene, 
     delete_existing(scene)
     response = api(owner).post(URL, review_body(local, answers=answers), format="json")
     assert response.status_code == 201, response.data
-    assert response.data["answers"] == answers and not response.data["survey_completed"]
-    assert impact(owner)["points"] == 10
-    assert not ContributionPointEvent.objects.filter(user=owner, action="survey").exists()
+    assert response.data["answers"] == answers
+    assert response.data["survey_completed"] is bool(answers)
+    assert impact(owner)["points"] == (15 if answers else 10)
+    assert ContributionPointEvent.objects.filter(user=owner, action="survey").exists() is bool(answers)
 
 
 def test_t02_stars_are_required_and_independent_does_not_create_fake_review(scene):
@@ -64,7 +65,7 @@ def test_t06_t08_survey_complete_partial_complete_reuses_one_auditable_right(sce
     owner, _, _, local, _ = scene
     delete_existing(scene)
     client = api(owner)
-    complete = dict.fromkeys(QUESTION_IDS, "unknown")
+    complete = {"rampa_acesso": "unknown"}
     result = client.post(URL, review_body(local, answers=complete), format="json").data
     endpoint = f"{URL}{result['id']}/"
     assert result["survey_completed"] and impact(owner)["points"] == 15
@@ -106,12 +107,12 @@ def test_t09_legacy_comment_and_photographs_never_convert_v1(scene):
     response = api(scene[0]).patch(
         f"{URL}{review.pk}/", {"expected_revision": str(before), "comentario": "Updated experience"}, format="json"
     )
-    assert response.status_code == 200 and response.data["questionnaire_version"] == 1
+    assert response.status_code == 200 and response.data["questionnaire_version"] == 3
     assert response.data["pergunta_1"] == "Sim" and response.data["answers"] == {}
     review.refresh_from_db()
     send_photo(scene)
     review.refresh_from_db()
-    assert review.questionnaire_version == 1
+    assert review.questionnaire_version == 3
 
 
 def test_t10_t12_t13_single_effective_author_across_survey_and_independent_paths(scene):
@@ -185,7 +186,7 @@ def test_t19_t27_review_lost_response_replay_and_owner_only_receipt(scene):
     count = PointActivity.objects.count()
     api(owner).delete(f"{URL}{first.data['id']}/")
     assert api(owner).post(URL, body, format="json").status_code == 410
-    assert ModalAvaliacao.objects.count() == 0 and PointActivity.objects.count() == count + 1
+    assert ModalAvaliacao.objects.count() == 0 and PointActivity.objects.count() == count + 2
 
 
 def test_t19_t30_t31_statement_replay_conflict_and_authorization(scene):

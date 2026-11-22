@@ -25,7 +25,9 @@ class ModalAvaliacao(models.Model):
     pergunta_2 = models.CharField(max_length=20, choices=RESPOSTAS, blank=True)
     pergunta_3 = models.CharField(max_length=20, choices=RESPOSTAS, blank=True)
     pergunta_4 = models.CharField(max_length=20, choices=RESPOSTAS, blank=True)
-    questionnaire_version = models.PositiveSmallIntegerField(default=1, choices=[(1, "Legado"), (2, "Recursos")])
+    questionnaire_version = models.PositiveSmallIntegerField(
+        default=3, choices=[(1, "Legado"), (2, "Recursos v2"), (3, "Questionário v3")]
+    )
     answers = models.JSONField(default=dict, blank=True)
     answer_dates = models.JSONField(default=dict, blank=True)
     answer_details = models.JSONField(default=dict, blank=True)

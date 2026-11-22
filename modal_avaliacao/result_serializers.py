@@ -1,13 +1,16 @@
 from rest_framework import serializers
-from .questionnaire import QUESTION_IDS
+from acessoja.accessibility_catalog import RESOURCE_IDS
 
 
 class QuestionnaireCatalogSerializer(serializers.Serializer):
     version = serializers.IntegerField()
-    answers = serializers.JSONField()
-    groups = serializers.JSONField()
+    catalog_version = serializers.IntegerField(required=False)
+    answers = serializers.JSONField(required=False)
+    groups = serializers.JSONField(required=False)
+    dimensions = serializers.JSONField(required=False)
+    characteristics = serializers.JSONField(required=False)
     questions = serializers.ListField(child=serializers.JSONField())
-    legacy = serializers.JSONField()
+    legacy = serializers.JSONField(required=False)
 
 
 class FeatureCountsSerializer(serializers.Serializer):
@@ -18,13 +21,13 @@ class FeatureCountsSerializer(serializers.Serializer):
 
 
 class FeatureResultSerializer(serializers.Serializer):
-    id = serializers.ChoiceField(choices=QUESTION_IDS)
+    id = serializers.ChoiceField(choices=RESOURCE_IDS)
     counts = FeatureCountsSerializer()
     unanswered = serializers.IntegerField()
     latest_at = serializers.DateTimeField(allow_null=True)
     state = serializers.ChoiceField(choices=[
         "divergent", "presence_reported", "absence_reported",
-        "unconfirmed", "not_applicable", "not_evaluated",
+        "unconfirmed", "unknown", "limited", "not_applicable", "not_evaluated",
     ])
     respondents = serializers.IntegerField()
     few_reviews = serializers.BooleanField()

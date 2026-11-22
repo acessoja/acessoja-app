@@ -57,7 +57,8 @@ class QuestionnaireCoreTests(unittest.TestCase):
         answers.pop("cao_guia")
         self.assertFalse(contract.complete(2, answers))
         self.assertFalse(contract.complete(2, None))
-        self.assertFalse(contract.complete(3, answers))
+        self.assertTrue(contract.complete(3, {"espaco_tranquilo": "unknown"}))
+        self.assertFalse(contract.complete(3, {}))
         self.assertTrue(contract.complete(1, {}, ["Não se aplica"] * 4))
         self.assertFalse(contract.complete(1, {}, ["Sim", "", "Não", "Não sei"]))
 
