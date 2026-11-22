@@ -103,21 +103,25 @@ class _PlaceMapsLinkState extends State<PlaceMapsLink> {
         ),
       );
     }
-    return Align(
-      alignment: AlignmentDirectional.centerStart,
-      child: Tooltip(
-        message: label,
-        child: TextButton.icon(
-          key: const ValueKey('place-google-search'),
-          style: TextButton.styleFrom(
-            minimumSize: const Size(48, 48),
-            visualDensity: VisualDensity.standard,
-            tapTargetSize: MaterialTapTargetSize.padded,
+    final colors = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: label,
+      child: OutlinedButton.icon(
+        key: const ValueKey('place-google-search'),
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          visualDensity: VisualDensity.standard,
+          tapTargetSize: MaterialTapTargetSize.padded,
+          foregroundColor: colors.primary,
+          backgroundColor: colors.primaryContainer.withValues(alpha: .38),
+          side: BorderSide(color: colors.primary.withValues(alpha: .25)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-          onPressed: _opening ? null : () => _open(target),
-          icon: const Icon(Icons.open_in_new, size: 18),
-          label: Text(label),
         ),
+        onPressed: _opening ? null : () => _open(target),
+        icon: const Icon(Icons.map_outlined, size: 20),
+        label: Text(label, maxLines: 2, textAlign: TextAlign.center),
       ),
     );
   }

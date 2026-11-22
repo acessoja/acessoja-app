@@ -360,3 +360,7 @@ Consulte a documentação compatível com a versão instalada. As referências f
 - flutter_map — versão de referência 6.2.1: https://pub.dev/packages/flutter_map/versions/6.2.1
 
 Use também os sete cartões vinculados na tabela inicial como origem dos requisitos. Mantenha a distinção entre nossas tarefas de desenvolvimento e os identificadores externos do Trello.
+
+### Pendência separada: estado visual de favoritos no marcador
+
+Relato conhecido para reprodução em tarefa própria: após favoritar um estabelecimento, o marcador do mapa pode continuar mostrando o símbolo padrão em vez do estado favorito, possivelmente por sobreposição ou atualização parcial do widget. Áreas para investigar: carregamento da camada pessoal e estado do favorito em `frontend/lib/widgets/adaptive_place_layer.dart`, composição de marcadores em `frontend/lib/screens/main_screen.dart` e `frontend/lib/widgets/favorite_button.dart`. A refatoração visual do painel preserva o callback de reconciliação, mas não altera o renderizador nem o serviço de favoritos. Correção futura: reproduzir favorito→desfavorito e troca de seleção em sessão autenticada, então verificar identidade canônica e rebuild da camada sem marcadores sobrepostos.
