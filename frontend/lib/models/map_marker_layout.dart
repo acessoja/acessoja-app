@@ -107,16 +107,16 @@ List<PlaceMarkerLayout> layoutPlaceMarkers({
     for (final p in places)
       if (p.hasCoordinates) p.id: p,
   }.values.toList();
-  final sourceOrder = {
-    for (var index = 0; index < candidates.length; index++)
-      candidates[index].id: index,
-  };
+  // Keep priority stable when asynchronous pages arrive in a different order.
+  int priority(MapPlace place) => place.id == selectedId
+      ? 0
+      : !place.isExternal && place.hasCommunityReviews
+      ? 1
+      : !place.isExternal
+      ? 2
+      : 3;
   int compare(MapPlace a, MapPlace b) {
-    final selectedOrder = (a.id == selectedId ? 0 : 1).compareTo(
-      b.id == selectedId ? 0 : 1,
-    );
-    if (selectedOrder != 0) return selectedOrder;
-    final result = sourceOrder[a.id]!.compareTo(sourceOrder[b.id]!);
+    final result = priority(a).compareTo(priority(b));
     return result == 0 ? a.id.compareTo(b.id) : result;
   }
 

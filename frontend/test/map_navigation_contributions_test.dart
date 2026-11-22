@@ -147,24 +147,35 @@ void main() {
       measure: (_) => const Size(70, 16),
     );
 
-    test('distant zoom clusters with no individual names', () {
-      final markers = layout(12);
-      expect(markers.any((m) => m.isCluster), isTrue);
-      expect(markers.where((m) => m.label != null), isEmpty);
-      expect(
-        markers.fold<int>(0, (sum, m) => sum + m.members.length),
-        places.length,
-      );
-    });
+    test(
+      'distant zoom thins individual markers without moving their anchors',
+      () {
+        final markers = layout(12);
+        expect(markers, isNotEmpty);
+        expect(markers.length, lessThan(places.length));
+        expect(markers.any((m) => m.isCluster), isFalse);
+        expect(markers.where((m) => m.label != null), isEmpty);
+        for (final marker in markers) {
+          expect(marker.members, hasLength(1));
+          expect(marker.point.latitude, marker.place.latitude);
+          expect(marker.point.longitude, marker.place.longitude);
+        }
+        // Density only changes rendering; all places remain available to the list.
+        expect(places, hasLength(40));
+      },
+    );
     test('near zoom reveals more names and distinct sources', () {
       expect(
         layout(18).where((m) => m.label != null).length,
         greaterThan(layout(13).where((m) => m.label != null).length),
       );
       expect(
-        layout(17).expand((m) => m.members).any((p) => p.isExternal),
+        // This fixture's 0.00045 degree spacing is 42 px at zoom 17, but
+        // 84 px at zoom 18: enough for distinct 48 px touch targets.
+        layout(18).expand((m) => m.members).any((p) => p.isExternal),
         isTrue,
       );
+      expect(layout(18).length, greaterThan(layout(12).length));
     });
     test('measured label bounds never cover labels or icons', () {
       final markers = layout(17);
@@ -182,7 +193,7 @@ void main() {
       }
     });
     test(
-      'selected place survives clustering and has priority without overlapping targets',
+      'selected place survives thinning and has priority without overlapping targets',
       () {
         final selected = places.last.id;
         final markers = layout(12, selected: selected);
@@ -222,7 +233,7 @@ void main() {
         );
       },
     );
-    test('world-aligned groups remain stable on small pan', () {
+    test('visible identities remain stable on small pan', () {
       final a = layout(
         12,
       ).map((m) => m.members.map((p) => p.id).join(',')).toList();

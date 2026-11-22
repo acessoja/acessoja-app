@@ -153,7 +153,16 @@ void main() {
       }
 
       await expectRegionalMarker();
-      expect(find.text('4'), findsOneWidget);
+      void expectCoincidentPlaces() {
+        expect(find.text('4'), findsNothing);
+        expect(find.byIcon(Icons.layers_outlined), findsOneWidget);
+        expect(
+          find.byTooltip('4 locais na mesma coordenada. Abrir lista.'),
+          findsOneWidget,
+        );
+      }
+
+      expectCoincidentPlaces();
       await capture('01_escopo_consolidado_e_consulta_regional_separados');
       refresh = Completer<http.Response>();
       await refreshExternal();
@@ -170,7 +179,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await expectRegionalMarker();
-      expect(find.text('4'), findsOneWidget);
+      expectCoincidentPlaces();
       expect(
         find.textContaining('Mostrando dados externos anteriores'),
         findsOneWidget,
@@ -192,7 +201,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('map-place-osm:way:7')), findsNothing);
-      expect(find.text('4'), findsOneWidget);
+      expectCoincidentPlaces();
       expect(externalCalls, 3);
       expect(find.textContaining('Carregados: 8 / 8'), findsOneWidget);
       await capture('03_oito_locais_na_lista');
