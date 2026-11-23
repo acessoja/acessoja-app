@@ -335,6 +335,50 @@ void main() {
   );
 
   testWidgets(
+    'map starts with a single discovery page and leaves subsequent pages to the user',
+    (tester) async {
+      final calls = <Uri>[];
+      AppHttp.client = MockClient((request) async {
+        if (request.url.path == '/api/locais/descoberta/') {
+          calls.add(request.url);
+          final nextPage = request.url.queryParameters.containsKey('cursor');
+          return asDiscoveryResponse(
+            request,
+            map.jsonResponse({
+              'count': 2,
+              'next': nextPage
+                  ? null
+                  : request.url.replace(queryParameters: {
+                      ...request.url.queryParameters,
+                      'cursor': 'page2',
+                    }).toString(),
+              'results': [
+                if (nextPage)
+                  {...map.internal, 'id_local': 8, 'nome': 'Biblioteca 8'}
+                else
+                  map.internal,
+              ],
+            }),
+          );
+        }
+        if (request.url.path == '/api/locais/externos/') {
+          return map.jsonResponse({'results': [], 'truncated': false});
+        }
+        return map.jsonResponse([]);
+      });
+      await map.pumpMap(tester);
+      expect(calls, isNotEmpty);
+      expect(
+        calls.where((uri) => uri.queryParameters.containsKey('cursor')),
+        isEmpty,
+      );
+      await map.openSearch(tester);
+      expect(find.text('Ver mais locais'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
     '8 internal, 4 missing points, coincident cluster represents 4 identities; movement alone does not query',
     (tester) async {
       var externalCalls = 0;

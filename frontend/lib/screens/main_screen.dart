@@ -1415,29 +1415,10 @@ class _MainScreenState extends SafeState<MainScreen>
       if (mounted && request == _internalRequest) {
         setState(() => _isLoadingLocals = false);
         _placesRevision.value++;
-        if (!more && !_localsLoadFailed && _internalNext != null) {
-          unawaited(_loadRemainingEstablishments(request));
-        }
+        // Keep the first map page responsive. Additional places are fetched
+        // only through the existing "Ver mais locais" control in search.
+        // A viewport-based marker endpoint will replace this interim policy.
       }
-    }
-  }
-
-  Future<void> _loadRemainingEstablishments(int initialRequest) async {
-    var expectedRequest = initialRequest;
-    while (mounted &&
-        expectedRequest == _internalRequest &&
-        _internalNext != null &&
-        !_localsLoadFailed &&
-        _internalLocals.length < DiscoveryController.maxLoaded) {
-      final previous = _internalNext;
-      final previousCount = _internalLocals.length;
-      await _fetchEstablishments(more: true);
-      if (_internalRequest != expectedRequest + 1 ||
-          _internalNext == previous ||
-          _internalLocals.length == previousCount) {
-        break;
-      }
-      expectedRequest = _internalRequest;
     }
   }
 
